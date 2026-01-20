@@ -6,6 +6,8 @@ from typing import TypedDict
 import httpx
 from fastapi import FastAPI
 
+from api.routes.health import router as health_router
+
 
 # Default timeout for all HTTP clients (seconds)
 DEFAULT_TIMEOUT = 30.0
@@ -85,5 +87,8 @@ def create_app() -> FastAPI:
         title="Betpawa Odds Comparison API",
         version="0.1.0",
     )
+
+    # Include routers
+    app.include_router(health_router)
 
     return app
