@@ -15,7 +15,7 @@ None
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Market Mapping Port** - Port TypeScript mapping library to Python
-- [ ] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
+- [x] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
 - [ ] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
 - [ ] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
 - [ ] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
@@ -49,8 +49,14 @@ None
 ### Phase 3: Scraper Integration
 **Goal**: Integrate existing Python scrapers into FastAPI service with unified data models
 **Depends on**: Phase 2 (needs database to store results)
-**Research**: Unlikely (integrating existing Python scrapers)
-**Plans**: TBD
+**Research**: Complete (03-RESEARCH.md)
+**Plans**:
+- Plan 01: FastAPI Foundation (COMPLETE - 03-01-SUMMARY.md)
+- Plan 02: Scraper service layer
+- Plan 03: Persistence layer
+- Plan 04: Scrape endpoint
+- Plan 05: Health endpoint with DB check
+- Plan 06: Integration tests
 
 ### Phase 4: Event Matching Service
 **Goal**: Implement cross-platform event matching using SportRadar IDs from all three bookmakers
@@ -93,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
-| 3. Scraper Integration | 0/TBD | Not started | - |
+| 3. Scraper Integration | 1/6 | In progress | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
 | 6. React Foundation | 0/TBD | Not started | - |
