@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 1 of 8 (Market Mapping Port)
-Plan: 03 of 6 in current phase
+Plan: 04 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 01-03-PLAN.md (Parser utilities)
+Last activity: 2026-01-20 — Completed 01-04-PLAN.md (Sportybet mapper)
 
-Progress: ██░░░░░░░░ 12%
+Progress: ██░░░░░░░░ 16%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 8 min
-- Total execution time: 0.4 hours
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 Market Mapping Port | 3 | 25 min | 8 min |
+| 01 Market Mapping Port | 4 | 33 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 7 min, 8 min, 10 min
+- Last 5 plans: 7 min, 8 min, 10 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -54,6 +54,8 @@ Recent decisions affecting current work:
 - Module-level `_to_camel()` function for alias generation
 - Module-level `_build_lookups()` pattern for initialization
 - Expose `find_by_*` functions, keep lookup dicts private
+- `_map_*` private helpers for market-type-specific logic
+- frozenset for constant market ID classifications
 
 ### Deferred Issues
 
@@ -66,5 +68,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Plan 01-03 complete (Parser utilities)
+Stopped at: Plan 01-04 complete (Sportybet mapper)
 Resume file: None
