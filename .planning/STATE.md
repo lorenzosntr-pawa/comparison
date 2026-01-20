@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 3 of 8 (Scraper Integration)
-Plan: 3 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 03-03-PLAN.md (Bet9ja Client & Orchestrator)
+Last activity: 2026-01-20 — Completed 03-04-PLAN.md (Scrape Endpoint)
 
-Progress: ████░░░░░░ 34%
+Progress: ████░░░░░░ 37%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 6 min
-- Total execution time: 1.4 hours
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: ████░░░░░░ 34%
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
 | 02 Database Schema | 3 | 21 min | 7 min |
-| 03 Scraper Integration | 3 | 9 min | 3 min |
+| 03 Scraper Integration | 4 | 11 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 8 min, 3 min, 4 min, 2 min
+- Last 5 plans: 8 min, 3 min, 4 min, 2 min, 2 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - ScrapingOrchestrator accepts all clients in constructor
 - Platform enum for type-safe platform references
 - asyncio.gather(return_exceptions=True) for partial failure tolerance
+- Query param validation: ge=, le= for bounds checking
+- Optional request body with `| None = None` pattern
 
 ### Deferred Issues
 
@@ -88,5 +90,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-03-PLAN.md (Bet9ja Client & Orchestrator)
+Stopped at: Completed 03-04-PLAN.md (Scrape Endpoint)
 Resume file: None

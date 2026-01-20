@@ -54,9 +54,8 @@ None
 - Plan 01: FastAPI Foundation (COMPLETE - 03-01-SUMMARY.md)
 - Plan 02: Async scraper clients (COMPLETE - 03-02-SUMMARY.md)
 - Plan 03: Bet9ja client & orchestrator (COMPLETE - 03-03-SUMMARY.md)
-- Plan 04: Scrape endpoint
-- Plan 04: Persistence layer
-- Plan 05: Scrape endpoint
+- Plan 04: Scrape endpoint (COMPLETE - 03-04-SUMMARY.md)
+- Plan 05: Persistence layer
 - Plan 06: Health endpoint with DB check
 
 ### Phase 4: Event Matching Service
@@ -100,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
-| 3. Scraper Integration | 3/6 | In progress | - |
+| 3. Scraper Integration | 4/6 | In progress | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
 | 6. React Foundation | 0/TBD | Not started | - |
