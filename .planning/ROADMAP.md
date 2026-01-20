@@ -69,9 +69,10 @@ None
 ### Phase 5: Scheduled Scraping
 **Goal**: Implement background scheduler for periodic scraping with configurable intervals and failure handling
 **Depends on**: Phase 4 (needs full scraping pipeline working)
-**Research**: Likely (scheduler library choice)
-**Research topics**: APScheduler vs Celery vs native asyncio for FastAPI, retry patterns, stale data handling
-**Plans**: TBD
+**Research**: Complete (05-RESEARCH.md)
+**Plans**:
+- Plan 01: Scheduler infrastructure (COMPLETE - 05-01-SUMMARY.md)
+- Plan 02: Scheduler status & control (pending)
 
 ### Phase 6: React Foundation
 **Goal**: Set up React application with TanStack Query, Tailwind CSS, and basic layout structure
@@ -103,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
 | 3. Scraper Integration | 6/6 | Complete | 2026-01-20 |
 | 4. Event Matching Service | 2/2 | Complete | 2026-01-20 |
-| 5. Scheduled Scraping | 0/TBD | Not started | - |
+| 5. Scheduled Scraping | 1/2 | In progress | - |
 | 6. React Foundation | 0/TBD | Not started | - |
 | 7. Match Views | 0/TBD | Not started | - |
 | 8. Real-time Updates | 0/TBD | Not started | - |
