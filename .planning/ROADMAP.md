@@ -40,8 +40,11 @@ None
 ### Phase 2: Database Schema
 **Goal**: Design and implement PostgreSQL schema for events, odds snapshots, and cross-platform matching
 **Depends on**: Phase 1 (needs market types defined)
-**Research**: Unlikely (standard PostgreSQL schema design)
-**Plans**: TBD
+**Research**: Complete (02-RESEARCH.md)
+**Plans**:
+- Plan 01: Database foundation (COMPLETE - 02-01-SUMMARY.md)
+- Plan 02: Odds snapshot models
+- Plan 03: Alembic migrations setup
 
 ### Phase 3: Scraper Integration
 **Goal**: Integrate existing Python scrapers into FastAPI service with unified data models
@@ -89,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
-| 2. Database Schema | 0/TBD | Not started | - |
+| 2. Database Schema | 1/3 | In progress | - |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |

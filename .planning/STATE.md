@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 1 — Market Mapping Port
+**Current focus:** Phase 2 — Database Schema
 
 ## Current Position
 
-Phase: 1 of 8 (Market Mapping Port)
-Plan: 6 of 6 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 — Completed 01-06-PLAN.md (Unified API & Tests)
+Phase: 2 of 8 (Database Schema)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-20 — Completed 02-01-PLAN.md (Database Foundation)
 
-Progress: █░░░░░░░░░ 12.5%
+Progress: █░░░░░░░░░ 14.6%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 8 min
-- Total execution time: 0.75 hours
+- Total plans completed: 7
+- Average duration: 7 min
+- Total execution time: 0.83 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
+| 02 Database Schema | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 10 min, 8 min, 4 min, 8 min
+- Last 5 plans: 10 min, 8 min, 4 min, 8 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -57,6 +58,9 @@ Recent decisions affecting current work:
 - `_map_*` private helpers for market-type-specific logic
 - frozenset for constant market ID classifications
 - GroupedBet9jaMarket dataclass for grouping flat odds by market/param
+- SQLAlchemy: DeclarativeBase with MetaData(naming_convention=convention)
+- SQLAlchemy: Mapped[] + mapped_column() for all columns
+- SQLAlchemy: back_populates for bidirectional relationships
 
 ### Deferred Issues
 
@@ -69,5 +73,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Phase 1 complete (Market Mapping Port)
+Stopped at: Completed 02-01-PLAN.md (Database Foundation)
 Resume file: None
