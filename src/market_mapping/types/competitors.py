@@ -28,20 +28,19 @@ class SportybetInput(BaseModel):
 class Bet9jaInput(BaseModel):
     """Bet9ja input wrapper for discriminated union.
 
-    Represents a single odds entry from Bet9ja's flattened key-value structure.
+    Accepts the full Bet9ja odds dict for batch processing.
+    All markets in the dict will be grouped and mapped.
 
     Example:
-        >>> input = Bet9jaInput(key="S_1X2_1", odds="2.15")
+        >>> odds = {"S_1X2_1": "1.50", "S_1X2_X": "3.20", "S_1X2_2": "2.10"}
+        >>> input = Bet9jaInput(odds=odds)
     """
 
     source: Literal["bet9ja"] = "bet9ja"
     """Source discriminator - always 'bet9ja'."""
 
-    key: str
-    """Bet9ja odds key (e.g., 'S_1X2_1', 'S_OU@2.5_O')."""
-
-    odds: str | float
-    """Odds value as string or number."""
+    odds: dict[str, str]
+    """Full Bet9ja odds dict (key -> odds_string)."""
 
 
 # Discriminated union for competitor input
@@ -60,9 +59,7 @@ Examples:
     >>> # Sportybet input
     >>> sportybet_input = SportybetInput(market=sportybet_market)
 
-    >>> # Bet9ja input
-    >>> bet9ja_input = Bet9jaInput(key='S_1X2_1', odds='2.15')
-
-    >>> # Generic input (Pydantic auto-discriminates)
-    >>> data = {"source": "bet9ja", "key": "S_1X2_1", "odds": "2.15"}
+    >>> # Bet9ja input (batch odds dict)
+    >>> odds = {"S_1X2_1": "1.50", "S_1X2_X": "3.20", "S_1X2_2": "2.10"}
+    >>> bet9ja_input = Bet9jaInput(odds=odds)
 """
