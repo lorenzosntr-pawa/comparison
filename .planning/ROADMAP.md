@@ -17,7 +17,7 @@ None
 - [x] **Phase 1: Market Mapping Port** - Port TypeScript mapping library to Python
 - [x] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
 - [x] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
-- [ ] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
+- [x] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
 - [ ] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
 - [ ] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
 - [ ] **Phase 7: Match Views** - Match list and detail views with odds comparison
@@ -64,7 +64,7 @@ None
 **Research**: Complete (04-RESEARCH.md)
 **Plans**:
 - Plan 01: Event matching service (COMPLETE - 04-01-SUMMARY.md)
-- Plan 02: Orchestrator integration (04-02-PLAN.md)
+- Plan 02: Events API endpoints (COMPLETE - 04-02-SUMMARY.md)
 
 ### Phase 5: Scheduled Scraping
 **Goal**: Implement background scheduler for periodic scraping with configurable intervals and failure handling
@@ -102,7 +102,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
 | 3. Scraper Integration | 6/6 | Complete | 2026-01-20 |
-| 4. Event Matching Service | 1/2 | In progress | - |
+| 4. Event Matching Service | 2/2 | Complete | 2026-01-20 |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
 | 6. React Foundation | 0/TBD | Not started | - |
 | 7. Match Views | 0/TBD | Not started | - |
