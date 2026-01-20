@@ -7,6 +7,7 @@ import httpx
 from fastapi import FastAPI
 
 from api.routes.health import router as health_router
+from api.routes.scrape import router as scrape_router
 
 
 # Default timeout for all HTTP clients (seconds)
@@ -90,5 +91,6 @@ def create_app() -> FastAPI:
 
     # Include routers
     app.include_router(health_router)
+    app.include_router(scrape_router)
 
     return app
