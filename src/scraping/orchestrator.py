@@ -1,11 +1,19 @@
 """Scraping orchestrator for concurrent platform execution."""
 
+from __future__ import annotations
+
 import asyncio
 import time
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
+
+from sqlalchemy import select
 
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.schemas import Platform, PlatformResult, ScrapeResult
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ScrapingOrchestrator:
@@ -37,6 +45,8 @@ class ScrapingOrchestrator:
         competition_id: str | None = None,
         include_data: bool = False,
         timeout: float = 30.0,
+        scrape_run_id: int | None = None,
+        db: AsyncSession | None = None,
     ) -> ScrapeResult:
         """Scrape all (or specified) platforms concurrently.
 
@@ -49,6 +59,8 @@ class ScrapingOrchestrator:
             competition_id: Filter to specific competition.
             include_data: Whether to include raw event data in results.
             timeout: Per-platform timeout in seconds.
+            scrape_run_id: Optional ScrapeRun ID for error logging.
+            db: Optional database session for error logging.
 
         Returns:
             ScrapeResult with status and per-platform results.
@@ -71,7 +83,9 @@ class ScrapingOrchestrator:
         platform_results: list[PlatformResult] = []
         for platform, result in zip(target_platforms, results):
             if isinstance(result, Exception):
-                # Platform failed
+                # Platform failed - log error to database if session provided
+                if db and scrape_run_id:
+                    await self._log_error(db, scrape_run_id, platform, result)
                 platform_results.append(
                     PlatformResult(
                         platform=platform,
@@ -95,6 +109,10 @@ class ScrapingOrchestrator:
                         events=events if include_data else None,
                     )
                 )
+
+        # Commit any logged errors
+        if db:
+            await db.commit()
 
         completed_at = datetime.now(timezone.utc)
 
@@ -192,3 +210,76 @@ class ScrapingOrchestrator:
             )
             for platform, result in zip(Platform, results)
         }
+
+    async def _log_error(
+        self,
+        db: AsyncSession,
+        scrape_run_id: int,
+        platform: Platform,
+        error: Exception,
+        event_id: int | None = None,
+    ) -> None:
+        """Log scrape error to database.
+
+        Args:
+            db: Database session.
+            scrape_run_id: ID of the current scrape run.
+            platform: Platform that failed.
+            error: Exception that occurred.
+            event_id: Optional event ID if error was event-specific.
+        """
+        from src.db.models.scrape import ScrapeError
+
+        bookmaker_id = await self._get_bookmaker_id(db, platform)
+        error_type = type(error).__name__
+
+        scrape_error = ScrapeError(
+            scrape_run_id=scrape_run_id,
+            bookmaker_id=bookmaker_id,
+            event_id=event_id,
+            error_type=error_type,
+            error_message=str(error)[:1000],  # Truncate long messages
+        )
+        db.add(scrape_error)
+        # Don't commit here - batch commit in scrape_all
+
+    async def _get_bookmaker_id(
+        self,
+        db: AsyncSession,
+        platform: Platform,
+    ) -> int | None:
+        """Get or create bookmaker record for platform.
+
+        Args:
+            db: Database session.
+            platform: Platform to get bookmaker for.
+
+        Returns:
+            Bookmaker ID, or None if not found and creation failed.
+        """
+        from src.db.models.bookmaker import Bookmaker
+
+        # Map platform to slug
+        slug = platform.value.lower()
+
+        result = await db.execute(
+            select(Bookmaker).where(Bookmaker.slug == slug)
+        )
+        bookmaker = result.scalar_one_or_none()
+        if bookmaker:
+            return bookmaker.id
+
+        # Create if not exists (first run scenario)
+        base_urls = {
+            Platform.SPORTYBET: "https://www.sportybet.com",
+            Platform.BETPAWA: "https://www.betpawa.ng",
+            Platform.BET9JA: "https://sports.bet9ja.com",
+        }
+        bookmaker = Bookmaker(
+            name=platform.value.title(),
+            slug=slug,
+            base_url=base_urls.get(platform),
+        )
+        db.add(bookmaker)
+        await db.flush()  # Get ID without committing
+        return bookmaker.id
