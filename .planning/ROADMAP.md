@@ -31,9 +31,11 @@ None
 **Research**: Unlikely (internal port of existing TypeScript code)
 **Plans**:
 - Plan 01: Type definitions (COMPLETE - 01-01-SUMMARY.md)
-- Plan 02: Market mappings registry (TBD)
+- Plan 02: Market mappings registry (COMPLETE - 01-02-SUMMARY.md)
 - Plan 03: Sportybet mapper (TBD)
 - Plan 04: Bet9ja mapper (TBD)
+- Plan 05: TBD
+- Plan 06: TBD
 
 ### Phase 2: Database Schema
 **Goal**: Design and implement PostgreSQL schema for events, odds snapshots, and cross-platform matching
@@ -86,7 +88,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Market Mapping Port | 1/TBD | In progress | - |
+| 1. Market Mapping Port | 2/6 | In progress | - |
 | 2. Database Schema | 0/TBD | Not started | - |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
