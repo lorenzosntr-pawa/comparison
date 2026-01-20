@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 6 of 8 (React Foundation)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 06-01-PLAN.md (Project Setup)
+Last activity: 2026-01-20 — Completed 06-02-PLAN.md (UI Foundation)
 
-Progress: ██████░░░░ 63%
+Progress: ██████░░░░ 66%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
+- Total plans completed: 21
 - Average duration: 6 min
-- Total execution time: 1.8 hours
+- Total execution time: 1.9 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: ██████░░░░ 63%
 | 03 Scraper Integration | 6 | 16 min | 3 min |
 | 04 Event Matching | 2 | 6 min | 3 min |
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
-| 06 React Foundation | 1 | 5 min | 5 min |
+| 06 React Foundation | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 3 min, 5 min, 5 min, 5 min
+- Last 5 plans: 3 min, 5 min, 5 min, 5 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -103,6 +103,10 @@ Recent decisions affecting current work:
 - TanStack Query: staleTime=5min, gcTime=10min for dashboard-appropriate caching
 - Feature-based folder structure: components/ui/layout, features/{name}, hooks, lib, types
 - cn() utility from clsx + tailwind-merge for class merging (shadcn requirement)
+- Tailwind v4: @import "tailwindcss" + @theme inline for CSS variable mapping
+- shadcn/ui: --yes flag for non-interactive component installation
+- ThemeProvider pattern: context + localStorage + system media query
+- Theme flash prevention: inline script in <head> before React hydration
 
 ### Deferred Issues
 
@@ -115,5 +119,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 06-01-PLAN.md (Project Setup)
+Stopped at: Completed 06-02-PLAN.md (UI Foundation)
 Resume file: None
