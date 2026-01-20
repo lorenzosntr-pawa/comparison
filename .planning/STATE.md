@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 3 of 8 (Scraper Integration)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 03-04-PLAN.md (Scrape Endpoint)
+Last activity: 2026-01-20 — Completed 03-05-PLAN.md (Health & Filtering)
 
-Progress: ████░░░░░░ 37%
+Progress: █████░░░░░ 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 6 min
 - Total execution time: 1.5 hours
 
@@ -29,10 +29,10 @@ Progress: ████░░░░░░ 37%
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
 | 02 Database Schema | 3 | 21 min | 7 min |
-| 03 Scraper Integration | 4 | 11 min | 3 min |
+| 03 Scraper Integration | 5 | 13 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 3 min, 4 min, 2 min, 2 min
+- Last 5 plans: 3 min, 4 min, 2 min, 2 min, 2 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -78,6 +78,8 @@ Recent decisions affecting current work:
 - asyncio.gather(return_exceptions=True) for partial failure tolerance
 - Query param validation: ge=, le= for bounds checking
 - Optional request body with `| None = None` pattern
+- Concurrent health checks with asyncio.gather for per-platform status
+- Filter pass-through from endpoint to orchestrator (sport_id, competition_id)
 
 ### Deferred Issues
 
@@ -90,5 +92,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-04-PLAN.md (Scrape Endpoint)
+Stopped at: Completed 03-05-PLAN.md (Health & Filtering)
 Resume file: None
