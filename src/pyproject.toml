@@ -1,16 +1,21 @@
 [project]
-name = "market-mapping"
+name = "betpawa-odds-comparison"
 version = "0.1.0"
-description = "Market mapping library for Betpawa odds comparison"
+description = "Betpawa odds comparison tool"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.10",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
 ]
+
+[tool.setuptools.packages.find]
+include = ["market_mapping*", "db*"]
 
 [tool.pytest.ini_options]
 testpaths = ["../tests"]
