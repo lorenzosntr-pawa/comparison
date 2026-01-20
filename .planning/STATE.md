@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 2 — Database Schema
+**Current focus:** Phase 3 — Scraper Integration
 
 ## Current Position
 
 Phase: 2 of 8 (Database Schema)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-20 — Completed 02-02-PLAN.md (Odds Snapshot Models)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 — Completed 02-03-PLAN.md (Alembic Migrations Setup)
 
-Progress: ██░░░░░░░░ 16.7%
+Progress: ███░░░░░░░ 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 7 min
-- Total execution time: 0.97 hours
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
-| 02 Database Schema | 2 | 13 min | 7 min |
+| 02 Database Schema | 3 | 21 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 4 min, 8 min, 5 min, 8 min
+- Last 5 plans: 4 min, 8 min, 5 min, 8 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - BigInteger PK for tables that will be partitioned by timestamp
 - JSONB (via JSON type) for variable-structure data like API responses
 - StrEnum for status fields (type safety + string storage)
+- Async Alembic: async_engine_from_config + run_sync wrapper
+- Partitioned tables: raw SQL in migrations, SQLAlchemy model as regular table
+- Optional extensions: IF EXISTS check for pg_partman
 
 ### Deferred Issues
 
@@ -76,5 +79,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 02-02-PLAN.md (Odds Snapshot Models)
+Stopped at: Completed 02-03-PLAN.md (Alembic Migrations Setup) - Phase 2 complete
 Resume file: None

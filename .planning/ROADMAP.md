@@ -44,7 +44,7 @@ None
 **Plans**:
 - Plan 01: Database foundation (COMPLETE - 02-01-SUMMARY.md)
 - Plan 02: Odds snapshot models (COMPLETE - 02-02-SUMMARY.md)
-- Plan 03: Alembic migrations setup
+- Plan 03: Alembic migrations setup (COMPLETE - 02-03-SUMMARY.md)
 
 ### Phase 3: Scraper Integration
 **Goal**: Integrate existing Python scrapers into FastAPI service with unified data models
@@ -92,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
-| 2. Database Schema | 2/3 | In progress | - |
+| 2. Database Schema | 3/3 | Complete | 2026-01-20 |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
