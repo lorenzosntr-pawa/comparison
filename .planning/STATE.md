@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 6 — React Foundation
+**Current focus:** Phase 6 complete — React Foundation
 
 ## Current Position
 
 Phase: 6 of 8 (React Foundation)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-01-20 — Completed 06-03-PLAN.md (Layout & Routing)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 — Completed 06-04-PLAN.md (API Integration & Dashboard)
 
-Progress: ███████░░░ 69%
+Progress: ███████░░░ 72%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
+- Total plans completed: 23
 - Average duration: 6 min
-- Total execution time: 2.0 hours
+- Total execution time: 2.1 hours
 
 **By Phase:**
 
@@ -32,7 +32,7 @@ Progress: ███████░░░ 69%
 | 03 Scraper Integration | 6 | 16 min | 3 min |
 | 04 Event Matching | 2 | 6 min | 3 min |
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
-| 06 React Foundation | 3 | 15 min | 5 min |
+| 06 React Foundation | 4 | 20 min | 5 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min, 5 min, 5 min, 5 min, 5 min
@@ -111,6 +111,10 @@ Recent decisions affecting current work:
 - shadcn Sidebar: collapsible="icon" for compact mode
 - SidebarProvider must wrap entire layout (not just sidebar)
 - Feature pages in features/{name}/index.tsx pattern
+- API client: explicit property declaration for TypeScript erasableSyntaxOnly
+- TanStack Query polling: 10s (scheduler), 30s (health), 60s (events) based on volatility
+- Feature hooks in features/{name}/hooks/ with index.ts re-export
+- Feature components in features/{name}/components/ with index.ts re-export
 
 ### Deferred Issues
 
@@ -123,5 +127,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 06-03-PLAN.md (Layout & Routing)
+Stopped at: Completed 06-04-PLAN.md (API Integration & Dashboard) — Phase 6 complete
 Resume file: None
