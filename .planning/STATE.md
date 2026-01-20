@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 1 of 8 (Market Mapping Port)
-Plan: 04 of 6 in current phase
+Plan: 05 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 01-04-PLAN.md (Sportybet mapper)
+Last activity: 2026-01-20 — Completed 01-05-PLAN.md (Bet9ja mapper)
 
-Progress: ██░░░░░░░░ 16%
+Progress: ██░░░░░░░░ 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 8 min
-- Total execution time: 0.5 hours
+- Total plans completed: 5
+- Average duration: 7 min
+- Total execution time: 0.6 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 Market Mapping Port | 4 | 33 min | 8 min |
+| 01 Market Mapping Port | 5 | 37 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 7 min, 8 min, 10 min, 8 min
+- Last 5 plans: 7 min, 8 min, 10 min, 8 min, 4 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -56,6 +56,7 @@ Recent decisions affecting current work:
 - Expose `find_by_*` functions, keep lookup dicts private
 - `_map_*` private helpers for market-type-specific logic
 - frozenset for constant market ID classifications
+- GroupedBet9jaMarket dataclass for grouping flat odds by market/param
 
 ### Deferred Issues
 
@@ -68,5 +69,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Plan 01-04 complete (Sportybet mapper)
+Stopped at: Plan 01-05 complete (Bet9ja mapper)
 Resume file: None

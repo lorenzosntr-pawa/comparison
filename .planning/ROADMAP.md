@@ -34,7 +34,7 @@ None
 - Plan 02: Market mappings registry (COMPLETE - 01-02-SUMMARY.md)
 - Plan 03: Parser utilities (COMPLETE - 01-03-SUMMARY.md)
 - Plan 04: Sportybet mapper (COMPLETE - 01-04-SUMMARY.md)
-- Plan 05: Bet9ja mapper (TBD)
+- Plan 05: Bet9ja mapper (COMPLETE - 01-05-SUMMARY.md)
 - Plan 06: TBD
 
 ### Phase 2: Database Schema
@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Market Mapping Port | 4/6 | In progress | - |
+| 1. Market Mapping Port | 5/6 | In progress | - |
 | 2. Database Schema | 0/TBD | Not started | - |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
