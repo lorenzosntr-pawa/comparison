@@ -16,7 +16,7 @@ None
 
 - [x] **Phase 1: Market Mapping Port** - Port TypeScript mapping library to Python
 - [x] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
-- [ ] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
+- [x] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
 - [ ] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
 - [ ] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
 - [ ] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
@@ -56,7 +56,7 @@ None
 - Plan 03: Bet9ja client & orchestrator (COMPLETE - 03-03-SUMMARY.md)
 - Plan 04: Scrape endpoint (COMPLETE - 03-04-SUMMARY.md)
 - Plan 05: Health & filtering (COMPLETE - 03-05-SUMMARY.md)
-- Plan 06: Persistence layer
+- Plan 06: Persistence layer (COMPLETE - 03-06-SUMMARY.md)
 
 ### Phase 4: Event Matching Service
 **Goal**: Implement cross-platform event matching using SportRadar IDs from all three bookmakers
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
-| 3. Scraper Integration | 5/6 | In progress | - |
+| 3. Scraper Integration | 6/6 | Complete | 2026-01-20 |
 | 4. Event Matching Service | 0/TBD | Not started | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
 | 6. React Foundation | 0/TBD | Not started | - |

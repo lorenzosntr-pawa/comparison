@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 3 — Scraper Integration
+**Current focus:** Phase 3 complete — Ready for Phase 4
 
 ## Current Position
 
 Phase: 3 of 8 (Scraper Integration)
-Plan: 5 of 6 in current phase
-Status: In progress
-Last activity: 2026-01-20 — Completed 03-05-PLAN.md (Health & Filtering)
+Plan: 6 of 6 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 — Completed 03-06-PLAN.md (Database Integration)
 
-Progress: █████░░░░░ 40%
+Progress: ██████░░░░ 43%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 6 min
 - Total execution time: 1.5 hours
 
@@ -29,10 +29,10 @@ Progress: █████░░░░░ 40%
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
 | 02 Database Schema | 3 | 21 min | 7 min |
-| 03 Scraper Integration | 5 | 13 min | 3 min |
+| 03 Scraper Integration | 6 | 16 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 4 min, 2 min, 2 min, 2 min
+- Last 5 plans: 4 min, 2 min, 2 min, 2 min, 3 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -80,6 +80,8 @@ Recent decisions affecting current work:
 - Optional request body with `| None = None` pattern
 - Concurrent health checks with asyncio.gather for per-platform status
 - Filter pass-through from endpoint to orchestrator (sport_id, competition_id)
+- DB session pass-through to orchestrator for error logging
+- Bookmaker auto-creation on first use via _get_bookmaker_id
 
 ### Deferred Issues
 
@@ -92,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-05-PLAN.md (Health & Filtering)
+Stopped at: Completed 03-06-PLAN.md (Database Integration) - Phase 3 complete
 Resume file: None
