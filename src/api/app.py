@@ -9,6 +9,12 @@ from fastapi import FastAPI
 from api.routes.events import router as events_router
 from api.routes.health import router as health_router
 from api.routes.scrape import router as scrape_router
+from src.scheduling.jobs import set_app_state
+from src.scheduling.scheduler import (
+    configure_scheduler,
+    shutdown_scheduler,
+    start_scheduler,
+)
 
 
 # Default timeout for all HTTP clients (seconds)
@@ -50,10 +56,11 @@ class AppState(TypedDict):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Async lifespan context manager for HTTP client lifecycle.
+    """Async lifespan context manager for HTTP client and scheduler lifecycle.
 
     Creates AsyncClient instances at startup and closes them at shutdown.
     Clients are stored in app.state for dependency injection.
+    Scheduler is configured and started after clients are available.
     """
     async with httpx.AsyncClient(
         base_url="https://www.sportybet.com",
@@ -75,7 +82,15 @@ async def lifespan(app: FastAPI):
                 app.state.betpawa_client = betpawa_client
                 app.state.bet9ja_client = bet9ja_client
 
+                # Initialize scheduler with app state access
+                set_app_state(app.state)
+                configure_scheduler()
+                start_scheduler()
+
                 yield
+
+                # Shutdown scheduler gracefully
+                shutdown_scheduler()
 
 
 def create_app() -> FastAPI:
