@@ -29,7 +29,11 @@ None
 **Goal**: Port the 111+ market mappings from TypeScript to Python with equivalent type safety and Result patterns
 **Depends on**: Nothing (first phase)
 **Research**: Unlikely (internal port of existing TypeScript code)
-**Plans**: TBD
+**Plans**:
+- Plan 01: Type definitions (COMPLETE - 01-01-SUMMARY.md)
+- Plan 02: Market mappings registry (TBD)
+- Plan 03: Sportybet mapper (TBD)
+- Plan 04: Bet9ja mapper (TBD)
 
 ### Phase 2: Database Schema
 **Goal**: Design and implement PostgreSQL schema for events, odds snapshots, and cross-platform matching
@@ -82,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Market Mapping Port | 0/TBD | Not started | - |
+| 1. Market Mapping Port | 1/TBD | In progress | - |
 | 2. Database Schema | 0/TBD | Not started | - |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
