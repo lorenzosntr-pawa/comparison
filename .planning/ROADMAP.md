@@ -14,7 +14,7 @@ None
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Market Mapping Port** - Port TypeScript mapping library to Python
+- [x] **Phase 1: Market Mapping Port** - Port TypeScript mapping library to Python
 - [ ] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
 - [ ] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
 - [ ] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
@@ -35,7 +35,7 @@ None
 - Plan 03: Parser utilities (COMPLETE - 01-03-SUMMARY.md)
 - Plan 04: Sportybet mapper (COMPLETE - 01-04-SUMMARY.md)
 - Plan 05: Bet9ja mapper (COMPLETE - 01-05-SUMMARY.md)
-- Plan 06: TBD
+- Plan 06: Unified API & Tests (COMPLETE - 01-06-SUMMARY.md)
 
 ### Phase 2: Database Schema
 **Goal**: Design and implement PostgreSQL schema for events, odds snapshots, and cross-platform matching
@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Market Mapping Port | 5/6 | In progress | - |
+| 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 0/TBD | Not started | - |
 | 3. Scraper Integration | 0/TBD | Not started | - |
 | 4. Event Matching Service | 0/TBD | Not started | - |
