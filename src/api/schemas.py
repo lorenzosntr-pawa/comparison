@@ -7,6 +7,25 @@ from pydantic import BaseModel, Field
 from src.scraping.schemas import Platform, PlatformResult
 
 
+class PlatformHealth(BaseModel):
+    """Health status for a single platform."""
+
+    platform: Platform
+    status: str = Field(description="'healthy' or 'unhealthy'")
+    response_time_ms: int | None = None
+    error: str | None = None
+
+
+class HealthResponse(BaseModel):
+    """Response from health check endpoint."""
+
+    status: str = Field(
+        description="'healthy' (all up), 'degraded' (some up), 'unhealthy' (none up)"
+    )
+    database: str = Field(description="'connected' or 'disconnected'")
+    platforms: list[PlatformHealth]
+
+
 class ScrapeRequest(BaseModel):
     """Request body for triggering a scrape operation."""
 
