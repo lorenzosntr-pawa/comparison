@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Button } from '@/components/ui/button'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,9 +16,14 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div>
-        <h1 className="text-2xl font-bold text-blue-600">Betpawa Odds Comparison</h1>
-        <p>React 19 + TanStack Query ready</p>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold text-primary">Betpawa Odds Comparison</h1>
+        <p className="text-muted-foreground">React 19 + TanStack Query ready</p>
+        <div className="mt-4 flex gap-2">
+          <Button>Default Button</Button>
+          <Button variant="outline">Outline Button</Button>
+          <Button variant="secondary">Secondary Button</Button>
+        </div>
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
