@@ -1483,3 +1483,180 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         ),
     ),
 )
+
+
+# =============================================================================
+# Lookup Dictionaries (built at module load time for O(1) access)
+# =============================================================================
+
+_BY_BETPAWA_ID: dict[str, MarketMapping] = {}
+_BY_SPORTYBET_ID: dict[str, MarketMapping] = {}
+_BY_CANONICAL_ID: dict[str, MarketMapping] = {}
+_BY_BET9JA_KEY: dict[str, MarketMapping] = {}
+
+
+def _build_lookups() -> None:
+    """Build lookup dictionaries at module load time."""
+    for mapping in MARKET_MAPPINGS:
+        _BY_CANONICAL_ID[mapping.canonical_id] = mapping
+        if mapping.betpawa_id:
+            _BY_BETPAWA_ID[mapping.betpawa_id] = mapping
+        if mapping.sportybet_id:
+            _BY_SPORTYBET_ID[mapping.sportybet_id] = mapping
+        if mapping.bet9ja_key:
+            _BY_BET9JA_KEY[mapping.bet9ja_key] = mapping
+
+
+_build_lookups()
+
+
+# =============================================================================
+# Market Classification Sets (based on Sportybet IDs)
+# =============================================================================
+
+# Over/Under market IDs (Sportybet IDs)
+OVER_UNDER_MARKET_IDS: frozenset[str] = frozenset({
+    "18",  # Over/Under - Full Time
+    "68",  # Over/Under - First Half
+    "90",  # Over/Under - Second Half
+    "19",  # Home Team Over/Under - Full Time
+    "20",  # Away Team Over/Under - Full Time
+    "69",  # Home Team Over/Under - First Half
+    "70",  # Away Team Over/Under - First Half
+    "91",  # Home Team Over/Under - Second Half
+    "92",  # Away Team Over/Under - Second Half
+    "166",  # Total Corners Over/Under - Full Time
+    "177",  # Total Corners Over/Under - First Half
+    "139",  # Total Bookings Over/Under - Full Time
+    "152",  # Total Bookings Over/Under - First Half
+    "900300",  # Home Team Total Corners - Full Time
+    "900301",  # Away Team Total Corners - Full Time
+    "900302",  # Home Team Total Corners - First Half
+    "900303",  # Away Team Total Corners - First Half
+    "900304",  # Home Team Total Bookings - Full Time
+    "900305",  # Away Team Total Bookings - Full Time
+    "900306",  # Home Team Total Bookings - First Half
+    "900307",  # Away Team Total Bookings - First Half
+})
+
+# Handicap market IDs (Sportybet IDs)
+HANDICAP_MARKET_IDS: frozenset[str] = frozenset({
+    "14",  # 3-Way Handicap - Full Time
+    "16",  # Asian Handicap - Full Time
+    "65",  # 3-Way Handicap - First Half
+    "66",  # Asian Handicap - First Half
+    "87",  # 3-Way Handicap - Second Half
+    "88",  # Asian Handicap - Second Half
+    "165",  # Corner Asian Handicap - Full Time
+    "176",  # Corner Asian Handicap - First Half
+})
+
+# Variant/exact goal market IDs (Sportybet IDs)
+VARIANT_MARKET_IDS: frozenset[str] = frozenset({
+    "21",  # Exact Goals - Full Time
+    "23",  # Home Team Exact Goals - Full Time
+    "24",  # Away Team Exact Goals - Full Time
+    "71",  # Exact Goals - First Half
+    "93",  # Exact Goals - Second Half
+    "15",  # Winning Margin
+    "548",  # Multigoals - Full Time
+    "549",  # Home Team Multigoals - Full Time
+    "550",  # Away Team Multigoals - Full Time
+    "551",  # Multiscores - Full Time
+    "552",  # Multigoals - First Half
+    "553",  # Multigoals - Second Half
+})
+
+
+# =============================================================================
+# Lookup Functions
+# =============================================================================
+
+def find_by_betpawa_id(market_id: str) -> MarketMapping | None:
+    """Find a market mapping by Betpawa market type ID.
+
+    Args:
+        market_id: Betpawa marketType.id (e.g., "3743")
+
+    Returns:
+        The matching MarketMapping or None if not found
+    """
+    return _BY_BETPAWA_ID.get(market_id)
+
+
+def find_by_sportybet_id(market_id: str) -> MarketMapping | None:
+    """Find a market mapping by Sportybet market ID.
+
+    Args:
+        market_id: Sportybet market.id (e.g., "1")
+
+    Returns:
+        The matching MarketMapping or None if not found
+    """
+    return _BY_SPORTYBET_ID.get(market_id)
+
+
+def find_by_canonical_id(canonical_id: str) -> MarketMapping | None:
+    """Find a market mapping by canonical ID.
+
+    Args:
+        canonical_id: Canonical market ID (e.g., "1x2_ft")
+
+    Returns:
+        The matching MarketMapping or None if not found
+    """
+    return _BY_CANONICAL_ID.get(canonical_id)
+
+
+def find_by_bet9ja_key(bet9ja_key: str) -> MarketMapping | None:
+    """Find a market mapping by Bet9ja key.
+
+    Accepts a market key (e.g., "S_1X2", "S_OU").
+
+    Args:
+        bet9ja_key: Bet9ja market key (e.g., "S_1X2")
+
+    Returns:
+        The matching MarketMapping or None if not found
+    """
+    return _BY_BET9JA_KEY.get(bet9ja_key)
+
+
+# =============================================================================
+# Classification Helper Functions
+# =============================================================================
+
+def is_over_under_market(sportybet_id: str) -> bool:
+    """Check if a market is an Over/Under type market.
+
+    Args:
+        sportybet_id: Sportybet market ID
+
+    Returns:
+        True if the market is an Over/Under market
+    """
+    return sportybet_id in OVER_UNDER_MARKET_IDS
+
+
+def is_handicap_market(sportybet_id: str) -> bool:
+    """Check if a market is a Handicap type market.
+
+    Args:
+        sportybet_id: Sportybet market ID
+
+    Returns:
+        True if the market is a Handicap market
+    """
+    return sportybet_id in HANDICAP_MARKET_IDS
+
+
+def is_variant_market(sportybet_id: str) -> bool:
+    """Check if a market is a Variant/Exact goals type market.
+
+    Args:
+        sportybet_id: Sportybet market ID
+
+    Returns:
+        True if the market is a Variant market
+    """
+    return sportybet_id in VARIANT_MARKET_IDS
