@@ -18,7 +18,7 @@ None
 - [x] **Phase 2: Database Schema** - PostgreSQL schema for odds snapshots and events
 - [x] **Phase 3: Scraper Integration** - Integrate existing scrapers with FastAPI orchestration
 - [x] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
-- [ ] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
+- [x] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
 - [ ] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
 - [ ] **Phase 7: Match Views** - Match list and detail views with odds comparison
 - [ ] **Phase 8: Real-time Updates** - WebSocket integration for live data push
@@ -72,7 +72,7 @@ None
 **Research**: Complete (05-RESEARCH.md)
 **Plans**:
 - Plan 01: Scheduler infrastructure (COMPLETE - 05-01-SUMMARY.md)
-- Plan 02: Scheduler status & control (pending)
+- Plan 02: Scheduler status & control (COMPLETE - 05-02-SUMMARY.md)
 
 ### Phase 6: React Foundation
 **Goal**: Set up React application with TanStack Query, Tailwind CSS, and basic layout structure
@@ -104,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
 | 3. Scraper Integration | 6/6 | Complete | 2026-01-20 |
 | 4. Event Matching Service | 2/2 | Complete | 2026-01-20 |
-| 5. Scheduled Scraping | 1/2 | In progress | - |
+| 5. Scheduled Scraping | 2/2 | Complete | 2026-01-20 |
 | 6. React Foundation | 0/TBD | Not started | - |
 | 7. Match Views | 0/TBD | Not started | - |
 | 8. Real-time Updates | 0/TBD | Not started | - |

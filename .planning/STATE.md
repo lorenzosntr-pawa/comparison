@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 5 in progress — Scheduled Scraping
+**Current focus:** Phase 5 complete — Scheduled Scraping
 
 ## Current Position
 
 Phase: 5 of 8 (Scheduled Scraping)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-20 — Completed 05-01-PLAN.md (Scheduler Infrastructure)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 — Completed 05-02-PLAN.md (Scheduler Status & Control)
 
-Progress: ██████░░░░ 55%
+Progress: ██████░░░░ 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 6 min
-- Total execution time: 1.6 hours
+- Total execution time: 1.7 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: ██████░░░░ 55%
 | 02 Database Schema | 3 | 21 min | 7 min |
 | 03 Scraper Integration | 6 | 16 min | 3 min |
 | 04 Event Matching | 2 | 6 min | 3 min |
-| 05 Scheduled Scraping | 1 | 5 min | 5 min |
+| 05 Scheduled Scraping | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 3 min, 3 min, 3 min, 5 min
+- Last 5 plans: 3 min, 3 min, 3 min, 5 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -94,6 +94,8 @@ Recent decisions affecting current work:
 - configure_scheduler() + start_scheduler() + shutdown_scheduler() lifecycle
 - Deferred imports in configure_scheduler() to avoid circular deps
 - IntervalTrigger with coalesce=True for missed run handling
+- Schemas package: src/api/schemas/ with __init__.py re-exporting all models
+- Query param pagination: limit with ge=/le= bounds, offset with ge=0
 
 ### Deferred Issues
 
@@ -106,5 +108,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 05-01-PLAN.md (Scheduler Infrastructure) — Phase 5 in progress
+Stopped at: Completed 05-02-PLAN.md (Scheduler Status & Control) — Phase 5 complete
 Resume file: None
