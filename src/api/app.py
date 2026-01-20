@@ -6,6 +6,7 @@ from typing import TypedDict
 import httpx
 from fastapi import FastAPI
 
+from api.routes.events import router as events_router
 from api.routes.health import router as health_router
 from api.routes.scrape import router as scrape_router
 
@@ -90,6 +91,7 @@ def create_app() -> FastAPI:
     )
 
     # Include routers
+    app.include_router(events_router)
     app.include_router(health_router)
     app.include_router(scrape_router)
 
