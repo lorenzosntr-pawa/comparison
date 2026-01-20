@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 6 of 8 (React Foundation)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 06-02-PLAN.md (UI Foundation)
+Last activity: 2026-01-20 — Completed 06-03-PLAN.md (Layout & Routing)
 
-Progress: ██████░░░░ 66%
+Progress: ███████░░░ 69%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 6 min
-- Total execution time: 1.9 hours
+- Total execution time: 2.0 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: ██████░░░░ 66%
 | 03 Scraper Integration | 6 | 16 min | 3 min |
 | 04 Event Matching | 2 | 6 min | 3 min |
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
-| 06 React Foundation | 2 | 10 min | 5 min |
+| 06 React Foundation | 3 | 15 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 5 min, 5 min, 5 min, 5 min
+- Last 5 plans: 5 min, 5 min, 5 min, 5 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -107,6 +107,10 @@ Recent decisions affecting current work:
 - shadcn/ui: --yes flag for non-interactive component installation
 - ThemeProvider pattern: context + localStorage + system media query
 - Theme flash prevention: inline script in <head> before React hydration
+- React Router v7: import from 'react-router' (not 'react-router-dom')
+- shadcn Sidebar: collapsible="icon" for compact mode
+- SidebarProvider must wrap entire layout (not just sidebar)
+- Feature pages in features/{name}/index.tsx pattern
 
 ### Deferred Issues
 
@@ -119,5 +123,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 06-02-PLAN.md (UI Foundation)
+Stopped at: Completed 06-03-PLAN.md (Layout & Routing)
 Resume file: None
