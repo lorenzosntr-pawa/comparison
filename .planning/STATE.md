@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 3 of 8 (Scraper Integration)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 03-01-PLAN.md (FastAPI Foundation)
+Last activity: 2026-01-20 — Completed 03-02-PLAN.md (Async Scraper Clients)
 
-Progress: ███░░░░░░░ 28%
+Progress: ███░░░░░░░ 31%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 7 min
-- Total execution time: 1.2 hours
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: ███░░░░░░░ 28%
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
 | 02 Database Schema | 3 | 21 min | 7 min |
-| 03 Scraper Integration | 1 | 3 min | 3 min |
+| 03 Scraper Integration | 2 | 7 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 5 min, 8 min, 8 min, 3 min
+- Last 5 plans: 5 min, 8 min, 8 min, 3 min, 4 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -70,6 +70,9 @@ Recent decisions affecting current work:
 - Optional extensions: IF EXISTS check for pg_partman
 - Lifespan context manager: @asynccontextmanager async def lifespan(app)
 - HTTP client dependencies: get_*_client(request: Request) -> httpx.AsyncClient
+- Async client class with injected httpx.AsyncClient
+- Module-level _retry decorator creation for consistency
+- check_health() method for API connectivity testing
 
 ### Deferred Issues
 
@@ -82,5 +85,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-01-PLAN.md (FastAPI Foundation)
+Stopped at: Completed 03-02-PLAN.md (Async Scraper Clients)
 Resume file: None
