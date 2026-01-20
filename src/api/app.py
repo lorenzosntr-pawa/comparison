@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from api.routes.events import router as events_router
 from api.routes.health import router as health_router
+from api.routes.scheduler import router as scheduler_router
 from api.routes.scrape import router as scrape_router
 from src.scheduling.jobs import set_app_state
 from src.scheduling.scheduler import (
@@ -108,6 +109,7 @@ def create_app() -> FastAPI:
     # Include routers
     app.include_router(events_router)
     app.include_router(health_router)
+    app.include_router(scheduler_router)
     app.include_router(scrape_router)
 
     return app
