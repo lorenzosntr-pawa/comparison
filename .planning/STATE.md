@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 5 complete — Scheduled Scraping
+**Current focus:** Phase 6 — React Foundation
 
 ## Current Position
 
-Phase: 5 of 8 (Scheduled Scraping)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 — Completed 05-02-PLAN.md (Scheduler Status & Control)
+Phase: 6 of 8 (React Foundation)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-01-20 — Completed 06-01-PLAN.md (Project Setup)
 
-Progress: ██████░░░░ 60%
+Progress: ██████░░░░ 63%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 6 min
-- Total execution time: 1.7 hours
+- Total execution time: 1.8 hours
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: ██████░░░░ 60%
 | 03 Scraper Integration | 6 | 16 min | 3 min |
 | 04 Event Matching | 2 | 6 min | 3 min |
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
+| 06 React Foundation | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 3 min, 3 min, 5 min, 5 min
+- Last 5 plans: 3 min, 3 min, 5 min, 5 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -96,6 +97,12 @@ Recent decisions affecting current work:
 - IntervalTrigger with coalesce=True for missed run handling
 - Schemas package: src/api/schemas/ with __init__.py re-exporting all models
 - Query param pagination: limit with ge=/le= bounds, offset with ge=0
+- Vite: path alias via resolve.alias + tsconfig paths (both needed)
+- Vite: API proxy via server.proxy for backend communication
+- TanStack Query v5: use gcTime (not cacheTime), isPending (not isLoading)
+- TanStack Query: staleTime=5min, gcTime=10min for dashboard-appropriate caching
+- Feature-based folder structure: components/ui/layout, features/{name}, hooks, lib, types
+- cn() utility from clsx + tailwind-merge for class merging (shadcn requirement)
 
 ### Deferred Issues
 
@@ -108,5 +115,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 05-02-PLAN.md (Scheduler Status & Control) — Phase 5 complete
+Stopped at: Completed 06-01-PLAN.md (Project Setup)
 Resume file: None
