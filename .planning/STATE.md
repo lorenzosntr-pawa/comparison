@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 2 of 8 (Database Schema)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 02-01-PLAN.md (Database Foundation)
+Last activity: 2026-01-20 — Completed 02-02-PLAN.md (Odds Snapshot Models)
 
-Progress: █░░░░░░░░░ 14.6%
+Progress: ██░░░░░░░░ 16.7%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 7 min
-- Total execution time: 0.83 hours
+- Total execution time: 0.97 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
-| 02 Database Schema | 1 | 5 min | 5 min |
+| 02 Database Schema | 2 | 13 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 10 min, 8 min, 4 min, 8 min, 5 min
+- Last 5 plans: 8 min, 4 min, 8 min, 5 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -61,6 +61,9 @@ Recent decisions affecting current work:
 - SQLAlchemy: DeclarativeBase with MetaData(naming_convention=convention)
 - SQLAlchemy: Mapped[] + mapped_column() for all columns
 - SQLAlchemy: back_populates for bidirectional relationships
+- BigInteger PK for tables that will be partitioned by timestamp
+- JSONB (via JSON type) for variable-structure data like API responses
+- StrEnum for status fields (type safety + string storage)
 
 ### Deferred Issues
 
@@ -73,5 +76,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 02-01-PLAN.md (Database Foundation)
+Stopped at: Completed 02-02-PLAN.md (Odds Snapshot Models)
 Resume file: None
