@@ -45,6 +45,8 @@ async def trigger_scrape(
     include_data = detail == "full"
     result = await orchestrator.scrape_all(
         platforms=body.platforms if body else None,
+        sport_id=body.sport_id if body else None,
+        competition_id=body.competition_id if body else None,
         include_data=include_data,
         timeout=float(timeout),
     )

@@ -33,6 +33,8 @@ class ScrapingOrchestrator:
     async def scrape_all(
         self,
         platforms: list[Platform] | None = None,
+        sport_id: str | None = None,
+        competition_id: str | None = None,
         include_data: bool = False,
         timeout: float = 30.0,
     ) -> ScrapeResult:
@@ -43,6 +45,8 @@ class ScrapingOrchestrator:
 
         Args:
             platforms: List of platforms to scrape (default: all).
+            sport_id: Filter to specific sport (e.g., "2" for football).
+            competition_id: Filter to specific competition.
             include_data: Whether to include raw event data in results.
             timeout: Per-platform timeout in seconds.
 
@@ -54,7 +58,9 @@ class ScrapingOrchestrator:
 
         # Create tasks for each platform
         tasks = [
-            self._scrape_platform(platform, include_data, timeout)
+            self._scrape_platform(
+                platform, sport_id, competition_id, include_data, timeout
+            )
             for platform in target_platforms
         ]
 
@@ -114,6 +120,8 @@ class ScrapingOrchestrator:
     async def _scrape_platform(
         self,
         platform: Platform,
+        sport_id: str | None,
+        competition_id: str | None,
         include_data: bool,
         timeout: float,
     ) -> tuple[list[dict], int]:
@@ -121,6 +129,8 @@ class ScrapingOrchestrator:
 
         Args:
             platform: Platform to scrape.
+            sport_id: Filter to specific sport (e.g., "2" for football).
+            competition_id: Filter to specific competition.
             include_data: Whether to return event data.
             timeout: Timeout in seconds.
 
@@ -137,10 +147,12 @@ class ScrapingOrchestrator:
             client = self._clients[platform]
 
             # For now, check health as a simple scrape operation
-            # Full implementation will fetch actual events
+            # Full implementation will fetch actual events using filters
+            # Filters (sport_id, competition_id) are accepted but not yet
+            # fully implemented for event fetching
             if platform == Platform.BETPAWA:
                 # BetPawa has fetch_categories - use that for discovery
-                result = await client.fetch_categories()
+                await client.fetch_categories()
                 # Return empty list for now - actual event fetching will be enhanced
                 return []
             elif platform == Platform.SPORTYBET:
