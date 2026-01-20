@@ -16,7 +16,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div>
-        <h1>Betpawa Odds Comparison</h1>
+        <h1 className="text-2xl font-bold text-blue-600">Betpawa Odds Comparison</h1>
         <p>React 19 + TanStack Query ready</p>
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
