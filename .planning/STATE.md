@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 1 of 8 (Market Mapping Port)
-Plan: 02 of 6 in current phase
+Plan: 03 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 01-02-PLAN.md (Market mappings registry)
+Last activity: 2026-01-20 — Completed 01-03-PLAN.md (Parser utilities)
 
-Progress: ██░░░░░░░░ 10%
+Progress: ██░░░░░░░░ 12%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 7.5 min
-- Total execution time: 0.25 hours
+- Total plans completed: 3
+- Average duration: 8 min
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 Market Mapping Port | 2 | 15 min | 7.5 min |
+| 01 Market Mapping Port | 3 | 25 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 7 min, 8 min
+- Last 5 plans: 7 min, 8 min, 10 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -44,6 +44,8 @@ Recent decisions affecting current work:
 - Use MappingError exception class instead of TypeScript Result pattern
 - Use tuple instead of list for immutable sequences in frozen models
 - Use ConfigDict with alias_generator for camelCase API field mapping
+- Use frozen dataclasses (not Pydantic) for simple parsed value objects
+- Pre-compile regex patterns at module level for performance
 
 ### Patterns Established
 
@@ -64,5 +66,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Plan 01-02 complete (Market mappings registry)
+Stopped at: Plan 01-03 complete (Parser utilities)
 Resume file: None
