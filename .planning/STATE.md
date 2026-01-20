@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 3 complete — Ready for Phase 4
+**Current focus:** Phase 4 in progress — Event Matching Service
 
 ## Current Position
 
-Phase: 3 of 8 (Scraper Integration)
-Plan: 6 of 6 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 — Completed 03-06-PLAN.md (Database Integration)
+Phase: 4 of 8 (Event Matching Service)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-20 — Completed 04-01-PLAN.md (Event Matching Service)
 
-Progress: ██████░░░░ 43%
+Progress: ██████░░░░ 46%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 6 min
 - Total execution time: 1.5 hours
 
@@ -30,9 +30,10 @@ Progress: ██████░░░░ 43%
 | 01 Market Mapping Port | 6 | 45 min | 8 min |
 | 02 Database Schema | 3 | 21 min | 7 min |
 | 03 Scraper Integration | 6 | 16 min | 3 min |
+| 04 Event Matching | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 2 min, 2 min, 2 min, 3 min
+- Last 5 plans: 2 min, 2 min, 2 min, 3 min, 3 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - Filter pass-through from endpoint to orchestrator (sport_id, competition_id)
 - DB session pass-through to orchestrator for error logging
 - Bookmaker auto-creation on first use via _get_bookmaker_id
+- insert().on_conflict_do_update(index_elements=[...]) for sportradar_id upserts
+- Betpawa-first metadata priority: Betpawa updates, competitors insert-only (except kickoff)
+- Tournament cache dict in batch processing for efficiency
 
 ### Deferred Issues
 
@@ -94,5 +98,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-06-PLAN.md (Database Integration) - Phase 3 complete
+Stopped at: Completed 04-01-PLAN.md (Event Matching Service)
 Resume file: None

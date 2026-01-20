@@ -61,8 +61,10 @@ None
 ### Phase 4: Event Matching Service
 **Goal**: Implement cross-platform event matching using SportRadar IDs from all three bookmakers
 **Depends on**: Phase 3 (needs scraped data available)
-**Research**: Unlikely (logic already defined in brief)
-**Plans**: TBD
+**Research**: Complete (04-RESEARCH.md)
+**Plans**:
+- Plan 01: Event matching service (COMPLETE - 04-01-SUMMARY.md)
+- Plan 02: Orchestrator integration (04-02-PLAN.md)
 
 ### Phase 5: Scheduled Scraping
 **Goal**: Implement background scheduler for periodic scraping with configurable intervals and failure handling
@@ -100,7 +102,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Market Mapping Port | 6/6 | Complete | 2026-01-20 |
 | 2. Database Schema | 3/3 | Complete | 2026-01-20 |
 | 3. Scraper Integration | 6/6 | Complete | 2026-01-20 |
-| 4. Event Matching Service | 0/TBD | Not started | - |
+| 4. Event Matching Service | 1/2 | In progress | - |
 | 5. Scheduled Scraping | 0/TBD | Not started | - |
 | 6. React Foundation | 0/TBD | Not started | - |
 | 7. Match Views | 0/TBD | Not started | - |
