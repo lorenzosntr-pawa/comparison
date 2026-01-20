@@ -1,0 +1,78 @@
+// Health endpoint types
+export interface PlatformHealth {
+  platform: string
+  status: 'healthy' | 'unhealthy'
+  response_time_ms?: number
+  error?: string
+}
+
+export interface HealthResponse {
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  database: 'connected' | 'disconnected'
+  platforms: PlatformHealth[]
+}
+
+// Scheduler types
+export interface JobStatus {
+  id: string
+  next_run: string | null
+  trigger_type: string
+  interval_minutes: number | null
+}
+
+export interface SchedulerStatus {
+  running: boolean
+  jobs: JobStatus[]
+}
+
+export interface RunHistoryEntry {
+  id: number
+  status: 'pending' | 'running' | 'completed' | 'partial' | 'failed'
+  started_at: string
+  completed_at: string | null
+  events_scraped: number
+  events_failed: number
+  trigger: string
+  duration_seconds: number | null
+}
+
+export interface RunHistoryResponse {
+  runs: RunHistoryEntry[]
+  total: number
+}
+
+export interface SchedulerPlatformHealth {
+  platform: string
+  healthy: boolean
+  last_success: string | null
+}
+
+// Events types
+export interface BookmakerOdds {
+  bookmaker_slug: string
+  bookmaker_name: string
+  external_event_id: string
+  event_url: string | null
+  has_odds: boolean
+}
+
+export interface MatchedEvent {
+  id: number
+  sportradar_id: string
+  name: string
+  home_team: string
+  away_team: string
+  kickoff: string
+  tournament_id: number
+  tournament_name: string
+  sport_name: string
+  bookmakers: BookmakerOdds[]
+  created_at: string
+}
+
+export interface MatchedEventList {
+  events: MatchedEvent[]
+  total: number
+  page: number
+  page_size: number
+}
