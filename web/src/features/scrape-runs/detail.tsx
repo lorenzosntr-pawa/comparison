@@ -8,10 +8,17 @@ import { useScrapeRunDetail } from './hooks'
 import { PlatformBreakdown, ErrorList, RetryDialog } from './components'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
-import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2, RotateCcw, CheckCircle2 } from 'lucide-react'
 
 // All platforms for determining which ones failed
-const ALL_PLATFORMS = ['betpawa', 'sportybet', 'bet9ja']
+const ALL_PLATFORMS = ['betpawa', 'sportybet', 'bet9ja'] as const
+
+// Platform-specific colors for progress visualization
+const PLATFORM_COLORS: Record<string, { bg: string; text: string }> = {
+  betpawa: { bg: 'bg-green-500', text: 'text-green-500' },
+  sportybet: { bg: 'bg-blue-500', text: 'text-blue-500' },
+  bet9ja: { bg: 'bg-orange-500', text: 'text-orange-500' },
+}
 
 const statusVariants: Record<
   string,
@@ -159,14 +166,68 @@ export function ScrapeRunDetailPage() {
       {isRunning && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
           <Card className="border-primary/50 bg-primary/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>
-                  This scrape run is currently in progress. Live progress tracking
-                  is available when you trigger a new scrape from the dashboard.
-                </span>
+                <CardTitle className="text-base">Scraping in Progress</CardTitle>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {ALL_PLATFORMS.map((platform) => {
+                const timing = data.platform_timings?.[platform]
+                const isComplete = !!timing
+                const colors = PLATFORM_COLORS[platform]
+
+                // Determine if this platform is currently active
+                // (first incomplete platform in order)
+                const completedPlatforms = ALL_PLATFORMS.filter(p => data.platform_timings?.[p])
+                const currentIndex = completedPlatforms.length
+                const platformIndex = ALL_PLATFORMS.indexOf(platform)
+                const isActive = !isComplete && platformIndex === currentIndex
+
+                return (
+                  <div key={platform} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={cn(
+                        'font-medium capitalize',
+                        isActive && colors.text
+                      )}>
+                        {platform}
+                        {isActive && (
+                          <Loader2 className="ml-1.5 inline h-3 w-3 animate-spin" />
+                        )}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {timing ? (
+                          <>
+                            {timing.events_count} events
+                            <CheckCircle2 className="ml-1.5 inline h-3.5 w-3.5 text-green-500" />
+                          </>
+                        ) : isActive ? (
+                          'Scraping...'
+                        ) : (
+                          'Pending'
+                        )}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-secondary">
+                      <div
+                        className={cn(
+                          'h-1.5 rounded-full transition-all duration-500',
+                          isComplete ? colors.bg :
+                          isActive ? `${colors.bg} animate-pulse` :
+                          'bg-muted-foreground/30'
+                        )}
+                        style={{
+                          width: isComplete ? '100%' :
+                                 isActive ? '60%' :
+                                 '0%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </CardContent>
           </Card>
         </div>
