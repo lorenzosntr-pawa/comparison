@@ -1,6 +1,6 @@
 """Scrape API endpoints for triggering and monitoring scrape operations."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
@@ -79,7 +79,7 @@ async def trigger_scrape(
 
     # Update ScrapeRun with results
     scrape_run.status = _STATUS_MAP[result.status]
-    scrape_run.completed_at = datetime.now(timezone.utc)
+    scrape_run.completed_at = datetime.utcnow()
     scrape_run.events_scraped = result.total_events
     scrape_run.events_failed = sum(
         1 for p in result.platforms if not p.success
@@ -124,7 +124,7 @@ async def get_scrape_status(
 
     return ScrapeStatusResponse(
         scrape_run_id=scrape_run.id,
-        status=scrape_run.status.value,
+        status=scrape_run.status,
         started_at=scrape_run.started_at,
         completed_at=scrape_run.completed_at,
         events_scraped=scrape_run.events_scraped,
