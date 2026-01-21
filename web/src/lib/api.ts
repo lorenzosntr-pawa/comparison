@@ -4,6 +4,7 @@ import type {
   RunHistoryResponse,
   SchedulerPlatformHealth,
   MatchedEventList,
+  EventDetailResponse,
 } from '@/types/api'
 
 const API_BASE = '/api'
@@ -86,4 +87,7 @@ export const api = {
     const query = searchParams.toString()
     return fetchJson<MatchedEventList>(`/events${query ? `?${query}` : ''}`)
   },
+
+  getEventDetail: (id: number) =>
+    fetchJson<EventDetailResponse>(`/events/${id}`),
 }

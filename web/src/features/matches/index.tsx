@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -7,9 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MatchTable, MatchFilters, ColumnSettings } from './components'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid } from './components'
 import type { MatchFiltersState } from './components'
-import { useMatches, useColumnSettings } from './hooks'
+import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
   tournamentId: undefined,
@@ -157,12 +160,65 @@ export function MatchList() {
 }
 
 export function MatchDetail() {
+  const { id } = useParams<{ id: string }>()
+  const eventId = id ? parseInt(id, 10) : undefined
+
+  const { data: event, isPending, error } = useMatchDetail(eventId)
+
+  if (isPending) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-6 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Markets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 text-red-500 bg-red-50 rounded-md">
+        Failed to load match details: {error.message}
+      </div>
+    )
+  }
+
+  if (!event) {
+    return (
+      <div className="p-4 text-muted-foreground">Match not found.</div>
+    )
+  }
+
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Match Detail</h1>
-      <p className="text-muted-foreground">
-        Detailed market odds comparison will appear here.
-      </p>
+      <MatchHeader event={event} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Markets</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MarketGrid marketsByBookmaker={event.markets_by_bookmaker} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

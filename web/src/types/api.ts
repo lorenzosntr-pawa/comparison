@@ -88,3 +88,29 @@ export interface MatchedEventList {
   page: number
   page_size: number
 }
+
+// Event detail types
+export interface MarketOutcome {
+  name: string
+  odds: number
+  is_active: boolean
+}
+
+export interface MarketOddsDetail {
+  betpawa_market_id: string
+  betpawa_market_name: string
+  line: number | null
+  outcomes: MarketOutcome[]
+  margin: number
+}
+
+export interface BookmakerMarketData {
+  bookmaker_slug: string
+  bookmaker_name: string
+  snapshot_time: string
+  markets: MarketOddsDetail[]
+}
+
+export interface EventDetailResponse extends MatchedEvent {
+  markets_by_bookmaker: BookmakerMarketData[]
+}
