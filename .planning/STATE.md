@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 7 — Match Views (Phase 7.2 complete)
+**Current focus:** Phase 7 complete — Ready for Phase 8
 
 ## Current Position
 
-Phase: 7 of 8 (Match Views)
+Phase: 7 of 8 (Match Views) - COMPLETE
 Plan: 3 of 3 in current phase
-Status: In progress (07-01, 07-02 complete; 07-03 pending)
-Last activity: 2026-01-21 — Completed 07.2-03-PLAN.md (Phase 7.2 complete)
+Status: Phase complete
+Last activity: 2026-01-21 — Completed 07-03-PLAN.md (Phase 7 complete)
 
-Progress: █████████░ 93%
+Progress: █████████░ 97%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29
+- Total plans completed: 30
 - Average duration: 6 min
-- Total execution time: 2.5 hours
+- Total execution time: 2.6 hours
 
 **By Phase:**
 
@@ -34,12 +34,12 @@ Progress: █████████░ 93%
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
 | 06 React Foundation | 4 | 20 min | 5 min |
 | 06.1 Cross-Platform Scraping | 1 | 8 min | 8 min |
-| 07 Match Views | 2+2fix | 24 min | 5 min |
+| 07 Match Views | 3+2fix | 32 min | 6 min |
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 8 min, 8 min, 8 min, 3 min
+- Last 5 plans: 8 min, 8 min, 8 min, 3 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -130,6 +130,10 @@ Recent decisions affecting current work:
 - Client-side tournament sorting (API sorts by kickoff)
 - AsyncGenerator pattern for SSE streaming from FastAPI
 - EventSource API for browser SSE consumption in React hooks
+- Three-column bookmaker comparison grid: Market | Betpawa | SportyBet | Bet9ja
+- OddsBadge component: green=best odds, red=worst (>3% worse)
+- MarginIndicator: percentage with comparison coloring (lower margin = better)
+- Competitive position metric: "X/Y best odds (Z%)" for quick assessment
 
 ### Roadmap Evolution
 
@@ -148,5 +152,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 07.2-03-PLAN.md (Phase 7.2 complete)
-Resume file: .planning/phases/07.2-scraping-performance/07.2-03-SUMMARY.md
+Stopped at: Completed 07-03-PLAN.md (Phase 7 complete)
+Resume file: .planning/phases/07-match-views/07-03-SUMMARY.md
