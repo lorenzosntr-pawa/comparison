@@ -1,13 +1,14 @@
+import { useCallback } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useScrapeRunDetail } from './hooks'
-import { PlatformBreakdown, ErrorList } from './components'
+import { PlatformBreakdown, ErrorList, LiveProgressPanel } from './components'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
-import { ArrowLeft, Clock, Calendar, Zap, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2 } from 'lucide-react'
 
 const statusVariants: Record<
   string,
@@ -37,7 +38,16 @@ function formatDuration(
 export function ScrapeRunDetailPage() {
   const { id } = useParams<{ id: string }>()
   const runId = Number(id)
-  const { data, isPending, error } = useScrapeRunDetail(runId)
+  const { data, isPending, error, refetch } = useScrapeRunDetail(runId, {
+    pollWhileRunning: true, // Auto-refresh when scrape is running
+  })
+
+  const handleScrapeComplete = useCallback(() => {
+    // Refetch run detail to get final state after scrape completes
+    refetch()
+  }, [refetch])
+
+  const isRunning = data?.status === 'running'
 
   if (isPending) {
     return (
@@ -92,8 +102,25 @@ export function ScrapeRunDetailPage() {
         </div>
       </div>
 
+      {/* Live Progress Panel (shown when run is active) */}
+      {isRunning && (
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span>
+                  This scrape run is currently in progress. Live progress tracking
+                  is available when you trigger a new scrape from the dashboard.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Summary Card */}
-      <Card>
+      <Card className={cn(isRunning && 'opacity-75')}>
         <CardHeader>
           <CardTitle>Summary</CardTitle>
         </CardHeader>
@@ -169,7 +196,9 @@ export function ScrapeRunDetailPage() {
       </Card>
 
       {/* Platform Breakdown */}
-      <PlatformBreakdown timings={data.platform_timings} />
+      <div className={cn(isRunning && 'opacity-50')}>
+        <PlatformBreakdown timings={data.platform_timings} />
+      </div>
 
       {/* Errors (if any) */}
       {data.errors && data.errors.length > 0 && (

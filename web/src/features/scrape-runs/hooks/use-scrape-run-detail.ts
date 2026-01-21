@@ -24,11 +24,24 @@ export interface ScrapeRunDetail {
   errors: ScrapeError[] | null
 }
 
-export function useScrapeRunDetail(id: number) {
+interface UseScrapeRunDetailOptions {
+  /** Enable polling when scrape is running (default: false) */
+  pollWhileRunning?: boolean
+}
+
+export function useScrapeRunDetail(id: number, options?: UseScrapeRunDetailOptions) {
+  const { pollWhileRunning = false } = options ?? {}
+
   return useQuery({
     queryKey: ['scrape-run', id],
     queryFn: () => api.get<ScrapeRunDetail>(`/scrape/${id}`),
     staleTime: 60_000,
     enabled: !isNaN(id),
+    // Poll every 5 seconds when running (if enabled)
+    refetchInterval: (query) => {
+      if (!pollWhileRunning) return false
+      const data = query.state.data
+      return data?.status === 'running' ? 5000 : false
+    },
   })
 }
