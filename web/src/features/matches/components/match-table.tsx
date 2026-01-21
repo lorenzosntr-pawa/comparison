@@ -18,6 +18,27 @@ const BOOKMAKER_LABELS: Record<string, string> = {
   bet9ja: 'B9',
 }
 
+// Static color classes for Tailwind JIT compilation
+// Dynamic classes like `bg-green-500/${opacity}` don't work with Tailwind JIT
+const COLOR_CLASSES = {
+  green: {
+    10: 'bg-green-500/10',
+    20: 'bg-green-500/20',
+    30: 'bg-green-500/30',
+    40: 'bg-green-500/40',
+    50: 'bg-green-500/50',
+  },
+  red: {
+    10: 'bg-red-500/10',
+    20: 'bg-red-500/20',
+    30: 'bg-red-500/30',
+    40: 'bg-red-500/40',
+    50: 'bg-red-500/50',
+  },
+} as const
+
+type OpacityLevel = 10 | 20 | 30 | 40 | 50
+
 interface MatchTableProps {
   events: MatchedEvent[]
   isLoading?: boolean
@@ -79,15 +100,13 @@ function OddsValue({
 
     if (Math.abs(delta) > tolerance) {
       const intensity = Math.min(Math.abs(delta) * 25, 1)
-      const opacityLevel = Math.max(Math.ceil(intensity * 5) * 10, 10)
-
-      if (delta > tolerance) {
-        // Betpawa higher (better for punter)
-        bgClass = `bg-green-500/${opacityLevel}`
-      } else {
-        // Betpawa lower (worse for punter)
-        bgClass = `bg-red-500/${opacityLevel}`
-      }
+      // Clamp to valid opacity levels (10, 20, 30, 40, 50)
+      const opacityLevel = Math.min(
+        Math.max(Math.ceil(intensity * 5) * 10, 10),
+        50
+      ) as OpacityLevel
+      const color = delta > tolerance ? 'green' : 'red'
+      bgClass = COLOR_CLASSES[color][opacityLevel]
     }
   }
 
