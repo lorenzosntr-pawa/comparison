@@ -93,6 +93,7 @@ class ScrapingOrchestrator:
             if isinstance(result, Exception):
                 # Platform failed - log error to database if session provided
                 if db and scrape_run_id:
+                    await db.rollback()  # Clear any failed transaction state
                     await self._log_error(db, scrape_run_id, platform, result)
                 platform_results.append(
                     PlatformResult(
@@ -116,7 +117,8 @@ class ScrapingOrchestrator:
                         logger.exception(
                             f"Failed to store events for {platform}: {e}"
                         )
-                        if scrape_run_id:
+                        if scrape_run_id and db:
+                            await db.rollback()  # Clear failed transaction state
                             await self._log_error(
                                 db, scrape_run_id, platform, e
                             )
