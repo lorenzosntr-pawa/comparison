@@ -23,6 +23,7 @@ None
 - [x] **Phase 6.1: Cross-Platform Scraping** - Complete SportyBet/Bet9ja scraping via SportRadar IDs (INSERTED)
 - [ ] **Phase 7: Match Views** - Match list and detail views with odds comparison
 - [ ] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
+- [ ] **Phase 7.2: Scraping Performance** - Improve scraping speed and logging (INSERTED)
 - [ ] **Phase 8: Real-time Updates** - WebSocket integration for live data push
 
 ## Phase Details
@@ -119,9 +120,22 @@ None
 - BetPawa is canonical format — direct extraction, no mapping needed
 - All three bookmakers display side-by-side with color coding
 
+### Phase 7.2: Scraping Performance (INSERTED)
+**Goal**: Improve scraping speed (currently ~5min) and enhance terminal logging quality
+**Depends on**: Phase 7.1 (needs complete odds pipeline working)
+**Research**: Complete (07.2-RESEARCH.md)
+**Plans**:
+- Plan 01: Backend Performance & Timing (COMPLETE - 07.2-01-SUMMARY.md)
+- Plan 02: SSE Progress Streaming (pending)
+
+**Details:**
+- Bet9ja scraping parallelized with asyncio.gather + Semaphore(10)
+- Per-platform timing metrics stored in ScrapeRun.platform_timings
+- Bet9ja scrape time reduced from ~60s to ~7.5s
+
 ### Phase 8: Real-time Updates
 **Goal**: Implement WebSocket connection for real-time odds updates and stale data indicators
-**Depends on**: Phase 7.1 (needs complete odds pipeline)
+**Depends on**: Phase 7.2 (needs optimized scraping pipeline)
 **Research**: Likely (WebSocket patterns)
 **Research topics**: FastAPI WebSocket patterns, TanStack Query WebSocket integration, reconnection handling
 **Plans**: TBD
@@ -142,4 +156,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6.1 Cross-Platform Scraping | 1/1 | Complete | 2026-01-21 |
 | 7. Match Views | 2/3 | In progress | - |
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
+| 7.2 Scraping Performance | 1/2 | In progress | - |
 | 8. Real-time Updates | 0/TBD | Not started | - |
