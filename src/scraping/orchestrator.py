@@ -3,17 +3,25 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
+from src.db.models.bookmaker import Bookmaker
+from src.db.models.event import Event
+from src.db.models.odds import OddsSnapshot
+from src.matching.service import EventMatchingService
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
+from src.scraping.exceptions import InvalidEventIdError
 from src.scraping.schemas import Platform, PlatformResult, ScrapeResult
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 class ScrapingOrchestrator:
@@ -71,7 +79,7 @@ class ScrapingOrchestrator:
         # Create tasks for each platform
         tasks = [
             self._scrape_platform(
-                platform, sport_id, competition_id, include_data, timeout
+                platform, sport_id, competition_id, include_data, timeout, db
             )
             for platform in target_platforms
         ]
@@ -99,6 +107,20 @@ class ScrapingOrchestrator:
             else:
                 # Platform succeeded - result is (events, duration_ms)
                 events, duration_ms = result
+
+                # Store events in database if session provided
+                if db and events:
+                    try:
+                        await self._store_events(db, platform, events)
+                    except Exception as e:
+                        logger.exception(
+                            f"Failed to store events for {platform}: {e}"
+                        )
+                        if scrape_run_id:
+                            await self._log_error(
+                                db, scrape_run_id, platform, e
+                            )
+
                 platform_results.append(
                     PlatformResult(
                         platform=platform,
@@ -110,7 +132,7 @@ class ScrapingOrchestrator:
                     )
                 )
 
-        # Commit any logged errors
+        # Commit all changes (logged errors + stored events)
         if db:
             await db.commit()
 
@@ -142,6 +164,7 @@ class ScrapingOrchestrator:
         competition_id: str | None,
         include_data: bool,
         timeout: float,
+        db: AsyncSession | None = None,
     ) -> tuple[list[dict], int]:
         """Scrape a single platform with timeout.
 
@@ -151,6 +174,7 @@ class ScrapingOrchestrator:
             competition_id: Filter to specific competition.
             include_data: Whether to return event data.
             timeout: Timeout in seconds.
+            db: Optional database session (required for SportyBet/Bet9ja).
 
         Returns:
             Tuple of (events list, duration in ms).
@@ -164,23 +188,22 @@ class ScrapingOrchestrator:
         async def _do_scrape() -> list[dict]:
             client = self._clients[platform]
 
-            # For now, check health as a simple scrape operation
-            # Full implementation will fetch actual events using filters
-            # Filters (sport_id, competition_id) are accepted but not yet
-            # fully implemented for event fetching
             if platform == Platform.BETPAWA:
-                # BetPawa has fetch_categories - use that for discovery
-                await client.fetch_categories()
-                # Return empty list for now - actual event fetching will be enhanced
-                return []
+                return await self._scrape_betpawa(client, competition_id)
             elif platform == Platform.SPORTYBET:
-                # SportyBet requires specific event IDs
-                # Return empty list for now
-                return []
+                if db is None:
+                    logger.warning(
+                        "SportyBet scraping requires database session - skipping"
+                    )
+                    return []
+                return await self._scrape_sportybet(client, db)
             elif platform == Platform.BET9JA:
-                # Bet9ja has fetch_sports for discovery
-                await client.fetch_sports()
-                return []
+                if db is None:
+                    logger.warning(
+                        "Bet9ja scraping requires database session - skipping"
+                    )
+                    return []
+                return await self._scrape_bet9ja(client, db)
             else:
                 return []
 
@@ -191,6 +214,320 @@ class ScrapingOrchestrator:
         duration_ms = int((end_time - start_time) * 1000)
 
         return events, duration_ms
+
+    async def _scrape_betpawa(
+        self,
+        client: BetPawaClient,
+        competition_id: str | None = None,
+    ) -> list[dict]:
+        """Scrape events from BetPawa.
+
+        Args:
+            client: BetPawa API client.
+            competition_id: Optional specific competition ID to scrape.
+
+        Returns:
+            List of event dicts in standard format for EventMatchingService.
+        """
+        events: list[dict] = []
+
+        if competition_id:
+            # Scrape specific competition
+            competitions_to_scrape = [competition_id]
+        else:
+            # Discover all football competitions
+            competitions_to_scrape = await self._get_betpawa_competitions(client)
+
+        logger.info(
+            f"Scraping {len(competitions_to_scrape)} BetPawa competitions"
+        )
+
+        for comp_id in competitions_to_scrape:
+            try:
+                comp_events = await self._scrape_betpawa_competition(
+                    client, comp_id
+                )
+                events.extend(comp_events)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to scrape BetPawa competition {comp_id}: {e}"
+                )
+                # Continue with other competitions
+
+        logger.info(f"Scraped {len(events)} events from BetPawa")
+        return events
+
+    async def _get_betpawa_competitions(
+        self,
+        client: BetPawaClient,
+    ) -> list[str]:
+        """Get list of competition IDs from BetPawa.
+
+        Args:
+            client: BetPawa API client.
+
+        Returns:
+            List of competition IDs to scrape.
+        """
+        categories_data = await client.fetch_categories("2")  # Football
+
+        competition_ids = []
+        regions = categories_data.get("regions", [])
+
+        for region in regions:
+            competitions = region.get("competitions", [])
+            for comp in competitions:
+                comp_data = comp.get("competition", {})
+                comp_id = comp_data.get("id")
+                if comp_id:
+                    competition_ids.append(str(comp_id))
+
+        return competition_ids
+
+    async def _scrape_betpawa_competition(
+        self,
+        client: BetPawaClient,
+        competition_id: str,
+    ) -> list[dict]:
+        """Scrape events from a single BetPawa competition.
+
+        Args:
+            client: BetPawa API client.
+            competition_id: Competition ID to scrape.
+
+        Returns:
+            List of event dicts in standard format.
+        """
+        events_response = await client.fetch_events(
+            competition_id=competition_id,
+            state="UPCOMING",
+            page=1,
+            size=100,
+        )
+
+        events = []
+        responses = events_response.get("responses", [])
+
+        if not responses:
+            return events
+
+        first_response = responses[0]
+        events_data = first_response.get("responses", [])
+
+        for event_data in events_data:
+            parsed = self._parse_betpawa_event(event_data)
+            if parsed:
+                events.append(parsed)
+
+        return events
+
+    def _parse_betpawa_event(self, data: dict) -> dict | None:
+        """Parse a BetPawa event into standard format.
+
+        Args:
+            data: Raw event data from BetPawa API.
+
+        Returns:
+            Standardized event dict, or None if cannot parse.
+        """
+        # Extract SportRadar ID from widgets
+        widgets = data.get("widgets", [])
+        sportradar_id = None
+        for widget in widgets:
+            if widget.get("type") == "SPORTRADAR":
+                sportradar_id = widget.get("id")
+                break
+
+        if not sportradar_id:
+            # Cannot match without SportRadar ID
+            return None
+
+        # Extract participants
+        participants = data.get("participants", [])
+        home_team = ""
+        away_team = ""
+        for p in participants:
+            position = p.get("position", 0)
+            name = p.get("name", "")
+            if position == 1:
+                home_team = name
+            elif position == 2:
+                away_team = name
+
+        if not home_team or not away_team:
+            return None
+
+        # Parse kickoff time
+        start_time_str = data.get("startTime", "")
+        try:
+            # BetPawa uses ISO 8601 format
+            kickoff = datetime.fromisoformat(
+                start_time_str.replace("Z", "+00:00")
+            )
+            # Convert to naive UTC for database
+            kickoff = kickoff.replace(tzinfo=None)
+        except (ValueError, AttributeError):
+            return None
+
+        event_id = str(data.get("id", ""))
+        event_name = data.get("name", f"{home_team} - {away_team}")
+
+        # Extract competition info from event data
+        # BetPawa events list includes competition in the response
+        competition = data.get("competition", {})
+        comp_name = competition.get("name", "Unknown")
+        comp_id = competition.get("id")
+
+        # Region/country info
+        region = data.get("region", {})
+        country = region.get("name")
+
+        return {
+            "sportradar_id": sportradar_id,
+            "name": event_name,
+            "home_team": home_team,
+            "away_team": away_team,
+            "kickoff": kickoff,
+            "external_event_id": event_id,
+            "event_url": f"https://www.betpawa.ng/event/{event_id}",
+            "tournament": {
+                "sportradar_id": str(comp_id) if comp_id else None,
+                "name": comp_name,
+                "sport_id": 1,  # Football
+                "country": country,
+            },
+        }
+
+    async def _scrape_sportybet(
+        self,
+        client: SportyBetClient,
+        db: AsyncSession,
+    ) -> list[dict]:
+        """Scrape events from SportyBet via SportRadar ID lookup.
+
+        Queries database for events with SportRadar IDs and fetches
+        corresponding odds from SportyBet.
+
+        Args:
+            client: SportyBet API client.
+            db: Async database session for event lookup.
+
+        Returns:
+            List of event dicts with raw_data for OddsSnapshot storage.
+        """
+        events: list[dict] = []
+
+        # Query for upcoming events with SportRadar IDs
+        result = await db.execute(
+            select(Event).where(
+                Event.sportradar_id.isnot(None),
+                Event.kickoff > datetime.now(timezone.utc).replace(tzinfo=None),
+            )
+        )
+        db_events = result.scalars().all()
+
+        logger.info(
+            f"Found {len(db_events)} events with SportRadar IDs to fetch from SportyBet"
+        )
+
+        for event in db_events:
+            # Convert SportRadar ID to SportyBet format
+            sportybet_id = f"sr:match:{event.sportradar_id}"
+
+            try:
+                raw_data = await client.fetch_event(sportybet_id)
+
+                events.append({
+                    "sportradar_id": event.sportradar_id,
+                    "external_event_id": sportybet_id,
+                    "event_url": f"https://www.sportybet.com/ng/sport/match/{sportybet_id}",
+                    "raw_data": raw_data,
+                    "event": event,  # Keep reference to DB event
+                })
+
+            except InvalidEventIdError:
+                # Event doesn't exist on SportyBet - skip
+                logger.debug(
+                    f"Event {event.sportradar_id} not found on SportyBet"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to fetch event {event.sportradar_id} from SportyBet: {e}"
+                )
+
+            # Rate limiting delay
+            await asyncio.sleep(0.1)
+
+        logger.info(f"Scraped {len(events)} events from SportyBet")
+        return events
+
+    async def _store_events(
+        self,
+        db: AsyncSession,
+        platform: Platform,
+        events: list[dict],
+    ) -> None:
+        """Store scraped events in the database.
+
+        Uses EventMatchingService to upsert events with proper matching logic.
+        For SportyBet, creates EventBookmaker links and OddsSnapshot records
+        since events already exist from BetPawa scraping.
+
+        Args:
+            db: Database session.
+            platform: Source platform.
+            events: List of event dicts in standard format.
+        """
+        if not events:
+            return
+
+        # Get or create bookmaker
+        bookmaker_id = await self._get_bookmaker_id(db, platform)
+        if not bookmaker_id:
+            logger.error(f"Failed to get bookmaker ID for {platform}")
+            return
+
+        service = EventMatchingService()
+
+        if platform == Platform.SPORTYBET:
+            # SportyBet events already exist - just create links and snapshots
+            for event_data in events:
+                event = event_data["event"]  # DB event reference
+
+                # Create EventBookmaker link
+                await service.upsert_event_bookmaker(
+                    db=db,
+                    event_id=event.id,
+                    bookmaker_id=bookmaker_id,
+                    external_event_id=event_data["external_event_id"],
+                    event_url=event_data.get("event_url"),
+                )
+
+                # Create OddsSnapshot with raw response
+                snapshot = OddsSnapshot(
+                    event_id=event.id,
+                    bookmaker_id=bookmaker_id,
+                    raw_response=event_data.get("raw_data"),
+                )
+                db.add(snapshot)
+
+            logger.info(
+                f"Stored {len(events)} event links and snapshots for {platform}"
+            )
+            return
+
+        # Use EventMatchingService to process events (BetPawa and Bet9ja)
+        result = await service.process_scraped_events(
+            db=db,
+            platform=platform,
+            bookmaker_id=bookmaker_id,
+            events=events,
+        )
+
+        logger.info(
+            f"Stored {result.new_events} new, {result.updated_events} updated "
+            f"events for {platform} ({result.new_tournaments} new tournaments)"
+        )
 
     async def check_all_health(self) -> dict[Platform, bool]:
         """Check health of all platforms concurrently.
