@@ -1,8 +1,10 @@
 """Scrape API endpoints for triggering and monitoring scrape operations."""
 
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -113,6 +115,65 @@ async def trigger_scrape(
         platforms=result.platforms,
         total_events=result.total_events,
         events=events if include_data else None,
+    )
+
+
+@router.get("/stream")
+async def stream_scrape(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    timeout: int = Query(
+        default=300,
+        ge=5,
+        le=600,
+        description="Timeout per platform in seconds",
+    ),
+) -> StreamingResponse:
+    """Stream scrape progress via Server-Sent Events.
+
+    Connect via EventSource in browser to receive real-time progress updates.
+    Each event is a JSON object with platform, phase, counts, and message.
+
+    Returns SSE stream with progress updates for each platform as scraping runs.
+    """
+    # Create ScrapeRun record
+    scrape_run = ScrapeRun(status=ScrapeStatus.RUNNING, trigger="api-stream")
+    db.add(scrape_run)
+    await db.commit()
+    await db.refresh(scrape_run)
+
+    # Build orchestrator
+    sportybet = SportyBetClient(request.app.state.sportybet_client)
+    betpawa = BetPawaClient(request.app.state.betpawa_client)
+    bet9ja = Bet9jaClient(request.app.state.bet9ja_client)
+    orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+
+    async def event_generator():
+        try:
+            async for progress in orchestrator.scrape_with_progress(
+                timeout=float(timeout),
+                scrape_run_id=scrape_run.id,
+                db=db,
+            ):
+                if await request.is_disconnected():
+                    break
+                yield f"data: {progress.model_dump_json()}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'phase': 'failed', 'message': str(e)})}\n\n"
+        finally:
+            # Update ScrapeRun on completion
+            scrape_run.status = ScrapeStatus.COMPLETED
+            scrape_run.completed_at = datetime.utcnow()
+            await db.commit()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        },
     )
 
 
