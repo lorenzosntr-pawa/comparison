@@ -127,12 +127,14 @@ None
 **Plans**:
 - Plan 01: Backend Performance & Timing (COMPLETE - 07.2-01-SUMMARY.md)
 - Plan 02: SSE Progress Streaming (COMPLETE - 07.2-02-SUMMARY.md)
+- Plan 03: Frontend Scrape Runs UI (COMPLETE - 07.2-03-SUMMARY.md)
 
 **Details:**
 - Bet9ja scraping parallelized with asyncio.gather + Semaphore(10)
 - Per-platform timing metrics stored in ScrapeRun.platform_timings
 - Bet9ja scrape time reduced from ~60s to ~7.5s
 - SSE streaming endpoint for real-time scrape progress
+- Complete scrape runs UI with history page and detail view
 
 ### Phase 8: Real-time Updates
 **Goal**: Implement WebSocket connection for real-time odds updates and stale data indicators
@@ -157,5 +159,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6.1 Cross-Platform Scraping | 1/1 | Complete | 2026-01-21 |
 | 7. Match Views | 2/3 | In progress | - |
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
-| 7.2 Scraping Performance | 2/2 | Complete | 2026-01-21 |
+| 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
 | 8. Real-time Updates | 0/TBD | Not started | - |
