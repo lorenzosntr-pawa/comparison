@@ -56,6 +56,7 @@ export interface OutcomeOdds {
 export interface InlineOdds {
   market_id: string
   market_name: string
+  line: number | null
   outcomes: OutcomeOdds[]
 }
 
@@ -77,6 +78,7 @@ export interface MatchedEvent {
   kickoff: string
   tournament_id: number
   tournament_name: string
+  tournament_country: string | null
   sport_name: string
   bookmakers: BookmakerOdds[]
   created_at: string

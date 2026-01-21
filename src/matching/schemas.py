@@ -25,6 +25,7 @@ class InlineOdds(BaseModel):
 
     market_id: str
     market_name: str
+    line: float | None = None
     outcomes: list[OutcomeOdds]
 
 
@@ -54,6 +55,7 @@ class MatchedEvent(BaseModel):
     kickoff: datetime
     tournament_id: int
     tournament_name: str
+    tournament_country: str | None = None
     sport_name: str
     bookmakers: list[BookmakerOdds]
     created_at: datetime

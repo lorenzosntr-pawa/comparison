@@ -64,49 +64,91 @@ function getOutcomeOdds(
 }
 
 /**
- * Find Betpawa's odds for comparison.
+ * Get comparison data for color coding.
+ * Returns betpawa odds and best competitor info.
  */
-function getBetpawaOdds(
+interface ComparisonData {
+  betpawaOdds: number | null
+  bestCompetitorOdds: number | null
+  bestCompetitorSlug: string | null
+}
+
+function getComparisonData(
   bookmakers: BookmakerOdds[],
   marketId: string,
   outcomeName: string
-): number | null {
+): ComparisonData {
   const betpawa = bookmakers.find((b) => b.bookmaker_slug === 'betpawa')
-  if (!betpawa) return null
-  return getOutcomeOdds(betpawa, marketId, outcomeName)
+  const betpawaOdds = betpawa ? getOutcomeOdds(betpawa, marketId, outcomeName) : null
+
+  let bestCompetitorOdds: number | null = null
+  let bestCompetitorSlug: string | null = null
+
+  for (const b of bookmakers) {
+    if (b.bookmaker_slug === 'betpawa') continue
+    const odds = getOutcomeOdds(b, marketId, outcomeName)
+    if (odds !== null && (bestCompetitorOdds === null || odds > bestCompetitorOdds)) {
+      bestCompetitorOdds = odds
+      bestCompetitorSlug = b.bookmaker_slug
+    }
+  }
+
+  return { betpawaOdds, bestCompetitorOdds, bestCompetitorSlug }
 }
 
 /**
  * Render a single odds cell with color coding.
+ *
+ * Color coding shows competitive position:
+ * - Green on Betpawa: Betpawa has best odds
+ * - Red on Betpawa: Betpawa is worse than competitor
+ * - Green on competitor: This competitor beats Betpawa (has better odds)
  */
 function OddsValue({
   odds,
-  betpawaOdds,
-  isBetpawa,
+  bookmakerSlug,
+  comparisonData,
 }: {
   odds: number | null
-  betpawaOdds: number | null
-  isBetpawa: boolean
+  bookmakerSlug: string
+  comparisonData: ComparisonData
 }) {
   if (odds === null) {
     return <span className="text-muted-foreground text-xs">-</span>
   }
 
-  // Color coding logic
+  const isBetpawa = bookmakerSlug === 'betpawa'
+  const { betpawaOdds, bestCompetitorOdds } = comparisonData
+  const tolerance = 0.02
+
   let bgClass = ''
-  if (!isBetpawa && betpawaOdds !== null) {
-    const delta = betpawaOdds - odds
-    const tolerance = 0.02
+
+  if (isBetpawa && bestCompetitorOdds !== null && betpawaOdds !== null) {
+    // Betpawa column: compare to best competitor
+    const delta = betpawaOdds - bestCompetitorOdds
 
     if (Math.abs(delta) > tolerance) {
       const intensity = Math.min(Math.abs(delta) * 25, 1)
-      // Clamp to valid opacity levels (10, 20, 30, 40, 50)
       const opacityLevel = Math.min(
         Math.max(Math.ceil(intensity * 5) * 10, 10),
         50
       ) as OpacityLevel
+      // Green if Betpawa is better, red if worse
       const color = delta > tolerance ? 'green' : 'red'
       bgClass = COLOR_CLASSES[color][opacityLevel]
+    }
+  } else if (!isBetpawa && betpawaOdds !== null) {
+    // Competitor column: highlight if this competitor beats Betpawa
+    const delta = odds - betpawaOdds
+
+    if (delta > tolerance) {
+      // This competitor has better odds than Betpawa - highlight in green
+      const intensity = Math.min(delta * 25, 1)
+      const opacityLevel = Math.min(
+        Math.max(Math.ceil(intensity * 5) * 10, 10),
+        50
+      ) as OpacityLevel
+      bgClass = COLOR_CLASSES.green[opacityLevel]
     }
   }
 
@@ -150,26 +192,30 @@ function MarketHeader({ marketId }: { marketId: string }) {
 function MarketCells({
   bookmaker,
   marketId,
-  betpawaOdds,
+  comparisonDataByOutcome,
 }: {
   bookmaker: BookmakerOdds | undefined
   marketId: string
-  betpawaOdds: Record<string, number | null>
+  comparisonDataByOutcome: Record<string, ComparisonData>
 }) {
   const config = MARKET_CONFIG[marketId as keyof typeof MARKET_CONFIG]
   if (!config) return null
 
-  const isBetpawa = bookmaker?.bookmaker_slug === 'betpawa'
+  const bookmakerSlug = bookmaker?.bookmaker_slug ?? ''
 
   return (
     <>
       {config.outcomes.map((outcome) => {
         const odds = bookmaker ? getOutcomeOdds(bookmaker, marketId, outcome) : null
-        const bpOdds = betpawaOdds[outcome] ?? null
+        const comparisonData = comparisonDataByOutcome[outcome]
 
         return (
           <td key={outcome} className="px-2 py-2 text-center">
-            <OddsValue odds={odds} betpawaOdds={bpOdds} isBetpawa={isBetpawa} />
+            <OddsValue
+              odds={odds}
+              bookmakerSlug={bookmakerSlug}
+              comparisonData={comparisonData}
+            />
           </td>
         )
       })}
@@ -246,6 +292,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             <th className="px-3 py-3 text-left font-medium">Match</th>
             <th className="px-3 py-3 text-left font-medium whitespace-nowrap">Kickoff</th>
             <th className="px-3 py-3 text-left font-medium">Tournament</th>
+            <th className="px-3 py-3 text-left font-medium">Region</th>
             {/* Market columns grouped by bookmaker */}
             {visibleMarkets.map((marketId) => (
               <th
@@ -259,7 +306,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
           </tr>
           {/* Sub-header with bookmaker labels and outcomes */}
           <tr className="border-b bg-muted/30">
-            <th colSpan={3}></th>
+            <th colSpan={4}></th>
             {visibleMarkets.map((marketId) =>
               bookmakerOrder.map((slug) => (
                 <th
@@ -274,7 +321,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
           </tr>
           {/* Outcome headers */}
           <tr className="border-b bg-muted/10">
-            <th colSpan={3}></th>
+            <th colSpan={4}></th>
             {visibleMarkets.map((marketId) =>
               bookmakerOrder.map((slug) => (
                 <MarketHeader key={`${marketId}-${slug}-outcomes`} marketId={marketId} />
@@ -284,12 +331,12 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         </thead>
         <tbody>
           {events.map((event) => {
-            // Pre-compute betpawa odds for color coding
-            const betpawaOddsByMarket: Record<string, Record<string, number | null>> = {}
+            // Pre-compute comparison data for color coding
+            const comparisonDataByMarket: Record<string, Record<string, ComparisonData>> = {}
             visibleMarkets.forEach((marketId) => {
-              betpawaOddsByMarket[marketId] = {}
+              comparisonDataByMarket[marketId] = {}
               MARKET_CONFIG[marketId].outcomes.forEach((outcome) => {
-                betpawaOddsByMarket[marketId][outcome] = getBetpawaOdds(
+                comparisonDataByMarket[marketId][outcome] = getComparisonData(
                   event.bookmakers,
                   marketId,
                   outcome
@@ -313,6 +360,9 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                 <td className="px-3 py-3 text-sm text-muted-foreground">
                   {event.tournament_name}
                 </td>
+                <td className="px-3 py-3 text-sm text-muted-foreground">
+                  {event.tournament_country ?? '-'}
+                </td>
                 {/* Market cells */}
                 {visibleMarkets.map((marketId) =>
                   bookmakerOrder.map((slug) => {
@@ -324,7 +374,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                         key={`${event.id}-${marketId}-${slug}`}
                         bookmaker={bookmaker}
                         marketId={marketId}
-                        betpawaOdds={betpawaOddsByMarket[marketId]}
+                        comparisonDataByOutcome={comparisonDataByMarket[marketId]}
                       />
                     )
                   })

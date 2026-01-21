@@ -115,6 +115,7 @@ def _build_matched_event(
         kickoff=event.kickoff,
         tournament_id=event.tournament_id,
         tournament_name=event.tournament.name,
+        tournament_country=event.tournament.country,
         sport_name=event.tournament.sport.name,
         bookmakers=bookmakers,
         created_at=event.created_at,
