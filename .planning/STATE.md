@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 10 of 12 (Matches Page Improvements)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-21 — Completed 10-01-PLAN.md (Search and Region Column)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-21 — Completed 10-02-PLAN.md (Enhanced Match Filters)
 
-Progress: ██████████░░ 97% (36 of 37 plans complete)
+Progress: ██████████░░ 100% (37 of 37 plans complete)
 
 ## Performance Metrics
 
@@ -38,10 +38,10 @@ Progress: ██████████░░ 97% (36 of 37 plans complete)
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
-| 10 Matches Page Improvements | 1 | 5 min | 5 min |
+| 10 Matches Page Improvements | 2 | 20 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 12 min, 8 min, 5 min, 8 min, 5 min
+- Last 5 plans: 8 min, 5 min, 8 min, 5 min, 15 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -143,6 +143,9 @@ Recent decisions affecting current work:
 - Platform completion detection via platform_timings presence
 - Case-insensitive ILIKE search on multiple columns (home_team OR away_team)
 - Nullable string fields display as dash in table cells (tournament_country ?? '-')
+- Multi-select filter using Popover + Command pattern with checkboxes
+- Date preset helper functions for common date ranges (today, tomorrow, weekend, 7 days)
+- Array query parameters passed as repeated params for FastAPI list support
 
 ### Roadmap Evolution
 
@@ -162,5 +165,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 10-01-PLAN.md (Search and Region Column)
-Resume file: .planning/phases/10-matches-page-improvements/10-01-SUMMARY.md
+Stopped at: Completed 10-02-PLAN.md (Enhanced Match Filters) — Phase 10 complete
+Resume file: .planning/phases/10-matches-page-improvements/10-02-SUMMARY.md

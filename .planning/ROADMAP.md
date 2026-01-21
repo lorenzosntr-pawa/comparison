@@ -26,7 +26,7 @@ None
 - [x] **Phase 7.2: Scraping Performance** - Improve scraping speed and logging (INSERTED)
 - [x] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
 - [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
-- [ ] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
+- [x] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
 - [ ] **Phase 11: Settings Page** - Build functional settings page for tool configuration
 - [ ] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues
 
@@ -174,7 +174,7 @@ None
 **Research**: Unlikely (internal UI improvements)
 **Plans**:
 - Plan 01: Search and Region Column (COMPLETE - 10-01-SUMMARY.md)
-- Plan 02: Date Filters (pending)
+- Plan 02: Enhanced Match Filters (COMPLETE - 10-02-SUMMARY.md)
 
 **Details:**
 - Fix all filters on top of matches page (especially date filters)
@@ -225,6 +225,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
 | 8. Scrape Runs UI Improvements | 3/3 | Complete | 2026-01-21 |
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
-| 10. Matches Page Improvements | 1/2 | In progress | - |
+| 10. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
 | 11. Settings Page | 0/TBD | Not started | - |
 | 12. UI Polish | 0/TBD | Not started | - |
