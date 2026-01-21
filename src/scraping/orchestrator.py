@@ -257,7 +257,7 @@ class ScrapingOrchestrator:
         )
 
         # Use semaphore to limit concurrent competition requests (5 concurrent)
-        # Lower than event-level semaphore since each competition spawns multiple event fetches
+        # Keep low since each competition spawns ~15 parallel event fetches (5×15=75 max concurrent)
         semaphore = asyncio.Semaphore(5)
 
         async def scrape_competition(comp_id: str) -> list[dict]:
@@ -361,8 +361,8 @@ class ScrapingOrchestrator:
         if not parsed_events:
             return []
 
-        # Use semaphore to limit concurrent requests (10 parallel)
-        semaphore = asyncio.Semaphore(10)
+        # Use semaphore to limit concurrent requests (30 parallel with 100 connection pool)
+        semaphore = asyncio.Semaphore(30)
 
         async def fetch_single(parsed: dict) -> dict | None:
             """Fetch single event with rate limiting."""
@@ -378,9 +378,6 @@ class ScrapingOrchestrator:
                     )
                     # Still include event without raw_data
                     return parsed
-                finally:
-                    # Small delay after each request for rate limiting
-                    await asyncio.sleep(0.05)
 
         # Fetch all events in parallel (limited by semaphore)
         results = await asyncio.gather(
@@ -503,8 +500,8 @@ class ScrapingOrchestrator:
         if not db_events:
             return []
 
-        # Use semaphore to limit concurrent requests (10 parallel)
-        semaphore = asyncio.Semaphore(10)
+        # Use semaphore to limit concurrent requests (30 parallel with 100 connection pool)
+        semaphore = asyncio.Semaphore(30)
 
         async def fetch_single(event: Event) -> dict | None:
             """Fetch single event with rate limiting."""
@@ -529,9 +526,6 @@ class ScrapingOrchestrator:
                         f"Failed to fetch event {event.sportradar_id} from SportyBet: {e}"
                     )
                     return None
-                finally:
-                    # Small delay after each request for rate limiting
-                    await asyncio.sleep(0.05)
 
         # Fetch all events in parallel (limited by semaphore)
         results = await asyncio.gather(
