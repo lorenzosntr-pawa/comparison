@@ -1,2 +1,4 @@
 export { StatsSummary } from './stats-summary'
 export { RunsTable } from './runs-table'
+export { PlatformBreakdown } from './platform-breakdown'
+export { ErrorList } from './error-list'

@@ -1,5 +1,7 @@
 import { StatsSummary, RunsTable } from './components'
 
+export { ScrapeRunDetailPage } from './detail'
+
 export function ScrapeRunsPage() {
   return (
     <div className="space-y-6">

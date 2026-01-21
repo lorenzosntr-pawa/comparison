@@ -1,0 +1,34 @@
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+
+export interface ScrapeError {
+  id: number
+  error_type: string
+  error_message: string
+  occurred_at: string
+  platform: string | null
+}
+
+export interface ScrapeRunDetail {
+  scrape_run_id: number
+  status: string
+  started_at: string
+  completed_at: string | null
+  events_scraped: number
+  events_failed: number
+  trigger: string | null
+  platform_timings: Record<
+    string,
+    { duration_ms: number; events_count: number }
+  > | null
+  errors: ScrapeError[] | null
+}
+
+export function useScrapeRunDetail(id: number) {
+  return useQuery({
+    queryKey: ['scrape-run', id],
+    queryFn: () => api.get<ScrapeRunDetail>(`/scrape/${id}`),
+    staleTime: 60_000,
+    enabled: !isNaN(id),
+  })
+}

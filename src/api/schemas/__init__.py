@@ -3,6 +3,7 @@
 from src.api.schemas.api import (
     HealthResponse,
     PlatformHealth,
+    ScrapeErrorResponse,
     ScrapeRequest,
     ScrapeResponse,
     ScrapeStatusResponse,
@@ -21,6 +22,7 @@ __all__ = [
     # API schemas
     "HealthResponse",
     "PlatformHealth",
+    "ScrapeErrorResponse",
     "ScrapeRequest",
     "ScrapeResponse",
     "ScrapeStatusResponse",

@@ -64,6 +64,16 @@ class ScrapeResponse(BaseModel):
     )
 
 
+class ScrapeErrorResponse(BaseModel):
+    """Error details for a scrape run."""
+
+    id: int
+    error_type: str
+    error_message: str
+    occurred_at: datetime
+    platform: str | None = None
+
+
 class ScrapeStatusResponse(BaseModel):
     """Response for scrape run status check."""
 
@@ -75,8 +85,13 @@ class ScrapeStatusResponse(BaseModel):
     completed_at: datetime | None = None
     events_scraped: int = 0
     events_failed: int = 0
+    trigger: str | None = None
     platforms: list[PlatformResult] | None = None
     platform_timings: dict[str, dict] | None = Field(
         default=None,
         description="Per-platform timing: {platform: {duration_ms, events_count}}",
+    )
+    errors: list[ScrapeErrorResponse] | None = Field(
+        default=None,
+        description="List of errors that occurred during this run",
     )

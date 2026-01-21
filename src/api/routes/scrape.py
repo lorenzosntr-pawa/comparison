@@ -8,7 +8,10 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy.orm import selectinload
+
 from src.api.schemas import (
+    ScrapeErrorResponse,
     ScrapeRequest,
     ScrapeResponse,
     ScrapeRunResponse,
@@ -16,7 +19,7 @@ from src.api.schemas import (
     ScrapeStatusResponse,
 )
 from src.db.engine import get_db
-from src.db.models.scrape import ScrapeRun, ScrapeStatus
+from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.orchestrator import ScrapingOrchestrator
 
@@ -262,15 +265,31 @@ async def get_scrape_status(
 ) -> ScrapeStatusResponse:
     """Get status of a scrape run by ID.
 
-    Returns current status, counts, and timing information.
+    Returns current status, counts, timing information, and any errors.
     """
     result = await db.execute(
-        select(ScrapeRun).where(ScrapeRun.id == scrape_run_id)
+        select(ScrapeRun)
+        .options(selectinload(ScrapeRun.errors).selectinload(ScrapeError.bookmaker))
+        .where(ScrapeRun.id == scrape_run_id)
     )
     scrape_run = result.scalar_one_or_none()
 
     if not scrape_run:
         raise HTTPException(status_code=404, detail="Scrape run not found")
+
+    # Build error responses with platform name from bookmaker
+    errors = None
+    if scrape_run.errors:
+        errors = [
+            ScrapeErrorResponse(
+                id=err.id,
+                error_type=err.error_type,
+                error_message=err.error_message,
+                occurred_at=err.occurred_at,
+                platform=err.bookmaker.name if err.bookmaker else None,
+            )
+            for err in scrape_run.errors
+        ]
 
     return ScrapeStatusResponse(
         scrape_run_id=scrape_run.id,
@@ -279,5 +298,7 @@ async def get_scrape_status(
         completed_at=scrape_run.completed_at,
         events_scraped=scrape_run.events_scraped,
         events_failed=scrape_run.events_failed,
+        trigger=scrape_run.trigger,
         platform_timings=scrape_run.platform_timings,
+        errors=errors,
     )
