@@ -1,6 +1,6 @@
 """Events API endpoints for querying matched and unmatched events."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, func, select
@@ -28,7 +28,11 @@ from src.matching.schemas import (
 router = APIRouter(prefix="/events", tags=["events"])
 
 # Key market IDs for inline odds (Betpawa taxonomy)
-INLINE_MARKET_IDS = ["1", "18", "29"]  # 1X2, O/U 2.5, BTTS
+# 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
+INLINE_MARKET_IDS = ["3743", "5000", "3795"]
+
+# Market names to exclude from detail view (goalscorer markets - not focus for now)
+EXCLUDED_MARKET_PATTERNS = ["goalscorer", "scorer"]
 
 
 def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
@@ -46,6 +50,10 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
     inline_odds = []
     for market in snapshot.markets:
         if market.betpawa_market_id in INLINE_MARKET_IDS:
+            # For Over/Under (5000), only include line=2.5
+            if market.betpawa_market_id == "5000" and market.line != 2.5:
+                continue
+
             # Parse outcomes from JSONB
             outcomes = []
             if isinstance(market.outcomes, list):
@@ -59,6 +67,7 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                     InlineOdds(
                         market_id=market.betpawa_market_id,
                         market_name=market.betpawa_market_name,
+                        line=market.line,
                         outcomes=outcomes,
                     )
                 )
@@ -224,18 +233,33 @@ def _build_market_detail(market: MarketOdds) -> MarketOddsDetail:
     )
 
 
+def _is_excluded_market(market_name: str) -> bool:
+    """Check if a market should be excluded from detail view.
+
+    Args:
+        market_name: The market name to check.
+
+    Returns:
+        True if market should be excluded, False otherwise.
+    """
+    name_lower = market_name.lower()
+    return any(pattern in name_lower for pattern in EXCLUDED_MARKET_PATTERNS)
+
+
 def _build_bookmaker_market_data(
     link: EventBookmaker,
     snapshot: OddsSnapshot | None,
 ) -> BookmakerMarketData:
     """Build complete market data for a single bookmaker.
 
+    Excludes goalscorer markets and other excluded market types.
+
     Args:
         link: EventBookmaker with bookmaker relationship loaded.
         snapshot: Latest OddsSnapshot for this bookmaker, or None.
 
     Returns:
-        BookmakerMarketData with all markets.
+        BookmakerMarketData with all markets (excluding goalscorer markets).
     """
     markets = []
     snapshot_time = None
@@ -243,6 +267,9 @@ def _build_bookmaker_market_data(
     if snapshot:
         snapshot_time = snapshot.captured_at
         for market in snapshot.markets:
+            # Skip excluded markets (goalscorer, etc.)
+            if _is_excluded_market(market.betpawa_market_name):
+                continue
             markets.append(_build_market_detail(market))
 
     return BookmakerMarketData(
@@ -439,8 +466,14 @@ async def list_events(
     kickoff_to: datetime | None = Query(
         default=None, description="Filter events before this time"
     ),
+    include_started: bool = Query(
+        default=False, description="Include events that have already started"
+    ),
     min_bookmakers: int = Query(
         default=1, ge=1, le=3, description="Minimum platforms with event"
+    ),
+    search: str | None = Query(
+        default=None, description="Search by team name (home or away)"
     ),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=100),
@@ -449,6 +482,9 @@ async def list_events(
 
     Supports filtering by tournament, sport, kickoff time range,
     and minimum number of bookmakers with the event.
+
+    By default, only upcoming events are shown (kickoff > now).
+    Set include_started=true to also show events that have already started.
     """
     # Build base query
     query = select(Event).options(
@@ -458,6 +494,12 @@ async def list_events(
 
     # Count query (same filters, no eager loading)
     count_query = select(func.count()).select_from(Event)
+
+    # By default, only show upcoming events (kickoff > now)
+    if not include_started:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)  # DB stores naive UTC
+        query = query.where(Event.kickoff > now)
+        count_query = count_query.where(Event.kickoff > now)
 
     # Apply tournament filter
     if tournament_id is not None:
@@ -471,7 +513,7 @@ async def list_events(
             Tournament.sport_id == sport_id
         )
 
-    # Apply kickoff time filters
+    # Apply kickoff time filters (overrides default if provided)
     if kickoff_from is not None:
         query = query.where(Event.kickoff >= kickoff_from)
         count_query = count_query.where(Event.kickoff >= kickoff_from)
@@ -479,6 +521,18 @@ async def list_events(
     if kickoff_to is not None:
         query = query.where(Event.kickoff <= kickoff_to)
         count_query = count_query.where(Event.kickoff <= kickoff_to)
+
+    # Apply team name search filter
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            (Event.home_team.ilike(search_pattern))
+            | (Event.away_team.ilike(search_pattern))
+        )
+        count_query = count_query.where(
+            (Event.home_team.ilike(search_pattern))
+            | (Event.away_team.ilike(search_pattern))
+        )
 
     # Apply min_bookmakers filter using subquery
     if min_bookmakers > 1:
