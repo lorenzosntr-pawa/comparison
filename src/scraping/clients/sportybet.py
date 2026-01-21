@@ -99,15 +99,20 @@ class SportyBetClient:
     async def check_health(self) -> bool:
         """Check if the SportyBet API is reachable.
 
+        Uses the event endpoint with a dummy ID - any response (including
+        404/400 for invalid event) indicates the API is reachable.
+
         Returns:
             True if healthy, False otherwise.
         """
         try:
             response = await self._client.get(
-                f"{BASE_URL}/api/ng/factsCenter/sportsMenu/list",
+                f"{BASE_URL}/api/ng/factsCenter/event",
+                params={"eventId": "sr:match:1", "productId": "3"},
                 headers=HEADERS,
                 timeout=5.0,
             )
-            return response.status_code == 200
+            # Any response (even error) means API is reachable
+            return response.status_code in (200, 400, 404)
         except Exception:
             return False
