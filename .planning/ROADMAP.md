@@ -143,11 +143,17 @@ None
 ### Phase 8: Scrape Runs UI Improvements
 **Goal**: Improve scrape runs page and dashboard widget with enhanced UX and additional features
 **Depends on**: Phase 7.2 (needs scrape runs UI foundation)
-**Research**: Unlikely (internal UI improvements)
-**Plans**: TBD
+**Research**: None (internal UI, uses existing SSE infrastructure)
+**Plans**:
+- Plan 01: Live Progress Visualization (NOT STARTED)
+- Plan 02: Historical Analytics (NOT STARTED)
+- Plan 03: Platform-Specific Retry (NOT STARTED)
 
 **Details:**
-[To be added during planning]
+- Per-platform progress bars on detail page during active scrapes
+- Overall progress indicator on dashboard widget
+- Analytics charts: duration trends, success rates, event volume
+- Platform-specific retry for failed scrapes (not whole-run retry)
 
 ### Phase 9: Market Mapping Expansion
 **Goal**: Expand market mappings to correctly match more markets between SportyBet/Bet9ja and BetPawa by analyzing DB data and improving existing mappings
