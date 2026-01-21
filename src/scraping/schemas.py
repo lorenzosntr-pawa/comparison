@@ -40,3 +40,15 @@ class ScrapeResult(BaseModel):
     total_events: int = Field(
         description="Sum of events_count across successful platforms"
     )
+
+
+class ScrapeProgress(BaseModel):
+    """Progress update during scraping."""
+
+    platform: Platform | None = None  # None for overall updates
+    phase: str  # "starting", "scraping", "storing", "completed", "failed"
+    current: int  # Current platform index (0-based)
+    total: int  # Total platforms
+    events_count: int | None = None  # Events scraped so far for this platform
+    message: str | None = None  # Human-readable status message
+    timestamp: datetime = Field(default_factory=datetime.utcnow)

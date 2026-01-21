@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -20,7 +21,7 @@ from market_mapping.types.sportybet import SportybetMarket
 from src.matching.service import EventMatchingService
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.exceptions import InvalidEventIdError
-from src.scraping.schemas import Platform, PlatformResult, ScrapeResult
+from src.scraping.schemas import Platform, PlatformResult, ScrapeProgress, ScrapeResult
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -168,6 +169,127 @@ class ScrapingOrchestrator:
             completed_at=completed_at,
             platforms=platform_results,
             total_events=total_events,
+        )
+
+    async def scrape_with_progress(
+        self,
+        platforms: list[Platform] | None = None,
+        sport_id: str | None = None,
+        competition_id: str | None = None,
+        timeout: float = 30.0,
+        scrape_run_id: int | None = None,
+        db: AsyncSession | None = None,
+    ) -> AsyncGenerator[ScrapeProgress, None]:
+        """Scrape all platforms, yielding progress updates.
+
+        Same as scrape_all() but yields ScrapeProgress updates before and after
+        each platform scrape. Useful for SSE streaming to clients.
+
+        Args:
+            platforms: List of platforms to scrape (default: all).
+            sport_id: Filter to specific sport (e.g., "2" for football).
+            competition_id: Filter to specific competition.
+            timeout: Per-platform timeout in seconds.
+            scrape_run_id: Optional ScrapeRun ID for error logging.
+            db: Optional database session for error logging.
+
+        Yields:
+            ScrapeProgress updates for each stage of scraping.
+        """
+        target_platforms = platforms or list(Platform)
+        total = len(target_platforms)
+        total_events = 0
+
+        # Yield starting progress
+        yield ScrapeProgress(
+            platform=None,
+            phase="starting",
+            current=0,
+            total=total,
+            message=f"Starting scrape of {total} platforms",
+        )
+
+        # Scrape each platform sequentially for progress updates
+        for idx, platform in enumerate(target_platforms):
+            # Yield "scraping" progress before starting this platform
+            yield ScrapeProgress(
+                platform=platform,
+                phase="scraping",
+                current=idx,
+                total=total,
+                message=f"Scraping {platform.value}...",
+            )
+
+            try:
+                # Scrape this platform
+                events, duration_ms = await self._scrape_platform(
+                    platform, sport_id, competition_id, False, timeout, db
+                )
+
+                # Store events if DB session provided
+                if db and events:
+                    yield ScrapeProgress(
+                        platform=platform,
+                        phase="storing",
+                        current=idx,
+                        total=total,
+                        events_count=len(events),
+                        message=f"Storing {len(events)} {platform.value} events...",
+                    )
+
+                    try:
+                        await self._store_events(db, platform, events)
+                    except Exception as e:
+                        logger.exception(f"Failed to store events for {platform}: {e}")
+                        if scrape_run_id and db:
+                            await db.rollback()
+                            await self._log_error(db, scrape_run_id, platform, e)
+
+                total_events += len(events)
+
+                # Yield "completed" progress for this platform
+                yield ScrapeProgress(
+                    platform=platform,
+                    phase="completed",
+                    current=idx + 1,
+                    total=total,
+                    events_count=len(events),
+                    message=f"Scraped {len(events)} events from {platform.value} ({duration_ms}ms)",
+                )
+
+            except Exception as e:
+                # Log error if DB session provided
+                if db and scrape_run_id:
+                    await db.rollback()
+                    await self._log_error(db, scrape_run_id, platform, e)
+
+                # Handle TimeoutError specially
+                if isinstance(e, (TimeoutError, asyncio.TimeoutError)):
+                    error_msg = f"Platform scrape timed out after {timeout}s"
+                else:
+                    error_msg = str(e) or f"Unknown error: {type(e).__name__}"
+
+                yield ScrapeProgress(
+                    platform=platform,
+                    phase="failed",
+                    current=idx + 1,
+                    total=total,
+                    events_count=0,
+                    message=f"Failed: {error_msg}",
+                )
+
+        # Commit all changes
+        if db:
+            await db.commit()
+
+        # Yield final completion progress
+        yield ScrapeProgress(
+            platform=None,
+            phase="completed",
+            current=total,
+            total=total,
+            events_count=total_events,
+            message=f"Scrape complete: {total_events} total events from {total} platforms",
         )
 
     async def _scrape_platform(
