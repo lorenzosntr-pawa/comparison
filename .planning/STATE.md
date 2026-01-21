@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 8 of 12 (Scrape Runs UI Improvements)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-21 — Completed 08-03-PLAN.md (Platform-Specific Retry)
+Plan: 3+1fix of 3+1fix in current phase
+Status: Phase complete (UAT fixes applied)
+Last activity: 2026-01-21 — Completed 08-FIX.md (UAT Issues Fix)
 
-Progress: ██████████░░ 89% (33 of 37 plans complete)
+Progress: ██████████░░ 92% (34 of 37 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 33
+- Total plans completed: 34
 - Average duration: 6 min
-- Total execution time: 3.0 hours
+- Total execution time: 3.1 hours
 
 **By Phase:**
 
@@ -37,10 +37,10 @@ Progress: ██████████░░ 89% (33 of 37 plans complete)
 | 07 Match Views | 3+2fix | 32 min | 6 min |
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
-| 08 Scrape Runs UI Improvements | 3 | 28 min | 9 min |
+| 08 Scrape Runs UI Improvements | 3+1fix | 33 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 8 min, 8 min, 12 min, 8 min
+- Last 5 plans: 8 min, 8 min, 12 min, 8 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -137,6 +137,9 @@ Recent decisions affecting current work:
 - Competitive position metric: "X/Y best odds (Z%)" for quick assessment
 - Retry endpoint creates new run with trigger="retry:{original_id}" for audit trail
 - Failed platform detection from errors + missing platform_timings
+- PLATFORM_PROGRESS_COLORS map for dynamic Tailwind classes
+- refetchQueries for immediate data sync vs invalidateQueries
+- Platform completion detection via platform_timings presence
 
 ### Roadmap Evolution
 
@@ -156,5 +159,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-03-PLAN.md (Platform-Specific Retry) — Phase 8 complete
-Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-03-SUMMARY.md
+Stopped at: Completed 08-FIX.md (UAT Issues Fix) — Phase 8 complete with fixes
+Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-FIX-SUMMARY.md
