@@ -7,9 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { MatchTable, MatchFilters } from './components'
+import { MatchTable, MatchFilters, ColumnSettings } from './components'
 import type { MatchFiltersState } from './components'
-import { useMatches } from './hooks'
+import { useMatches, useColumnSettings } from './hooks'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
   tournamentId: undefined,
@@ -23,6 +23,14 @@ export function MatchList() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [filters, setFilters] = useState<MatchFiltersState>(DEFAULT_FILTERS)
+
+  // Column visibility settings (persisted to localStorage)
+  const {
+    visibleColumns,
+    toggleColumn,
+    showAll,
+    hideAll,
+  } = useColumnSettings()
 
   // Convert datetime-local format to ISO for API
   const apiKickoffFrom = useMemo(() => {
@@ -67,11 +75,19 @@ export function MatchList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Matches</h1>
-        {data && (
-          <span className="text-sm text-muted-foreground">
-            {data.total} matches found
-          </span>
-        )}
+        <div className="flex items-center gap-4">
+          {data && (
+            <span className="text-sm text-muted-foreground">
+              {data.total} matches found
+            </span>
+          )}
+          <ColumnSettings
+            visibleColumns={visibleColumns}
+            onToggleColumn={toggleColumn}
+            onShowAll={showAll}
+            onHideAll={hideAll}
+          />
+        </div>
       </div>
 
       {/* Filters */}
@@ -83,7 +99,11 @@ export function MatchList() {
         </div>
       )}
 
-      <MatchTable events={sortedEvents} isLoading={isPending} />
+      <MatchTable
+        events={sortedEvents}
+        isLoading={isPending}
+        visibleColumns={visibleColumns}
+      />
 
       {/* Pagination */}
       {data && data.total > 0 && (
