@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 6 complete — React Foundation
+**Current focus:** Phase 6.1 — Cross-Platform Scraping (URGENT)
 
 ## Current Position
 
-Phase: 6 of 8 (React Foundation)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 — Completed 06-04-PLAN.md (API Integration & Dashboard)
+Phase: 6.1 of 8 (Cross-Platform Scraping - INSERTED)
+Plan: 0 of 1 in current phase
+Status: Ready to execute
+Last activity: 2026-01-21 — Created 06.1-01-PLAN.md
 
 Progress: ███████░░░ 72%
 
@@ -116,9 +116,13 @@ Recent decisions affecting current work:
 - Feature hooks in features/{name}/hooks/ with index.ts re-export
 - Feature components in features/{name}/components/ with index.ts re-export
 
+### Roadmap Evolution
+
+- Phase 6.1 inserted after Phase 6: Cross-Platform Scraping (URGENT) - SportyBet/Bet9ja scraping was stubbed out, blocking cross-platform comparison
+
 ### Deferred Issues
 
-None.
+See: .planning/ISSUES.md (ISS-001 being addressed in Phase 6.1)
 
 ### Blockers/Concerns
 
@@ -126,6 +130,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-20
-Stopped at: Completed 06-04-PLAN.md (API Integration & Dashboard) — Phase 6 complete
-Resume file: None
+Last session: 2026-01-21
+Stopped at: Phase 6.1 plan created, ready for execution
+Resume file: .planning/phases/06.1-cross-platform-scraping/06.1-01-PLAN.md
