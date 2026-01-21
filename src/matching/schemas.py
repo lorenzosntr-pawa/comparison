@@ -79,3 +79,43 @@ class UnmatchedEvent(BaseModel):
     kickoff: datetime
     platform: str  # Which platform has it
     missing_on: list[str]  # Platforms that don't have it
+
+
+# Event detail schemas for full market comparison
+
+
+class OutcomeDetail(BaseModel):
+    """Detailed outcome with active status."""
+
+    name: str
+    odds: float
+    is_active: bool = True
+
+
+class MarketOddsDetail(BaseModel):
+    """Full market odds for event detail view."""
+
+    betpawa_market_id: str
+    betpawa_market_name: str
+    line: float | None = None
+    outcomes: list[OutcomeDetail]
+    margin: float | None = None  # Calculated: (sum(1/odds) - 1) * 100
+
+
+class BookmakerMarketData(BaseModel):
+    """Complete market data from a single bookmaker."""
+
+    bookmaker_slug: str
+    bookmaker_name: str
+    snapshot_time: datetime | None = None
+    markets: list[MarketOddsDetail]
+
+
+class EventDetailResponse(MatchedEvent):
+    """Extended event response with full market data per bookmaker.
+
+    Extends MatchedEvent to maintain backward compatibility while adding
+    comprehensive market comparison data.
+    """
+
+    markets_by_bookmaker: list[BookmakerMarketData] = []

@@ -13,10 +13,14 @@ from src.db.models.event import Event, EventBookmaker
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.sport import Tournament
 from src.matching.schemas import (
+    BookmakerMarketData,
     BookmakerOdds,
+    EventDetailResponse,
     InlineOdds,
+    MarketOddsDetail,
     MatchedEvent,
     MatchedEventList,
+    OutcomeDetail,
     OutcomeOdds,
     UnmatchedEvent,
 )
@@ -164,6 +168,146 @@ async def _load_latest_snapshots_for_events(
     return snapshots_by_event
 
 
+def _calculate_margin(outcomes: list[OutcomeDetail]) -> float | None:
+    """Calculate margin (overround) for a market.
+
+    Margin = (sum(1/odds) - 1) * 100
+
+    Args:
+        outcomes: List of outcomes with odds values.
+
+    Returns:
+        Margin as a percentage, or None if calculation not possible.
+    """
+    if not outcomes:
+        return None
+
+    try:
+        total_implied_prob = sum(1.0 / o.odds for o in outcomes if o.odds > 0)
+        if total_implied_prob == 0:
+            return None
+        margin = (total_implied_prob - 1) * 100
+        return round(margin, 2)
+    except (ZeroDivisionError, TypeError):
+        return None
+
+
+def _build_market_detail(market: MarketOdds) -> MarketOddsDetail:
+    """Build detailed market odds from a MarketOdds model.
+
+    Args:
+        market: MarketOdds model with outcomes.
+
+    Returns:
+        MarketOddsDetail with calculated margin.
+    """
+    outcomes = []
+    if isinstance(market.outcomes, list):
+        for outcome in market.outcomes:
+            if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
+                outcomes.append(
+                    OutcomeDetail(
+                        name=outcome["name"],
+                        odds=outcome["odds"],
+                        is_active=outcome.get("is_active", True),
+                    )
+                )
+
+    margin = _calculate_margin(outcomes)
+
+    return MarketOddsDetail(
+        betpawa_market_id=market.betpawa_market_id,
+        betpawa_market_name=market.betpawa_market_name,
+        line=market.line,
+        outcomes=outcomes,
+        margin=margin,
+    )
+
+
+def _build_bookmaker_market_data(
+    link: EventBookmaker,
+    snapshot: OddsSnapshot | None,
+) -> BookmakerMarketData:
+    """Build complete market data for a single bookmaker.
+
+    Args:
+        link: EventBookmaker with bookmaker relationship loaded.
+        snapshot: Latest OddsSnapshot for this bookmaker, or None.
+
+    Returns:
+        BookmakerMarketData with all markets.
+    """
+    markets = []
+    snapshot_time = None
+
+    if snapshot:
+        snapshot_time = snapshot.captured_at
+        for market in snapshot.markets:
+            markets.append(_build_market_detail(market))
+
+    return BookmakerMarketData(
+        bookmaker_slug=link.bookmaker.slug,
+        bookmaker_name=link.bookmaker.name,
+        snapshot_time=snapshot_time,
+        markets=markets,
+    )
+
+
+def _build_event_detail_response(
+    event: Event,
+    snapshots_by_bookmaker: dict[int, OddsSnapshot] | None = None,
+) -> EventDetailResponse:
+    """Build full event detail response with all market data.
+
+    Args:
+        event: Event model with loaded relationships.
+        snapshots_by_bookmaker: Dict mapping bookmaker_id to latest OddsSnapshot.
+
+    Returns:
+        EventDetailResponse with inline odds and full market data.
+    """
+    snapshots_by_bookmaker = snapshots_by_bookmaker or {}
+
+    # Build basic bookmaker info with inline odds
+    bookmakers = []
+    markets_by_bookmaker = []
+
+    for link in event.bookmaker_links:
+        snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
+        inline_odds = _build_inline_odds(snapshot)
+
+        bookmakers.append(
+            BookmakerOdds(
+                bookmaker_slug=link.bookmaker.slug,
+                bookmaker_name=link.bookmaker.name,
+                external_event_id=link.external_event_id,
+                event_url=link.event_url,
+                has_odds=bool(snapshot and snapshot.markets),
+                inline_odds=inline_odds,
+            )
+        )
+
+        # Build full market data for this bookmaker
+        markets_by_bookmaker.append(
+            _build_bookmaker_market_data(link, snapshot)
+        )
+
+    return EventDetailResponse(
+        id=event.id,
+        sportradar_id=event.sportradar_id,
+        name=event.name,
+        home_team=event.home_team,
+        away_team=event.away_team,
+        kickoff=event.kickoff,
+        tournament_id=event.tournament_id,
+        tournament_name=event.tournament.name,
+        sport_name=event.tournament.sport.name,
+        bookmakers=bookmakers,
+        created_at=event.created_at,
+        markets_by_bookmaker=markets_by_bookmaker,
+    )
+
+
 @router.get("/unmatched", response_model=list[UnmatchedEvent])
 async def list_unmatched_events(
     db: AsyncSession = Depends(get_db),
@@ -254,12 +398,17 @@ async def list_unmatched_events(
     return unmatched_events
 
 
-@router.get("/{event_id}", response_model=MatchedEvent)
+@router.get("/{event_id}", response_model=EventDetailResponse)
 async def get_event(
     event_id: int,
     db: AsyncSession = Depends(get_db),
-) -> MatchedEvent:
-    """Get a single event by ID with all bookmaker links and inline odds."""
+) -> EventDetailResponse:
+    """Get a single event by ID with full market odds for comparison.
+
+    Returns all bookmaker links with:
+    - Inline odds for key markets (1X2, O/U 2.5, BTTS)
+    - Full market data with all outcomes and margin calculations
+    """
     result = await db.execute(
         select(Event)
         .where(Event.id == event_id)
@@ -276,7 +425,7 @@ async def get_event(
     # Load latest odds snapshots
     snapshots_by_event = await _load_latest_snapshots_for_events(db, [event.id])
 
-    return _build_matched_event(event, snapshots_by_event.get(event.id))
+    return _build_event_detail_response(event, snapshots_by_event.get(event.id))
 
 
 @router.get("", response_model=MatchedEventList)
