@@ -6,9 +6,42 @@
 
 ## Open Issues
 
-[None - all issues resolved]
+None.
 
 ## Resolved Issues
+
+### UAT-004: Dashboard widget progress bar not showing platform colors
+
+**Discovered:** 2026-01-21
+**Resolved:** 2026-01-21
+**Phase/Plan:** 08-FIX2
+**Severity:** Minor
+**Feature:** Live Progress Visualization
+**Description:** On the dashboard widget, the progress bar doesn't change color based on which platform is currently scraping (green→blue→orange). The detail page shows correct colors but the widget doesn't.
+**Fix:** Changed color condition to only exclude overall completion (platform=null), allowing per-platform completion events to show platform colors.
+**Commit:** 4fd4e60
+
+### UAT-005: Dashboard widget status badge still has delay
+
+**Discovered:** 2026-01-21
+**Resolved:** 2026-01-21
+**Phase/Plan:** 08-FIX2
+**Severity:** Minor
+**Feature:** Live Progress Visualization
+**Description:** Status badge in the Recent Runs list still takes some time to update from "running" to "completed" after the progress bar shows completion.
+**Fix:** Added optimistic cache update via queryClient.setQueryData() before refetch for instant UI update.
+**Commit:** 4fd4e60
+
+### UAT-006: SSE streaming doesn't save platform_timings
+
+**Discovered:** 2026-01-21
+**Resolved:** 2026-01-21
+**Phase/Plan:** 08-FIX2
+**Severity:** Major
+**Feature:** Platform Breakdown on Detail Page
+**Description:** SSE streaming endpoint didn't save platform_timings, causing "Platform Breakdown" card to show no data.
+**Fix:** Added duration_ms to ScrapeProgress schema, accumulate platform_timings in /stream endpoint, save complete data in finally block.
+**Commit:** cf152d8
 
 ### UAT-001: Progress bars missing platform-specific colors
 

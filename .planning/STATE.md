@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 8 of 12 (Scrape Runs UI Improvements)
-Plan: 3+1fix of 3+1fix in current phase
-Status: Phase complete (UAT fixes applied)
-Last activity: 2026-01-21 — Completed 08-FIX.md (UAT Issues Fix)
+Plan: 3+2fix of 3+2fix in current phase
+Status: Phase complete (all UAT issues resolved)
+Last activity: 2026-01-21 — Completed 08-FIX2.md (UAT Issues Fix Round 2)
 
-Progress: ██████████░░ 92% (34 of 37 plans complete)
+Progress: ██████████░░ 95% (35 of 37 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 34
+- Total plans completed: 35
 - Average duration: 6 min
 - Total execution time: 3.1 hours
 
@@ -37,10 +37,10 @@ Progress: ██████████░░ 92% (34 of 37 plans complete)
 | 07 Match Views | 3+2fix | 32 min | 6 min |
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
-| 08 Scrape Runs UI Improvements | 3+1fix | 33 min | 8 min |
+| 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 8 min, 12 min, 8 min, 5 min
+- Last 5 plans: 8 min, 12 min, 8 min, 5 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -159,5 +159,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-FIX.md (UAT Issues Fix) — Phase 8 complete with fixes
-Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-FIX-SUMMARY.md
+Stopped at: Completed 08-FIX2.md (UAT Issues Fix Round 2) — All Phase 8 UAT issues resolved
+Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-FIX2-SUMMARY.md
