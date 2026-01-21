@@ -22,6 +22,7 @@ None
 - [x] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
 - [x] **Phase 6.1: Cross-Platform Scraping** - Complete SportyBet/Bet9ja scraping via SportRadar IDs (INSERTED)
 - [ ] **Phase 7: Match Views** - Match list and detail views with odds comparison
+- [ ] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
 - [ ] **Phase 8: Real-time Updates** - WebSocket integration for live data push
 
 ## Phase Details
@@ -106,9 +107,21 @@ None
 - Plan 02: Match List View Component (COMPLETE - 07-02-SUMMARY.md)
 - Plan 03: Match Detail View Component
 
+### Phase 7.1: Complete Odds Pipeline (INSERTED)
+**Goal**: Fix BetPawa odds storage, ensure all markets are mapped, and fix UI to display odds correctly
+**Depends on**: Phase 7 (needs match views structure in place)
+**Research**: Complete (07.1-RESEARCH.md)
+**Plans**:
+- Plan 01: Complete Odds Pipeline (COMPLETE - 07.1-01-SUMMARY.md)
+
+**Details:**
+- BetPawa odds now stored in OddsSnapshot/MarketOdds tables
+- BetPawa is canonical format — direct extraction, no mapping needed
+- All three bookmakers display side-by-side with color coding
+
 ### Phase 8: Real-time Updates
 **Goal**: Implement WebSocket connection for real-time odds updates and stale data indicators
-**Depends on**: Phase 7 (needs UI to receive updates)
+**Depends on**: Phase 7.1 (needs complete odds pipeline)
 **Research**: Likely (WebSocket patterns)
 **Research topics**: FastAPI WebSocket patterns, TanStack Query WebSocket integration, reconnection handling
 **Plans**: TBD
@@ -128,4 +141,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. React Foundation | 4/4 | Complete | 2026-01-20 |
 | 6.1 Cross-Platform Scraping | 1/1 | Complete | 2026-01-21 |
 | 7. Match Views | 2/3 | In progress | - |
+| 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
 | 8. Real-time Updates | 0/TBD | Not started | - |
