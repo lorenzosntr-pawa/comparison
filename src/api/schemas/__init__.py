@@ -13,6 +13,8 @@ from src.api.schemas.scheduler import (
     RunHistoryResponse,
     SchedulerPlatformHealth,
     SchedulerStatus,
+    ScrapeRunResponse,
+    ScrapeStatsResponse,
 )
 
 __all__ = [
@@ -28,4 +30,6 @@ __all__ = [
     "RunHistoryResponse",
     "SchedulerPlatformHealth",
     "SchedulerStatus",
+    "ScrapeRunResponse",
+    "ScrapeStatsResponse",
 ]

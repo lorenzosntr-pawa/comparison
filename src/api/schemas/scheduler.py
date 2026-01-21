@@ -57,3 +57,26 @@ class RunHistoryResponse(BaseModel):
 
     runs: list[RunHistoryEntry]
     total: int
+
+
+class ScrapeRunResponse(BaseModel):
+    """Full scrape run details for list and detail endpoints."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    status: str
+    started_at: datetime
+    completed_at: datetime | None
+    events_scraped: int
+    events_failed: int
+    trigger: str | None
+    platform_timings: dict | None = None
+
+
+class ScrapeStatsResponse(BaseModel):
+    """Aggregate statistics for scrape runs."""
+
+    total_runs: int
+    runs_24h: int
+    avg_duration_seconds: float | None

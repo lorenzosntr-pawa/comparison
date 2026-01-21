@@ -8,7 +8,13 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.schemas import ScrapeRequest, ScrapeResponse, ScrapeStatusResponse
+from src.api.schemas import (
+    ScrapeRequest,
+    ScrapeResponse,
+    ScrapeRunResponse,
+    ScrapeStatsResponse,
+    ScrapeStatusResponse,
+)
 from src.db.engine import get_db
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
@@ -174,6 +180,78 @@ async def stream_scrape(
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",  # Disable nginx buffering
         },
+    )
+
+
+@router.get("/runs", response_model=list[ScrapeRunResponse])
+async def list_scrape_runs(
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> list[ScrapeRunResponse]:
+    """List scrape runs with pagination.
+
+    Returns most recent runs first, including platform timing breakdown.
+    """
+    result = await db.execute(
+        select(ScrapeRun)
+        .order_by(ScrapeRun.started_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    runs = result.scalars().all()
+
+    return [
+        ScrapeRunResponse(
+            id=run.id,
+            status=run.status,
+            started_at=run.started_at,
+            completed_at=run.completed_at,
+            events_scraped=run.events_scraped,
+            events_failed=run.events_failed,
+            trigger=run.trigger,
+            platform_timings=run.platform_timings,
+        )
+        for run in runs
+    ]
+
+
+@router.get("/stats", response_model=ScrapeStatsResponse)
+async def get_scrape_stats(
+    db: AsyncSession = Depends(get_db),
+) -> ScrapeStatsResponse:
+    """Get scrape run statistics."""
+    from datetime import timedelta
+
+    from sqlalchemy import func
+
+    # Total runs
+    total_result = await db.execute(select(func.count(ScrapeRun.id)))
+    total_runs = total_result.scalar() or 0
+
+    # Last 24 hours
+    cutoff = datetime.utcnow() - timedelta(hours=24)
+    recent_result = await db.execute(
+        select(func.count(ScrapeRun.id)).where(ScrapeRun.started_at > cutoff)
+    )
+    runs_24h = recent_result.scalar() or 0
+
+    # Average duration (completed runs only)
+    avg_result = await db.execute(
+        select(
+            func.avg(
+                func.extract("epoch", ScrapeRun.completed_at - ScrapeRun.started_at)
+            )
+        ).where(ScrapeRun.completed_at.isnot(None))
+    )
+    avg_duration_seconds = avg_result.scalar()
+
+    return ScrapeStatsResponse(
+        total_runs=total_runs,
+        runs_24h=runs_24h,
+        avg_duration_seconds=(
+            round(avg_duration_seconds, 1) if avg_duration_seconds else None
+        ),
     )
 
 
