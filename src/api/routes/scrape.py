@@ -20,6 +20,7 @@ from src.api.schemas import (
 )
 from src.db.engine import get_db
 from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
+from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.orchestrator import ScrapingOrchestrator
 
@@ -302,3 +303,86 @@ async def get_scrape_status(
         platform_timings=scrape_run.platform_timings,
         errors=errors,
     )
+
+
+@router.get("/runs/{scrape_run_id}/progress")
+async def observe_scrape_progress(
+    scrape_run_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """Observe progress of an existing scrape run via SSE.
+
+    Connect via EventSource in browser to receive real-time progress updates
+    for a specific scrape run (including scheduled scrapes).
+
+    Unlike /stream which starts a new scrape, this endpoint observes an
+    existing running scrape.
+
+    Returns 404 if scrape run not found.
+    Returns 410 (Gone) if scrape already completed.
+    """
+    # Verify scrape run exists
+    result = await db.execute(
+        select(ScrapeRun).where(ScrapeRun.id == scrape_run_id)
+    )
+    scrape_run = result.scalar_one_or_none()
+
+    if not scrape_run:
+        raise HTTPException(status_code=404, detail="Scrape run not found")
+
+    # Check if already completed
+    if scrape_run.status != ScrapeStatus.RUNNING:
+        raise HTTPException(
+            status_code=410,
+            detail=f"Scrape run already {scrape_run.status.value}",
+        )
+
+    # Get broadcaster for this scrape
+    broadcaster = progress_registry.get_broadcaster(scrape_run_id)
+
+    if not broadcaster:
+        # No broadcaster means scrape is running but not using progress streaming
+        # This can happen for older API-triggered scrapes or if scheduler
+        # hasn't been updated. Return empty stream that closes immediately.
+        async def empty_generator():
+            yield f"data: {json.dumps({'phase': 'unknown', 'message': 'No progress streaming available for this scrape run'})}\n\n"
+
+        return StreamingResponse(
+            empty_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    async def event_generator():
+        try:
+            async for progress in broadcaster.subscribe():
+                if await request.is_disconnected():
+                    break
+                yield f"data: {progress.model_dump_json()}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'phase': 'failed', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/runs/active")
+async def get_active_scrapes() -> list[int]:
+    """Get IDs of currently running scrapes with progress streaming.
+
+    Returns list of scrape run IDs that have active progress broadcasters.
+    Useful for frontend to discover running scrapes to observe.
+    """
+    return progress_registry.get_active_scrape_ids()

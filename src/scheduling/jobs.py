@@ -1,11 +1,12 @@
 """Scheduled job functions for periodic scraping."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from src.db.engine import async_session_factory
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
+from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.orchestrator import ScrapingOrchestrator
 
@@ -28,8 +29,10 @@ def set_app_state(state: Any) -> None:
 async def scrape_all_platforms() -> None:
     """Scheduled job to scrape all platforms.
 
-    Creates a ScrapeRun record, executes scraping via orchestrator,
-    and updates the record with results or failure status.
+    Creates a ScrapeRun record, executes scraping via orchestrator with
+    progress streaming, and updates the record with results or failure status.
+
+    Progress is published to a broadcaster so UI can observe via SSE.
     """
     logger.info("Starting scheduled scrape job")
 
@@ -50,6 +53,9 @@ async def scrape_all_platforms() -> None:
 
         logger.info(f"Created ScrapeRun {scrape_run_id}")
 
+        # Create broadcaster for this scrape run
+        broadcaster = progress_registry.create_broadcaster(scrape_run_id)
+
         try:
             # Create orchestrator with clients from app state
             orchestrator = ScrapingOrchestrator(
@@ -58,32 +64,69 @@ async def scrape_all_platforms() -> None:
                 bet9ja_client=Bet9jaClient(_app_state.bet9ja_client),
             )
 
-            # Execute scrape
-            result = await orchestrator.scrape_all(
+            # Execute scrape with progress streaming
+            # scrape_with_progress yields progress updates sequentially
+            total_events = 0
+            final_status = "failed"
+
+            async for progress in orchestrator.scrape_with_progress(
+                timeout=300.0,
                 scrape_run_id=scrape_run_id,
                 db=db,
-            )
+            ):
+                # Publish progress to broadcaster for SSE observers
+                await broadcaster.publish(progress)
 
-            # Update ScrapeRun with results
-            scrape_run.status = ScrapeStatus(result.status.upper())
-            scrape_run.events_scraped = result.total_events
-            scrape_run.completed_at = datetime.now(timezone.utc)
+                # Track final state
+                if progress.phase == "completed" and progress.platform is None:
+                    # Final completion update
+                    total_events = progress.events_count or 0
+                    final_status = "completed"
+                elif progress.phase == "completed" and progress.platform:
+                    # Platform completed
+                    total_events += progress.events_count or 0
+                elif progress.phase == "failed" and progress.platform is None:
+                    # Overall failure
+                    final_status = "failed"
 
-            # Count failures from platform results
-            failed_count = sum(1 for p in result.platforms if not p.success)
-            scrape_run.events_failed = failed_count
+            # Determine status based on progress history
+            # If we got here, scrape completed (possibly with partial success)
+            if final_status == "completed" and total_events > 0:
+                scrape_run.status = ScrapeStatus.COMPLETED
+            elif total_events > 0:
+                scrape_run.status = ScrapeStatus.PARTIAL
+            else:
+                scrape_run.status = ScrapeStatus.FAILED
+
+            scrape_run.events_scraped = total_events
+            scrape_run.completed_at = datetime.utcnow()
 
             await db.commit()
 
             logger.info(
                 f"Completed ScrapeRun {scrape_run_id}: "
-                f"status={result.status}, events={result.total_events}"
+                f"status={scrape_run.status.value}, events={total_events}"
             )
 
         except Exception as e:
             logger.exception(f"ScrapeRun {scrape_run_id} failed: {e}")
 
+            # Publish failure to broadcaster
+            from src.scraping.schemas import ScrapeProgress
+            await broadcaster.publish(ScrapeProgress(
+                platform=None,
+                phase="failed",
+                current=0,
+                total=3,
+                message=f"Scrape failed: {str(e)}",
+            ))
+
             # Update ScrapeRun to FAILED status
             scrape_run.status = ScrapeStatus.FAILED
-            scrape_run.completed_at = datetime.now(timezone.utc)
+            scrape_run.completed_at = datetime.utcnow()
             await db.commit()
+
+        finally:
+            # Close broadcaster and remove from registry
+            await broadcaster.close()
+            progress_registry.remove_broadcaster(scrape_run_id)

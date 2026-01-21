@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
-import { useSchedulerHistory } from '../hooks'
+import { useSchedulerHistory, useActiveScrapesObserver } from '../hooks'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { ArrowRight, Loader2, Play, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio } from 'lucide-react'
 
 interface ScrapeProgressEvent {
   platform: string | null
@@ -51,25 +51,41 @@ export function RecentRuns() {
   const { data, isPending, error, refetch } = useSchedulerHistory(5)
   const eventSourceRef = useRef<EventSource | null>(null)
 
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [progress, setProgress] = useState<ScrapeProgressEvent | null>(null)
+  // State for manual scrapes triggered from this component
+  const [isManualStreaming, setIsManualStreaming] = useState(false)
+  const [manualProgress, setManualProgress] = useState<ScrapeProgressEvent | null>(null)
   const [scrapeError, setScrapeError] = useState<string | null>(null)
   const [completedPlatforms, setCompletedPlatforms] = useState(0)
+
+  // Observer for scheduled scrapes running in the background
+  const {
+    activeScrapeId,
+    isObserving: isObservingScheduled,
+    progress: scheduledProgress,
+    stopChecking,
+  } = useActiveScrapesObserver()
+
+  // Use either manual progress or observed scheduled progress
+  const activeProgress = isManualStreaming ? manualProgress : scheduledProgress
+  const isStreaming = isManualStreaming || isObservingScheduled
+  const isScheduledScrape = !isManualStreaming && isObservingScheduled
 
   const cleanup = useCallback(() => {
     if (eventSourceRef.current) {
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
-    setIsStreaming(false)
+    setIsManualStreaming(false)
   }, [])
 
   const startScrape = useCallback(() => {
+    // Stop checking for scheduled scrapes when starting manual
+    stopChecking()
     cleanup()
     setScrapeError(null)
-    setProgress(null)
+    setManualProgress(null)
     setCompletedPlatforms(0)
-    setIsStreaming(true)
+    setIsManualStreaming(true)
 
     const eventSource = new EventSource('/api/scrape/stream')
     eventSourceRef.current = eventSource
@@ -77,7 +93,7 @@ export function RecentRuns() {
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as ScrapeProgressEvent
-        setProgress(data)
+        setManualProgress(data)
 
         // Track completed platforms
         if (data.phase === 'storing_complete' ||
@@ -87,7 +103,7 @@ export function RecentRuns() {
 
         if (data.phase === 'completed' || data.phase === 'failed') {
           eventSource.close()
-          setIsStreaming(false)
+          setIsManualStreaming(false)
           // Invalidate and refetch queries
           queryClient.invalidateQueries({ queryKey: ['scheduler-history'] })
           queryClient.invalidateQueries({ queryKey: ['events'] })
@@ -100,21 +116,32 @@ export function RecentRuns() {
 
     eventSource.onerror = () => {
       eventSource.close()
-      setIsStreaming(false)
+      setIsManualStreaming(false)
       setScrapeError('Connection lost')
     }
-  }, [cleanup, queryClient, refetch])
+  }, [cleanup, queryClient, refetch, stopChecking])
 
   // Cleanup on unmount
   useEffect(() => {
     return cleanup
   }, [cleanup])
 
-  // Calculate progress percentage (based on platforms: 0-33-66-100)
-  const progressPercent =
-    progress?.phase === 'completed' ? 100 :
-    progress?.phase === 'failed' ? 0 :
-    Math.round((completedPlatforms / 3) * 100 + (isStreaming && completedPlatforms < 3 ? 15 : 0))
+  // Calculate progress percentage for manual scrapes
+  const manualProgressPercent =
+    manualProgress?.phase === 'completed' ? 100 :
+    manualProgress?.phase === 'failed' ? 0 :
+    Math.round((completedPlatforms / 3) * 100 + (isManualStreaming && completedPlatforms < 3 ? 15 : 0))
+
+  // Calculate progress percentage for observed scheduled scrapes
+  const scheduledProgressPercent = scheduledProgress
+    ? scheduledProgress.phase === 'completed'
+      ? 100
+      : scheduledProgress.phase === 'failed'
+      ? 0
+      : Math.round((scheduledProgress.current / scheduledProgress.total) * 100)
+    : 0
+
+  const progressPercent = isManualStreaming ? manualProgressPercent : scheduledProgressPercent
 
   if (isPending) {
     return (
@@ -148,6 +175,10 @@ export function RecentRuns() {
     )
   }
 
+  const showProgressSection = isStreaming ||
+    activeProgress?.phase === 'completed' ||
+    activeProgress?.phase === 'failed'
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -160,7 +191,7 @@ export function RecentRuns() {
       </CardHeader>
       <CardContent>
         {/* Live Progress Section */}
-        {(isStreaming || progress?.phase === 'completed' || progress?.phase === 'failed') && (
+        {showProgressSection && (
           <div className="mb-4 pb-4 border-b">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -168,36 +199,43 @@ export function RecentRuns() {
                   {isStreaming && (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                   )}
-                  {progress?.phase === 'completed' && (
+                  {activeProgress?.phase === 'completed' && (
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
                   )}
-                  {progress?.phase === 'failed' && (
+                  {activeProgress?.phase === 'failed' && (
                     <XCircle className="h-3.5 w-3.5 text-destructive" />
                   )}
                   <span className={cn(
                     'font-medium',
-                    progress?.phase === 'completed' && 'text-green-500',
-                    progress?.phase === 'failed' && 'text-destructive'
+                    activeProgress?.phase === 'completed' && 'text-green-500',
+                    activeProgress?.phase === 'failed' && 'text-destructive'
                   )}>
-                    {progress?.phase === 'completed' ? 'Scrape Complete' :
-                     progress?.phase === 'failed' ? 'Scrape Failed' :
-                     progress?.phase === 'scraping' && progress.platform ?
-                       `Scraping ${capitalizeFirst(progress.platform)}...` :
-                     progress?.phase === 'storing' && progress.platform ?
-                       `Storing ${capitalizeFirst(progress.platform)}...` :
+                    {activeProgress?.phase === 'completed' ? 'Scrape Complete' :
+                     activeProgress?.phase === 'failed' ? 'Scrape Failed' :
+                     activeProgress?.phase === 'scraping' && activeProgress.platform ?
+                       `Scraping ${capitalizeFirst(activeProgress.platform)}...` :
+                     activeProgress?.phase === 'storing' && activeProgress.platform ?
+                       `Storing ${capitalizeFirst(activeProgress.platform)}...` :
                      'Starting scrape...'}
                   </span>
+                  {/* Show indicator for scheduled vs manual */}
+                  {isScheduledScrape && (
+                    <Badge variant="outline" className="ml-1 text-xs py-0 h-5">
+                      <Radio className="h-2.5 w-2.5 mr-1 text-blue-500" />
+                      Scheduled
+                    </Badge>
+                  )}
                 </div>
                 <span className="text-muted-foreground">
-                  {progress?.events_count ?? 0} events
+                  {activeProgress?.events_count ?? 0} events
                 </span>
               </div>
               <Progress
                 value={progressPercent}
                 className={cn(
                   'h-1.5',
-                  progress?.phase === 'completed' && '[&>div]:bg-green-500',
-                  progress?.phase === 'failed' && '[&>div]:bg-destructive'
+                  activeProgress?.phase === 'completed' && '[&>div]:bg-green-500',
+                  activeProgress?.phase === 'failed' && '[&>div]:bg-destructive'
                 )}
               />
             </div>
@@ -208,7 +246,7 @@ export function RecentRuns() {
         )}
 
         {/* Trigger Scrape Button (when not streaming) */}
-        {!isStreaming && progress?.phase !== 'completed' && progress?.phase !== 'failed' && (
+        {!isStreaming && activeProgress?.phase !== 'completed' && activeProgress?.phase !== 'failed' && (
           <div className="mb-4 pb-4 border-b">
             <Button
               variant="outline"
@@ -223,14 +261,14 @@ export function RecentRuns() {
         )}
 
         {/* Reset button after completion */}
-        {!isStreaming && (progress?.phase === 'completed' || progress?.phase === 'failed') && (
+        {!isStreaming && (activeProgress?.phase === 'completed' || activeProgress?.phase === 'failed') && (
           <div className="mb-4">
             <Button
               variant="ghost"
               size="sm"
               className="w-full text-xs"
               onClick={() => {
-                setProgress(null)
+                setManualProgress(null)
                 setCompletedPlatforms(0)
               }}
             >
@@ -245,10 +283,14 @@ export function RecentRuns() {
           <div className="space-y-3">
             {data?.runs.map((run) => {
               const duration = formatDuration(run.started_at, run.completed_at)
+              const isCurrentlyRunning = run.status === 'running' && activeScrapeId === run.id
               return (
                 <div
                   key={run.id}
-                  className="flex items-center justify-between py-2 border-b last:border-0"
+                  className={cn(
+                    "flex items-center justify-between py-2 border-b last:border-0",
+                    isCurrentlyRunning && "bg-primary/5 -mx-2 px-2 rounded"
+                  )}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -256,11 +298,16 @@ export function RecentRuns() {
                         variant={statusVariants[run.status]}
                         className={cn(
                           run.status === 'completed' &&
-                            'bg-green-500 hover:bg-green-600'
+                            'bg-green-500 hover:bg-green-600',
+                          run.status === 'running' &&
+                            'animate-pulse'
                         )}
                       >
                         {run.status}
                       </Badge>
+                      {run.trigger === 'scheduled' && (
+                        <Radio className="h-3 w-3 text-blue-500" />
+                      )}
                       {duration && (
                         <span className="text-xs text-muted-foreground">
                           {duration}
