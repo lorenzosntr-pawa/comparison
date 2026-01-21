@@ -146,7 +146,7 @@ None
 **Research**: None (internal UI, uses existing SSE infrastructure)
 **Plans**:
 - Plan 01: Live Progress Visualization (COMPLETE - 08-01-SUMMARY.md)
-- Plan 02: Historical Analytics (NOT STARTED)
+- Plan 02: Historical Analytics (COMPLETE - 08-02-SUMMARY.md)
 - Plan 03: Platform-Specific Retry (NOT STARTED)
 
 **Details:**
@@ -220,7 +220,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Match Views | 3/3 | Complete | 2026-01-21 |
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
-| 8. Scrape Runs UI Improvements | 1/3 | In progress | - |
+| 8. Scrape Runs UI Improvements | 2/3 | In progress | - |
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
 | 10. Matches Page Improvements | 0/TBD | Not started | - |
 | 11. Settings Page | 0/TBD | Not started | - |
