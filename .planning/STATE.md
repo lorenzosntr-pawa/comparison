@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 7 complete — Ready for Phase 8
+**Current focus:** Phase 7.2 complete — Ready for Phase 8
 
 ## Current Position
 
-Phase: 7 of 8 (Match Views) - COMPLETE
+Phase: 7.2 of 12 (Scraping Performance) - COMPLETE
 Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-21 — Completed 07-03-PLAN.md (Phase 7 complete)
+Last activity: 2026-01-21 — Completed 07.2-03-PLAN.md (Phase 7.2 complete)
 
-Progress: █████████░ 97%
+Progress: ██████████ 100% (completed phases)
 
 ## Performance Metrics
 
@@ -140,6 +140,7 @@ Recent decisions affecting current work:
 - Phase 6.1 inserted after Phase 6: Cross-Platform Scraping (URGENT) - SportyBet/Bet9ja scraping was stubbed out, blocking cross-platform comparison
 - Phase 7.1 inserted after Phase 7: Complete Odds Pipeline (URGENT) - BetPawa odds not stored, UI showing no odds
 - Phase 7.2 inserted after Phase 7.1: Scraping Performance (URGENT) - ~5min scrape time too slow, poor terminal logging
+- Phase 8 (Real-time Updates) removed — renumbered phases 9-13 to 8-12
 
 ### Deferred Issues
 
@@ -152,5 +153,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 07-03-PLAN.md (Phase 7 complete)
-Resume file: .planning/phases/07-match-views/07-03-SUMMARY.md
+Stopped at: Removed Phase 8 (Real-time Updates), renumbered roadmap
+Resume file: .planning/ROADMAP.md

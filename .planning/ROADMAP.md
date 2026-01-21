@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and Bet9ja, matches events across platforms using SportRadar IDs, stores timestamped snapshots in PostgreSQL, and displays side-by-side comparisons with margin analysis through a React web interface with real-time WebSocket updates.
+Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and Bet9ja, matches events across platforms using SportRadar IDs, stores timestamped snapshots in PostgreSQL, and displays side-by-side comparisons with margin analysis through a React web interface.
 
 ## Domain Expertise
 
@@ -22,9 +22,13 @@ None
 - [x] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
 - [x] **Phase 6.1: Cross-Platform Scraping** - Complete SportyBet/Bet9ja scraping via SportRadar IDs (INSERTED)
 - [x] **Phase 7: Match Views** - Match list and detail views with odds comparison
-- [ ] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
+- [x] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
 - [x] **Phase 7.2: Scraping Performance** - Improve scraping speed and logging (INSERTED)
-- [ ] **Phase 8: Real-time Updates** - WebSocket integration for live data push
+- [ ] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
+- [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
+- [ ] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
+- [ ] **Phase 11: Settings Page** - Build functional settings page for tool configuration
+- [ ] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues
 
 ## Phase Details
 
@@ -136,17 +140,67 @@ None
 - SSE streaming endpoint for real-time scrape progress
 - Complete scrape runs UI with history page and detail view
 
-### Phase 8: Real-time Updates
-**Goal**: Implement WebSocket connection for real-time odds updates and stale data indicators
-**Depends on**: Phase 7.2 (needs optimized scraping pipeline)
-**Research**: Likely (WebSocket patterns)
-**Research topics**: FastAPI WebSocket patterns, TanStack Query WebSocket integration, reconnection handling
+### Phase 8: Scrape Runs UI Improvements
+**Goal**: Improve scrape runs page and dashboard widget with enhanced UX and additional features
+**Depends on**: Phase 7.2 (needs scrape runs UI foundation)
+**Research**: Unlikely (internal UI improvements)
 **Plans**: TBD
+
+**Details:**
+[To be added during planning]
+
+### Phase 9: Market Mapping Expansion
+**Goal**: Expand market mappings to correctly match more markets between SportyBet/Bet9ja and BetPawa by analyzing DB data and improving existing mappings
+**Depends on**: Phase 1 (extends market mapping port)
+**Research**: Required (analyze DB to identify unmapped markets and mapping gaps)
+**Plans**: TBD
+
+**Details:**
+- Review scraped data in database to identify unmapped markets
+- Analyze current mapping coverage gaps between platforms
+- Add new market mappings for commonly-missed markets
+- Improve existing mappings where matches are incorrect
+
+### Phase 10: Matches Page Improvements
+**Goal**: Improve matches page UX with working filters, region/league display, and match search
+**Depends on**: Phase 7 (extends match views)
+**Research**: Unlikely (internal UI improvements)
+**Plans**: TBD
+
+**Details:**
+- Fix all filters on top of matches page (especially date filters)
+- Add region column to each match for easier filtering
+- Add league/competition display for each match
+- Add search functionality to find specific matches by team name
+
+### Phase 11: Settings Page
+**Goal**: Build functional settings page for tool configuration and preferences
+**Depends on**: Phase 6 (extends React foundation)
+**Research**: Unlikely (internal UI development)
+**Plans**: TBD
+
+**Details:**
+- Settings page currently exists but is empty
+- Add configuration options for the comparison tool
+- Persist settings (localStorage or database)
+- Potential settings: scraping intervals, display preferences, notification thresholds, etc.
+
+### Phase 12: UI Polish
+**Goal**: Fix general UI issues, ensure all widgets work correctly, fix sidebar behavior
+**Depends on**: Phase 6 (extends React foundation)
+**Research**: Unlikely (bug fixes and UI improvements)
+**Plans**: TBD
+
+**Details:**
+- Fix sidebar collapse behavior (currently covers part of page content)
+- Verify all dashboard widgets work correctly
+- General UI consistency and polish pass
+- Fix any layout/spacing issues across pages
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -160,4 +214,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 7. Match Views | 3/3 | Complete | 2026-01-21 |
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
-| 8. Real-time Updates | 0/TBD | Not started | - |
+| 8. Scrape Runs UI Improvements | 0/TBD | Not started | - |
+| 9. Market Mapping Expansion | 0/TBD | Not started | - |
+| 10. Matches Page Improvements | 0/TBD | Not started | - |
+| 11. Settings Page | 0/TBD | Not started | - |
+| 12. UI Polish | 0/TBD | Not started | - |
