@@ -101,7 +101,10 @@ None
 **Goal**: Implement match list view (1X2, O/U 2.5, BTTS) and match detail view with all markets, margins, and color-coded indicators
 **Depends on**: Phase 6.1 (needs cross-platform data for comparison)
 **Research**: Unlikely (internal UI using established patterns)
-**Plans**: TBD
+**Plans**:
+- Plan 01: Events API Odds Enhancement (COMPLETE - 07-01-SUMMARY.md)
+- Plan 02: Match List View Component
+- Plan 03: Match Detail View Component
 
 ### Phase 8: Real-time Updates
 **Goal**: Implement WebSocket connection for real-time odds updates and stale data indicators
@@ -124,5 +127,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Scheduled Scraping | 2/2 | Complete | 2026-01-20 |
 | 6. React Foundation | 4/4 | Complete | 2026-01-20 |
 | 6.1 Cross-Platform Scraping | 1/1 | Complete | 2026-01-21 |
-| 7. Match Views | 0/TBD | Not started | - |
+| 7. Match Views | 1/3 | In progress | - |
 | 8. Real-time Updates | 0/TBD | Not started | - |

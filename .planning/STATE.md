@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 7 of 8 (Match Views)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-21 — Completed Phase 6.1 (Cross-Platform Scraping)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 07-01-PLAN.md
 
-Progress: ████████░░ 78%
+Progress: █████████░ 82%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
 - Average duration: 6 min
-- Total execution time: 2.2 hours
+- Total execution time: 2.3 hours
 
 **By Phase:**
 
@@ -34,9 +34,10 @@ Progress: ████████░░ 78%
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
 | 06 React Foundation | 4 | 20 min | 5 min |
 | 06.1 Cross-Platform Scraping | 1 | 8 min | 8 min |
+| 07 Match Views | 1 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 5 min, 5 min, 5 min, 8 min
+- Last 5 plans: 5 min, 5 min, 5 min, 8 min, 6 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - TanStack Query polling: 10s (scheduler), 30s (health), 60s (events) based on volatility
 - Feature hooks in features/{name}/hooks/ with index.ts re-export
 - Feature components in features/{name}/components/ with index.ts re-export
+- Margin calculation: (sum(1/odds) - 1) * 100
+- Subquery for latest snapshot per (event_id, bookmaker_id) pair
+- Inline odds for list views: fixed 3 key markets (1X2, O/U 2.5, BTTS)
 
 ### Roadmap Evolution
 
@@ -132,5 +136,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Phase 6.1 complete, ready for Phase 7 planning
-Resume file: .planning/phases/06.1-cross-platform-scraping/06.1-01-SUMMARY.md
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-match-views/07-01-SUMMARY.md
