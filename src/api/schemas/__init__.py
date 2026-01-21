@@ -9,11 +9,14 @@ from src.api.schemas.api import (
     ScrapeStatusResponse,
 )
 from src.api.schemas.scheduler import (
+    DailyMetric,
     JobStatus,
+    PlatformMetric,
     RunHistoryEntry,
     RunHistoryResponse,
     SchedulerPlatformHealth,
     SchedulerStatus,
+    ScrapeAnalyticsResponse,
     ScrapeRunResponse,
     ScrapeStatsResponse,
 )
@@ -27,11 +30,14 @@ __all__ = [
     "ScrapeResponse",
     "ScrapeStatusResponse",
     # Scheduler schemas
+    "DailyMetric",
     "JobStatus",
+    "PlatformMetric",
     "RunHistoryEntry",
     "RunHistoryResponse",
     "SchedulerPlatformHealth",
     "SchedulerStatus",
+    "ScrapeAnalyticsResponse",
     "ScrapeRunResponse",
     "ScrapeStatsResponse",
 ]

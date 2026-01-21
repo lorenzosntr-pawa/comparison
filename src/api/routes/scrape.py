@@ -11,12 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.api.schemas import (
+    ScrapeAnalyticsResponse,
     ScrapeErrorResponse,
     ScrapeRequest,
     ScrapeResponse,
     ScrapeRunResponse,
     ScrapeStatsResponse,
     ScrapeStatusResponse,
+    DailyMetric,
+    PlatformMetric,
 )
 from src.db.engine import get_db
 from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
@@ -256,6 +259,131 @@ async def get_scrape_stats(
         avg_duration_seconds=(
             round(avg_duration_seconds, 1) if avg_duration_seconds else None
         ),
+    )
+
+
+@router.get("/analytics", response_model=ScrapeAnalyticsResponse)
+async def get_scrape_analytics(
+    db: AsyncSession = Depends(get_db),
+    days: int = Query(default=14, ge=1, le=30, description="Number of days to analyze"),
+) -> ScrapeAnalyticsResponse:
+    """Get historical analytics for scrape runs.
+
+    Returns aggregated daily metrics and per-platform statistics
+    for the specified time period.
+    """
+    from collections import defaultdict
+    from datetime import timedelta
+
+    from sqlalchemy import case, cast, func, Date
+
+    # Calculate date range
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+
+    # Query daily aggregations
+    # Filter to completed, partial, failed runs only (exclude pending/running)
+    status_filter = ScrapeRun.status.in_(
+        [ScrapeStatus.COMPLETED, ScrapeStatus.PARTIAL, ScrapeStatus.FAILED]
+    )
+    date_filter = ScrapeRun.started_at >= start_date
+
+    # Daily metrics aggregation
+    daily_query = (
+        select(
+            cast(ScrapeRun.started_at, Date).label("date"),
+            func.avg(
+                func.extract("epoch", ScrapeRun.completed_at - ScrapeRun.started_at)
+            ).label("avg_duration"),
+            func.sum(ScrapeRun.events_scraped).label("total_events"),
+            func.sum(
+                case((ScrapeRun.status == ScrapeStatus.COMPLETED, 1), else_=0)
+            ).label("success_count"),
+            func.sum(
+                case((ScrapeRun.status == ScrapeStatus.FAILED, 1), else_=0)
+            ).label("failure_count"),
+            func.sum(
+                case((ScrapeRun.status == ScrapeStatus.PARTIAL, 1), else_=0)
+            ).label("partial_count"),
+        )
+        .where(status_filter, date_filter, ScrapeRun.completed_at.isnot(None))
+        .group_by(cast(ScrapeRun.started_at, Date))
+        .order_by(cast(ScrapeRun.started_at, Date))
+    )
+
+    daily_result = await db.execute(daily_query)
+    daily_rows = daily_result.all()
+
+    daily_metrics = [
+        DailyMetric(
+            date=row.date.isoformat(),
+            avg_duration_seconds=round(row.avg_duration or 0, 1),
+            total_events=row.total_events or 0,
+            success_count=row.success_count or 0,
+            failure_count=row.failure_count or 0,
+            partial_count=row.partial_count or 0,
+        )
+        for row in daily_rows
+    ]
+
+    # Platform metrics aggregation from platform_timings JSON
+    # Fetch all runs with platform_timings in the date range
+    platform_query = (
+        select(ScrapeRun.platform_timings, ScrapeRun.status)
+        .where(
+            status_filter,
+            date_filter,
+            ScrapeRun.platform_timings.isnot(None),
+        )
+    )
+    platform_result = await db.execute(platform_query)
+    platform_rows = platform_result.all()
+
+    # Aggregate platform data
+    platform_stats: dict[str, dict] = defaultdict(
+        lambda: {
+            "total_duration_ms": 0,
+            "total_events": 0,
+            "run_count": 0,
+            "success_count": 0,
+        }
+    )
+
+    for row in platform_rows:
+        timings = row.platform_timings
+        if not timings:
+            continue
+        for platform, data in timings.items():
+            stats = platform_stats[platform]
+            stats["total_duration_ms"] += data.get("duration_ms", 0)
+            stats["total_events"] += data.get("events_count", 0)
+            stats["run_count"] += 1
+            # If platform appears in timings, it succeeded for this run
+            stats["success_count"] += 1
+
+    platform_metrics = [
+        PlatformMetric(
+            platform=platform,
+            success_rate=(
+                round((stats["success_count"] / stats["run_count"]) * 100, 1)
+                if stats["run_count"] > 0
+                else 0
+            ),
+            avg_duration_seconds=(
+                round((stats["total_duration_ms"] / stats["run_count"]) / 1000, 1)
+                if stats["run_count"] > 0
+                else 0
+            ),
+            total_events=stats["total_events"],
+        )
+        for platform, stats in sorted(platform_stats.items())
+    ]
+
+    return ScrapeAnalyticsResponse(
+        daily_metrics=daily_metrics,
+        platform_metrics=platform_metrics,
+        period_start=start_date.date().isoformat(),
+        period_end=end_date.date().isoformat(),
     )
 
 

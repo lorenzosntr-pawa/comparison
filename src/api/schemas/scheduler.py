@@ -80,3 +80,32 @@ class ScrapeStatsResponse(BaseModel):
     total_runs: int
     runs_24h: int
     avg_duration_seconds: float | None
+
+
+class DailyMetric(BaseModel):
+    """Daily aggregated scrape metrics for analytics."""
+
+    date: str  # YYYY-MM-DD
+    avg_duration_seconds: float
+    total_events: int
+    success_count: int
+    failure_count: int
+    partial_count: int
+
+
+class PlatformMetric(BaseModel):
+    """Per-platform aggregated metrics for analytics."""
+
+    platform: str
+    success_rate: float  # 0-100
+    avg_duration_seconds: float
+    total_events: int
+
+
+class ScrapeAnalyticsResponse(BaseModel):
+    """Historical analytics response with daily and platform metrics."""
+
+    daily_metrics: list[DailyMetric]
+    platform_metrics: list[PlatformMetric]
+    period_start: str
+    period_end: str
