@@ -1,13 +1,17 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useScrapeRunDetail } from './hooks'
-import { PlatformBreakdown, ErrorList } from './components'
+import { PlatformBreakdown, ErrorList, RetryDialog } from './components'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
-import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2, RotateCcw } from 'lucide-react'
+
+// All platforms for determining which ones failed
+const ALL_PLATFORMS = ['betpawa', 'sportybet', 'bet9ja']
 
 const statusVariants: Record<
   string,
@@ -41,7 +45,48 @@ export function ScrapeRunDetailPage() {
     pollWhileRunning: true, // Auto-refresh when scrape is running
   })
 
+  const [retryDialogOpen, setRetryDialogOpen] = useState(false)
+
   const isRunning = data?.status === 'running'
+  const canRetry = data?.status === 'partial' || data?.status === 'failed'
+
+  // Determine failed platforms for retry dialog
+  const failedPlatforms = (() => {
+    if (!data) return []
+
+    const failed: Array<{ name: string; errorCount: number }> = []
+
+    // Get platforms that are missing from successful timings
+    const successfulPlatforms = new Set(
+      Object.keys(data.platform_timings || {})
+    )
+
+    // Count errors per platform
+    const errorCounts: Record<string, number> = {}
+    if (data.errors) {
+      for (const err of data.errors) {
+        if (err.platform) {
+          errorCounts[err.platform.toLowerCase()] =
+            (errorCounts[err.platform.toLowerCase()] || 0) + 1
+        }
+      }
+    }
+
+    // Platforms with errors or missing from timings
+    for (const platform of ALL_PLATFORMS) {
+      const hasErrors = errorCounts[platform] > 0
+      const notInTimings = !successfulPlatforms.has(platform)
+
+      if (hasErrors || notInTimings) {
+        failed.push({
+          name: platform,
+          errorCount: errorCounts[platform] || 0,
+        })
+      }
+    }
+
+    return failed
+  })()
 
   if (isPending) {
     return (
@@ -82,18 +127,32 @@ export function ScrapeRunDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/scrape-runs">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Back
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Scrape Run #{id}</h1>
-          <p className="text-muted-foreground">
-            {formatDistanceToNow(new Date(data.started_at), { addSuffix: true })}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/scrape-runs">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Scrape Run #{id}</h1>
+            <p className="text-muted-foreground">
+              {formatDistanceToNow(new Date(data.started_at), { addSuffix: true })}
+            </p>
+          </div>
         </div>
+
+        {/* Retry Button */}
+        {canRetry && failedPlatforms.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => setRetryDialogOpen(true)}
+            className="gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Retry Failed
+          </Button>
+        )}
       </div>
 
       {/* Live Progress Panel (shown when run is active) */}
@@ -198,6 +257,14 @@ export function ScrapeRunDetailPage() {
       {data.errors && data.errors.length > 0 && (
         <ErrorList errors={data.errors} />
       )}
+
+      {/* Retry Dialog */}
+      <RetryDialog
+        open={retryDialogOpen}
+        onOpenChange={setRetryDialogOpen}
+        runId={runId}
+        failedPlatforms={failedPlatforms}
+      />
     </div>
   )
 }
