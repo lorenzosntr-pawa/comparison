@@ -22,6 +22,7 @@ class SchedulerStatus(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     running: bool
+    paused: bool
     jobs: list[JobStatus]
 
 

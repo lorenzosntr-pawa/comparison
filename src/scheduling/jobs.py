@@ -4,11 +4,15 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import select
+
 from src.db.engine import async_session_factory
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
+from src.db.models.settings import Settings
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.orchestrator import ScrapingOrchestrator
+from src.scraping.schemas import Platform
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,7 @@ async def scrape_all_platforms() -> None:
     progress streaming, and updates the record with results or failure status.
 
     Progress is published to a broadcaster so UI can observe via SSE.
+    Respects enabled_platforms from settings to filter which platforms to scrape.
     """
     logger.info("Starting scheduled scrape job")
 
@@ -41,6 +46,30 @@ async def scrape_all_platforms() -> None:
         return
 
     async with async_session_factory() as db:
+        # Fetch settings to get enabled platforms
+        result = await db.execute(select(Settings).where(Settings.id == 1))
+        settings = result.scalar_one_or_none()
+
+        # Determine which platforms to scrape
+        enabled_platforms: list[Platform] | None = None
+        if settings and settings.enabled_platforms:
+            # Map slug strings to Platform enum values
+            slug_to_platform = {
+                "sportybet": Platform.SPORTYBET,
+                "betpawa": Platform.BETPAWA,
+                "bet9ja": Platform.BET9JA,
+            }
+            enabled_platforms = [
+                slug_to_platform[slug]
+                for slug in settings.enabled_platforms
+                if slug in slug_to_platform
+            ]
+            logger.info(f"Enabled platforms from settings: {[p.value for p in enabled_platforms]}")
+
+            if not enabled_platforms:
+                logger.warning("No platforms enabled in settings - skipping scrape")
+                return
+
         # Create ScrapeRun record
         scrape_run = ScrapeRun(
             status=ScrapeStatus.RUNNING,
@@ -70,6 +99,7 @@ async def scrape_all_platforms() -> None:
             final_status = "failed"
 
             async for progress in orchestrator.scrape_with_progress(
+                platforms=enabled_platforms,
                 timeout=300.0,
                 scrape_run_id=scrape_run_id,
                 db=db,

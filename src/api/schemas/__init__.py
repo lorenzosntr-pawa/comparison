@@ -22,6 +22,10 @@ from src.api.schemas.scheduler import (
     ScrapeRunResponse,
     ScrapeStatsResponse,
 )
+from src.api.schemas.settings import (
+    SettingsResponse,
+    SettingsUpdate,
+)
 
 __all__ = [
     # API schemas
@@ -44,4 +48,7 @@ __all__ = [
     "ScrapeAnalyticsResponse",
     "ScrapeRunResponse",
     "ScrapeStatsResponse",
+    # Settings schemas
+    "SettingsResponse",
+    "SettingsUpdate",
 ]

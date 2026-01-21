@@ -10,6 +10,7 @@ from api.routes.events import router as events_router
 from api.routes.health import router as health_router
 from api.routes.scheduler import router as scheduler_router
 from api.routes.scrape import router as scrape_router
+from api.routes.settings import router as settings_router
 from src.scheduling.jobs import set_app_state
 from src.scheduling.scheduler import (
     configure_scheduler,
@@ -122,5 +123,6 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(scheduler_router)
     app.include_router(scrape_router)
+    app.include_router(settings_router)
 
     return app

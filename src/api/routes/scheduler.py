@@ -2,6 +2,7 @@
 
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,12 +20,20 @@ from src.scheduling.scheduler import scheduler
 router = APIRouter(prefix="/scheduler", tags=["scheduler"])
 
 
+class PauseResumeResponse(BaseModel):
+    """Response for pause/resume operations."""
+
+    success: bool
+    paused: bool
+    message: str
+
+
 @router.get("/status", response_model=SchedulerStatus)
 async def get_scheduler_status() -> SchedulerStatus:
     """Get current scheduler status and job information.
 
     Returns:
-        SchedulerStatus with running state and list of configured jobs.
+        SchedulerStatus with running state, paused state, and list of configured jobs.
     """
     jobs = []
     for job in scheduler.get_jobs():
@@ -40,7 +49,55 @@ async def get_scheduler_status() -> SchedulerStatus:
             )
         )
 
-    return SchedulerStatus(running=scheduler.running, jobs=jobs)
+    # Check if scheduler is paused by looking at job state
+    # APScheduler pauses jobs by setting next_run_time to None
+    paused = scheduler.running and all(job.next_run_time is None for job in scheduler.get_jobs())
+
+    return SchedulerStatus(running=scheduler.running, paused=paused, jobs=jobs)
+
+
+@router.post("/pause", response_model=PauseResumeResponse)
+async def pause_scheduler() -> PauseResumeResponse:
+    """Pause the scheduler (stops job execution without stopping scheduler).
+
+    Returns:
+        PauseResumeResponse indicating success and current paused state.
+    """
+    if not scheduler.running:
+        return PauseResumeResponse(
+            success=False,
+            paused=False,
+            message="Scheduler is not running",
+        )
+
+    scheduler.pause()
+    return PauseResumeResponse(
+        success=True,
+        paused=True,
+        message="Scheduler paused successfully",
+    )
+
+
+@router.post("/resume", response_model=PauseResumeResponse)
+async def resume_scheduler() -> PauseResumeResponse:
+    """Resume the scheduler (restarts job execution).
+
+    Returns:
+        PauseResumeResponse indicating success and current paused state.
+    """
+    if not scheduler.running:
+        return PauseResumeResponse(
+            success=False,
+            paused=False,
+            message="Scheduler is not running",
+        )
+
+    scheduler.resume()
+    return PauseResumeResponse(
+        success=True,
+        paused=False,
+        message="Scheduler resumed successfully",
+    )
 
 
 @router.get("/history", response_model=RunHistoryResponse)

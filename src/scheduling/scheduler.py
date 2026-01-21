@@ -1,33 +1,78 @@
 """APScheduler configuration and lifecycle management."""
 
-import os
+import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
+from src.db.models.settings import Settings
+
+logger = logging.getLogger(__name__)
+
 # Module-level scheduler instance with UTC timezone
 scheduler = AsyncIOScheduler(timezone="UTC")
+
+# Default interval used during startup before DB is available
+DEFAULT_INTERVAL_MINUTES = 5
+
+
+async def get_settings_from_db() -> Settings | None:
+    """Fetch settings from database.
+
+    Returns:
+        Settings object or None if not found.
+    """
+    from sqlalchemy import select
+
+    from src.db.engine import async_session_factory
+
+    try:
+        async with async_session_factory() as session:
+            result = await session.execute(select(Settings).where(Settings.id == 1))
+            return result.scalar_one_or_none()
+    except Exception as e:
+        logger.warning(f"Failed to fetch settings from database: {e}")
+        return None
 
 
 def configure_scheduler() -> None:
     """Configure the scheduler with scraping jobs.
 
-    Adds the scrape_all_platforms job with configurable interval.
+    Adds the scrape_all_platforms job with default interval.
     Uses deferred import to avoid circular dependencies.
+
+    Note: Uses default interval on startup. Call update_scheduler_interval()
+    after DB is available to sync with stored settings.
     """
     # Deferred import to avoid circular dependency
     from src.scheduling.jobs import scrape_all_platforms
 
-    interval_minutes = int(os.getenv("SCRAPE_INTERVAL_MINUTES", "5"))
-
+    # Use default interval on startup - will be updated when settings are loaded
     scheduler.add_job(
         scrape_all_platforms,
-        trigger=IntervalTrigger(minutes=interval_minutes),
+        trigger=IntervalTrigger(minutes=DEFAULT_INTERVAL_MINUTES),
         id="scrape_all_platforms",
         replace_existing=True,
         misfire_grace_time=60,
         coalesce=True,
     )
+
+
+def update_scheduler_interval(interval_minutes: int) -> None:
+    """Update the scheduler job interval at runtime.
+
+    Reschedules the scrape_all_platforms job with the new interval.
+
+    Args:
+        interval_minutes: New interval in minutes.
+    """
+    job = scheduler.get_job("scrape_all_platforms")
+    if job:
+        scheduler.reschedule_job(
+            "scrape_all_platforms",
+            trigger=IntervalTrigger(minutes=interval_minutes),
+        )
+        logger.info(f"Rescheduled scrape job with interval: {interval_minutes} minutes")
 
 
 def start_scheduler() -> None:
