@@ -272,7 +272,12 @@ class ScrapingOrchestrator:
         categories_data = await client.fetch_categories("2")  # Football
 
         competition_ids = []
-        regions = categories_data.get("regions", [])
+        # BetPawa API returns {"withRegions": [{"category": {...}, "regions": [...]}]}
+        with_regions = categories_data.get("withRegions", [])
+        if not with_regions:
+            return competition_ids
+
+        regions = with_regions[0].get("regions", [])
 
         for region in regions:
             competitions = region.get("competitions", [])
