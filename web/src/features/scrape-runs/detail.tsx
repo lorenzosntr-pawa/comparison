@@ -1,11 +1,10 @@
-import { useCallback } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useScrapeRunDetail } from './hooks'
-import { PlatformBreakdown, ErrorList, LiveProgressPanel } from './components'
+import { PlatformBreakdown, ErrorList } from './components'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2 } from 'lucide-react'
@@ -38,14 +37,9 @@ function formatDuration(
 export function ScrapeRunDetailPage() {
   const { id } = useParams<{ id: string }>()
   const runId = Number(id)
-  const { data, isPending, error, refetch } = useScrapeRunDetail(runId, {
+  const { data, isPending, error } = useScrapeRunDetail(runId, {
     pollWhileRunning: true, // Auto-refresh when scrape is running
   })
-
-  const handleScrapeComplete = useCallback(() => {
-    // Refetch run detail to get final state after scrape completes
-    refetch()
-  }, [refetch])
 
   const isRunning = data?.status === 'running'
 
