@@ -20,6 +20,7 @@ None
 - [x] **Phase 4: Event Matching Service** - Cross-platform event matching via SportRadar IDs
 - [x] **Phase 5: Scheduled Scraping** - Background scheduler with configurable intervals
 - [x] **Phase 6: React Foundation** - React app with TanStack Query and Tailwind setup
+- [x] **Phase 6.1: Cross-Platform Scraping** - Complete SportyBet/Bet9ja scraping via SportRadar IDs (INSERTED)
 - [ ] **Phase 7: Match Views** - Match list and detail views with odds comparison
 - [ ] **Phase 8: Real-time Updates** - WebSocket integration for live data push
 
@@ -84,9 +85,21 @@ None
 - Plan 03: Layout & Routing (COMPLETE - 06-03-SUMMARY.md)
 - Plan 04: API Integration & Dashboard (COMPLETE - 06-04-SUMMARY.md)
 
+### Phase 6.1: Cross-Platform Scraping (INSERTED)
+**Goal**: Complete SportyBet and Bet9ja scraping using SportRadar IDs from BetPawa base events
+**Depends on**: Phase 6 (needs events in database from BetPawa scraping)
+**Research**: None (clients already built, just need orchestrator integration)
+**Plans**:
+- Plan 01: Cross-platform scraping (COMPLETE - 06.1-01-SUMMARY.md)
+
+**Details:**
+- SportyBet: Use `fetch_event(sportradar_id)` for each BetPawa event's SportRadar ID
+- Bet9ja: Extract SportRadar ID from `EXTID` field, match to existing events
+- All three platforms use SportRadar IDs for cross-platform matching
+
 ### Phase 7: Match Views
 **Goal**: Implement match list view (1X2, O/U 2.5, BTTS) and match detail view with all markets, margins, and color-coded indicators
-**Depends on**: Phase 6 (needs React app foundation)
+**Depends on**: Phase 6.1 (needs cross-platform data for comparison)
 **Research**: Unlikely (internal UI using established patterns)
 **Plans**: TBD
 
@@ -110,5 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Event Matching Service | 2/2 | Complete | 2026-01-20 |
 | 5. Scheduled Scraping | 2/2 | Complete | 2026-01-20 |
 | 6. React Foundation | 4/4 | Complete | 2026-01-20 |
+| 6.1 Cross-Platform Scraping | 1/1 | Complete | 2026-01-21 |
 | 7. Match Views | 0/TBD | Not started | - |
 | 8. Real-time Updates | 0/TBD | Not started | - |
