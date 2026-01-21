@@ -64,6 +64,10 @@ export const api = {
     page?: number
     page_size?: number
     min_bookmakers?: number
+    tournament_id?: number
+    sport_id?: number
+    kickoff_from?: string
+    kickoff_to?: string
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -71,6 +75,14 @@ export const api = {
       searchParams.set('page_size', params.page_size.toString())
     if (params?.min_bookmakers)
       searchParams.set('min_bookmakers', params.min_bookmakers.toString())
+    if (params?.tournament_id)
+      searchParams.set('tournament_id', params.tournament_id.toString())
+    if (params?.sport_id)
+      searchParams.set('sport_id', params.sport_id.toString())
+    if (params?.kickoff_from)
+      searchParams.set('kickoff_from', params.kickoff_from)
+    if (params?.kickoff_to)
+      searchParams.set('kickoff_to', params.kickoff_to)
     const query = searchParams.toString()
     return fetchJson<MatchedEventList>(`/events${query ? `?${query}` : ''}`)
   },

@@ -48,12 +48,24 @@ export interface SchedulerPlatformHealth {
 }
 
 // Events types
+export interface OutcomeOdds {
+  name: string
+  odds: number
+}
+
+export interface InlineOdds {
+  market_id: string
+  market_name: string
+  outcomes: OutcomeOdds[]
+}
+
 export interface BookmakerOdds {
   bookmaker_slug: string
   bookmaker_name: string
   external_event_id: string
   event_url: string | null
   has_odds: boolean
+  inline_odds: InlineOdds[]
 }
 
 export interface MatchedEvent {
