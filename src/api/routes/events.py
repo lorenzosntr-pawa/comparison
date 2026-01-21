@@ -459,7 +459,8 @@ async def get_event(
 @router.get("", response_model=MatchedEventList)
 async def list_events(
     db: AsyncSession = Depends(get_db),
-    tournament_id: int | None = Query(default=None, description="Filter by tournament"),
+    tournament_id: int | None = Query(default=None, description="Filter by single tournament (deprecated, use tournament_ids)"),
+    tournament_ids: list[int] | None = Query(default=None, description="Filter by multiple tournament IDs"),
     sport_id: int | None = Query(default=None, description="Filter by sport"),
     kickoff_from: datetime | None = Query(
         default=None, description="Filter events after this time"
@@ -502,8 +503,12 @@ async def list_events(
         query = query.where(Event.kickoff > now)
         count_query = count_query.where(Event.kickoff > now)
 
-    # Apply tournament filter
-    if tournament_id is not None:
+    # Apply tournament filter (support both single and multiple IDs)
+    if tournament_ids:
+        query = query.where(Event.tournament_id.in_(tournament_ids))
+        count_query = count_query.where(Event.tournament_id.in_(tournament_ids))
+    elif tournament_id is not None:
+        # Backwards compatibility for single tournament_id
         query = query.where(Event.tournament_id == tournament_id)
         count_query = count_query.where(Event.tournament_id == tournament_id)
 

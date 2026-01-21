@@ -68,7 +68,7 @@ export const api = {
     page?: number
     page_size?: number
     min_bookmakers?: number
-    tournament_id?: number
+    tournament_ids?: number[]
     sport_id?: number
     kickoff_from?: string
     kickoff_to?: string
@@ -80,8 +80,12 @@ export const api = {
       searchParams.set('page_size', params.page_size.toString())
     if (params?.min_bookmakers)
       searchParams.set('min_bookmakers', params.min_bookmakers.toString())
-    if (params?.tournament_id)
-      searchParams.set('tournament_id', params.tournament_id.toString())
+    if (params?.tournament_ids && params.tournament_ids.length > 0) {
+      // FastAPI expects repeated query params for lists
+      params.tournament_ids.forEach((id) =>
+        searchParams.append('tournament_ids', id.toString())
+      )
+    }
     if (params?.sport_id)
       searchParams.set('sport_id', params.sport_id.toString())
     if (params?.kickoff_from)

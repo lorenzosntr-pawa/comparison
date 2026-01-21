@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -7,8 +8,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useTournaments } from '../hooks/use-tournaments'
-import { X } from 'lucide-react'
+import { X, ChevronsUpDown } from 'lucide-react'
 
 type DatePreset = 'today' | 'tomorrow' | 'weekend' | 'next7days'
 
@@ -63,7 +78,7 @@ function toDatetimeLocal(date: Date): string {
 
 export interface MatchFiltersState {
   search: string
-  tournamentId: number | undefined
+  tournamentIds: number[]
   kickoffFrom: string
   kickoffTo: string
   minBookmakers: number
@@ -77,6 +92,7 @@ interface MatchFiltersProps {
 
 export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
   const { data: tournaments, isPending: tournamentsLoading } = useTournaments()
+  const [leaguePopoverOpen, setLeaguePopoverOpen] = useState(false)
 
   const updateFilter = <K extends keyof MatchFiltersState>(
     key: K,
@@ -94,10 +110,28 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
     })
   }
 
+  const toggleTournament = (tournamentId: number) => {
+    const currentIds = filters.tournamentIds
+    const newIds = currentIds.includes(tournamentId)
+      ? currentIds.filter((id) => id !== tournamentId)
+      : [...currentIds, tournamentId]
+    updateFilter('tournamentIds', newIds)
+  }
+
+  const clearAllTournaments = () => {
+    updateFilter('tournamentIds', [])
+  }
+
+  const selectAllTournaments = () => {
+    if (tournaments) {
+      updateFilter('tournamentIds', tournaments.map((t) => t.id))
+    }
+  }
+
   const clearFilters = () => {
     onFiltersChange({
       search: '',
-      tournamentId: undefined,
+      tournamentIds: [],
       kickoffFrom: '',
       kickoffTo: '',
       minBookmakers: 2,
@@ -107,7 +141,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
   const hasActiveFilters =
     filters.search !== '' ||
-    filters.tournamentId !== undefined ||
+    filters.tournamentIds.length > 0 ||
     filters.kickoffFrom !== '' ||
     filters.kickoffTo !== '' ||
     filters.minBookmakers !== 2
@@ -126,28 +160,66 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
         />
       </div>
 
-      {/* Tournament filter */}
+      {/* League filter - searchable multi-select */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Tournament</label>
-        <Select
-          value={filters.tournamentId?.toString() ?? 'all'}
-          onValueChange={(value) =>
-            updateFilter('tournamentId', value === 'all' ? undefined : parseInt(value))
-          }
-          disabled={tournamentsLoading}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="All tournaments" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All tournaments</SelectItem>
-            {tournaments?.map((t) => (
-              <SelectItem key={t.id} value={t.id.toString()}>
-                {t.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <label className="text-xs font-medium text-muted-foreground">League</label>
+        <Popover open={leaguePopoverOpen} onOpenChange={setLeaguePopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={leaguePopoverOpen}
+              className="w-[200px] justify-between font-normal"
+              disabled={tournamentsLoading}
+            >
+              {filters.tournamentIds.length === 0
+                ? 'All leagues'
+                : `${filters.tournamentIds.length} league${filters.tournamentIds.length > 1 ? 's' : ''}`}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0" align="start">
+            <Command>
+              <CommandInput placeholder="Search leagues..." />
+              <CommandList>
+                <CommandEmpty>No leagues found.</CommandEmpty>
+                <CommandGroup>
+                  {tournaments?.map((t) => (
+                    <CommandItem
+                      key={t.id}
+                      value={t.name}
+                      onSelect={() => toggleTournament(t.id)}
+                    >
+                      <Checkbox
+                        checked={filters.tournamentIds.includes(t.id)}
+                        className="mr-2"
+                      />
+                      <span className="truncate">{t.name}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+              <div className="flex items-center justify-between border-t p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllTournaments}
+                  className="text-xs"
+                >
+                  Clear all
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={selectAllTournaments}
+                  className="text-xs"
+                >
+                  Select all
+                </Button>
+              </div>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Date presets and range */}

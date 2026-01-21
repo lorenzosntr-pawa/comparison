@@ -5,23 +5,23 @@ export interface UseMatchesParams {
   page?: number
   pageSize?: number
   minBookmakers?: number
-  tournamentId?: number
+  tournamentIds?: number[]
   kickoffFrom?: string
   kickoffTo?: string
   search?: string
 }
 
 export function useMatches(params: UseMatchesParams = {}) {
-  const { page = 1, pageSize = 50, minBookmakers, tournamentId, kickoffFrom, kickoffTo, search } = params
+  const { page = 1, pageSize = 50, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search } = params
 
   return useQuery({
-    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentId, kickoffFrom, kickoffTo, search }],
+    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search }],
     queryFn: () =>
       api.getEvents({
         page,
         page_size: pageSize,
         min_bookmakers: minBookmakers,
-        tournament_id: tournamentId,
+        tournament_ids: tournamentIds,
         kickoff_from: kickoffFrom,
         kickoff_to: kickoffTo,
         search,

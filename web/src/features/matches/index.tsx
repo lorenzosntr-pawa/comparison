@@ -16,7 +16,7 @@ import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
   search: '',
-  tournamentId: undefined,
+  tournamentIds: [],
   kickoffFrom: '',
   kickoffTo: '',
   minBookmakers: 2,
@@ -51,7 +51,7 @@ export function MatchList() {
     page,
     pageSize,
     minBookmakers: filters.minBookmakers,
-    tournamentId: filters.tournamentId,
+    tournamentIds: filters.tournamentIds.length > 0 ? filters.tournamentIds : undefined,
     kickoffFrom: apiKickoffFrom,
     kickoffTo: apiKickoffTo,
     search: filters.search || undefined,
