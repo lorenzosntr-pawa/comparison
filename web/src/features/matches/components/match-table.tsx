@@ -3,11 +3,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds } from '@/types/api'
 
-// Market IDs we display inline (from backend: 1X2=1, O/U 2.5=18, BTTS=29)
+// Market IDs we display inline (Betpawa taxonomy from backend)
+// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
 const MARKET_CONFIG = {
-  '1': { id: '1', label: '1X2', outcomes: ['1', 'X', '2'] },
-  '18': { id: '18', label: 'O/U 2.5', outcomes: ['Over', 'Under'] },
-  '29': { id: '29', label: 'BTTS', outcomes: ['Yes', 'No'] },
+  '3743': { id: '3743', label: '1X2', outcomes: ['1', 'X', '2'] },
+  '5000': { id: '5000', label: 'O/U 2.5', outcomes: ['Over', 'Under'] },
+  '3795': { id: '3795', label: 'BTTS', outcomes: ['Yes', 'No'] },
 } as const
 
 // Bookmaker display config
@@ -189,7 +190,7 @@ function formatKickoff(kickoff: string): string {
   })
 }
 
-export function MatchTable({ events, isLoading, visibleColumns = ['1', '18', '29'] }: MatchTableProps) {
+export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'] }: MatchTableProps) {
   const navigate = useNavigate()
 
   // Get ordered list of bookmakers from first event

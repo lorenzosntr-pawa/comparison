@@ -7,14 +7,15 @@ export interface ColumnConfig {
   label: string
 }
 
-// Available market columns matching backend INLINE_MARKET_IDS
+// Available market columns matching backend INLINE_MARKET_IDS (Betpawa taxonomy)
+// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
 export const AVAILABLE_COLUMNS: ColumnConfig[] = [
-  { id: '1', label: '1X2' },
-  { id: '18', label: 'O/U 2.5' },
-  { id: '29', label: 'BTTS' },
+  { id: '3743', label: '1X2' },
+  { id: '5000', label: 'O/U 2.5' },
+  { id: '3795', label: 'BTTS' },
 ]
 
-const DEFAULT_VISIBLE_COLUMNS = ['1', '18', '29']
+const DEFAULT_VISIBLE_COLUMNS = ['3743', '5000', '3795']
 
 function loadFromStorage(): string[] {
   try {
