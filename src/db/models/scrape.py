@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Index, String, Text, func
+from sqlalchemy import JSON, ForeignKey, Index, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.base import Base
@@ -41,6 +41,10 @@ class ScrapeRun(Base):
     trigger: Mapped[str | None] = mapped_column(
         String(50), nullable=True
     )  # e.g., "scheduled", "manual", "webhook"
+
+    # Per-platform timing in milliseconds (JSON column for flexibility)
+    # Format: {"betpawa": {"duration_ms": 1234, "events_count": 40}, ...}
+    platform_timings: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     # Relationships
     errors: Mapped[list["ScrapeError"]] = relationship(

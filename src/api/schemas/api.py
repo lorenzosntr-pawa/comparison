@@ -76,3 +76,7 @@ class ScrapeStatusResponse(BaseModel):
     events_scraped: int = 0
     events_failed: int = 0
     platforms: list[PlatformResult] | None = None
+    platform_timings: dict[str, dict] | None = Field(
+        default=None,
+        description="Per-platform timing: {platform: {duration_ms, events_count}}",
+    )

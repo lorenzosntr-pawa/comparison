@@ -33,17 +33,17 @@ async def trigger_scrape(
         description="Response detail level",
     ),
     timeout: int = Query(
-        default=30,
+        default=300,
         ge=5,
-        le=300,
-        description="Timeout per platform in seconds",
+        le=600,
+        description="Timeout per platform in seconds (default 300s for full scrape)",
     ),
 ) -> ScrapeResponse:
     """Trigger a scrape operation across selected platforms.
 
     - **platforms**: Which platforms to scrape (default: all)
     - **detail**: "summary" for counts only, "full" to include all event data
-    - **timeout**: Max seconds per platform (default 30, max 300)
+    - **timeout**: Max seconds per platform (default 300, max 600)
 
     Returns scrape results with status and per-platform breakdown.
     Creates ScrapeRun record to track execution.
@@ -84,6 +84,17 @@ async def trigger_scrape(
     scrape_run.events_failed = sum(
         1 for p in result.platforms if not p.success
     )
+
+    # Store per-platform timing metrics
+    scrape_run.platform_timings = {
+        p.platform.value: {
+            "duration_ms": p.duration_ms,
+            "events_count": p.events_count,
+        }
+        for p in result.platforms
+        if p.success
+    }
+
     await db.commit()
 
     # Extract events from platform results if detail=full
@@ -129,4 +140,5 @@ async def get_scrape_status(
         completed_at=scrape_run.completed_at,
         events_scraped=scrape_run.events_scraped,
         events_failed=scrape_run.events_failed,
+        platform_timings=scrape_run.platform_timings,
     )
