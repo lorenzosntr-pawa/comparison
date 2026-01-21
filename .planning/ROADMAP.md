@@ -27,7 +27,7 @@ None
 - [x] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
 - [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
 - [x] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
-- [ ] **Phase 11: Settings Page** - Build functional settings page for tool configuration
+- [x] **Phase 11: Settings Page** - Build functional settings page for tool configuration
 - [ ] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues
 - [ ] **Phase 13: Competitor Event Import** - Import SportyBet/Bet9ja events not in BetPawa for coverage comparison
 - [ ] **Phase 14: Scraping Logging & Workflow** - Restructure backend scraping with proper logging and state tracking
@@ -190,7 +190,7 @@ None
 **Research**: Unlikely (internal UI development)
 **Plans**:
 - Plan 01: Settings Backend (COMPLETE - 11-01-SUMMARY.md)
-- Plan 02: Settings UI (TBD)
+- Plan 02: Settings UI (COMPLETE - 11-02-SUMMARY.md)
 
 **Details:**
 - Settings page currently exists but is empty
@@ -257,7 +257,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Scrape Runs UI Improvements | 3/3 | Complete | 2026-01-21 |
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
 | 10. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
-| 11. Settings Page | 1/2 | In progress | - |
+| 11. Settings Page | 2/2 | Complete | 2026-01-22 |
 | 12. UI Polish | 0/TBD | Not started | - |
 | 13. Competitor Event Import | 0/TBD | Not started | - |
 | 14. Scraping Logging & Workflow | 0/TBD | Not started | - |
