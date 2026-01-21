@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid } from './components'
+import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid, SummarySection } from './components'
 import type { MatchFiltersState } from './components'
 import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
 
@@ -210,6 +210,8 @@ export function MatchDetail() {
   return (
     <div className="space-y-4">
       <MatchHeader event={event} />
+
+      <SummarySection marketsByBookmaker={event.markets_by_bookmaker} />
 
       <Card>
         <CardHeader>
