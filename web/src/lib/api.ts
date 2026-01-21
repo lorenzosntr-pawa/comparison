@@ -5,6 +5,8 @@ import type {
   SchedulerPlatformHealth,
   MatchedEventList,
   EventDetailResponse,
+  SettingsResponse,
+  SettingsUpdate,
 } from '@/types/api'
 
 const API_BASE = '/api'
@@ -105,4 +107,19 @@ export const api = {
     fetchJson<Array<{ id: number; name: string; country: string | null }>>(
       '/events/tournaments'
     ),
+
+  // Settings
+  getSettings: () => fetchJson<SettingsResponse>('/settings'),
+
+  updateSettings: (data: SettingsUpdate) =>
+    fetchJson<SettingsResponse>('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  pauseScheduler: () =>
+    fetchJson<void>('/scheduler/pause', { method: 'POST' }),
+
+  resumeScheduler: () =>
+    fetchJson<void>('/scheduler/resume', { method: 'POST' }),
 }

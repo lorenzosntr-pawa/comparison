@@ -22,7 +22,20 @@ export interface JobStatus {
 
 export interface SchedulerStatus {
   running: boolean
+  paused: boolean
   jobs: JobStatus[]
+}
+
+// Settings types
+export interface SettingsResponse {
+  scrapeIntervalMinutes: number
+  enabledPlatforms: string[]
+  updatedAt: string | null
+}
+
+export interface SettingsUpdate {
+  scrapeIntervalMinutes?: number
+  enabledPlatforms?: string[]
 }
 
 export interface RunHistoryEntry {
