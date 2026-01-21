@@ -46,6 +46,13 @@ const statusVariants: Record<
   pending: 'outline',
 }
 
+// Platform-specific colors for progress bars
+const PLATFORM_PROGRESS_COLORS: Record<string, string> = {
+  betpawa: '[&>div]:bg-green-500',
+  sportybet: '[&>div]:bg-blue-500',
+  bet9ja: '[&>div]:bg-orange-500',
+}
+
 export function RecentRuns() {
   const queryClient = useQueryClient()
   const { data, isPending, error, refetch } = useSchedulerHistory(5)
@@ -104,10 +111,10 @@ export function RecentRuns() {
         if (data.phase === 'completed' || data.phase === 'failed') {
           eventSource.close()
           setIsManualStreaming(false)
-          // Invalidate and refetch queries
-          queryClient.invalidateQueries({ queryKey: ['scheduler-history'] })
-          queryClient.invalidateQueries({ queryKey: ['events'] })
-          refetch()
+          // Immediately refetch to sync status (not just invalidate)
+          // This ensures the list updates at the same moment as the progress bar
+          void queryClient.refetchQueries({ queryKey: ['scheduler-history'] })
+          void queryClient.refetchQueries({ queryKey: ['events'] })
         }
       } catch (e) {
         console.error('Failed to parse SSE event:', e)
@@ -235,7 +242,12 @@ export function RecentRuns() {
                 className={cn(
                   'h-1.5',
                   activeProgress?.phase === 'completed' && '[&>div]:bg-green-500',
-                  activeProgress?.phase === 'failed' && '[&>div]:bg-destructive'
+                  activeProgress?.phase === 'failed' && '[&>div]:bg-destructive',
+                  // Platform-specific colors during active scraping
+                  isStreaming && activeProgress?.platform &&
+                    activeProgress.phase !== 'completed' &&
+                    activeProgress.phase !== 'failed' &&
+                    PLATFORM_PROGRESS_COLORS[activeProgress.platform.toLowerCase()]
                 )}
               />
             </div>
