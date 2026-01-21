@@ -172,7 +172,9 @@ None
 **Goal**: Improve matches page UX with working filters, region/league display, and match search
 **Depends on**: Phase 7 (extends match views)
 **Research**: Unlikely (internal UI improvements)
-**Plans**: TBD
+**Plans**:
+- Plan 01: Search and Region Column (COMPLETE - 10-01-SUMMARY.md)
+- Plan 02: Date Filters (pending)
 
 **Details:**
 - Fix all filters on top of matches page (especially date filters)
@@ -223,6 +225,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
 | 8. Scrape Runs UI Improvements | 3/3 | Complete | 2026-01-21 |
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
-| 10. Matches Page Improvements | 0/TBD | Not started | - |
+| 10. Matches Page Improvements | 1/2 | In progress | - |
 | 11. Settings Page | 0/TBD | Not started | - |
 | 12. UI Polish | 0/TBD | Not started | - |

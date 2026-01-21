@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 8 complete — Scrape Runs UI Improvements
+**Current focus:** Phase 10 in progress — Matches Page Improvements
 
 ## Current Position
 
-Phase: 8 of 12 (Scrape Runs UI Improvements)
-Plan: 3+2fix of 3+2fix in current phase
-Status: Phase complete (all UAT issues resolved)
-Last activity: 2026-01-21 — Completed 08-FIX2.md (UAT Issues Fix Round 2)
+Phase: 10 of 12 (Matches Page Improvements)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 10-01-PLAN.md (Search and Region Column)
 
-Progress: ██████████░░ 95% (35 of 37 plans complete)
+Progress: ██████████░░ 97% (36 of 37 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35
+- Total plans completed: 36
 - Average duration: 6 min
-- Total execution time: 3.1 hours
+- Total execution time: 3.2 hours
 
 **By Phase:**
 
@@ -38,9 +38,10 @@ Progress: ██████████░░ 95% (35 of 37 plans complete)
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
+| 10 Matches Page Improvements | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 12 min, 8 min, 5 min, 8 min
+- Last 5 plans: 12 min, 8 min, 5 min, 8 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -140,6 +141,8 @@ Recent decisions affecting current work:
 - PLATFORM_PROGRESS_COLORS map for dynamic Tailwind classes
 - refetchQueries for immediate data sync vs invalidateQueries
 - Platform completion detection via platform_timings presence
+- Case-insensitive ILIKE search on multiple columns (home_team OR away_team)
+- Nullable string fields display as dash in table cells (tournament_country ?? '-')
 
 ### Roadmap Evolution
 
@@ -159,5 +162,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-FIX2.md (UAT Issues Fix Round 2) — All Phase 8 UAT issues resolved
-Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-FIX2-SUMMARY.md
+Stopped at: Completed 10-01-PLAN.md (Search and Region Column)
+Resume file: .planning/phases/10-matches-page-improvements/10-01-SUMMARY.md
