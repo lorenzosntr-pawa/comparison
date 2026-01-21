@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 7 of 8 (Match Views)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 07-01-PLAN.md
+Last activity: 2026-01-21 — Completed 07-02-PLAN.md
 
-Progress: █████████░ 82%
+Progress: █████████░ 86%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25
+- Total plans completed: 26
 - Average duration: 6 min
-- Total execution time: 2.3 hours
+- Total execution time: 2.4 hours
 
 **By Phase:**
 
@@ -34,10 +34,10 @@ Progress: █████████░ 82%
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
 | 06 React Foundation | 4 | 20 min | 5 min |
 | 06.1 Cross-Platform Scraping | 1 | 8 min | 8 min |
-| 07 Match Views | 1 | 6 min | 6 min |
+| 07 Match Views | 2 | 14 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 5 min, 5 min, 8 min, 6 min
+- Last 5 plans: 5 min, 5 min, 8 min, 6 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -120,6 +120,10 @@ Recent decisions affecting current work:
 - Margin calculation: (sum(1/odds) - 1) * 100
 - Subquery for latest snapshot per (event_id, bookmaker_id) pair
 - Inline odds for list views: fixed 3 key markets (1X2, O/U 2.5, BTTS)
+- OddsCell color coding: green = Betpawa better (higher odds), red = Betpawa worse
+- Tolerance 0.02 for neutral odds display
+- localStorage persistence for match list column settings
+- Client-side tournament sorting (API sorts by kickoff)
 
 ### Roadmap Evolution
 
@@ -136,5 +140,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 07-01-PLAN.md
-Resume file: .planning/phases/07-match-views/07-01-SUMMARY.md
+Stopped at: Completed 07-02-PLAN.md
+Resume file: .planning/phases/07-match-views/07-02-SUMMARY.md
