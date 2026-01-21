@@ -13,6 +13,21 @@ class ProcessingResult(BaseModel):
     new_tournaments: int
 
 
+class OutcomeOdds(BaseModel):
+    """A single outcome with its odds value."""
+
+    name: str
+    odds: float
+
+
+class InlineOdds(BaseModel):
+    """Inline odds for a single market (used in list view)."""
+
+    market_id: str
+    market_name: str
+    outcomes: list[OutcomeOdds]
+
+
 class BookmakerOdds(BaseModel):
     """Odds availability info for a single bookmaker."""
 
@@ -22,7 +37,8 @@ class BookmakerOdds(BaseModel):
     bookmaker_name: str
     external_event_id: str
     event_url: str | None
-    has_odds: bool = False  # Placeholder for future odds data
+    has_odds: bool = False
+    inline_odds: list[InlineOdds] = []
 
 
 class MatchedEvent(BaseModel):

@@ -3,43 +3,95 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
 from src.db.models.event import Event, EventBookmaker
+from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.sport import Tournament
 from src.matching.schemas import (
     BookmakerOdds,
+    InlineOdds,
     MatchedEvent,
     MatchedEventList,
+    OutcomeOdds,
     UnmatchedEvent,
 )
 
 router = APIRouter(prefix="/events", tags=["events"])
 
+# Key market IDs for inline odds (Betpawa taxonomy)
+INLINE_MARKET_IDS = ["1", "18", "29"]  # 1X2, O/U 2.5, BTTS
 
-def _build_matched_event(event: Event) -> MatchedEvent:
+
+def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
+    """Extract inline odds for key markets from a snapshot.
+
+    Args:
+        snapshot: OddsSnapshot with loaded markets, or None.
+
+    Returns:
+        List of InlineOdds for key markets (1X2, O/U 2.5, BTTS).
+    """
+    if not snapshot or not snapshot.markets:
+        return []
+
+    inline_odds = []
+    for market in snapshot.markets:
+        if market.betpawa_market_id in INLINE_MARKET_IDS:
+            # Parse outcomes from JSONB
+            outcomes = []
+            if isinstance(market.outcomes, list):
+                for outcome in market.outcomes:
+                    if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
+                        outcomes.append(
+                            OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
+                        )
+            if outcomes:
+                inline_odds.append(
+                    InlineOdds(
+                        market_id=market.betpawa_market_id,
+                        market_name=market.betpawa_market_name,
+                        outcomes=outcomes,
+                    )
+                )
+
+    return inline_odds
+
+
+def _build_matched_event(
+    event: Event,
+    snapshots_by_bookmaker: dict[int, OddsSnapshot] | None = None,
+) -> MatchedEvent:
     """Map SQLAlchemy Event to Pydantic MatchedEvent.
 
     Args:
         event: Event model with loaded relationships.
+        snapshots_by_bookmaker: Optional dict mapping bookmaker_id to latest OddsSnapshot.
 
     Returns:
         Pydantic MatchedEvent schema.
     """
-    bookmakers = [
-        BookmakerOdds(
-            bookmaker_slug=link.bookmaker.slug,
-            bookmaker_name=link.bookmaker.name,
-            external_event_id=link.external_event_id,
-            event_url=link.event_url,
-            has_odds=False,  # Placeholder for future odds data
+    snapshots_by_bookmaker = snapshots_by_bookmaker or {}
+
+    bookmakers = []
+    for link in event.bookmaker_links:
+        snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
+        inline_odds = _build_inline_odds(snapshot)
+
+        bookmakers.append(
+            BookmakerOdds(
+                bookmaker_slug=link.bookmaker.slug,
+                bookmaker_name=link.bookmaker.name,
+                external_event_id=link.external_event_id,
+                event_url=link.event_url,
+                has_odds=bool(snapshot and snapshot.markets),
+                inline_odds=inline_odds,
+            )
         )
-        for link in event.bookmaker_links
-    ]
 
     return MatchedEvent(
         id=event.id,
@@ -54,6 +106,62 @@ def _build_matched_event(event: Event) -> MatchedEvent:
         bookmakers=bookmakers,
         created_at=event.created_at,
     )
+
+
+async def _load_latest_snapshots_for_events(
+    db: AsyncSession,
+    event_ids: list[int],
+) -> dict[int, dict[int, OddsSnapshot]]:
+    """Load the latest OddsSnapshot per bookmaker for multiple events.
+
+    Uses a subquery to get only the latest snapshot per (event_id, bookmaker_id) pair,
+    then eagerly loads markets for inline odds.
+
+    Args:
+        db: Async database session.
+        event_ids: List of event IDs to load snapshots for.
+
+    Returns:
+        Dict mapping event_id -> {bookmaker_id: OddsSnapshot}.
+    """
+    if not event_ids:
+        return {}
+
+    # Subquery to find the latest snapshot ID per (event_id, bookmaker_id)
+    latest_subq = (
+        select(
+            OddsSnapshot.event_id,
+            OddsSnapshot.bookmaker_id,
+            func.max(OddsSnapshot.id).label("max_id"),
+        )
+        .where(OddsSnapshot.event_id.in_(event_ids))
+        .group_by(OddsSnapshot.event_id, OddsSnapshot.bookmaker_id)
+        .subquery()
+    )
+
+    # Main query: fetch snapshots matching the latest IDs, with markets eagerly loaded
+    query = (
+        select(OddsSnapshot)
+        .join(
+            latest_subq,
+            (OddsSnapshot.event_id == latest_subq.c.event_id)
+            & (OddsSnapshot.bookmaker_id == latest_subq.c.bookmaker_id)
+            & (OddsSnapshot.id == latest_subq.c.max_id),
+        )
+        .options(selectinload(OddsSnapshot.markets))
+    )
+
+    result = await db.execute(query)
+    snapshots = result.scalars().all()
+
+    # Build nested dict: event_id -> bookmaker_id -> snapshot
+    snapshots_by_event: dict[int, dict[int, OddsSnapshot]] = {}
+    for snapshot in snapshots:
+        if snapshot.event_id not in snapshots_by_event:
+            snapshots_by_event[snapshot.event_id] = {}
+        snapshots_by_event[snapshot.event_id][snapshot.bookmaker_id] = snapshot
+
+    return snapshots_by_event
 
 
 @router.get("/unmatched", response_model=list[UnmatchedEvent])
@@ -151,7 +259,7 @@ async def get_event(
     event_id: int,
     db: AsyncSession = Depends(get_db),
 ) -> MatchedEvent:
-    """Get a single event by ID with all bookmaker links."""
+    """Get a single event by ID with all bookmaker links and inline odds."""
     result = await db.execute(
         select(Event)
         .where(Event.id == event_id)
@@ -165,7 +273,10 @@ async def get_event(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    return _build_matched_event(event)
+    # Load latest odds snapshots
+    snapshots_by_event = await _load_latest_snapshots_for_events(db, [event.id])
+
+    return _build_matched_event(event, snapshots_by_event.get(event.id))
 
 
 @router.get("", response_model=MatchedEventList)
@@ -250,8 +361,15 @@ async def list_events(
     result = await db.execute(query)
     events = result.scalars().unique().all()
 
-    # Build response
-    matched_events = [_build_matched_event(event) for event in events]
+    # Load latest odds snapshots for all events
+    event_ids = [event.id for event in events]
+    snapshots_by_event = await _load_latest_snapshots_for_events(db, event_ids)
+
+    # Build response with inline odds
+    matched_events = [
+        _build_matched_event(event, snapshots_by_event.get(event.id))
+        for event in events
+    ]
 
     return MatchedEventList(
         events=matched_events,
