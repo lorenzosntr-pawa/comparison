@@ -1,4 +1,4 @@
-import { Home, List, Settings, Activity } from 'lucide-react'
+import { Home, List, Settings, Activity, History } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -16,6 +16,7 @@ import {
 const navItems = [
   { title: 'Dashboard', url: '/', icon: Home },
   { title: 'Matches', url: '/matches', icon: List },
+  { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
 

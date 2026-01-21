@@ -36,6 +36,9 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Generic GET for simple endpoints
+  get: <T>(url: string) => fetchJson<T>(url),
+
   // Health
   getHealth: () => fetchJson<HealthResponse>('/health'),
 
