@@ -461,6 +461,166 @@ class ScrapingOrchestrator:
         logger.info(f"Scraped {len(events)} events from SportyBet")
         return events
 
+    def _extract_football_tournaments(self, sports_data: dict) -> list[str]:
+        """Extract football tournament IDs from GetSports response.
+
+        Args:
+            sports_data: Full API response from fetch_sports().
+
+        Returns:
+            List of tournament/group IDs for football.
+        """
+        tournament_ids: list[str] = []
+
+        try:
+            # Navigate: D.PAL.1.SG (Sport ID 1 = Soccer)
+            d_data = sports_data.get("D", {})
+            pal_data = d_data.get("PAL", {})
+            soccer_data = pal_data.get("1", {})  # Sport ID 1 = Soccer
+            sport_groups = soccer_data.get("SG", {})
+
+            # SG contains groups keyed by ID, each with G dict of sub-groups
+            for group_id, group_data in sport_groups.items():
+                if not isinstance(group_data, dict):
+                    continue
+
+                # Each group can have sub-groups in G dict
+                sub_groups = group_data.get("G", {})
+                if isinstance(sub_groups, dict):
+                    for sub_group_id in sub_groups.keys():
+                        tournament_ids.append(str(sub_group_id))
+
+                # The group itself may also be a tournament
+                if "G" not in group_data or not group_data.get("G"):
+                    # Leaf node - use the group_id itself
+                    tournament_ids.append(str(group_id))
+
+        except (AttributeError, TypeError) as e:
+            logger.warning(f"Error parsing Bet9ja sports structure: {e}")
+
+        return tournament_ids
+
+    async def _scrape_bet9ja(
+        self,
+        client: Bet9jaClient,
+        db: AsyncSession,
+    ) -> list[dict]:
+        """Scrape events from Bet9ja via tournament discovery.
+
+        Discovers football tournaments and fetches events from each,
+        matching via EXTID (SportRadar ID) field.
+
+        Args:
+            client: Bet9ja API client.
+            db: Async database session (used for event matching).
+
+        Returns:
+            List of event dicts in standard format for EventMatchingService.
+        """
+        events: list[dict] = []
+
+        # Discover football tournaments
+        try:
+            sports_data = await client.fetch_sports()
+            tournament_ids = self._extract_football_tournaments(sports_data)
+        except Exception as e:
+            logger.error(f"Failed to fetch Bet9ja sports structure: {e}")
+            return events
+
+        logger.info(f"Discovered {len(tournament_ids)} Bet9ja football tournaments")
+
+        for tournament_id in tournament_ids:
+            try:
+                tournament_events = await client.fetch_events(tournament_id)
+
+                for event_data in tournament_events:
+                    parsed = self._parse_bet9ja_event(event_data, tournament_id)
+                    if parsed:
+                        events.append(parsed)
+
+            except Exception as e:
+                logger.warning(
+                    f"Failed to scrape Bet9ja tournament {tournament_id}: {e}"
+                )
+                # Continue with other tournaments
+
+            # Rate limiting delay
+            await asyncio.sleep(0.2)
+
+        logger.info(f"Scraped {len(events)} events from Bet9ja")
+        return events
+
+    def _parse_bet9ja_event(
+        self,
+        data: dict,
+        tournament_id: str,
+    ) -> dict | None:
+        """Parse a Bet9ja event into standard format.
+
+        Args:
+            data: Raw event data from Bet9ja API.
+            tournament_id: Tournament ID for context.
+
+        Returns:
+            Standardized event dict, or None if cannot parse.
+        """
+        # Extract SportRadar ID from EXTID field
+        ext_id = data.get("EXTID")
+        if not ext_id:
+            # Cannot match without SportRadar ID - skip gracefully
+            logger.debug(
+                f"Bet9ja event {data.get('C', 'unknown')} has no EXTID - skipping"
+            )
+            return None
+
+        # Parse home/away teams from DS field (format: "Home Team - Away Team")
+        ds_field = data.get("DS", "")
+        if " - " in ds_field:
+            parts = ds_field.split(" - ", 1)
+            home_team = parts[0].strip()
+            away_team = parts[1].strip() if len(parts) > 1 else ""
+        else:
+            # Cannot parse teams
+            return None
+
+        if not home_team or not away_team:
+            return None
+
+        # Parse kickoff from STARTDATE (format: "YYYY-MM-DD HH:MM:SS")
+        start_date_str = data.get("STARTDATE", "")
+        try:
+            kickoff = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S")
+        except (ValueError, TypeError):
+            return None
+
+        # Extract event ID and URL
+        event_id = str(data.get("C", ""))
+        if not event_id:
+            return None
+
+        # Tournament info from the event data
+        # Bet9ja events have G (group/tournament) and GDS (group display name)
+        tournament_name = data.get("GDS", "Unknown")
+        # Country info may be in parent group - use tournament_id as fallback
+        group_id = data.get("G")
+
+        return {
+            "sportradar_id": ext_id,
+            "name": ds_field,
+            "home_team": home_team,
+            "away_team": away_team,
+            "kickoff": kickoff,
+            "external_event_id": event_id,
+            "event_url": f"https://sports.bet9ja.com/sport/match/{event_id}",
+            "raw_data": data,  # Store raw response for OddsSnapshot
+            "tournament": {
+                "sportradar_id": str(group_id) if group_id else None,
+                "name": tournament_name,
+                "sport_id": 1,  # Football
+                "country": None,  # Not available in event data
+            },
+        }
+
     async def _store_events(
         self,
         db: AsyncSession,
@@ -516,7 +676,41 @@ class ScrapingOrchestrator:
             )
             return
 
-        # Use EventMatchingService to process events (BetPawa and Bet9ja)
+        if platform == Platform.BET9JA:
+            # Bet9ja events may be new - use full EventMatchingService flow
+            # Then create OddsSnapshot for each event
+            result = await service.process_scraped_events(
+                db=db,
+                platform=platform,
+                bookmaker_id=bookmaker_id,
+                events=events,
+            )
+
+            # Create OddsSnapshot records with raw responses
+            # Need to look up event IDs by sportradar_id
+            sportradar_ids = [e["sportradar_id"] for e in events]
+            events_map = await service.get_events_by_sportradar_ids(
+                db, sportradar_ids
+            )
+
+            for event_data in events:
+                event = events_map.get(event_data["sportradar_id"])
+                if event and event_data.get("raw_data"):
+                    snapshot = OddsSnapshot(
+                        event_id=event.id,
+                        bookmaker_id=bookmaker_id,
+                        raw_response=event_data["raw_data"],
+                    )
+                    db.add(snapshot)
+
+            logger.info(
+                f"Stored {result.new_events} new, {result.updated_events} updated "
+                f"events for {platform} ({result.new_tournaments} new tournaments, "
+                f"{len(events)} snapshots)"
+            )
+            return
+
+        # Use EventMatchingService to process events (BetPawa)
         result = await service.process_scraped_events(
             db=db,
             platform=platform,
