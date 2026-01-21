@@ -22,6 +22,7 @@ from src.matching.schemas import (
     MatchedEventList,
     OutcomeDetail,
     OutcomeOdds,
+    TournamentSummary,
     UnmatchedEvent,
 )
 
@@ -426,6 +427,45 @@ async def list_unmatched_events(
     return unmatched_events
 
 
+@router.get("/tournaments", response_model=list[TournamentSummary])
+async def list_tournaments(
+    db: AsyncSession = Depends(get_db),
+    with_events_only: bool = Query(
+        default=True, description="Only return tournaments that have events"
+    ),
+) -> list[TournamentSummary]:
+    """List all tournaments for filter dropdowns.
+
+    Returns tournaments sorted by name, optionally filtered to only
+    those that have events in the database.
+    """
+    if with_events_only:
+        # Only tournaments that have at least one event
+        query = (
+            select(Tournament)
+            .where(
+                Tournament.id.in_(
+                    select(Event.tournament_id).distinct()
+                )
+            )
+            .order_by(Tournament.name)
+        )
+    else:
+        query = select(Tournament).order_by(Tournament.name)
+
+    result = await db.execute(query)
+    tournaments = result.scalars().all()
+
+    return [
+        TournamentSummary(
+            id=t.id,
+            name=t.name,
+            country=t.country,
+        )
+        for t in tournaments
+    ]
+
+
 @router.get("/{event_id}", response_model=EventDetailResponse)
 async def get_event(
     event_id: int,
@@ -520,13 +560,16 @@ async def list_events(
         )
 
     # Apply kickoff time filters (overrides default if provided)
+    # Convert to naive UTC to match database storage
     if kickoff_from is not None:
-        query = query.where(Event.kickoff >= kickoff_from)
-        count_query = count_query.where(Event.kickoff >= kickoff_from)
+        kickoff_from_naive = kickoff_from.replace(tzinfo=None) if kickoff_from.tzinfo else kickoff_from
+        query = query.where(Event.kickoff >= kickoff_from_naive)
+        count_query = count_query.where(Event.kickoff >= kickoff_from_naive)
 
     if kickoff_to is not None:
-        query = query.where(Event.kickoff <= kickoff_to)
-        count_query = count_query.where(Event.kickoff <= kickoff_to)
+        kickoff_to_naive = kickoff_to.replace(tzinfo=None) if kickoff_to.tzinfo else kickoff_to
+        query = query.where(Event.kickoff <= kickoff_to_naive)
+        count_query = count_query.where(Event.kickoff <= kickoff_to_naive)
 
     # Apply team name search filter
     if search:

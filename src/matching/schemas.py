@@ -70,6 +70,16 @@ class MatchedEventList(BaseModel):
     page_size: int = 50
 
 
+class TournamentSummary(BaseModel):
+    """Summary of a tournament for filter dropdowns."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    country: str | None
+
+
 class UnmatchedEvent(BaseModel):
     """An event that exists on some platforms but not all."""
 

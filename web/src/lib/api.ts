@@ -99,4 +99,10 @@ export const api = {
 
   getEventDetail: (id: number) =>
     fetchJson<EventDetailResponse>(`/events/${id}`),
+
+  // Tournaments
+  getTournaments: () =>
+    fetchJson<Array<{ id: number; name: string; country: string | null }>>(
+      '/events/tournaments'
+    ),
 }

@@ -187,14 +187,19 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
                   {tournaments?.map((t) => (
                     <CommandItem
                       key={t.id}
-                      value={t.name}
+                      value={`${t.name} ${t.country ?? ''}`}
                       onSelect={() => toggleTournament(t.id)}
                     >
                       <Checkbox
                         checked={filters.tournamentIds.includes(t.id)}
                         className="mr-2"
                       />
-                      <span className="truncate">{t.name}</span>
+                      <span className="truncate flex-1">{t.name}</span>
+                      {t.country && (
+                        <span className="ml-2 text-xs text-muted-foreground shrink-0">
+                          {t.country}
+                        </span>
+                      )}
                     </CommandItem>
                   ))}
                 </CommandGroup>
