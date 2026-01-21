@@ -72,6 +72,7 @@ export const api = {
     sport_id?: number
     kickoff_from?: string
     kickoff_to?: string
+    search?: string
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -87,6 +88,7 @@ export const api = {
       searchParams.set('kickoff_from', params.kickoff_from)
     if (params?.kickoff_to)
       searchParams.set('kickoff_to', params.kickoff_to)
+    if (params?.search) searchParams.set('search', params.search)
     const query = searchParams.toString()
     return fetchJson<MatchedEventList>(`/events${query ? `?${query}` : ''}`)
   },

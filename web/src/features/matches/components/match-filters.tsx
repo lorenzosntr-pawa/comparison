@@ -62,6 +62,7 @@ function toDatetimeLocal(date: Date): string {
 }
 
 export interface MatchFiltersState {
+  search: string
   tournamentId: number | undefined
   kickoffFrom: string
   kickoffTo: string
@@ -95,6 +96,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
   const clearFilters = () => {
     onFiltersChange({
+      search: '',
       tournamentId: undefined,
       kickoffFrom: '',
       kickoffTo: '',
@@ -104,6 +106,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
   }
 
   const hasActiveFilters =
+    filters.search !== '' ||
     filters.tournamentId !== undefined ||
     filters.kickoffFrom !== '' ||
     filters.kickoffTo !== '' ||
@@ -111,6 +114,18 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
   return (
     <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/30 rounded-lg">
+      {/* Team search */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Team</label>
+        <Input
+          type="text"
+          placeholder="Search team..."
+          value={filters.search}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="w-[160px]"
+        />
+      </div>
+
       {/* Tournament filter */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground">Tournament</label>

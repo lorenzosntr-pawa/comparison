@@ -15,6 +15,7 @@ import type { MatchFiltersState } from './components'
 import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
+  search: '',
   tournamentId: undefined,
   kickoffFrom: '',
   kickoffTo: '',
@@ -53,6 +54,7 @@ export function MatchList() {
     tournamentId: filters.tournamentId,
     kickoffFrom: apiKickoffFrom,
     kickoffTo: apiKickoffTo,
+    search: filters.search || undefined,
   })
 
   // Reset to page 1 when filters change
