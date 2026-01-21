@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 8 in progress — Scrape Runs UI Improvements
+**Current focus:** Phase 8 complete — Scrape Runs UI Improvements
 
 ## Current Position
 
 Phase: 8 of 12 (Scrape Runs UI Improvements)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-21 — Completed 08-02-PLAN.md (Historical Analytics)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-21 — Completed 08-03-PLAN.md (Platform-Specific Retry)
 
-Progress: ██████████░░ 86% (32 of 37 plans complete)
+Progress: ██████████░░ 89% (33 of 37 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 32
+- Total plans completed: 33
 - Average duration: 6 min
-- Total execution time: 2.9 hours
+- Total execution time: 3.0 hours
 
 **By Phase:**
 
@@ -37,10 +37,10 @@ Progress: ██████████░░ 86% (32 of 37 plans complete)
 | 07 Match Views | 3+2fix | 32 min | 6 min |
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
-| 08 Scrape Runs UI Improvements | 2 | 20 min | 10 min |
+| 08 Scrape Runs UI Improvements | 3 | 28 min | 9 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 3 min, 8 min, 8 min, 12 min
+- Last 5 plans: 3 min, 8 min, 8 min, 12 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -135,6 +135,8 @@ Recent decisions affecting current work:
 - OddsBadge component: green=best odds, red=worst (>3% worse)
 - MarginIndicator: percentage with comparison coloring (lower margin = better)
 - Competitive position metric: "X/Y best odds (Z%)" for quick assessment
+- Retry endpoint creates new run with trigger="retry:{original_id}" for audit trail
+- Failed platform detection from errors + missing platform_timings
 
 ### Roadmap Evolution
 
@@ -154,5 +156,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-02-PLAN.md (Historical Analytics)
-Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-02-SUMMARY.md
+Stopped at: Completed 08-03-PLAN.md (Platform-Specific Retry) — Phase 8 complete
+Resume file: .planning/phases/08-scrape-runs-ui-improvements/08-03-SUMMARY.md

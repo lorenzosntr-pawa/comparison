@@ -24,7 +24,7 @@ None
 - [x] **Phase 7: Match Views** - Match list and detail views with odds comparison
 - [x] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
 - [x] **Phase 7.2: Scraping Performance** - Improve scraping speed and logging (INSERTED)
-- [ ] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
+- [x] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
 - [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
 - [ ] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
 - [ ] **Phase 11: Settings Page** - Build functional settings page for tool configuration
@@ -147,13 +147,14 @@ None
 **Plans**:
 - Plan 01: Live Progress Visualization (COMPLETE - 08-01-SUMMARY.md)
 - Plan 02: Historical Analytics (COMPLETE - 08-02-SUMMARY.md)
-- Plan 03: Platform-Specific Retry (NOT STARTED)
+- Plan 03: Platform-Specific Retry (COMPLETE - 08-03-SUMMARY.md)
 
 **Details:**
 - Per-platform progress bars on detail page during active scrapes
 - Overall progress indicator on dashboard widget
 - Analytics charts: duration trends, success rates, event volume
 - Platform-specific retry for failed scrapes (not whole-run retry)
+- POST /api/scrape/{run_id}/retry with platform selection
 
 ### Phase 9: Market Mapping Expansion
 **Goal**: Expand market mappings to correctly match more markets between SportyBet/Bet9ja and BetPawa by analyzing DB data and improving existing mappings
@@ -220,7 +221,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Match Views | 3/3 | Complete | 2026-01-21 |
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
-| 8. Scrape Runs UI Improvements | 2/3 | In progress | - |
+| 8. Scrape Runs UI Improvements | 3/3 | Complete | 2026-01-21 |
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
 | 10. Matches Page Improvements | 0/TBD | Not started | - |
 | 11. Settings Page | 0/TBD | Not started | - |
