@@ -310,7 +310,7 @@ class ScrapingOrchestrator:
         """Scrape events from a single BetPawa competition.
 
         Fetches the event list first, then fetches full event data
-        (including markets) for each event.
+        (including markets) for each event using parallel requests.
 
         Args:
             client: BetPawa API client.
@@ -326,31 +326,53 @@ class ScrapingOrchestrator:
             size=100,
         )
 
-        events = []
         responses = events_response.get("responses", [])
 
         if not responses:
-            return events
+            return []
 
         first_response = responses[0]
         events_data = first_response.get("responses", [])
 
+        # Parse all events first
+        parsed_events = []
         for event_data in events_data:
             parsed = self._parse_betpawa_event(event_data)
             if parsed:
-                # Fetch full event data with markets
+                parsed_events.append(parsed)
+
+        if not parsed_events:
+            return []
+
+        # Use semaphore to limit concurrent requests (10 parallel)
+        semaphore = asyncio.Semaphore(10)
+
+        async def fetch_single(parsed: dict) -> dict | None:
+            """Fetch single event with rate limiting."""
+            async with semaphore:
                 event_id = parsed["external_event_id"]
                 try:
                     full_event_data = await client.fetch_event(event_id)
                     parsed["raw_data"] = full_event_data
+                    return parsed
                 except Exception as e:
                     logger.warning(
                         f"Failed to fetch full BetPawa event {event_id}: {e}"
                     )
                     # Still include event without raw_data
-                events.append(parsed)
-                # Rate limiting delay
-                await asyncio.sleep(0.1)
+                    return parsed
+                finally:
+                    # Small delay after each request for rate limiting
+                    await asyncio.sleep(0.05)
+
+        # Fetch all events in parallel (limited by semaphore)
+        results = await asyncio.gather(
+            *[fetch_single(parsed) for parsed in parsed_events],
+            return_exceptions=True,
+        )
+
+        # Filter out None results and exceptions
+        events = [r for r in results if r is not None and not isinstance(r, Exception)]
 
         return events
 
