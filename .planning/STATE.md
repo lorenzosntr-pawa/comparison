@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 10 in progress — Matches Page Improvements
+**Current focus:** Phase 11 in progress — Settings Page
 
 ## Current Position
 
-Phase: 10 of 12 (Matches Page Improvements)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-21 — Completed 10-02-PLAN.md (Enhanced Match Filters)
+Phase: 11 of 12 (Settings Page)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 11-01-PLAN.md (Settings Backend)
 
-Progress: ██████████░░ 100% (37 of 37 plans complete)
+Progress: █████████░░░ 97% (38 of 39 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36
+- Total plans completed: 38
 - Average duration: 6 min
-- Total execution time: 3.2 hours
+- Total execution time: 3.4 hours
 
 **By Phase:**
 
@@ -39,9 +39,10 @@ Progress: ██████████░░ 100% (37 of 37 plans complete)
 | 07.2 Scraping Performance | 3 | 16 min | 5.3 min |
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
+| 11 Settings Page | 1 | 12 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 5 min, 8 min, 5 min, 15 min
+- Last 5 plans: 5 min, 8 min, 5 min, 15 min, 12 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -146,6 +147,9 @@ Recent decisions affecting current work:
 - Multi-select filter using Popover + Command pattern with checkboxes
 - Date preset helper functions for common date ranges (today, tomorrow, weekend, 7 days)
 - Array query parameters passed as repeated params for FastAPI list support
+- Single-row singleton pattern for settings table (id=1 default row inserted in migration)
+- get_settings_from_db() async helper for fetching settings in jobs
+- reschedule_job() for runtime APScheduler interval changes
 
 ### Roadmap Evolution
 
@@ -153,6 +157,7 @@ Recent decisions affecting current work:
 - Phase 7.1 inserted after Phase 7: Complete Odds Pipeline (URGENT) - BetPawa odds not stored, UI showing no odds
 - Phase 7.2 inserted after Phase 7.1: Scraping Performance (URGENT) - ~5min scrape time too slow, poor terminal logging
 - Phase 8 (Real-time Updates) removed — renumbered phases 9-13 to 8-12
+- Phase 13 added: Competitor Event Import — Import SportyBet/Bet9ja events not in BetPawa for coverage comparison
 
 ### Deferred Issues
 
@@ -165,5 +170,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 10-02-PLAN.md (Enhanced Match Filters) — Phase 10 complete
-Resume file: .planning/phases/10-matches-page-improvements/10-02-SUMMARY.md
+Stopped at: Completed 11-01-PLAN.md (Settings Backend) — Phase 11 in progress
+Resume file: .planning/phases/11-settings-page/11-01-SUMMARY.md
