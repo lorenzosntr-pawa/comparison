@@ -34,11 +34,13 @@ export function Dashboard() {
         />
         <StatusCard
           title="Scheduler"
-          status={scheduler?.running ? 'running' : 'stopped'}
+          status={scheduler?.paused ? 'paused' : scheduler?.running ? 'running' : 'stopped'}
           subtitle={
-            scheduler?.jobs[0]?.interval_minutes
-              ? `Every ${scheduler.jobs[0].interval_minutes} minutes`
-              : 'No jobs configured'
+            scheduler?.paused
+              ? 'Scraping paused'
+              : scheduler?.jobs[0]?.interval_minutes
+                ? `Every ${scheduler.jobs[0].interval_minutes} minutes`
+                : 'No jobs configured'
           }
           isPending={schedulerLoading}
         />

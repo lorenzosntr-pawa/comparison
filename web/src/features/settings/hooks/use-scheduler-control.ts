@@ -7,7 +7,8 @@ export function usePauseScheduler() {
   return useMutation({
     mutationFn: () => api.pauseScheduler(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduler', 'status'] })
+      // Use refetchQueries for immediate update across all components
+      queryClient.refetchQueries({ queryKey: ['scheduler', 'status'] })
     },
   })
 }
@@ -18,7 +19,8 @@ export function useResumeScheduler() {
   return useMutation({
     mutationFn: () => api.resumeScheduler(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduler', 'status'] })
+      // Use refetchQueries for immediate update across all components
+      queryClient.refetchQueries({ queryKey: ['scheduler', 'status'] })
     },
   })
 }

@@ -1,5 +1,6 @@
 """Scheduler monitoring endpoints for status and run history."""
 
+from apscheduler.schedulers.base import STATE_PAUSED
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
@@ -49,9 +50,9 @@ async def get_scheduler_status() -> SchedulerStatus:
             )
         )
 
-    # Check if scheduler is paused by looking at job state
-    # APScheduler pauses jobs by setting next_run_time to None
-    paused = scheduler.running and all(job.next_run_time is None for job in scheduler.get_jobs())
+    # Check if scheduler is paused using APScheduler's state property
+    # STATE_PAUSED indicates scheduler.pause() was called
+    paused = scheduler.state == STATE_PAUSED
 
     return SchedulerStatus(running=scheduler.running, paused=paused, jobs=jobs)
 

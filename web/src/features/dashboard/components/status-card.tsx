@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 interface StatusCardProps {
   title: string
-  status: 'healthy' | 'degraded' | 'unhealthy' | 'running' | 'stopped'
+  status: 'healthy' | 'degraded' | 'unhealthy' | 'running' | 'stopped' | 'paused'
   subtitle?: string
   children?: React.ReactNode
   isPending?: boolean
@@ -16,6 +16,7 @@ const statusColors = {
   degraded: 'bg-yellow-500',
   unhealthy: 'bg-red-500',
   stopped: 'bg-gray-500',
+  paused: 'bg-yellow-500',
 }
 
 const statusLabels = {
@@ -24,6 +25,7 @@ const statusLabels = {
   degraded: 'Degraded',
   unhealthy: 'Unhealthy',
   stopped: 'Stopped',
+  paused: 'Paused',
 }
 
 export function StatusCard({

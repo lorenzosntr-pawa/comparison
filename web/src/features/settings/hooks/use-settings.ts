@@ -17,7 +17,8 @@ export function useUpdateSettings() {
     mutationFn: (data: SettingsUpdate) => api.updateSettings(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
-      queryClient.invalidateQueries({ queryKey: ['scheduler', 'status'] })
+      // Use refetchQueries for immediate update of scheduler interval
+      queryClient.refetchQueries({ queryKey: ['scheduler', 'status'] })
     },
   })
 }
