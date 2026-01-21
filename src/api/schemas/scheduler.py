@@ -109,3 +109,17 @@ class ScrapeAnalyticsResponse(BaseModel):
     platform_metrics: list[PlatformMetric]
     period_start: str
     period_end: str
+
+
+class RetryRequest(BaseModel):
+    """Request body for retrying failed platforms in a scrape run."""
+
+    platforms: list[str] = []  # Empty list = retry all failed platforms
+
+
+class RetryResponse(BaseModel):
+    """Response from retry endpoint."""
+
+    new_run_id: int
+    platforms_retried: list[str]
+    message: str

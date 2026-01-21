@@ -11,6 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.api.schemas import (
+    DailyMetric,
+    PlatformMetric,
+    RetryRequest,
+    RetryResponse,
     ScrapeAnalyticsResponse,
     ScrapeErrorResponse,
     ScrapeRequest,
@@ -18,9 +22,8 @@ from src.api.schemas import (
     ScrapeRunResponse,
     ScrapeStatsResponse,
     ScrapeStatusResponse,
-    DailyMetric,
-    PlatformMetric,
 )
+from src.scraping.schemas import Platform
 from src.db.engine import get_db
 from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
@@ -384,6 +387,143 @@ async def get_scrape_analytics(
         platform_metrics=platform_metrics,
         period_start=start_date.date().isoformat(),
         period_end=end_date.date().isoformat(),
+    )
+
+
+@router.post("/{run_id}/retry", response_model=RetryResponse)
+async def retry_scrape_run(
+    run_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    body: RetryRequest | None = None,
+    timeout: int = Query(
+        default=300,
+        ge=5,
+        le=600,
+        description="Timeout per platform in seconds",
+    ),
+) -> RetryResponse:
+    """Retry failed platforms from a previous scrape run.
+
+    Creates a new scrape run targeting only the specified platforms
+    (or all failed platforms if none specified). The original run
+    is preserved for audit trail.
+
+    - **run_id**: ID of the scrape run to retry
+    - **platforms**: List of platform names to retry (empty = all failed)
+    - **timeout**: Max seconds per platform
+
+    Returns 400 if run is still running, or if no platforms need retry.
+    """
+    # Fetch the original run with errors
+    result = await db.execute(
+        select(ScrapeRun)
+        .options(selectinload(ScrapeRun.errors).selectinload(ScrapeError.bookmaker))
+        .where(ScrapeRun.id == run_id)
+    )
+    original_run = result.scalar_one_or_none()
+
+    if not original_run:
+        raise HTTPException(status_code=404, detail="Scrape run not found")
+
+    # Can't retry a running scrape
+    if original_run.status == ScrapeStatus.RUNNING:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot retry a running scrape. Wait for it to complete.",
+        )
+
+    # Determine which platforms to retry
+    requested_platforms = body.platforms if body and body.platforms else []
+
+    # Get platforms that failed (from errors or missing from timings)
+    failed_platforms: set[str] = set()
+
+    # Add platforms from errors
+    if original_run.errors:
+        for error in original_run.errors:
+            if error.bookmaker and error.bookmaker.slug:
+                failed_platforms.add(error.bookmaker.slug)
+
+    # Add platforms missing from successful timings (for partial failures)
+    all_platform_slugs = {p.value for p in Platform}
+    if original_run.platform_timings:
+        successful_platforms = set(original_run.platform_timings.keys())
+        failed_platforms.update(all_platform_slugs - successful_platforms)
+    elif original_run.status in (ScrapeStatus.PARTIAL, ScrapeStatus.FAILED):
+        # No timings but partial/failed = all platforms failed
+        failed_platforms = all_platform_slugs
+
+    # If specific platforms requested, validate them
+    if requested_platforms:
+        # Validate all requested platforms are valid Platform enum values
+        invalid_platforms = [
+            p for p in requested_platforms if p not in all_platform_slugs
+        ]
+        if invalid_platforms:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid platform names: {invalid_platforms}. Valid: {sorted(all_platform_slugs)}",
+            )
+
+        # Use requested platforms (user might want to retry even if it succeeded before)
+        platforms_to_retry = requested_platforms
+    else:
+        # Retry all failed platforms
+        platforms_to_retry = list(failed_platforms)
+
+    if not platforms_to_retry:
+        raise HTTPException(
+            status_code=400,
+            detail="No platforms to retry. All platforms succeeded in the original run.",
+        )
+
+    # Convert platform strings to Platform enum
+    platform_enums = [Platform(p) for p in platforms_to_retry]
+
+    # Create new ScrapeRun for the retry
+    retry_run = ScrapeRun(
+        status=ScrapeStatus.RUNNING,
+        trigger=f"retry:{run_id}",
+    )
+    db.add(retry_run)
+    await db.commit()
+    await db.refresh(retry_run)
+
+    # Build orchestrator and execute scrape
+    sportybet = SportyBetClient(request.app.state.sportybet_client)
+    betpawa = BetPawaClient(request.app.state.betpawa_client)
+    bet9ja = Bet9jaClient(request.app.state.bet9ja_client)
+    orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+
+    result = await orchestrator.scrape_all(
+        platforms=platform_enums,
+        include_data=False,
+        timeout=float(timeout),
+        scrape_run_id=retry_run.id,
+        db=db,
+    )
+
+    # Update retry run with results
+    retry_run.status = _STATUS_MAP[result.status]
+    retry_run.completed_at = datetime.utcnow()
+    retry_run.events_scraped = result.total_events
+    retry_run.events_failed = sum(1 for p in result.platforms if not p.success)
+    retry_run.platform_timings = {
+        p.platform.value: {
+            "duration_ms": p.duration_ms,
+            "events_count": p.events_count,
+        }
+        for p in result.platforms
+        if p.success
+    }
+
+    await db.commit()
+
+    return RetryResponse(
+        new_run_id=retry_run.id,
+        platforms_retried=platforms_to_retry,
+        message=f"Retry {result.status}: {len(platforms_to_retry)} platform(s) retried",
     )
 
 
