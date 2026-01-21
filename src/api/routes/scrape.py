@@ -165,6 +165,12 @@ async def stream_scrape(
     orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
 
     async def event_generator():
+        # Accumulate platform data from progress events
+        platform_timings: dict[str, dict] = {}
+        total_events = 0
+        failed_count = 0
+        final_status = ScrapeStatus.COMPLETED
+
         try:
             async for progress in orchestrator.scrape_with_progress(
                 timeout=float(timeout),
@@ -173,13 +179,39 @@ async def stream_scrape(
             ):
                 if await request.is_disconnected():
                     break
+
+                # Accumulate platform timing data from completed events
+                if progress.platform and progress.phase == "completed":
+                    platform_timings[progress.platform.value] = {
+                        "duration_ms": progress.duration_ms or 0,
+                        "events_count": progress.events_count or 0,
+                    }
+                    total_events += progress.events_count or 0
+                elif progress.platform and progress.phase == "failed":
+                    failed_count += 1
+
+                # Check final status from overall completion event
+                if progress.platform is None and progress.phase in ("completed", "failed"):
+                    if progress.phase == "failed":
+                        final_status = ScrapeStatus.FAILED
+                    elif failed_count > 0 and len(platform_timings) > 0:
+                        final_status = ScrapeStatus.PARTIAL
+                    elif failed_count > 0:
+                        final_status = ScrapeStatus.FAILED
+                    else:
+                        final_status = ScrapeStatus.COMPLETED
+
                 yield f"data: {progress.model_dump_json()}\n\n"
         except Exception as e:
+            final_status = ScrapeStatus.FAILED
             yield f"data: {json.dumps({'phase': 'failed', 'message': str(e)})}\n\n"
         finally:
-            # Update ScrapeRun on completion
-            scrape_run.status = ScrapeStatus.COMPLETED
+            # Update ScrapeRun with complete data
+            scrape_run.status = final_status
             scrape_run.completed_at = datetime.utcnow()
+            scrape_run.events_scraped = total_events
+            scrape_run.events_failed = failed_count
+            scrape_run.platform_timings = platform_timings if platform_timings else None
             await db.commit()
 
     return StreamingResponse(

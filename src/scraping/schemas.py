@@ -50,5 +50,6 @@ class ScrapeProgress(BaseModel):
     current: int  # Current platform index (0-based)
     total: int  # Total platforms
     events_count: int | None = None  # Events scraped so far for this platform
+    duration_ms: int | None = None  # Duration in ms (set on platform completion)
     message: str | None = None  # Human-readable status message
     timestamp: datetime = Field(default_factory=datetime.utcnow)

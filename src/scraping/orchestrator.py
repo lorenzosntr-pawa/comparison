@@ -254,6 +254,7 @@ class ScrapingOrchestrator:
                     current=idx + 1,
                     total=total,
                     events_count=len(events),
+                    duration_ms=duration_ms,
                     message=f"Scraped {len(events)} events from {platform.value} ({duration_ms}ms)",
                 )
 
