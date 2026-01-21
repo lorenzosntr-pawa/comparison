@@ -108,11 +108,24 @@ export function RecentRuns() {
           setCompletedPlatforms((prev) => Math.min(prev + 1, 3))
         }
 
-        if (data.phase === 'completed' || data.phase === 'failed') {
+        // Overall completion (platform is null) means whole scrape is done
+        if (!data.platform && (data.phase === 'completed' || data.phase === 'failed')) {
           eventSource.close()
           setIsManualStreaming(false)
-          // Immediately refetch to sync status (not just invalidate)
-          // This ensures the list updates at the same moment as the progress bar
+
+          // Optimistic update: immediately show correct status in list
+          const newStatus = data.phase === 'completed' ? 'completed' : 'failed'
+          queryClient.setQueryData(['scheduler-history'], (old: { runs: Array<{ id: number; status: string }> } | undefined) => {
+            if (!old?.runs?.[0]) return old
+            return {
+              ...old,
+              runs: old.runs.map((run, i) =>
+                i === 0 ? { ...run, status: newStatus } : run
+              ),
+            }
+          })
+
+          // Then refetch for accurate data (events count, etc.)
           void queryClient.refetchQueries({ queryKey: ['scheduler-history'] })
           void queryClient.refetchQueries({ queryKey: ['events'] })
         }
@@ -241,12 +254,11 @@ export function RecentRuns() {
                 value={progressPercent}
                 className={cn(
                   'h-1.5',
-                  activeProgress?.phase === 'completed' && '[&>div]:bg-green-500',
-                  activeProgress?.phase === 'failed' && '[&>div]:bg-destructive',
-                  // Platform-specific colors during active scraping
+                  // Overall completion (platform is null) gets green/red
+                  !activeProgress?.platform && activeProgress?.phase === 'completed' && '[&>div]:bg-green-500',
+                  !activeProgress?.platform && activeProgress?.phase === 'failed' && '[&>div]:bg-destructive',
+                  // Platform-specific colors during active scraping (including per-platform completion)
                   isStreaming && activeProgress?.platform &&
-                    activeProgress.phase !== 'completed' &&
-                    activeProgress.phase !== 'failed' &&
                     PLATFORM_PROGRESS_COLORS[activeProgress.platform.toLowerCase()]
                 )}
               />
