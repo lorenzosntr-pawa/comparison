@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 7 of 8 (Match Views)
-Plan: 2-FIX of 3 in current phase
-Status: In progress (fix plan complete, 07-03 pending)
-Last activity: 2026-01-21 — Completed 07-02-FIX.md
+Plan: 2-FIX2 of 3 in current phase
+Status: In progress (07-02-FIX2 complete, 07-03 pending)
+Last activity: 2026-01-21 — Completed 07-02-FIX2.md
 
 Progress: █████████░ 90%
 
@@ -34,7 +34,7 @@ Progress: █████████░ 90%
 | 05 Scheduled Scraping | 2 | 10 min | 5 min |
 | 06 React Foundation | 4 | 20 min | 5 min |
 | 06.1 Cross-Platform Scraping | 1 | 8 min | 8 min |
-| 07 Match Views | 2+1fix | 16 min | 5 min |
+| 07 Match Views | 2+2fix | 24 min | 5 min |
 | 07.1 Complete Odds Pipeline | 1 | 8 min | 8 min |
 
 **Recent Trend:**
@@ -82,6 +82,8 @@ Recent decisions affecting current work:
 - ScrapingOrchestrator accepts all clients in constructor
 - Platform enum for type-safe platform references
 - asyncio.gather(return_exceptions=True) for partial failure tolerance
+- asyncio.Semaphore(10) pattern for parallel API fetching across all platforms
+- Static Tailwind class lookup for JIT-compatible dynamic styling (COLOR_CLASSES map)
 - Query param validation: ge=, le= for bounds checking
 - Optional request body with `| None = None` pattern
 - Concurrent health checks with asyncio.gather for per-platform status
@@ -142,5 +144,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 07-02-FIX.md
-Resume file: .planning/phases/07-match-views/07-02-FIX-SUMMARY.md
+Stopped at: Completed 07-02-FIX2.md
+Resume file: .planning/phases/07-match-views/07-02-FIX2-SUMMARY.md
