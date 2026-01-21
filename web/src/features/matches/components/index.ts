@@ -1,2 +1,4 @@
 export { MatchTable } from './match-table'
 export { OddsCell, ComparisonOddsCell } from './odds-cell'
+export { MatchFilters } from './match-filters'
+export type { MatchFiltersState } from './match-filters'
