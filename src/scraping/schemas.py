@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field
 class Platform(StrEnum):
     """Supported betting platforms."""
 
+    BETPAWA = "betpawa"  # Must be first - canonical source for SportRadar IDs
     SPORTYBET = "sportybet"
-    BETPAWA = "betpawa"
     BET9JA = "bet9ja"
 
 
