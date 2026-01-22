@@ -204,7 +204,7 @@ None
 **Research**: Unlikely (bug fixes and UI improvements)
 **Plans**:
 - Plan 01: Rebrand & Sidebar Fix (COMPLETE - 12-01-SUMMARY.md)
-- Plan 02: TBD
+- Plan 02: Dashboard Layout Restructure (COMPLETE - 12-02-SUMMARY.md)
 - Plan 03: TBD
 
 **Details:**
@@ -265,6 +265,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
 | 10. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
 | 11. Settings Page | 2/2 | Complete | 2026-01-22 |
-| 12. UI Polish | 1/TBD | In progress | - |
+| 12. UI Polish | 2/TBD | In progress | - |
 | 13. Competitor Event Import | 0/TBD | Not started | - |
 | 14. Scraping Logging & Workflow | 4/4 | Complete | 2026-01-22 |

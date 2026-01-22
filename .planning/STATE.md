@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 12 of 14 (UI Polish)
-Plan: 1 of TBD in current phase
+Plan: 2 of TBD in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 12-01-PLAN.md
+Last activity: 2026-01-22 — Completed 12-02-PLAN.md
 
-Progress: ████████████░ 92% (44 of 48 plans complete)
+Progress: ████████████░ 94% (45 of 48 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44
+- Total plans completed: 45
 - Average duration: 6 min
-- Total execution time: 4.0 hours
+- Total execution time: 4.2 hours
 
 **By Phase:**
 
@@ -40,11 +40,11 @@ Progress: ████████████░ 92% (44 of 48 plans complete)
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
-| 12 UI Polish | 1 | 14 min | 14 min |
+| 12 UI Polish | 2 | 27 min | 13.5 min |
 | 14 Scraping Logging | 4+2fix | 41 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 8 min, 6 min, 8 min, 14 min
+- Last 5 plans: 8 min, 6 min, 8 min, 14 min, 13 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -175,6 +175,8 @@ Recent decisions affecting current work:
 - Optional Pydantic fields for evolving external APIs (SportyBet far_near_odds, etc.)
 - Peer data attribute selectors for state-based responsive layout (peer-data-[state=collapsed])
 - CSS variable usage for dynamic component spacing (--sidebar-width-icon)
+- Status bar pattern: horizontal layout with icons, dots, and abbreviations
+- Integrated controls pattern: embed related controls in card headers
 
 ### Roadmap Evolution
 
@@ -196,5 +198,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 12-01-PLAN.md — pawaRisk rebrand and sidebar fix
-Resume file: .planning/phases/12-ui-polish/12-01-SUMMARY.md
+Stopped at: Completed 12-02-PLAN.md — Dashboard layout restructure
+Resume file: .planning/phases/12-ui-polish/12-02-SUMMARY.md
