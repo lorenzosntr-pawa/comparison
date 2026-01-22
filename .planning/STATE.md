@@ -12,9 +12,9 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 Phase: 14 of 14 (Scraping Logging & Workflow)
 Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 14-02-PLAN.md (Orchestrator Logging Integration)
+Last activity: 2026-01-22 — Completed 14-02-FIX2 (UAT Issue Fixes)
 
-Progress: ██████████░░ 95% (41 of 43 plans complete)
+Progress: ██████████░░ 95% (41 of 43 plans complete + 3 fix plans)
 
 ## Performance Metrics
 
@@ -159,6 +159,9 @@ Recent decisions affecting current work:
 - _log_phase_history() for audit trail persistence
 - structlog.contextvars.bind_contextvars() at scrape start for async context
 - ScrapeErrorContext for categorized errors (timeout, network, storage, unknown)
+- asyncio.create_task() for background jobs independent of request lifecycle
+- Background tasks with independent DB sessions (async_session_factory context manager)
+- Session-scoped ID propagation for cross-platform data consistency
 
 ### Roadmap Evolution
 
@@ -180,5 +183,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 14-02-PLAN.md (Orchestrator Logging Integration) — Phase 14 in progress
-Resume file: .planning/phases/14-scraping-logging-workflow/14-02-SUMMARY.md
+Stopped at: Completed 14-02-FIX2 (UAT Issue Fixes) — Phase 14 in progress
+Resume file: .planning/phases/14-scraping-logging-workflow/14-02-FIX2-SUMMARY.md

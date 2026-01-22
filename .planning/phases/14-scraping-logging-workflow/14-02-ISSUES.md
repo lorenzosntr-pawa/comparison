@@ -10,6 +10,28 @@
 
 ## Resolved Issues
 
+### UAT-003: SSE disconnect causes scrape to hang permanently
+**Resolved:** 2026-01-22 - Fixed in 14-02-FIX2.md
+**Commit:** 07ce8fa
+
+**Discovered:** 2026-01-22
+**Phase/Plan:** 14-02
+**Severity:** Blocker
+**Feature:** SSE streaming during scrape
+**Description:** When the SSE connection is interrupted during a scrape, the scrape gets stuck in "running" state forever.
+**Fix:** Spawn scrape as asyncio background task with independent DB session. SSE endpoint subscribes to progress_registry broadcaster.
+
+### UAT-004: SportyBet scraping should use SportRadar IDs from current scrape session
+**Resolved:** 2026-01-22 - Fixed in 14-02-FIX2.md
+**Commit:** 766a325
+
+**Discovered:** 2026-01-22
+**Phase/Plan:** 14-02
+**Severity:** Major
+**Feature:** Cross-platform scraping workflow
+**Description:** SportyBet scraping should use fresh SportRadar IDs from current BetPawa scrape session.
+**Fix:** Collect SportRadar IDs during BetPawa scrape, pass to _scrape_sportybet() and _scrape_bet9ja() via new parameter.
+
 ### UAT-001: Phase sequence shows SportyBet before BetPawa
 **Resolved:** 2026-01-22 - Fixed in 14-02-FIX.md
 **Commit:** 2d47cb6
