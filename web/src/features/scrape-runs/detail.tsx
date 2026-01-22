@@ -1,24 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useScrapeRunDetail, useScrapeProgress } from './hooks'
-import { PlatformBreakdown, ErrorList, RetryDialog } from './components'
+import { useScrapeRunDetail, useScrapeProgress, usePhaseHistory } from './hooks'
+import {
+  PlatformBreakdown,
+  ErrorList,
+  RetryDialog,
+  Timeline,
+  LiveLog,
+  PlatformProgressCard,
+  progressToLogMessage,
+} from './components'
+import type { LogMessage } from './components'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
-import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2, RotateCcw, CheckCircle2, XCircle, Wifi, WifiOff } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, Zap, AlertCircle, Loader2, RotateCcw, Wifi, WifiOff } from 'lucide-react'
 
 // All platforms for determining which ones failed
 const ALL_PLATFORMS = ['betpawa', 'sportybet', 'bet9ja'] as const
-
-// Platform-specific colors for progress visualization
-const PLATFORM_COLORS: Record<string, { bg: string; text: string }> = {
-  betpawa: { bg: 'bg-green-500', text: 'text-green-500' },
-  sportybet: { bg: 'bg-blue-500', text: 'text-blue-500' },
-  bet9ja: { bg: 'bg-orange-500', text: 'text-orange-500' },
-}
 
 const statusVariants: Record<
   string,
@@ -67,6 +69,27 @@ export function ScrapeRunDetailPage() {
     runId,
     isRunning,
   })
+
+  // Phase history for timeline (completed runs)
+  const { data: phaseHistory } = usePhaseHistory(runId)
+
+  // Log messages for live log (accumulate from SSE)
+  const [logMessages, setLogMessages] = useState<LogMessage[]>([])
+  const prevProgressRef = useRef<typeof currentProgress>(null)
+
+  // Accumulate SSE progress into log messages
+  useEffect(() => {
+    if (currentProgress && currentProgress !== prevProgressRef.current) {
+      prevProgressRef.current = currentProgress
+      const logMsg = progressToLogMessage(currentProgress)
+      setLogMessages((prev) => [...prev.slice(-99), logMsg]) // Keep last 100 messages
+    }
+  }, [currentProgress])
+
+  // Reset log messages when run changes
+  useEffect(() => {
+    setLogMessages([])
+  }, [runId])
 
   // Determine failed platforms for retry dialog
   const failedPlatforms = (() => {
@@ -175,104 +198,72 @@ export function ScrapeRunDetailPage() {
 
       {/* Live Progress Panel (shown when run is active) */}
       {isRunning && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <Card className="border-primary/50 bg-primary/5">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <CardTitle className="text-base">Scraping in Progress</CardTitle>
-                </div>
-                <div className="flex items-center gap-1">
-                  {isConnected ? (
-                    <Wifi className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <WifiOff className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {ALL_PLATFORMS.map((platform) => {
-                const timing = data.platform_timings?.[platform]
-                const sseProgress = platformProgress.get(platform)
-                const colors = PLATFORM_COLORS[platform]
-
-                // Use SSE data for real-time phase, fall back to timing completion
-                const isComplete = sseProgress?.isComplete || !!timing
-                const isFailed = sseProgress?.isFailed
-                const isCurrentPlatform = currentProgress?.platform === platform
-                const isActive = isCurrentPlatform && !isComplete && !isFailed
-
-                // Get phase display text from SSE
-                const getPhaseText = () => {
-                  if (isComplete) {
-                    const count = sseProgress?.eventsCount ?? timing?.events_count ?? 0
-                    return `${count} events`
-                  }
-                  if (isFailed) return 'Failed'
-                  if (sseProgress?.phase === 'storing') return 'Storing...'
-                  if (sseProgress?.phase === 'scraping') return 'Scraping...'
-                  if (isActive) return 'Scraping...'
-                  return 'Pending'
-                }
-
-                // Calculate progress width based on actual phase
-                const getProgressWidth = () => {
-                  if (isComplete) return '100%'
-                  if (isFailed) return '100%'
-                  if (sseProgress?.phase === 'storing') return '80%'
-                  if (sseProgress?.phase === 'scraping' || isActive) return '50%'
-                  return '0%'
-                }
-
-                return (
-                  <div key={platform} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className={cn(
-                        'font-medium capitalize',
-                        isActive && colors.text
-                      )}>
-                        {platform}
-                        {isActive && (
-                          <Loader2 className="ml-1.5 inline h-3 w-3 animate-spin" />
-                        )}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {getPhaseText()}
-                        {isComplete && (
-                          <CheckCircle2 className="ml-1.5 inline h-3.5 w-3.5 text-green-500" />
-                        )}
-                        {isFailed && (
-                          <XCircle className="ml-1.5 inline h-3.5 w-3.5 text-destructive" />
-                        )}
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full rounded-full bg-secondary">
-                      <div
-                        className={cn(
-                          'h-1.5 rounded-full transition-all duration-500',
-                          isComplete ? colors.bg :
-                          isFailed ? 'bg-destructive' :
-                          isActive ? `${colors.bg} animate-pulse` :
-                          'bg-muted-foreground/30'
-                        )}
-                        style={{ width: getProgressWidth() }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* Current phase indicator */}
-              {currentProgress && overallPhase !== 'completed' && overallPhase !== 'failed' && (
-                <div className="pt-2 border-t text-sm text-muted-foreground">
-                  {currentProgress.message || `${capitalizeFirst(overallPhase)} ${currentProgress.platform ? capitalizeFirst(currentProgress.platform) : ''}...`}
-                </div>
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <span className="font-medium">Scraping in Progress</span>
+            </div>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              {isConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-500" />
+                  <span>Connected</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4" />
+                  <span>Connecting...</span>
+                </>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {/* Live Log */}
+          <LiveLog messages={logMessages} maxHeight="h-40" />
+
+          {/* Per-Platform Progress Cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {ALL_PLATFORMS.map((platform) => {
+              const timing = data.platform_timings?.[platform]
+              const progress = platformProgress.get(platform)
+              const isCurrentPlatform = currentProgress?.platform === platform
+              const isComplete = progress?.isComplete || !!timing
+              const isFailed = progress?.isFailed
+              const isActive = isCurrentPlatform && !isComplete && !isFailed
+
+              return (
+                <PlatformProgressCard
+                  key={platform}
+                  platform={platform}
+                  progress={progress}
+                  timing={timing}
+                  isActive={isActive}
+                />
+              )
+            })}
+          </div>
+
+          {/* Current phase indicator */}
+          {currentProgress && overallPhase !== 'completed' && overallPhase !== 'failed' && (
+            <div className="text-sm text-muted-foreground">
+              {currentProgress.message || `${capitalizeFirst(overallPhase)} ${currentProgress.platform ? capitalizeFirst(currentProgress.platform) : ''}...`}
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Timeline (shown for completed runs) */}
+      {!isRunning && phaseHistory && phaseHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Phase Timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Timeline phases={phaseHistory} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Summary Card */}
