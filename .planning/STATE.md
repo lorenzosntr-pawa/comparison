@@ -12,9 +12,9 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 Phase: 14 of 14 (Scraping Logging & Workflow)
 Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 14-03-PLAN.md (Dashboard Redesign)
+Last activity: 2026-01-22 — Completed 14-03-FIX.md (UAT issue fix)
 
-Progress: ██████████░░ 98% (42 of 43 plans complete + 3 fix plans)
+Progress: ██████████░░ 98% (42 of 43 plans complete + 4 fix plans)
 
 ## Performance Metrics
 
@@ -40,7 +40,7 @@ Progress: ██████████░░ 98% (42 of 43 plans complete + 3 
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
-| 14 Scraping Logging | 3 | 19 min | 6.3 min |
+| 14 Scraping Logging | 3+1fix | 27 min | 6.8 min |
 
 **Recent Trend:**
 - Last 5 plans: 12 min, 4 min, 5 min, 8 min, 6 min
@@ -165,6 +165,8 @@ Recent decisions affecting current work:
 - PlatformStatusIcon component for per-platform visual status display
 - getPlatformStatuses() helper for deriving status from run data
 - PLATFORM_ABBREV constant for platform display abbreviations (BP, SB, B9)
+- useScrapeProgress hook: SSE streaming with useReducer for lint-compliant state management
+- setTimeout(0) pattern for deferred state updates in useEffect (avoids "setState in effect" lint errors)
 
 ### Roadmap Evolution
 
@@ -186,5 +188,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 14-03-PLAN.md (Dashboard Redesign) — Phase 14 in progress
-Resume file: .planning/phases/14-scraping-logging-workflow/14-03-SUMMARY.md
+Stopped at: Completed 14-03-FIX.md (UAT issue fix) — Phase 14 in progress
+Resume file: .planning/phases/14-scraping-logging-workflow/14-03-FIX-SUMMARY.md
