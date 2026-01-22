@@ -60,6 +60,20 @@ class RunHistoryResponse(BaseModel):
     total: int
 
 
+class ScrapePhaseLogResponse(BaseModel):
+    """Single phase log entry for audit trail."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    platform: str | None
+    phase: str
+    started_at: datetime
+    ended_at: datetime | None
+    events_processed: int | None
+    message: str | None
+
+
 class ScrapeRunResponse(BaseModel):
     """Full scrape run details for list and detail endpoints."""
 
@@ -73,6 +87,7 @@ class ScrapeRunResponse(BaseModel):
     events_failed: int
     trigger: str | None
     platform_timings: dict | None = None
+    phase_logs: list[ScrapePhaseLogResponse] | None = None  # Optional audit trail
 
 
 class ScrapeStatsResponse(BaseModel):

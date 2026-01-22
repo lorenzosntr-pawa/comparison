@@ -69,14 +69,26 @@ class ScrapeResult(BaseModel):
     )
 
 
+class ScrapeErrorContext(BaseModel):
+    """Structured error context for scrape failures."""
+
+    error_type: str  # e.g., "timeout", "network", "parse", "storage"
+    error_message: str
+    platform: str | None = None
+    recoverable: bool = False
+
+
 class ScrapeProgress(BaseModel):
     """Progress update during scraping."""
 
     platform: Platform | None = None  # None for overall updates
-    phase: str  # "starting", "scraping", "storing", "completed", "failed"
+    phase: ScrapePhase | str  # ScrapePhase enum (serializes to string for SSE compat)
     current: int  # Current platform index (0-based)
     total: int  # Total platforms
     events_count: int | None = None  # Events scraped so far for this platform
     duration_ms: int | None = None  # Duration in ms (set on platform completion)
     message: str | None = None  # Human-readable status message
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    scrape_run_id: int | None = None  # Track which run this progress belongs to
+    elapsed_ms: int | None = None  # Time since platform start
+    error: ScrapeErrorContext | None = None  # Structured error info
