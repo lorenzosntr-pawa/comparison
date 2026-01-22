@@ -4,6 +4,7 @@ export { PlatformBreakdown } from './platform-breakdown'
 export { ErrorList } from './error-list'
 export { LiveProgressPanel } from './live-progress'
 export { RetryDialog } from './retry-dialog'
+export { Timeline } from './timeline'
 export {
   DurationTrendChart,
   SuccessRateChart,

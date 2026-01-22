@@ -18,6 +18,7 @@ from src.api.schemas import (
     RetryResponse,
     ScrapeAnalyticsResponse,
     ScrapeErrorResponse,
+    ScrapePhaseLogResponse,
     ScrapeRequest,
     ScrapeResponse,
     ScrapeRunResponse,
@@ -26,7 +27,7 @@ from src.api.schemas import (
 )
 from src.scraping.schemas import Platform, ScrapeProgress
 from src.db.engine import async_session_factory, get_db
-from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
+from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.orchestrator import ScrapingOrchestrator
@@ -725,3 +726,41 @@ async def get_active_scrapes() -> list[int]:
     Useful for frontend to discover running scrapes to observe.
     """
     return progress_registry.get_active_scrape_ids()
+
+
+@router.get("/runs/{run_id}/phases", response_model=list[ScrapePhaseLogResponse])
+async def get_phase_history(
+    run_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> list[ScrapePhaseLogResponse]:
+    """Get phase transition history for a scrape run.
+
+    Returns ordered list of phase log entries for timeline visualization.
+    Each entry shows phase start/end times, platform, message, and error details.
+    """
+    # Verify scrape run exists
+    run_result = await db.execute(select(ScrapeRun).where(ScrapeRun.id == run_id))
+    scrape_run = run_result.scalar_one_or_none()
+    if not scrape_run:
+        raise HTTPException(status_code=404, detail="Scrape run not found")
+
+    # Get phase logs ordered by start time
+    result = await db.execute(
+        select(ScrapePhaseLog)
+        .where(ScrapePhaseLog.scrape_run_id == run_id)
+        .order_by(ScrapePhaseLog.started_at.asc())
+    )
+    phase_logs = result.scalars().all()
+
+    return [
+        ScrapePhaseLogResponse(
+            id=log.id,
+            platform=log.platform,
+            phase=log.phase,
+            started_at=log.started_at,
+            ended_at=log.ended_at,
+            events_processed=log.events_processed,
+            message=log.message,
+        )
+        for log in phase_logs
+    ]

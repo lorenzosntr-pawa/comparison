@@ -19,6 +19,7 @@ from src.api.schemas.scheduler import (
     SchedulerPlatformHealth,
     SchedulerStatus,
     ScrapeAnalyticsResponse,
+    ScrapePhaseLogResponse,
     ScrapeRunResponse,
     ScrapeStatsResponse,
 )
@@ -46,6 +47,7 @@ __all__ = [
     "SchedulerPlatformHealth",
     "SchedulerStatus",
     "ScrapeAnalyticsResponse",
+    "ScrapePhaseLogResponse",
     "ScrapeRunResponse",
     "ScrapeStatsResponse",
     # Settings schemas
