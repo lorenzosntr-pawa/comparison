@@ -95,8 +95,10 @@ async def scrape_all_platforms() -> None:
 
             # Execute scrape with progress streaming
             # scrape_with_progress yields progress updates sequentially
+            platform_timings: dict[str, dict] = {}
             total_events = 0
-            final_status = "failed"
+            failed_count = 0
+            final_status = ScrapeStatus.COMPLETED
 
             async for progress in orchestrator.scrape_with_progress(
                 platforms=enabled_platforms,
@@ -107,28 +109,31 @@ async def scrape_all_platforms() -> None:
                 # Publish progress to broadcaster for SSE observers
                 await broadcaster.publish(progress)
 
-                # Track final state
-                if progress.phase == "completed" and progress.platform is None:
-                    # Final completion update
-                    total_events = progress.events_count or 0
-                    final_status = "completed"
-                elif progress.phase == "completed" and progress.platform:
-                    # Platform completed
+                # Track metrics from progress events
+                if progress.platform and progress.phase == "completed":
+                    # Platform completed successfully - store timing data
+                    platform_timings[progress.platform.value] = {
+                        "duration_ms": progress.duration_ms or 0,
+                        "events_count": progress.events_count or 0,
+                    }
                     total_events += progress.events_count or 0
-                elif progress.phase == "failed" and progress.platform is None:
-                    # Overall failure
-                    final_status = "failed"
+                elif progress.platform and progress.phase == "failed":
+                    # Platform failed
+                    failed_count += 1
 
-            # Determine status based on progress history
-            # If we got here, scrape completed (possibly with partial success)
-            if final_status == "completed" and total_events > 0:
-                scrape_run.status = ScrapeStatus.COMPLETED
-            elif total_events > 0:
-                scrape_run.status = ScrapeStatus.PARTIAL
-            else:
-                scrape_run.status = ScrapeStatus.FAILED
+                # Check final status (overall completion event has platform=None)
+                if progress.platform is None and progress.phase in ("completed", "failed"):
+                    if progress.phase == "failed":
+                        final_status = ScrapeStatus.FAILED
+                    elif failed_count > 0 and len(platform_timings) > 0:
+                        final_status = ScrapeStatus.PARTIAL
+                    elif failed_count > 0:
+                        final_status = ScrapeStatus.FAILED
 
+            scrape_run.status = final_status
             scrape_run.events_scraped = total_events
+            scrape_run.events_failed = failed_count
+            scrape_run.platform_timings = platform_timings if platform_timings else None
             scrape_run.completed_at = datetime.utcnow()
 
             await db.commit()
