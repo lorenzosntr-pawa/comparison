@@ -48,11 +48,11 @@ class SportybetMarketExtend(BaseModel):
     name: str
     """Extension name (e.g., '1UP', '2UP')."""
 
-    root_market_id: str
-    """Root market ID this extends."""
+    root_market_id: str | None = None
+    """Root market ID this extends (optional - some markets omit this)."""
 
-    node_market_id: str
-    """The extended market ID."""
+    node_market_id: str | None = None
+    """The extended market ID (optional - some markets omit this)."""
 
     not_support: bool
     """Whether this extension is not supported."""
@@ -96,8 +96,8 @@ class SportybetMarket(BaseModel):
     outcomes: list[SportybetOutcome]
     """Available outcomes for this market."""
 
-    far_near_odds: int
-    """Odds direction indicator."""
+    far_near_odds: int | None = None
+    """Odds direction indicator (optional - some markets omit this)."""
 
     market_extend_vos: list[SportybetMarketExtend] | None = Field(
         default=None, alias="marketExtendVOS"
