@@ -75,7 +75,7 @@ export function DurationTrendChart({ data, isLoading }: DurationTrendChartProps)
           <CardTitle className="text-sm font-medium">Duration Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[120px] w-full" />
         </CardContent>
       </Card>
     )
@@ -88,26 +88,25 @@ export function DurationTrendChart({ data, isLoading }: DurationTrendChartProps)
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <CardTitle className="text-sm font-medium">Duration Trend</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-[120px] items-center justify-center text-sm text-muted-foreground">
             No data for selected period
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={120}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${Math.round(value)}s`}
@@ -153,7 +152,7 @@ export function SuccessRateChart({ data, isLoading }: SuccessRateChartProps) {
           <CardTitle className="text-sm font-medium">Run Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[120px] w-full" />
         </CardContent>
       </Card>
     )
@@ -168,26 +167,26 @@ export function SuccessRateChart({ data, isLoading }: SuccessRateChartProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <CardTitle className="text-sm font-medium">Run Status</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-[120px] items-center justify-center text-sm text-muted-foreground">
             No data for selected period
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={120}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -218,8 +217,10 @@ export function SuccessRateChart({ data, isLoading }: SuccessRateChartProps) {
                 }}
               />
               <Legend
+                verticalAlign="top"
+                iconSize={8}
                 iconType="circle"
-                wrapperStyle={{ fontSize: '12px' }}
+                wrapperStyle={{ fontSize: '10px' }}
               />
               <Bar dataKey="success" stackId="a" fill="#22c55e" name="Success" />
               <Bar dataKey="partial" stackId="a" fill="#eab308" name="Partial" />
@@ -240,7 +241,7 @@ export function PlatformHealthChart({ data, isLoading }: PlatformHealthChartProp
           <CardTitle className="text-sm font-medium">Platform Health</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[150px] w-full" />
+          <Skeleton className="h-[120px] w-full" />
         </CardContent>
       </Card>
     )
@@ -256,22 +257,22 @@ export function PlatformHealthChart({ data, isLoading }: PlatformHealthChartProp
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <CardTitle className="text-sm font-medium">Platform Health</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="flex h-[150px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-[120px] items-center justify-center text-sm text-muted-foreground">
             No data for selected period
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={150}>
+          <ResponsiveContainer width="100%" height={120}>
             <BarChart data={chartData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
                 domain={[0, 100]}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}%`}
@@ -279,7 +280,7 @@ export function PlatformHealthChart({ data, isLoading }: PlatformHealthChartProp
               <YAxis
                 type="category"
                 dataKey="platform"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 width={80}
