@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 11 complete — Settings Page
+**Current focus:** Phase 14 in progress — Scraping Logging & Workflow
 
 ## Current Position
 
-Phase: 11 of 12 (Settings Page)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 11-02-PLAN.md (Settings UI)
+Phase: 14 of 14 (Scraping Logging & Workflow)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-01-22 — Completed 14-01-PLAN.md (Scraping Infrastructure)
 
-Progress: ██████████░░ 100% (39 of 39 plans complete)
+Progress: ██████████░░ 93% (40 of 43 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 39
+- Total plans completed: 40
 - Average duration: 6 min
-- Total execution time: 3.5 hours
+- Total execution time: 3.6 hours
 
 **By Phase:**
 
@@ -40,9 +40,10 @@ Progress: ██████████░░ 100% (39 of 39 plans complete)
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
+| 14 Scraping Logging | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 5 min, 15 min, 12 min, 4 min
+- Last 5 plans: 5 min, 15 min, 12 min, 4 min, 5 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -150,6 +151,10 @@ Recent decisions affecting current work:
 - Single-row singleton pattern for settings table (id=1 default row inserted in migration)
 - get_settings_from_db() async helper for fetching settings in jobs
 - reschedule_job() for runtime APScheduler interval changes
+- structlog: configure_logging() with JSON/console output modes
+- ScrapePhase StrEnum for workflow state (INITIALIZING → COMPLETED/FAILED)
+- PlatformStatus StrEnum for per-platform state (PENDING → COMPLETED/FAILED)
+- ScrapePhaseLog model for audit trail of phase transitions
 
 ### Roadmap Evolution
 
@@ -171,5 +176,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 11-02-PLAN.md (Settings UI) — Phase 11 complete
-Resume file: .planning/phases/11-settings-page/11-02-SUMMARY.md
+Stopped at: Completed 14-01-PLAN.md (Scraping Infrastructure) — Phase 14 in progress
+Resume file: .planning/phases/14-scraping-logging-workflow/14-01-SUMMARY.md
