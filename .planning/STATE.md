@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-01-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 14 complete — Scraping Logging & Workflow (+ UAT fixes)
+**Current focus:** Phase 12 — UI Polish
 
 ## Current Position
 
-Phase: 14 of 14 (Scraping Logging & Workflow)
-Plan: 4 of 4 in current phase + FIX plan
-Status: Phase complete (with UAT fixes)
-Last activity: 2026-01-22 — Completed 14-FIX-PLAN.md
+Phase: 12 of 14 (UI Polish)
+Plan: 1 of TBD in current phase
+Status: In progress
+Last activity: 2026-01-22 — Completed 12-01-PLAN.md
 
-Progress: ████████████ 100% (43 of 43 plans complete + 5 fix plans)
+Progress: ████████████░ 92% (44 of 48 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 43
+- Total plans completed: 44
 - Average duration: 6 min
-- Total execution time: 3.8 hours
+- Total execution time: 4.0 hours
 
 **By Phase:**
 
@@ -40,10 +40,11 @@ Progress: ████████████ 100% (43 of 43 plans complete + 5
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
+| 12 UI Polish | 1 | 14 min | 14 min |
 | 14 Scraping Logging | 4+2fix | 41 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 5 min, 8 min, 6 min, 8 min
+- Last 5 plans: 5 min, 8 min, 6 min, 8 min, 14 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -172,6 +173,8 @@ Recent decisions affecting current work:
 - Timeline vertical layout with connector lines for phase transitions
 - SSE observe vs create: use run-specific /runs/{id}/progress to observe, /stream to create
 - Optional Pydantic fields for evolving external APIs (SportyBet far_near_odds, etc.)
+- Peer data attribute selectors for state-based responsive layout (peer-data-[state=collapsed])
+- CSS variable usage for dynamic component spacing (--sidebar-width-icon)
 
 ### Roadmap Evolution
 
@@ -193,5 +196,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 14-FIX-PLAN.md — Phase 14 UAT fixes complete
-Resume file: .planning/phases/14-scraping-logging-workflow/14-FIX-SUMMARY.md
+Stopped at: Completed 12-01-PLAN.md — pawaRisk rebrand and sidebar fix
+Resume file: .planning/phases/12-ui-polish/12-01-SUMMARY.md

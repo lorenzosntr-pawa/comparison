@@ -28,7 +28,7 @@ None
 - [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
 - [x] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
 - [x] **Phase 11: Settings Page** - Build functional settings page for tool configuration
-- [ ] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues
+- [ ] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues (IN PROGRESS)
 - [ ] **Phase 13: Competitor Event Import** - Import SportyBet/Bet9ja events not in BetPawa for coverage comparison
 - [x] **Phase 14: Scraping Logging & Workflow** - Restructure backend scraping with proper logging and state tracking
 
@@ -202,7 +202,10 @@ None
 **Goal**: Fix general UI issues, ensure all widgets work correctly, fix sidebar behavior
 **Depends on**: Phase 6 (extends React foundation)
 **Research**: Unlikely (bug fixes and UI improvements)
-**Plans**: TBD
+**Plans**:
+- Plan 01: Rebrand & Sidebar Fix (COMPLETE - 12-01-SUMMARY.md)
+- Plan 02: TBD
+- Plan 03: TBD
 
 **Details:**
 - Fix sidebar collapse behavior (currently covers part of page content)
@@ -262,6 +265,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Market Mapping Expansion | 0/TBD | Not started | - |
 | 10. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
 | 11. Settings Page | 2/2 | Complete | 2026-01-22 |
-| 12. UI Polish | 0/TBD | Not started | - |
+| 12. UI Polish | 1/TBD | In progress | - |
 | 13. Competitor Event Import | 0/TBD | Not started | - |
 | 14. Scraping Logging & Workflow | 4/4 | Complete | 2026-01-22 |
