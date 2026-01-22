@@ -279,6 +279,13 @@ export function RecentRuns() {
             </Badge>
           )}
 
+          {/* Next run time */}
+          {scheduler?.jobs[0]?.next_run && !scheduler?.paused && (
+            <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
+              Next: {formatDistanceToNow(new Date(scheduler.jobs[0].next_run), { addSuffix: true })}
+            </Badge>
+          )}
+
           {/* Scheduler status */}
           <Badge
             variant={scheduler?.paused ? 'secondary' : scheduler?.running ? 'default' : 'outline'}
