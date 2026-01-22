@@ -1,5 +1,6 @@
 """Scrape API endpoints for triggering and monitoring scrape operations."""
 
+import asyncio
 import json
 from datetime import datetime
 
@@ -23,8 +24,8 @@ from src.api.schemas import (
     ScrapeStatsResponse,
     ScrapeStatusResponse,
 )
-from src.scraping.schemas import Platform
-from src.db.engine import get_db
+from src.scraping.schemas import Platform, ScrapeProgress
+from src.db.engine import async_session_factory, get_db
 from src.db.models.scrape import ScrapeError, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
@@ -150,6 +151,9 @@ async def stream_scrape(
     Connect via EventSource in browser to receive real-time progress updates.
     Each event is a JSON object with platform, phase, counts, and message.
 
+    The scrape runs as a background task that continues even if the SSE client
+    disconnects. SSE is purely for observation, not execution control.
+
     Returns SSE stream with progress updates for each platform as scraping runs.
     """
     # Create ScrapeRun record
@@ -157,62 +161,97 @@ async def stream_scrape(
     db.add(scrape_run)
     await db.commit()
     await db.refresh(scrape_run)
+    scrape_run_id = scrape_run.id
 
-    # Build orchestrator
-    sportybet = SportyBetClient(request.app.state.sportybet_client)
-    betpawa = BetPawaClient(request.app.state.betpawa_client)
-    bet9ja = Bet9jaClient(request.app.state.bet9ja_client)
-    orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+    # Create broadcaster for this scrape run before spawning background task
+    broadcaster = progress_registry.create_broadcaster(scrape_run_id)
 
-    async def event_generator():
-        # Accumulate platform data from progress events
+    # Capture app state references for background task (avoids request.app access)
+    sportybet_http = request.app.state.sportybet_client
+    betpawa_http = request.app.state.betpawa_client
+    bet9ja_http = request.app.state.bet9ja_client
+
+    async def run_scrape_background():
+        """Background task that runs independent of SSE connection.
+
+        Uses its own DB session to avoid CancelledError when client disconnects.
+        Broadcasts progress via progress_registry for SSE subscribers.
+        """
+        # Track metrics for final update
         platform_timings: dict[str, dict] = {}
         total_events = 0
         failed_count = 0
         final_status = ScrapeStatus.COMPLETED
 
+        async with async_session_factory() as bg_db:
+            # Build orchestrator with captured HTTP clients
+            sportybet = SportyBetClient(sportybet_http)
+            betpawa = BetPawaClient(betpawa_http)
+            bet9ja = Bet9jaClient(bet9ja_http)
+            orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+
+            try:
+                async for progress in orchestrator.scrape_with_progress(
+                    timeout=float(timeout),
+                    scrape_run_id=scrape_run_id,
+                    db=bg_db,
+                ):
+                    # Broadcast progress to any connected SSE clients
+                    await broadcaster.publish(progress)
+
+                    # Track metrics (same logic as before)
+                    if progress.platform and progress.phase == "completed":
+                        platform_timings[progress.platform.value] = {
+                            "duration_ms": progress.duration_ms or 0,
+                            "events_count": progress.events_count or 0,
+                        }
+                        total_events += progress.events_count or 0
+                    elif progress.platform and progress.phase == "failed":
+                        failed_count += 1
+
+                    # Check final status
+                    if progress.platform is None and progress.phase in ("completed", "failed"):
+                        if progress.phase == "failed":
+                            final_status = ScrapeStatus.FAILED
+                        elif failed_count > 0 and len(platform_timings) > 0:
+                            final_status = ScrapeStatus.PARTIAL
+                        elif failed_count > 0:
+                            final_status = ScrapeStatus.FAILED
+            except Exception as e:
+                final_status = ScrapeStatus.FAILED
+                await broadcaster.publish(ScrapeProgress(
+                    phase="failed", current=0, total=0, message=str(e)
+                ))
+            finally:
+                # Update ScrapeRun with results (using background DB session)
+                scrape_run_obj = await bg_db.get(ScrapeRun, scrape_run_id)
+                if scrape_run_obj:
+                    scrape_run_obj.status = final_status
+                    scrape_run_obj.completed_at = datetime.utcnow()
+                    scrape_run_obj.events_scraped = total_events
+                    scrape_run_obj.events_failed = failed_count
+                    scrape_run_obj.platform_timings = platform_timings if platform_timings else None
+                    await bg_db.commit()
+
+                # Signal completion and clean up
+                await broadcaster.close()
+                progress_registry.remove_broadcaster(scrape_run_id)
+
+    # Start background task (fire-and-forget, survives SSE disconnect)
+    asyncio.create_task(run_scrape_background())
+
+    # Small delay to ensure broadcaster is registered and ready
+    await asyncio.sleep(0.05)
+
+    async def event_generator():
+        """SSE stream that subscribes to progress updates."""
         try:
-            async for progress in orchestrator.scrape_with_progress(
-                timeout=float(timeout),
-                scrape_run_id=scrape_run.id,
-                db=db,
-            ):
+            async for progress in broadcaster.subscribe():
                 if await request.is_disconnected():
                     break
-
-                # Accumulate platform timing data from completed events
-                if progress.platform and progress.phase == "completed":
-                    platform_timings[progress.platform.value] = {
-                        "duration_ms": progress.duration_ms or 0,
-                        "events_count": progress.events_count or 0,
-                    }
-                    total_events += progress.events_count or 0
-                elif progress.platform and progress.phase == "failed":
-                    failed_count += 1
-
-                # Check final status from overall completion event
-                if progress.platform is None and progress.phase in ("completed", "failed"):
-                    if progress.phase == "failed":
-                        final_status = ScrapeStatus.FAILED
-                    elif failed_count > 0 and len(platform_timings) > 0:
-                        final_status = ScrapeStatus.PARTIAL
-                    elif failed_count > 0:
-                        final_status = ScrapeStatus.FAILED
-                    else:
-                        final_status = ScrapeStatus.COMPLETED
-
                 yield f"data: {progress.model_dump_json()}\n\n"
         except Exception as e:
-            final_status = ScrapeStatus.FAILED
-            yield f"data: {json.dumps({'phase': 'failed', 'message': str(e)})}\n\n"
-        finally:
-            # Update ScrapeRun with complete data
-            scrape_run.status = final_status
-            scrape_run.completed_at = datetime.utcnow()
-            scrape_run.events_scraped = total_events
-            scrape_run.events_failed = failed_count
-            scrape_run.platform_timings = platform_timings if platform_timings else None
-            await db.commit()
+            yield f"data: {json.dumps({'phase': 'error', 'message': str(e)})}\n\n"
 
     return StreamingResponse(
         event_generator(),
