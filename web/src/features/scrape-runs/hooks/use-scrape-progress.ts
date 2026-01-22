@@ -117,16 +117,23 @@ export function useScrapeProgress({ runId, isRunning, onComplete }: UseScrapePro
     runIdRef.current = runId
   }, [runId])
 
-  // Connect to SSE stream
+  // Connect to SSE stream for observing existing scrape
   const connect = useCallback(() => {
     // Prevent duplicate connections
     if (eventSourceRef.current) {
       return
     }
 
+    // Must have runId to observe
+    const currentRunId = runIdRef.current
+    if (!currentRunId) {
+      return
+    }
+
     dispatch({ type: 'CONNECTING' })
 
-    const eventSource = new EventSource('/api/scrape/stream')
+    // Use run-specific observe endpoint (NOT /api/scrape/stream which creates new scrapes)
+    const eventSource = new EventSource(`/api/scrape/runs/${currentRunId}/progress`)
     eventSourceRef.current = eventSource
 
     eventSource.onopen = () => {
@@ -161,7 +168,9 @@ export function useScrapeProgress({ runId, isRunning, onComplete }: UseScrapePro
     eventSource.onerror = () => {
       eventSource.close()
       eventSourceRef.current = null
-      dispatch({ type: 'ERROR', error: 'Connection lost' })
+      // 410 Gone means scrape already completed - not a real error
+      // Just disconnect silently; the UI will show completed status from API data
+      dispatch({ type: 'DISCONNECTED' })
     }
   }, [queryClient])
 
