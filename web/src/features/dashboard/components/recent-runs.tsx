@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress'
 import { useSchedulerHistory, useActiveScrapesObserver } from '../hooks'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio } from 'lucide-react'
+import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio, Circle } from 'lucide-react'
 
 interface ScrapeProgressEvent {
   platform: string | null
@@ -53,9 +53,75 @@ const PLATFORM_PROGRESS_COLORS: Record<string, string> = {
   bet9ja: '[&>div]:bg-orange-500',
 }
 
+// Platform-specific colors for icons
+const PLATFORM_ICON_COLORS: Record<string, string> = {
+  betpawa: 'text-green-500',
+  sportybet: 'text-blue-500',
+  bet9ja: 'text-orange-500',
+}
+
+// Status icons for per-platform display
+const PLATFORM_STATUS_ICONS: Record<string, { icon: typeof Circle; color: string }> = {
+  pending: { icon: Circle, color: 'text-muted-foreground' },
+  active: { icon: Loader2, color: 'text-blue-500' },
+  completed: { icon: CheckCircle2, color: 'text-green-500' },
+  failed: { icon: XCircle, color: 'text-destructive' },
+}
+
+// Platform abbreviations for display
+const PLATFORM_ABBREV: Record<string, string> = {
+  betpawa: 'BP',
+  sportybet: 'SB',
+  bet9ja: 'B9',
+}
+
+function PlatformStatusIcon({ platform, status }: { platform: string; status: string }) {
+  const { icon: Icon, color } = PLATFORM_STATUS_ICONS[status] || PLATFORM_STATUS_ICONS.pending
+  const abbrev = PLATFORM_ABBREV[platform] || platform.slice(0, 3).toUpperCase()
+  return (
+    <div className="flex items-center gap-0.5" title={`${platform}: ${status}`}>
+      <Icon className={cn('h-3 w-3', color, status === 'active' && 'animate-spin')} />
+      <span className="text-xs">{abbrev}</span>
+    </div>
+  )
+}
+
+// All platforms we track
+const ALL_PLATFORMS = ['betpawa', 'sportybet', 'bet9ja']
+
+// Determine per-platform status from run data
+function getPlatformStatuses(
+  run: { status: string; platform_timings: Record<string, unknown> | null },
+  isCurrentlyRunning: boolean,
+  activeProgress: ScrapeProgressEvent | null
+): Record<string, string> {
+  const statuses: Record<string, string> = {}
+
+  for (const platform of ALL_PLATFORMS) {
+    if (run.platform_timings?.[platform]) {
+      // Platform exists in timings = completed
+      statuses[platform] = 'completed'
+    } else if (isCurrentlyRunning) {
+      // Run is active - check if this platform is being scraped now
+      if (activeProgress?.platform?.toLowerCase() === platform) {
+        statuses[platform] = 'active'
+      } else {
+        statuses[platform] = 'pending'
+      }
+    } else if (run.status === 'failed' || run.status === 'partial') {
+      // Run finished with failures - platforms not in timings failed
+      statuses[platform] = 'failed'
+    } else {
+      statuses[platform] = 'pending'
+    }
+  }
+
+  return statuses
+}
+
 export function RecentRuns() {
   const queryClient = useQueryClient()
-  const { data, isPending, error, refetch } = useSchedulerHistory(5)
+  const { data, isPending, error, refetch } = useSchedulerHistory(6)
   const eventSourceRef = useRef<EventSource | null>(null)
 
   // State for manual scrapes triggered from this component
@@ -172,7 +238,7 @@ export function RecentRuns() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
         </CardContent>
@@ -216,9 +282,14 @@ export function RecentRuns() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  {isStreaming && (
+                  {isStreaming && activeProgress?.platform ? (
+                    <Loader2 className={cn(
+                      'h-3.5 w-3.5 animate-spin',
+                      PLATFORM_ICON_COLORS[activeProgress.platform.toLowerCase()] || 'text-primary'
+                    )} />
+                  ) : isStreaming ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  )}
+                  ) : null}
                   {activeProgress?.phase === 'completed' && (
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
                   )}
@@ -228,7 +299,8 @@ export function RecentRuns() {
                   <span className={cn(
                     'font-medium',
                     activeProgress?.phase === 'completed' && 'text-green-500',
-                    activeProgress?.phase === 'failed' && 'text-destructive'
+                    activeProgress?.phase === 'failed' && 'text-destructive',
+                    isStreaming && activeProgress?.platform && PLATFORM_ICON_COLORS[activeProgress.platform.toLowerCase()]
                   )}>
                     {activeProgress?.phase === 'completed' ? 'Scrape Complete' :
                      activeProgress?.phase === 'failed' ? 'Scrape Failed' :
@@ -308,12 +380,14 @@ export function RecentRuns() {
             {data?.runs.map((run) => {
               const duration = formatDuration(run.started_at, run.completed_at)
               const isCurrentlyRunning = run.status === 'running' && activeScrapeId === run.id
+              const platformStatuses = getPlatformStatuses(run, isCurrentlyRunning, activeProgress)
               return (
-                <div
+                <Link
                   key={run.id}
+                  to={`/scrape-runs/${run.id}`}
                   className={cn(
-                    "flex items-center justify-between py-2 border-b last:border-0",
-                    isCurrentlyRunning && "bg-primary/5 -mx-2 px-2 rounded"
+                    "flex items-center justify-between py-2 border-b last:border-0 hover:bg-muted/50 transition-colors -mx-2 px-2 rounded cursor-pointer",
+                    isCurrentlyRunning && "bg-primary/5"
                   )}
                 >
                   <div className="space-y-1">
@@ -332,29 +406,40 @@ export function RecentRuns() {
                       {run.trigger === 'scheduled' && (
                         <Radio className="h-3 w-3 text-blue-500" />
                       )}
+                      {run.events_failed > 0 && (
+                        <Badge variant="destructive" className="text-xs py-0 h-5">
+                          {run.events_failed} err
+                        </Badge>
+                      )}
                       {duration && (
                         <span className="text-xs text-muted-foreground">
                           {duration}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(run.started_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(run.started_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        {ALL_PLATFORMS.map((platform) => (
+                          <PlatformStatusIcon
+                            key={platform}
+                            platform={platform}
+                            status={platformStatuses[platform]}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">
                       {run.events_scraped} events
                     </p>
-                    {run.events_failed > 0 && (
-                      <p className="text-xs text-destructive">
-                        {run.events_failed} failed
-                      </p>
-                    )}
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

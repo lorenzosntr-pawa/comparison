@@ -47,6 +47,7 @@ export interface RunHistoryEntry {
   events_failed: number
   trigger: string
   duration_seconds: number | null
+  platform_timings: Record<string, { duration_ms: number; events_count: number }> | null
 }
 
 export interface RunHistoryResponse {

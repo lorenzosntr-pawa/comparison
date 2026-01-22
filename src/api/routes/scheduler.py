@@ -154,6 +154,7 @@ async def get_run_history(
                 events_failed=run.events_failed,
                 trigger=run.trigger,
                 duration_seconds=duration_seconds,
+                platform_timings=run.platform_timings,
             )
         )
 

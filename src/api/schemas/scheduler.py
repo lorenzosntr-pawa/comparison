@@ -49,6 +49,7 @@ class RunHistoryEntry(BaseModel):
     events_failed: int
     trigger: str | None
     duration_seconds: float | None
+    platform_timings: dict | None = None
 
 
 class RunHistoryResponse(BaseModel):
