@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import select
+import structlog
+import structlog.contextvars
+from sqlalchemy import select, update
 
 from src.db.models.bookmaker import Bookmaker
 from src.db.models.event import Event
 from src.db.models.odds import MarketOdds, OddsSnapshot
+from src.db.models.scrape import ScrapePhaseLog, ScrapeRun
 from market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
 from market_mapping.mappers.sportybet import map_sportybet_to_betpawa
 from market_mapping.types.errors import MappingError
@@ -21,12 +23,19 @@ from market_mapping.types.sportybet import SportybetMarket
 from src.matching.service import EventMatchingService
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.exceptions import InvalidEventIdError
-from src.scraping.schemas import Platform, PlatformResult, ScrapeProgress, ScrapeResult
+from src.scraping.schemas import (
+    Platform,
+    PlatformResult,
+    ScrapeErrorContext,
+    ScrapePhase,
+    ScrapeProgress,
+    ScrapeResult,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class ScrapingOrchestrator:
@@ -50,6 +59,75 @@ class ScrapingOrchestrator:
             Platform.BETPAWA: betpawa_client,
             Platform.BET9JA: bet9ja_client,
         }
+
+    async def _emit_phase(
+        self,
+        db: AsyncSession | None,
+        scrape_run_id: int | None,
+        platform: Platform | None,
+        phase: ScrapePhase,
+        message: str,
+        events_count: int = 0,
+        error: ScrapeErrorContext | None = None,
+    ) -> ScrapeProgress:
+        """Emit phase transition: update DB, log, return progress object."""
+        # 1. Update ScrapeRun current state in DB
+        if db and scrape_run_id:
+            await db.execute(
+                update(ScrapeRun)
+                .where(ScrapeRun.id == scrape_run_id)
+                .values(
+                    current_phase=phase.value,
+                    current_platform=platform.value if platform else None,
+                )
+            )
+            # Don't commit - batch with other operations
+
+        # 2. Log phase transition with structlog
+        log = logger.bind(
+            scrape_run_id=scrape_run_id,
+            platform=platform.value if platform else None,
+            phase=phase.value,
+            events_count=events_count,
+        )
+        if error:
+            log.error("phase_transition", error_type=error.error_type, error_message=error.error_message)
+        else:
+            log.info("phase_transition", message=message)
+
+        # 3. Return progress object for SSE
+        return ScrapeProgress(
+            scrape_run_id=scrape_run_id,
+            platform=platform,
+            phase=phase,
+            current=0,  # Will be set by caller
+            total=0,    # Will be set by caller
+            events_count=events_count,
+            message=message,
+            error=error,
+        )
+
+    async def _log_phase_history(
+        self,
+        db: AsyncSession,
+        scrape_run_id: int,
+        platform: Platform | None,
+        phase: ScrapePhase,
+        message: str,
+        events_count: int = 0,
+        error: ScrapeErrorContext | None = None,
+    ) -> None:
+        """Persist phase transition to history table."""
+        phase_log = ScrapePhaseLog(
+            scrape_run_id=scrape_run_id,
+            platform=platform.value if platform else None,
+            phase=phase.value,
+            events_processed=events_count,
+            message=message,
+            error_details=error.model_dump() if error else None,
+        )
+        db.add(phase_log)
+        # Don't commit - batch with other operations
 
     async def scrape_all(
         self,
@@ -196,29 +274,50 @@ class ScrapingOrchestrator:
         Yields:
             ScrapeProgress updates for each stage of scraping.
         """
+        # Bind structlog context for this scrape run
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(scrape_run_id=scrape_run_id)
+
         target_platforms = platforms or list(Platform)
         total = len(target_platforms)
         total_events = 0
 
+        # Log and persist initializing phase
+        logger.info("scrape_starting", platforms=[p.value for p in target_platforms], total=total)
+        if db and scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, None, ScrapePhase.INITIALIZING,
+                f"Starting scrape of {total} platforms"
+            )
+
         # Yield starting progress
-        yield ScrapeProgress(
-            platform=None,
-            phase="starting",
-            current=0,
-            total=total,
-            message=f"Starting scrape of {total} platforms",
+        progress = await self._emit_phase(
+            db, scrape_run_id, None, ScrapePhase.INITIALIZING,
+            f"Starting scrape of {total} platforms"
         )
+        progress.current = 0
+        progress.total = total
+        yield progress
 
         # Scrape each platform sequentially for progress updates
         for idx, platform in enumerate(target_platforms):
-            # Yield "scraping" progress before starting this platform
-            yield ScrapeProgress(
-                platform=platform,
-                phase="scraping",
-                current=idx,
-                total=total,
-                message=f"Scraping {platform.value}...",
+            platform_start_time = time.perf_counter()
+
+            # Log and yield scraping phase
+            logger.info("platform_scrape_start", platform=platform.value, index=idx)
+            if db and scrape_run_id:
+                await self._log_phase_history(
+                    db, scrape_run_id, platform, ScrapePhase.SCRAPING,
+                    f"Scraping {platform.value}..."
+                )
+
+            progress = await self._emit_phase(
+                db, scrape_run_id, platform, ScrapePhase.SCRAPING,
+                f"Scraping {platform.value}..."
             )
+            progress.current = idx
+            progress.total = total
+            yield progress
 
             try:
                 # Scrape this platform
@@ -226,72 +325,128 @@ class ScrapingOrchestrator:
                     platform, sport_id, competition_id, False, timeout, db
                 )
 
+                logger.info("platform_scrape_complete", platform=platform.value, events_count=len(events), duration_ms=duration_ms)
+
                 # Store events if DB session provided
                 if db and events:
-                    yield ScrapeProgress(
-                        platform=platform,
-                        phase="storing",
-                        current=idx,
-                        total=total,
-                        events_count=len(events),
-                        message=f"Storing {len(events)} {platform.value} events...",
+                    if db and scrape_run_id:
+                        await self._log_phase_history(
+                            db, scrape_run_id, platform, ScrapePhase.STORING,
+                            f"Storing {len(events)} {platform.value} events...",
+                            events_count=len(events)
+                        )
+
+                    progress = await self._emit_phase(
+                        db, scrape_run_id, platform, ScrapePhase.STORING,
+                        f"Storing {len(events)} {platform.value} events...",
+                        events_count=len(events)
                     )
+                    progress.current = idx
+                    progress.total = total
+                    yield progress
 
                     try:
                         await self._store_events(db, platform, events)
                     except Exception as e:
-                        logger.exception(f"Failed to store events for {platform}: {e}")
+                        error_ctx = ScrapeErrorContext(
+                            error_type="storage",
+                            error_message=str(e),
+                            platform=platform.value,
+                            recoverable=False,
+                        )
+                        logger.error("storage_failed", platform=platform.value, error=str(e), exc_info=True)
                         if scrape_run_id and db:
                             await db.rollback()
                             await self._log_error(db, scrape_run_id, platform, e)
 
                 total_events += len(events)
 
-                # Yield "completed" progress for this platform
-                yield ScrapeProgress(
-                    platform=platform,
-                    phase="completed",
-                    current=idx + 1,
-                    total=total,
-                    events_count=len(events),
-                    duration_ms=duration_ms,
-                    message=f"Scraped {len(events)} events from {platform.value} ({duration_ms}ms)",
+                # Log and yield completed phase for this platform
+                if db and scrape_run_id:
+                    await self._log_phase_history(
+                        db, scrape_run_id, platform, ScrapePhase.COMPLETED,
+                        f"Scraped {len(events)} events from {platform.value} ({duration_ms}ms)",
+                        events_count=len(events)
+                    )
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, platform, ScrapePhase.COMPLETED,
+                    f"Scraped {len(events)} events from {platform.value} ({duration_ms}ms)",
+                    events_count=len(events)
                 )
+                progress.current = idx + 1
+                progress.total = total
+                progress.duration_ms = duration_ms
+                yield progress
 
             except Exception as e:
-                # Log error if DB session provided
+                # Create structured error context
+                if isinstance(e, (TimeoutError, asyncio.TimeoutError)):
+                    error_ctx = ScrapeErrorContext(
+                        error_type="timeout",
+                        error_message=f"Platform scrape timed out after {timeout}s",
+                        platform=platform.value,
+                        recoverable=True,
+                    )
+                elif "connection" in str(e).lower() or "network" in str(e).lower():
+                    error_ctx = ScrapeErrorContext(
+                        error_type="network",
+                        error_message=str(e) or f"Network error: {type(e).__name__}",
+                        platform=platform.value,
+                        recoverable=True,
+                    )
+                else:
+                    error_ctx = ScrapeErrorContext(
+                        error_type="unknown",
+                        error_message=str(e) or f"Unknown error: {type(e).__name__}",
+                        platform=platform.value,
+                        recoverable=False,
+                    )
+
+                logger.error("platform_scrape_failed", platform=platform.value, error_type=error_ctx.error_type, error_message=error_ctx.error_message)
+
+                # Log error to DB
                 if db and scrape_run_id:
                     await db.rollback()
                     await self._log_error(db, scrape_run_id, platform, e)
+                    await self._log_phase_history(
+                        db, scrape_run_id, platform, ScrapePhase.FAILED,
+                        f"Failed: {error_ctx.error_message}",
+                        error=error_ctx
+                    )
 
-                # Handle TimeoutError specially
-                if isinstance(e, (TimeoutError, asyncio.TimeoutError)):
-                    error_msg = f"Platform scrape timed out after {timeout}s"
-                else:
-                    error_msg = str(e) or f"Unknown error: {type(e).__name__}"
-
-                yield ScrapeProgress(
-                    platform=platform,
-                    phase="failed",
-                    current=idx + 1,
-                    total=total,
-                    events_count=0,
-                    message=f"Failed: {error_msg}",
+                elapsed_ms = int((time.perf_counter() - platform_start_time) * 1000)
+                progress = await self._emit_phase(
+                    db, scrape_run_id, platform, ScrapePhase.FAILED,
+                    f"Failed: {error_ctx.error_message}",
+                    error=error_ctx
                 )
+                progress.current = idx + 1
+                progress.total = total
+                progress.elapsed_ms = elapsed_ms
+                yield progress
 
         # Commit all changes
         if db:
             await db.commit()
 
-        # Yield final completion progress
-        yield ScrapeProgress(
-            platform=None,
-            phase="completed",
-            current=total,
-            total=total,
-            events_count=total_events,
-            message=f"Scrape complete: {total_events} total events from {total} platforms",
+        # Log and yield final completion progress
+        logger.info("scrape_complete", total_events=total_events, platforms=total)
+        if db and scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, None, ScrapePhase.COMPLETED,
+                f"Scrape complete: {total_events} total events from {total} platforms",
+                events_count=total_events
+            )
+
+        progress = await self._emit_phase(
+            db, scrape_run_id, None, ScrapePhase.COMPLETED,
+            f"Scrape complete: {total_events} total events from {total} platforms",
+            events_count=total_events
         )
+        progress.current = total
+        progress.total = total
+        yield progress
 
     async def _scrape_platform(
         self,
