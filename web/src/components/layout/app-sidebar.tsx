@@ -15,7 +15,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: Home },
-  { title: 'Matches', url: '/matches', icon: List },
+  { title: 'Odds Comparison', url: '/matches', icon: List },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
@@ -29,7 +29,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2 px-2 py-2">
           <Activity className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">
-            Betpawa Odds
+            pawaRisk
           </span>
         </div>
       </SidebarHeader>
