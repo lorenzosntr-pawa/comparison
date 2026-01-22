@@ -25,12 +25,11 @@ None
 - [x] **Phase 7.1: Complete Odds Pipeline** - Add BetPawa odds storage and fix UI display (INSERTED)
 - [x] **Phase 7.2: Scraping Performance** - Improve scraping speed and logging (INSERTED)
 - [x] **Phase 8: Scrape Runs UI Improvements** - Improve scrape runs page and widget
-- [ ] **Phase 9: Market Mapping Expansion** - Expand market mappings for better cross-platform coverage
-- [x] **Phase 10: Matches Page Improvements** - Fix filters, add region/league display, add search
-- [x] **Phase 11: Settings Page** - Build functional settings page for tool configuration
-- [x] **Phase 12: UI Polish** - Fix sidebar, widgets, and general UI issues
-- [ ] **Phase 13: Competitor Event Import** - Import SportyBet/Bet9ja events not in BetPawa for coverage comparison
-- [x] **Phase 14: Scraping Logging & Workflow** - Restructure backend scraping with proper logging and state tracking
+- [x] **Phase 9: Matches Page Improvements** - Fix filters, add region/league display, add search
+- [x] **Phase 10: Settings Page** - Build functional settings page for tool configuration
+- [x] **Phase 11: UI Polish** - Fix sidebar, widgets, and general UI issues
+- [ ] **Phase 12: Competitor Event Import** - Import SportyBet/Bet9ja events not in BetPawa for coverage comparison
+- [x] **Phase 13: Scraping Logging & Workflow** - Restructure backend scraping with proper logging and state tracking
 
 ## Phase Details
 
@@ -158,25 +157,13 @@ None
 - Platform-specific retry for failed scrapes (not whole-run retry)
 - POST /api/scrape/{run_id}/retry with platform selection
 
-### Phase 9: Market Mapping Expansion
-**Goal**: Expand market mappings to correctly match more markets between SportyBet/Bet9ja and BetPawa by analyzing DB data and improving existing mappings
-**Depends on**: Phase 1 (extends market mapping port)
-**Research**: Required (analyze DB to identify unmapped markets and mapping gaps)
-**Plans**: TBD
-
-**Details:**
-- Review scraped data in database to identify unmapped markets
-- Analyze current mapping coverage gaps between platforms
-- Add new market mappings for commonly-missed markets
-- Improve existing mappings where matches are incorrect
-
-### Phase 10: Matches Page Improvements
+### Phase 9: Matches Page Improvements
 **Goal**: Improve matches page UX with working filters, region/league display, and match search
 **Depends on**: Phase 7 (extends match views)
 **Research**: Unlikely (internal UI improvements)
 **Plans**:
-- Plan 01: Search and Region Column (COMPLETE - 10-01-SUMMARY.md)
-- Plan 02: Enhanced Match Filters (COMPLETE - 10-02-SUMMARY.md)
+- Plan 01: Search and Region Column (COMPLETE - 9-01-SUMMARY.md)
+- Plan 02: Enhanced Match Filters (COMPLETE - 9-02-SUMMARY.md)
 
 **Details:**
 - Fix all filters on top of matches page (especially date filters)
@@ -184,13 +171,13 @@ None
 - Add league/competition display for each match
 - Add search functionality to find specific matches by team name
 
-### Phase 11: Settings Page
+### Phase 10: Settings Page
 **Goal**: Build functional settings page for tool configuration and preferences
 **Depends on**: Phase 6 (extends React foundation)
 **Research**: Unlikely (internal UI development)
 **Plans**:
-- Plan 01: Settings Backend (COMPLETE - 11-01-SUMMARY.md)
-- Plan 02: Settings UI (COMPLETE - 11-02-SUMMARY.md)
+- Plan 01: Settings Backend (COMPLETE - 10-01-SUMMARY.md)
+- Plan 02: Settings UI (COMPLETE - 10-02-SUMMARY.md)
 
 **Details:**
 - Settings page currently exists but is empty
@@ -198,14 +185,14 @@ None
 - Persist settings (localStorage or database)
 - Potential settings: scraping intervals, display preferences, notification thresholds, etc.
 
-### Phase 12: UI Polish
+### Phase 11: UI Polish
 **Goal**: Fix general UI issues, ensure all widgets work correctly, fix sidebar behavior
 **Depends on**: Phase 6 (extends React foundation)
 **Research**: Unlikely (bug fixes and UI improvements)
 **Plans**:
-- Plan 01: Rebrand & Sidebar Fix (COMPLETE - 12-01-SUMMARY.md)
-- Plan 02: Dashboard Layout Restructure (COMPLETE - 12-02-SUMMARY.md)
-- Plan 03: Compact Analytics (COMPLETE - 12-03-SUMMARY.md)
+- Plan 01: Rebrand & Sidebar Fix (COMPLETE - 11-01-SUMMARY.md)
+- Plan 02: Dashboard Layout Restructure (COMPLETE - 11-02-SUMMARY.md)
+- Plan 03: Compact Analytics (COMPLETE - 11-03-SUMMARY.md)
 
 **Details:**
 - Fix sidebar collapse behavior (currently covers part of page content)
@@ -213,7 +200,7 @@ None
 - General UI consistency and polish pass
 - Fix any layout/spacing issues across pages
 
-### Phase 13: Competitor Event Import
+### Phase 12: Competitor Event Import
 **Goal**: Import events from SportyBet/Bet9ja that don't exist in BetPawa, enabling full market coverage comparison
 **Depends on**: Phase 6.1 (extends cross-platform scraping)
 **Research**: Required (understand SportyBet full event listing API, Bet9ja event discovery)
@@ -226,15 +213,15 @@ None
 - Enable comparison of event coverage between BetPawa and competitors
 - Execution order: BetPawa scrape first, then competitor-only event discovery
 
-### Phase 14: Scraping Logging & Workflow
+### Phase 13: Scraping Logging & Workflow
 **Goal**: Restructure backend scraping workflow with proper logging, state tracking, and UI display for each bookmaker phase
 **Depends on**: Phase 8 (fixes scrape runs UI issues)
 **Research**: Complete (14-RESEARCH.md)
 **Plans**:
-- Plan 01: Scraping Infrastructure (COMPLETE - 14-01-SUMMARY.md)
-- Plan 02: Orchestrator Logging Integration (COMPLETE - 14-02-SUMMARY.md)
-- Plan 03: Dashboard Redesign (COMPLETE - 14-03-SUMMARY.md)
-- Plan 04: Frontend Phase Display (COMPLETE - 14-04-SUMMARY.md)
+- Plan 01: Scraping Infrastructure (COMPLETE - 13-01-SUMMARY.md)
+- Plan 02: Orchestrator Logging Integration (COMPLETE - 13-02-SUMMARY.md)
+- Plan 03: Dashboard Redesign (COMPLETE - 13-03-SUMMARY.md)
+- Plan 04: Frontend Phase Display (COMPLETE - 13-04-SUMMARY.md)
 
 **Details:**
 - Backend scraping workflow restructure for better state management
@@ -262,9 +249,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7.1 Complete Odds Pipeline | 1/1 | Complete | 2026-01-21 |
 | 7.2 Scraping Performance | 3/3 | Complete | 2026-01-21 |
 | 8. Scrape Runs UI Improvements | 3/3 | Complete | 2026-01-21 |
-| 9. Market Mapping Expansion | 0/TBD | Not started | - |
-| 10. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
-| 11. Settings Page | 2/2 | Complete | 2026-01-22 |
-| 12. UI Polish | 3/3 | Complete | 2026-01-22 |
-| 13. Competitor Event Import | 0/TBD | Not started | - |
-| 14. Scraping Logging & Workflow | 4/4 | Complete | 2026-01-22 |
+| 9. Matches Page Improvements | 2/2 | Complete | 2026-01-21 |
+| 10. Settings Page | 2/2 | Complete | 2026-01-22 |
+| 11. UI Polish | 3/3 | Complete | 2026-01-22 |
+| 12. Competitor Event Import | 0/TBD | Not started | - |
+| 13. Scraping Logging & Workflow | 4/4 | Complete | 2026-01-22 |
