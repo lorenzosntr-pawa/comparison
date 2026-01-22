@@ -37,9 +37,9 @@ export function ScrapeRunsPage() {
       <StatsSummary />
 
       {/* Analytics Section */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Analytics</h2>
+          <h2 className="text-base font-medium">Analytics</h2>
           <Select value={period} onValueChange={(v) => setPeriod(v as PeriodOption)}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Period" />
@@ -52,7 +52,7 @@ export function ScrapeRunsPage() {
           </Select>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-3">
           <DurationTrendChart
             data={analytics?.daily_metrics ?? []}
             isLoading={isAnalyticsLoading}
@@ -61,12 +61,11 @@ export function ScrapeRunsPage() {
             data={analytics?.daily_metrics ?? []}
             isLoading={isAnalyticsLoading}
           />
+          <PlatformHealthChart
+            data={analytics?.platform_metrics ?? []}
+            isLoading={isAnalyticsLoading}
+          />
         </div>
-
-        <PlatformHealthChart
-          data={analytics?.platform_metrics ?? []}
-          isLoading={isAnalyticsLoading}
-        />
       </div>
 
       <RunsTable />
