@@ -46,12 +46,22 @@ class ScrapeRun(Base):
     # Format: {"betpawa": {"duration_ms": 1234, "events_count": 40}, ...}
     platform_timings: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+    # Phase tracking fields for granular state visibility
+    current_phase: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    current_platform: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # Format: {"betpawa": "completed", "sportybet": "active", "bet9ja": "pending"}
+    platform_status: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     # Relationships
     errors: Mapped[list["ScrapeError"]] = relationship(
         back_populates="scrape_run",
         cascade="all, delete-orphan",
     )
     snapshots: Mapped[list["OddsSnapshot"]] = relationship(back_populates="scrape_run")
+    phase_logs: Mapped[list["ScrapePhaseLog"]] = relationship(
+        back_populates="scrape_run",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("idx_scrape_runs_status", "status"),
@@ -87,3 +97,28 @@ class ScrapeError(Base):
         Index("idx_scrape_errors_run", "scrape_run_id"),
         Index("idx_scrape_errors_bookmaker", "bookmaker_id"),
     )
+
+
+class ScrapePhaseLog(Base):
+    """Tracks phase transitions during a scrape run for audit trail.
+
+    Each record represents a phase start/end within a scrape execution,
+    enabling detailed timeline reconstruction and performance analysis.
+    """
+
+    __tablename__ = "scrape_phase_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scrape_run_id: Mapped[int] = mapped_column(ForeignKey("scrape_runs.id"))
+    platform: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    phase: Mapped[str] = mapped_column(String(30))
+    started_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    ended_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    events_processed: Mapped[int | None] = mapped_column(nullable=True)
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    # Relationship back to parent scrape run
+    scrape_run: Mapped["ScrapeRun"] = relationship(back_populates="phase_logs")
+
+    __table_args__ = (Index("idx_scrape_phase_logs_run_id", "scrape_run_id"),)
