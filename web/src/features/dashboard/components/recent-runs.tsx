@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
-import { useSchedulerHistory, useActiveScrapesObserver } from '../hooks'
+import { useSchedulerHistory, useActiveScrapesObserver, useSchedulerStatus } from '../hooks'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio, Circle } from 'lucide-react'
+import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio, Circle, Clock } from 'lucide-react'
 
 interface ScrapeProgressEvent {
   platform: string | null
@@ -122,6 +122,7 @@ function getPlatformStatuses(
 export function RecentRuns() {
   const queryClient = useQueryClient()
   const { data, isPending, error, refetch } = useSchedulerHistory(6)
+  const { data: scheduler } = useSchedulerStatus()
   const eventSourceRef = useRef<EventSource | null>(null)
 
   // State for manual scrapes triggered from this component
@@ -269,11 +270,39 @@ export function RecentRuns() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Recent Scrape Runs</CardTitle>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/scrape-runs">
-            View All <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Interval badge */}
+          {scheduler?.jobs[0]?.interval_minutes && (
+            <Badge variant="outline" className="gap-1 text-xs">
+              <Clock className="h-3 w-3" />
+              {scheduler.jobs[0].interval_minutes}m
+            </Badge>
+          )}
+
+          {/* Scheduler status */}
+          <Badge
+            variant={scheduler?.paused ? 'secondary' : scheduler?.running ? 'default' : 'outline'}
+            className={cn(
+              'gap-1 text-xs',
+              scheduler?.running && !scheduler?.paused && 'bg-green-500 hover:bg-green-600'
+            )}
+          >
+            <span
+              className={cn(
+                'h-1.5 w-1.5 rounded-full',
+                scheduler?.paused ? 'bg-yellow-500' :
+                scheduler?.running ? 'bg-green-100' : 'bg-gray-500'
+              )}
+            />
+            {scheduler?.paused ? 'Paused' : scheduler?.running ? 'Running' : 'Stopped'}
+          </Badge>
+
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/scrape-runs">
+              View All <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Live Progress Section */}
