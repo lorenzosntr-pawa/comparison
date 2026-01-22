@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatsCards, PlatformHealth, RecentRuns, StatusCard } from './components'
 import { useHealth, useSchedulerStatus } from './hooks'
 
@@ -48,19 +47,7 @@ export function Dashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RecentRuns />
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Scheduler controls will be available in Phase 7 Settings page.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <RecentRuns />
     </div>
   )
 }
