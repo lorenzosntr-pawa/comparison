@@ -17,6 +17,7 @@ from src.scheduling.scheduler import (
     shutdown_scheduler,
     start_scheduler,
 )
+from src.scraping.logging import configure_logging
 
 
 # Default timeout for all HTTP clients (seconds)
@@ -90,6 +91,9 @@ async def lifespan(app: FastAPI):
                 timeout=DEFAULT_TIMEOUT,
                 limits=CONNECTION_LIMITS,
             ) as bet9ja_client:
+                # Configure structured logging (dev mode by default)
+                configure_logging(json_output=False)
+
                 # Store clients in app state for dependency injection
                 app.state.sportybet_client = sportybet_client
                 app.state.betpawa_client = betpawa_client

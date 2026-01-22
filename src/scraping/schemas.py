@@ -14,6 +14,33 @@ class Platform(StrEnum):
     BET9JA = "bet9ja"
 
 
+class ScrapePhase(StrEnum):
+    """Phases of a scrape workflow execution.
+
+    Provides type-safe phase tracking throughout the scraping lifecycle.
+    """
+
+    INITIALIZING = "initializing"
+    DISCOVERING = "discovering"
+    SCRAPING = "scraping"
+    MAPPING = "mapping"
+    STORING = "storing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class PlatformStatus(StrEnum):
+    """Status of an individual platform within a scrape run.
+
+    Tracks per-platform progress during parallel scraping operations.
+    """
+
+    PENDING = "pending"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class PlatformResult(BaseModel):
     """Result from scraping a single platform."""
 
