@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 14 of 14 (Scraping Logging & Workflow)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 14-01-PLAN.md (Scraping Infrastructure)
+Last activity: 2026-01-22 — Completed 14-02-PLAN.md (Orchestrator Logging Integration)
 
-Progress: ██████████░░ 93% (40 of 43 plans complete)
+Progress: ██████████░░ 95% (41 of 43 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40
+- Total plans completed: 41
 - Average duration: 6 min
-- Total execution time: 3.6 hours
+- Total execution time: 3.7 hours
 
 **By Phase:**
 
@@ -40,10 +40,10 @@ Progress: ██████████░░ 93% (40 of 43 plans complete)
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
-| 14 Scraping Logging | 1 | 5 min | 5 min |
+| 14 Scraping Logging | 2 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 15 min, 12 min, 4 min, 5 min
+- Last 5 plans: 15 min, 12 min, 4 min, 5 min, 8 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -155,6 +155,10 @@ Recent decisions affecting current work:
 - ScrapePhase StrEnum for workflow state (INITIALIZING → COMPLETED/FAILED)
 - PlatformStatus StrEnum for per-platform state (PENDING → COMPLETED/FAILED)
 - ScrapePhaseLog model for audit trail of phase transitions
+- _emit_phase() for combined DB update + structlog + SSE emission
+- _log_phase_history() for audit trail persistence
+- structlog.contextvars.bind_contextvars() at scrape start for async context
+- ScrapeErrorContext for categorized errors (timeout, network, storage, unknown)
 
 ### Roadmap Evolution
 
@@ -176,5 +180,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 14-01-PLAN.md (Scraping Infrastructure) — Phase 14 in progress
-Resume file: .planning/phases/14-scraping-logging-workflow/14-01-SUMMARY.md
+Stopped at: Completed 14-02-PLAN.md (Orchestrator Logging Integration) — Phase 14 in progress
+Resume file: .planning/phases/14-scraping-logging-workflow/14-02-SUMMARY.md
