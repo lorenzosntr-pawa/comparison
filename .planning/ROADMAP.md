@@ -230,7 +230,7 @@ None
 **Plans**:
 - Plan 01: Scraping Infrastructure (COMPLETE - 14-01-SUMMARY.md)
 - Plan 02: Orchestrator Logging Integration (COMPLETE - 14-02-SUMMARY.md)
-- Plan 03: API Phase Endpoints (pending)
+- Plan 03: Dashboard Redesign (COMPLETE - 14-03-SUMMARY.md)
 - Plan 04: Frontend Phase Display (pending)
 
 **Details:**
@@ -264,4 +264,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 11. Settings Page | 2/2 | Complete | 2026-01-22 |
 | 12. UI Polish | 0/TBD | Not started | - |
 | 13. Competitor Event Import | 0/TBD | Not started | - |
-| 14. Scraping Logging & Workflow | 2/4 | In progress | - |
+| 14. Scraping Logging & Workflow | 3/4 | In progress | - |

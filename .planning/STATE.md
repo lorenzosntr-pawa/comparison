@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-01-20)
 ## Current Position
 
 Phase: 14 of 14 (Scraping Logging & Workflow)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-22 — Completed 14-02-FIX2 (UAT Issue Fixes)
+Last activity: 2026-01-22 — Completed 14-03-PLAN.md (Dashboard Redesign)
 
-Progress: ██████████░░ 95% (41 of 43 plans complete + 3 fix plans)
+Progress: ██████████░░ 98% (42 of 43 plans complete + 3 fix plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 41
+- Total plans completed: 42
 - Average duration: 6 min
-- Total execution time: 3.7 hours
+- Total execution time: 3.8 hours
 
 **By Phase:**
 
@@ -40,10 +40,10 @@ Progress: ██████████░░ 95% (41 of 43 plans complete + 3 
 | 08 Scrape Runs UI Improvements | 3+2fix | 41 min | 8 min |
 | 10 Matches Page Improvements | 2 | 20 min | 10 min |
 | 11 Settings Page | 2 | 16 min | 8 min |
-| 14 Scraping Logging | 2 | 13 min | 6.5 min |
+| 14 Scraping Logging | 3 | 19 min | 6.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 15 min, 12 min, 4 min, 5 min, 8 min
+- Last 5 plans: 12 min, 4 min, 5 min, 8 min, 6 min
 - Trend: Stable
 
 ## Accumulated Context
@@ -162,6 +162,9 @@ Recent decisions affecting current work:
 - asyncio.create_task() for background jobs independent of request lifecycle
 - Background tasks with independent DB sessions (async_session_factory context manager)
 - Session-scoped ID propagation for cross-platform data consistency
+- PlatformStatusIcon component for per-platform visual status display
+- getPlatformStatuses() helper for deriving status from run data
+- PLATFORM_ABBREV constant for platform display abbreviations (BP, SB, B9)
 
 ### Roadmap Evolution
 
@@ -183,5 +186,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 14-02-FIX2 (UAT Issue Fixes) — Phase 14 in progress
-Resume file: .planning/phases/14-scraping-logging-workflow/14-02-FIX2-SUMMARY.md
+Stopped at: Completed 14-03-PLAN.md (Dashboard Redesign) — Phase 14 in progress
+Resume file: .planning/phases/14-scraping-logging-workflow/14-03-SUMMARY.md
