@@ -75,20 +75,20 @@ class SportybetMarket(BaseModel):
     status: int
     """Market status (0 = active)."""
 
-    group: str
-    """Market group category (e.g., 'Main', 'Goals', 'Half')."""
+    group: str | None = None
+    """Market group category (e.g., 'Main', 'Goals', 'Half'). Optional - some markets lack this."""
 
-    group_id: str
-    """Market group identifier."""
+    group_id: str | None = None
+    """Market group identifier. Optional - some markets lack this."""
 
-    market_guide: str
+    market_guide: str = ""
     """Help text explaining the market."""
 
-    title: str
-    """Title template (e.g., '1,X,2')."""
+    title: str | None = None
+    """Title template (e.g., '1,X,2'). Optional - some markets lack this."""
 
-    name: str
-    """Market name (e.g., '1X2', 'Over/Under')."""
+    name: str | None = None
+    """Market name (e.g., '1X2', 'Over/Under'). Optional - some markets lack this."""
 
     favourite: int
     """Featured market flag."""
@@ -110,8 +110,8 @@ class SportybetMarket(BaseModel):
     source_type: str
     """Data source type (e.g., 'BET_RADAR')."""
 
-    last_odds_change_time: int
-    """Last odds change timestamp in milliseconds."""
+    last_odds_change_time: int | None = None
+    """Last odds change timestamp in milliseconds. Optional - some markets lack this."""
 
     banned: bool
     """Whether market is banned/restricted."""
