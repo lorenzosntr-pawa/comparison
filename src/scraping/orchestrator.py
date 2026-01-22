@@ -263,6 +263,9 @@ class ScrapingOrchestrator:
         Same as scrape_all() but yields ScrapeProgress updates before and after
         each platform scrape. Useful for SSE streaming to clients.
 
+        Collects SportRadar IDs from BetPawa scrape and passes them to
+        SportyBet/Bet9ja for precise event matching within the same session.
+
         Args:
             platforms: List of platforms to scrape (default: all).
             sport_id: Filter to specific sport (e.g., "2" for football).
@@ -281,6 +284,9 @@ class ScrapingOrchestrator:
         target_platforms = platforms or list(Platform)
         total = len(target_platforms)
         total_events = 0
+
+        # Collect SportRadar IDs from BetPawa for cross-platform lookup
+        betpawa_sportradar_ids: list[str] = []
 
         # Log and persist initializing phase
         logger.info("scrape_starting", platforms=[p.value for p in target_platforms], total=total)
@@ -321,9 +327,19 @@ class ScrapingOrchestrator:
 
             try:
                 # Scrape this platform
+                # Pass SportRadar IDs to competitor platforms (not to BetPawa itself)
                 events, duration_ms = await self._scrape_platform(
-                    platform, sport_id, competition_id, False, timeout, db
+                    platform, sport_id, competition_id, False, timeout, db,
+                    sportradar_ids=betpawa_sportradar_ids if platform != Platform.BETPAWA else None,
                 )
+
+                # After BetPawa scrape, extract SportRadar IDs for competitor platforms
+                if platform == Platform.BETPAWA:
+                    betpawa_sportradar_ids = [
+                        e["sportradar_id"] for e in events
+                        if e.get("sportradar_id")
+                    ]
+                    logger.info(f"Collected {len(betpawa_sportradar_ids)} SportRadar IDs from BetPawa")
 
                 logger.info("platform_scrape_complete", platform=platform.value, events_count=len(events), duration_ms=duration_ms)
 
@@ -456,6 +472,7 @@ class ScrapingOrchestrator:
         include_data: bool,
         timeout: float,
         db: AsyncSession | None = None,
+        sportradar_ids: list[str] | None = None,
     ) -> tuple[list[dict], int]:
         """Scrape a single platform with timeout.
 
@@ -466,6 +483,8 @@ class ScrapingOrchestrator:
             include_data: Whether to return event data.
             timeout: Timeout in seconds.
             db: Optional database session (required for SportyBet/Bet9ja).
+            sportradar_ids: Optional list of SportRadar IDs to fetch (from BetPawa).
+                Used by competitor platforms for precise event matching.
 
         Returns:
             Tuple of (events list, duration in ms).
@@ -487,14 +506,14 @@ class ScrapingOrchestrator:
                         "SportyBet scraping requires database session - skipping"
                     )
                     return []
-                return await self._scrape_sportybet(client, db)
+                return await self._scrape_sportybet(client, db, sportradar_ids)
             elif platform == Platform.BET9JA:
                 if db is None:
                     logger.warning(
                         "Bet9ja scraping requires database session - skipping"
                     )
                     return []
-                return await self._scrape_bet9ja(client, db)
+                return await self._scrape_bet9ja(client, db, sportradar_ids)
             else:
                 return []
 
@@ -749,65 +768,85 @@ class ScrapingOrchestrator:
         self,
         client: SportyBetClient,
         db: AsyncSession,
+        sportradar_ids: list[str] | None = None,
     ) -> list[dict]:
         """Scrape events from SportyBet via SportRadar ID lookup.
 
-        Queries database for events with SportRadar IDs and fetches
-        corresponding odds from SportyBet using parallel requests.
+        If sportradar_ids provided, uses those directly (from current BetPawa scrape).
+        Otherwise, queries database for upcoming events (fallback for non-streaming scrape).
 
         Args:
             client: SportyBet API client.
             db: Async database session for event lookup.
+            sportradar_ids: Optional list of SportRadar IDs from current BetPawa session.
 
         Returns:
             List of event dicts with raw_data for OddsSnapshot storage.
         """
-        # Query for upcoming events with SportRadar IDs
-        result = await db.execute(
-            select(Event).where(
-                Event.sportradar_id.isnot(None),
-                Event.kickoff > datetime.now(timezone.utc).replace(tzinfo=None),
+        # Use provided IDs if available, otherwise query DB (fallback)
+        if sportradar_ids:
+            ids_to_fetch = sportradar_ids
+            logger.info(f"Using {len(ids_to_fetch)} fresh SportRadar IDs from BetPawa session")
+
+            # Need to look up Event objects for the IDs we're fetching
+            result = await db.execute(
+                select(Event).where(
+                    Event.sportradar_id.in_(ids_to_fetch),
+                )
             )
-        )
-        db_events = result.scalars().all()
+            db_events = result.scalars().all()
+            events_by_id = {e.sportradar_id: e for e in db_events}
+        else:
+            # Fallback: query DB for existing events (used by scrape_all, not scrape_with_progress)
+            result = await db.execute(
+                select(Event).where(
+                    Event.sportradar_id.isnot(None),
+                    Event.kickoff > datetime.now(timezone.utc).replace(tzinfo=None),
+                )
+            )
+            db_events = result.scalars().all()
+            ids_to_fetch = [e.sportradar_id for e in db_events]
+            events_by_id = {e.sportradar_id: e for e in db_events}
+            logger.info(f"Using {len(ids_to_fetch)} SportRadar IDs from database")
+
+        if not ids_to_fetch:
+            return []
 
         logger.info(
-            f"Found {len(db_events)} events with SportRadar IDs to fetch from SportyBet"
+            f"Fetching {len(ids_to_fetch)} events from SportyBet"
         )
-
-        if not db_events:
-            return []
 
         # Use semaphore to limit concurrent requests (30 parallel with 100 connection pool)
         semaphore = asyncio.Semaphore(30)
 
-        async def fetch_single(event: Event) -> dict | None:
+        async def fetch_single(sportradar_id: str) -> dict | None:
             """Fetch single event with rate limiting."""
             async with semaphore:
-                sportybet_id = f"sr:match:{event.sportradar_id}"
+                sportybet_id = f"sr:match:{sportradar_id}"
                 try:
                     raw_data = await client.fetch_event(sportybet_id)
+                    event = events_by_id.get(sportradar_id)
                     return {
-                        "sportradar_id": event.sportradar_id,
+                        "sportradar_id": sportradar_id,
                         "external_event_id": sportybet_id,
                         "event_url": f"https://www.sportybet.com/ng/sport/match/{sportybet_id}",
                         "raw_data": raw_data,
-                        "event": event,
+                        "event": event,  # May be None if not yet stored
                     }
                 except InvalidEventIdError:
                     logger.debug(
-                        f"Event {event.sportradar_id} not found on SportyBet"
+                        f"Event {sportradar_id} not found on SportyBet"
                     )
                     return None
                 except Exception as e:
                     logger.warning(
-                        f"Failed to fetch event {event.sportradar_id} from SportyBet: {e}"
+                        f"Failed to fetch event {sportradar_id} from SportyBet: {e}"
                     )
                     return None
 
         # Fetch all events in parallel (limited by semaphore)
         results = await asyncio.gather(
-            *[fetch_single(event) for event in db_events],
+            *[fetch_single(sr_id) for sr_id in ids_to_fetch],
             return_exceptions=True,
         )
 
@@ -860,6 +899,7 @@ class ScrapingOrchestrator:
         self,
         client: Bet9jaClient,
         db: AsyncSession,
+        sportradar_ids: list[str] | None = None,
     ) -> list[dict]:
         """Scrape events from Bet9ja via tournament discovery.
 
@@ -867,9 +907,13 @@ class ScrapingOrchestrator:
         in parallel using asyncio.gather with semaphore, matching via
         EXTID (SportRadar ID) field.
 
+        If sportradar_ids provided, filters results to only include events
+        matching those IDs (from current BetPawa session).
+
         Args:
             client: Bet9ja API client.
             db: Async database session (used for event matching).
+            sportradar_ids: Optional list of SportRadar IDs from current BetPawa session.
 
         Returns:
             List of event dicts in standard format for EventMatchingService.
@@ -924,7 +968,15 @@ class ScrapingOrchestrator:
                 events.extend(result)
             # Exceptions already logged in scrape_tournament
 
-        logger.info(f"Scraped {len(events)} events from Bet9ja")
+        # Filter to only events matching provided SportRadar IDs (if given)
+        if sportradar_ids:
+            sportradar_set = set(sportradar_ids)
+            original_count = len(events)
+            events = [e for e in events if e.get("sportradar_id") in sportradar_set]
+            logger.info(f"Filtered Bet9ja events from {original_count} to {len(events)} matching BetPawa session")
+        else:
+            logger.info(f"Scraped {len(events)} events from Bet9ja (no filter)")
+
         return events
 
     def _parse_bet9ja_event(
@@ -1192,9 +1244,25 @@ class ScrapingOrchestrator:
 
         if platform == Platform.SPORTYBET:
             # SportyBet events already exist - just create links and snapshots
+            # But with fresh SportRadar IDs, event reference may be None
             markets_count = 0
+            skipped_count = 0
             for event_data in events:
-                event = event_data["event"]  # DB event reference
+                event = event_data.get("event")  # DB event reference (may be None)
+
+                if event is None:
+                    # Event not in DB yet - try to look it up by sportradar_id
+                    sportradar_id = event_data.get("sportradar_id")
+                    if sportradar_id:
+                        result = await db.execute(
+                            select(Event).where(Event.sportradar_id == sportradar_id)
+                        )
+                        event = result.scalar_one_or_none()
+
+                    if event is None:
+                        # Still no event - skip (BetPawa storage hasn't completed yet)
+                        skipped_count += 1
+                        continue
 
                 # Create EventBookmaker link
                 await service.upsert_event_bookmaker(
@@ -1223,8 +1291,10 @@ class ScrapingOrchestrator:
                         db.add(mo)
                     markets_count += len(market_odds)
 
+            stored_count = len(events) - skipped_count
             logger.info(
-                f"Stored {len(events)} event links and {markets_count} markets for {platform}"
+                f"Stored {stored_count} event links and {markets_count} markets for {platform}"
+                + (f" (skipped {skipped_count} not yet in DB)" if skipped_count else "")
             )
             return
 
