@@ -41,10 +41,11 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Add tables for competitor tournaments/events with source tracking and metadata priority
 **Depends on**: v1.0 MVP complete
 **Research**: Unlikely (extending existing schema patterns)
-**Plans**: TBD
+**Plans**: 2
 
 Plans:
-- [ ] 13-01: TBD (run /gsd:plan-phase 13 to break down)
+- [x] 13-01: Competitor Models (CompetitorSource, CompetitorTournament, CompetitorEvent, odds snapshots)
+- [ ] 13-02: Migration
 
 #### Phase 14: Tournament Discovery Scraping
 
@@ -136,7 +137,7 @@ Plans:
 | 10. Settings Page | v1.0 | 2/2 | Complete | 2026-01-22 |
 | 11. UI Polish | v1.0 | 3/3 | Complete | 2026-01-22 |
 | 12. Scraping Logging & Workflow | v1.0 | 4/4 | Complete | 2026-01-22 |
-| 13. Database Schema Extension | v1.1 | 0/? | Not started | - |
+| 13. Database Schema Extension | v1.1 | 1/2 | In progress | - |
 | 14. Tournament Discovery Scraping | v1.1 | 0/? | Not started | - |
 | 15. Full Event Scraping | v1.1 | 0/? | Not started | - |
 | 16. Cross-Platform Matching Enhancement | v1.1 | 0/? | Not started | - |
