@@ -1,5 +1,7 @@
 """Scheduler monitoring endpoints for status and run history."""
 
+import httpx
+import structlog
 from apscheduler.schedulers.base import STATE_PAUSED
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import APIRouter, Depends, Query
@@ -9,14 +11,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.scheduler import (
     JobStatus,
+    PlatformDiscoveryResult,
     RunHistoryEntry,
     RunHistoryResponse,
     SchedulerPlatformHealth,
     SchedulerStatus,
+    TournamentDiscoveryResponse,
 )
 from src.db.engine import get_db
+from src.db.models.competitor import CompetitorTournament
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.scheduling.scheduler import scheduler
+from src.scraping.clients.bet9ja import Bet9jaClient
+from src.scraping.clients.sportybet import SportyBetClient
+from src.scraping.tournament_discovery import TournamentDiscoveryService
+
+log = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/scheduler", tags=["scheduler"])
 
@@ -199,3 +209,52 @@ async def get_platform_health(
         )
 
     return health_entries
+
+
+@router.post("/discover-tournaments", response_model=TournamentDiscoveryResponse)
+async def discover_tournaments(
+    db: AsyncSession = Depends(get_db),
+) -> TournamentDiscoveryResponse:
+    """Trigger tournament discovery for SportyBet and Bet9ja.
+
+    Discovers all football tournaments from both competitor platforms
+    and stores them in the competitor_tournaments table.
+
+    Returns:
+        TournamentDiscoveryResponse with discovery counts per platform and total.
+    """
+    log.info("Starting tournament discovery")
+
+    async with httpx.AsyncClient(timeout=30.0) as http_client:
+        sportybet_client = SportyBetClient(http_client)
+        bet9ja_client = Bet9jaClient(http_client)
+
+        service = TournamentDiscoveryService()
+        results = await service.discover_all(sportybet_client, bet9ja_client, db)
+
+    # Get total tournament count
+    count_result = await db.execute(select(func.count(CompetitorTournament.id)))
+    total_tournaments = count_result.scalar() or 0
+
+    log.info(
+        "Tournament discovery completed",
+        sportybet_new=results["sportybet"]["new"],
+        sportybet_updated=results["sportybet"]["updated"],
+        bet9ja_new=results["bet9ja"]["new"],
+        bet9ja_updated=results["bet9ja"]["updated"],
+        total_tournaments=total_tournaments,
+    )
+
+    return TournamentDiscoveryResponse(
+        sportybet=PlatformDiscoveryResult(
+            new=results["sportybet"]["new"],
+            updated=results["sportybet"]["updated"],
+            error=results["sportybet"]["error"],
+        ),
+        bet9ja=PlatformDiscoveryResult(
+            new=results["bet9ja"]["new"],
+            updated=results["bet9ja"]["updated"],
+            error=results["bet9ja"]["error"],
+        ),
+        total_tournaments=total_tournaments,
+    )

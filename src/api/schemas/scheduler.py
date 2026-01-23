@@ -140,3 +140,19 @@ class RetryResponse(BaseModel):
     new_run_id: int
     platforms_retried: list[str]
     message: str
+
+
+class PlatformDiscoveryResult(BaseModel):
+    """Discovery results for a single platform."""
+
+    new: int
+    updated: int
+    error: str | None = None
+
+
+class TournamentDiscoveryResponse(BaseModel):
+    """Response from tournament discovery endpoint."""
+
+    sportybet: PlatformDiscoveryResult
+    bet9ja: PlatformDiscoveryResult
+    total_tournaments: int
