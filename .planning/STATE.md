@@ -5,20 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-01-23)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.0 MVP complete — no active work
+**Current focus:** v1.1 Palimpsest Comparison — Phase 13 (Database Schema Extension)
 
 ## Current Position
 
-Phase: 12 of 12 (all complete)
-Plan: N/A
-Status: Milestone complete
-Last activity: 2026-01-23 — Removed Phase 12 (Competitor Event Import)
+Phase: 13 of 20 (Database Schema Extension)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-23 — Milestone v1.1 created
 
-Progress: █████████████ 100% (46 of 46 plans complete)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
+- **v1.1 Palimpsest Comparison** — IN PROGRESS (8 phases, Phases 13-20)
 
 ## Performance Metrics
 
@@ -43,12 +44,22 @@ Progress: █████████████ 100% (46 of 46 plans complete)
 - structlog for structured logging
 - shadcn/ui with Tailwind v4
 
+### Key Decisions
+
+- Metadata priority: betpawa > sportybet > bet9ja (v1.1 requirement)
+- SportRadar ID as primary cross-platform matching key
+- Store competitor data independently, match at query time
+
 ### Blockers/Concerns
 
 None.
 
+### Roadmap Evolution
+
+- Milestone v1.1 created: Palimpsest Comparison, 8 phases (Phase 13-20)
+
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: v1.0 milestone complete, removed Phase 12 (Competitor Event Import)
-Next: Use /gsd:new-milestone to plan next version
+Stopped at: Milestone v1.1 initialization
+Resume file: None
