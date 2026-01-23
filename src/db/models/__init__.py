@@ -11,7 +11,13 @@ from src.db.models.competitor import (
 )
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.odds import MarketOdds, OddsSnapshot
-from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
+from src.db.models.scrape import (
+    ScrapeBatch,
+    ScrapeError,
+    ScrapePhaseLog,
+    ScrapeRun,
+    ScrapeStatus,
+)
 from src.db.models.settings import Settings
 from src.db.models.sport import Sport, Tournament
 
@@ -24,6 +30,7 @@ __all__ = [
     "EventBookmaker",
     "OddsSnapshot",
     "MarketOdds",
+    "ScrapeBatch",
     "ScrapeRun",
     "ScrapeError",
     "ScrapePhaseLog",

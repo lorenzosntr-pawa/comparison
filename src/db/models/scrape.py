@@ -25,12 +25,45 @@ class ScrapeStatus(StrEnum):
     FAILED = "failed"
 
 
+class ScrapeBatch(Base):
+    """Groups multiple ScrapeRuns (one per platform) for unified batch visibility.
+
+    A batch represents a single logical scraping operation that may spawn
+    separate runs per platform. Enables UI views like:
+    "Batch 123: betpawa ✓, sportybet ✓, bet9ja ✗"
+    """
+
+    __tablename__ = "scrape_batches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    status: Mapped[ScrapeStatus] = mapped_column(
+        String(20), default=ScrapeStatus.PENDING
+    )
+    trigger: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # e.g., "scheduled", "manual"
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Relationships
+    runs: Mapped[list["ScrapeRun"]] = relationship(
+        back_populates="batch",
+        cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (Index("idx_scrape_batches_started", "started_at"),)
+
+
 class ScrapeRun(Base):
     """Tracks each scraping execution for operational monitoring."""
 
     __tablename__ = "scrape_runs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int | None] = mapped_column(
+        ForeignKey("scrape_batches.id"), nullable=True
+    )  # nullable for backwards compatibility
     status: Mapped[ScrapeStatus] = mapped_column(
         String(20), default=ScrapeStatus.PENDING
     )
@@ -53,6 +86,7 @@ class ScrapeRun(Base):
     platform_status: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     # Relationships
+    batch: Mapped["ScrapeBatch | None"] = relationship(back_populates="runs")
     errors: Mapped[list["ScrapeError"]] = relationship(
         back_populates="scrape_run",
         cascade="all, delete-orphan",
