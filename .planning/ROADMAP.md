@@ -6,13 +6,12 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 ## Milestones
 
-- [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-11, 13 (shipped 2026-01-23)
-- **v1.1 Coverage** — Phase 12 (in progress)
+- [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 
 ## Completed Milestones
 
 <details>
-<summary>v1.0 MVP (Phases 1-11, 13) — SHIPPED 2026-01-23</summary>
+<summary>v1.0 MVP (Phases 1-12) — SHIPPED 2026-01-23</summary>
 
 - [x] Phase 1: Market Mapping Port (6/6 plans) — 2026-01-20
 - [x] Phase 2: Database Schema (3/3 plans) — 2026-01-20
@@ -28,25 +27,9 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - [x] Phase 9: Matches Page Improvements (2/2 plans) — 2026-01-21
 - [x] Phase 10: Settings Page (2/2 plans) — 2026-01-22
 - [x] Phase 11: UI Polish (3/3 plans) — 2026-01-22
-- [x] Phase 13: Scraping Logging & Workflow (4/4 plans) — 2026-01-22
+- [x] Phase 12: Scraping Logging & Workflow (4/4 plans) — 2026-01-22
 
 </details>
-
-## Current Milestone: v1.1 Coverage
-
-### Phase 12: Competitor Event Import
-
-**Goal**: Import events from SportyBet/Bet9ja that don't exist in BetPawa, enabling full market coverage comparison
-**Depends on**: Phase 6.1 (extends cross-platform scraping)
-**Research**: Required (understand SportyBet full event listing API, Bet9ja event discovery)
-**Plans**: TBD
-
-**Details:**
-- Fetch all events from SportyBet (not just by SportRadar ID lookup)
-- Import Bet9ja events via SportyBet SportRadar ID matching
-- Store competitor-only events with metadata from the competitor source (tournament, region)
-- Enable comparison of event coverage between BetPawa and competitors
-- Execution order: BetPawa scrape first, then competitor-only event discovery
 
 ## Progress
 
@@ -66,5 +49,4 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 9. Matches Page Improvements | v1.0 | 2/2 | Complete | 2026-01-21 |
 | 10. Settings Page | v1.0 | 2/2 | Complete | 2026-01-22 |
 | 11. UI Polish | v1.0 | 3/3 | Complete | 2026-01-22 |
-| 12. Competitor Event Import | v1.1 | 0/TBD | Not started | - |
-| 13. Scraping Logging & Workflow | v1.0 | 4/4 | Complete | 2026-01-22 |
+| 12. Scraping Logging & Workflow | v1.0 | 4/4 | Complete | 2026-01-22 |

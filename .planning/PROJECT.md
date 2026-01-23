@@ -47,7 +47,6 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 
 ### Active
 
-- [ ] Import SportyBet/Bet9ja events not in Betpawa (coverage comparison)
 - [ ] WebSocket real-time updates on new scrape data
 - [ ] Unmatched events section for Betpawa-only events
 - [ ] Silent retry on scraper failures with stale data indication
@@ -58,6 +57,7 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - User accounts/authentication — internal tool, no access control needed
 - Alerts/notifications to admins — deferred, add after MVP
 - Historical trend charts — data stored but visualization deferred
+- Competitor event import — removed from roadmap, deprioritized
 - Data export (CSV/PDF) — view only for now
 - Sports other than football — focus on football only
 - Regions other than Nigeria — Nigeria focus

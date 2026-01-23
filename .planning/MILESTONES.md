@@ -4,7 +4,7 @@
 
 **Delivered:** Complete odds comparison tool with cross-platform market matching, real-time scraping, and React dashboard for competitive analysis.
 
-**Phases completed:** 1-11, 13 (46 plans total)
+**Phases completed:** 1-12 (46 plans total)
 
 **Key accomplishments:**
 
@@ -24,6 +24,6 @@
 
 **Git range:** `feat(01-01)` to `fix(api): add /api prefix`
 
-**What's next:** v1.1 will add Competitor Event Import (Phase 12) to show events available on SportyBet/Bet9ja but not Betpawa, enabling full market coverage comparison.
+**What's next:** Use `/gsd:new-milestone` to plan the next version when new features are needed.
 
 ---

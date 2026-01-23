@@ -5,21 +5,20 @@
 See: .planning/PROJECT.md (updated 2026-01-23)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Phase 12 — Competitor Event Import (v1.1 Coverage)
+**Current focus:** v1.0 MVP complete — no active work
 
 ## Current Position
 
-Phase: 12 of 13 (Competitor Event Import)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-23 — v1.0 milestone complete
+Phase: 12 of 12 (all complete)
+Plan: N/A
+Status: Milestone complete
+Last activity: 2026-01-23 — Removed Phase 12 (Competitor Event Import)
 
-Progress: ████████████░ 96% (46 of 48 plans complete)
+Progress: █████████████ 100% (46 of 46 plans complete)
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
-- **v1.1 Coverage** — In progress (Phase 12)
 
 ## Performance Metrics
 
@@ -29,7 +28,7 @@ Progress: ████████████░ 96% (46 of 48 plans complete)
 - Total execution time: 4.3 hours
 
 **v1.0 Summary:**
-- 15 phases completed
+- 15 phases completed (including decimal phases)
 - 4 days from start to ship
 - 18,595 lines of code
 
@@ -51,5 +50,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: v1.0 milestone complete
-Next: Plan Phase 12 (Competitor Event Import)
+Stopped at: v1.0 milestone complete, removed Phase 12 (Competitor Event Import)
+Next: Use /gsd:new-milestone to plan next version
