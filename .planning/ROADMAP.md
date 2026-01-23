@@ -47,16 +47,15 @@ Plans:
 - [x] 13-01: Competitor Models (CompetitorSource, CompetitorTournament, CompetitorEvent, odds snapshots)
 - [x] 13-02: Migration (ScrapeBatch model, Alembic migration for all tables)
 
-#### Phase 14: Tournament Discovery Scraping
+#### Phase 14: Tournament Discovery Scraping ✅
 
 **Goal**: Scrape full tournament lists from SportyBet and Bet9ja APIs
 **Depends on**: Phase 13
-**Research**: Likely (need to explore competitor API structures for tournament listing)
-**Research topics**: SportyBet/Bet9ja tournament listing endpoints, pagination, data structures
-**Plans**: TBD
+**Research**: Complete (14-RESEARCH.md)
+**Plans**: 1/1
 
 Plans:
-- [ ] 14-01: TBD
+- [x] 14-01: Tournament Discovery Service (SportyBet/Bet9ja tournament scraping, API endpoint)
 
 #### Phase 15: Full Event Scraping
 
@@ -138,7 +137,7 @@ Plans:
 | 11. UI Polish | v1.0 | 3/3 | Complete | 2026-01-22 |
 | 12. Scraping Logging & Workflow | v1.0 | 4/4 | Complete | 2026-01-22 |
 | 13. Database Schema Extension | v1.1 | 2/2 | Complete | 2026-01-23 |
-| 14. Tournament Discovery Scraping | v1.1 | 0/? | Not started | - |
+| 14. Tournament Discovery Scraping | v1.1 | 1/1 | Complete | 2026-01-23 |
 | 15. Full Event Scraping | v1.1 | 0/? | Not started | - |
 | 16. Cross-Platform Matching Enhancement | v1.1 | 0/? | Not started | - |
 | 17. Metadata Priority System | v1.1 | 0/? | Not started | - |

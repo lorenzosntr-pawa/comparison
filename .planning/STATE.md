@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-23)
 
 ## Current Position
 
-Phase: 13 of 20 (Database Schema Extension)
-Plan: 2 of 2 in current phase
+Phase: 14 of 20 (Tournament Discovery Scraping)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-23 — Completed 13-02-PLAN.md
+Last activity: 2026-01-23 — Completed 14-01-PLAN.md
 
-Progress: ██░░░░░░░░ 12%
+Progress: ███░░░░░░░ 25%
 
 ## Milestones
 
@@ -61,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 13-02-PLAN.md (Phase 13 complete)
+Stopped at: Completed 14-01-PLAN.md (Phase 14 complete)
 Resume file: None
