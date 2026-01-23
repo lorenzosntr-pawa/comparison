@@ -96,6 +96,50 @@ class SportyBetClient:
 
         return data["data"]
 
+    @_retry
+    async def fetch_tournaments(self, sport_id: str = "sr:sport:1") -> dict:
+        """Fetch tournament hierarchy from SportyBet API.
+
+        Args:
+            sport_id: SportRadar sport ID (default: sr:sport:1 for football).
+
+        Returns:
+            Full API response with sportList containing categories and tournaments.
+
+        Raises:
+            NetworkError: If a connection or timeout error occurs.
+            ApiError: If response structure is invalid or bizCode != 10000.
+        """
+        params = {
+            "sportId": sport_id,
+            "timeline": "",
+            "productId": "3",
+            "_t": str(int(time.time() * 1000)),
+        }
+
+        try:
+            response = await self._client.get(
+                f"{BASE_URL}/api/ng/factsCenter/popularAndSportList",
+                params=params,
+                headers=HEADERS,
+            )
+            response.raise_for_status()
+        except (httpx.ConnectError, httpx.TimeoutException) as e:
+            raise NetworkError(
+                f"Network error fetching tournaments: {e}",
+                cause=e,
+            ) from e
+
+        data = response.json()
+
+        if data.get("bizCode") != 10000:
+            raise ApiError(
+                f"bizCode={data.get('bizCode')}: {data.get('message', 'Unknown error')}",
+                details={"response": data},
+            )
+
+        return data
+
     async def check_health(self) -> bool:
         """Check if the SportyBet API is reachable.
 
