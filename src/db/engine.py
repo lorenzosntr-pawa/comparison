@@ -15,7 +15,7 @@ def get_database_url() -> str:
     """Get database URL from environment variable or use default."""
     return os.environ.get(
         "DATABASE_URL",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/betpawa",
+        "postgresql+asyncpg://postgres:postgres@localhost:5433/pawarisk",
     )
 
 
