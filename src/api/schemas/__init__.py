@@ -27,6 +27,14 @@ from src.api.schemas.settings import (
     SettingsResponse,
     SettingsUpdate,
 )
+from src.api.schemas.palimpsest import (
+    CoverageStats,
+    PalimpsestEvent,
+    PalimpsestEventsResponse,
+    PlatformCoverage,
+    TournamentCoverage,
+    TournamentGroup,
+)
 
 __all__ = [
     # API schemas
@@ -53,4 +61,11 @@ __all__ = [
     # Settings schemas
     "SettingsResponse",
     "SettingsUpdate",
+    # Palimpsest schemas
+    "CoverageStats",
+    "PalimpsestEvent",
+    "PalimpsestEventsResponse",
+    "PlatformCoverage",
+    "TournamentCoverage",
+    "TournamentGroup",
 ]
