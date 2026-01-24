@@ -311,6 +311,7 @@ async def scrape_competitor_events(
             updated_events=results["sportybet"]["updated"],
             snapshots=results["sportybet"]["snapshots"],
             markets=results["sportybet"]["markets"],
+            events_with_full_odds=results["sportybet"]["events_with_full_odds"],
             error=results["sportybet"]["error"],
         ),
         bet9ja=CompetitorScrapeResult(
@@ -319,6 +320,7 @@ async def scrape_competitor_events(
             updated_events=results["bet9ja"]["updated"],
             snapshots=results["bet9ja"]["snapshots"],
             markets=results["bet9ja"]["markets"],
+            events_with_full_odds=results["bet9ja"]["events_with_full_odds"],
             error=results["bet9ja"]["error"],
         ),
         duration_ms=duration_ms,

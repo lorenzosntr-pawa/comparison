@@ -166,6 +166,7 @@ class CompetitorScrapeResult(BaseModel):
     updated_events: int
     snapshots: int
     markets: int
+    events_with_full_odds: int = 0
     error: str | None = None
 
 
