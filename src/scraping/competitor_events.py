@@ -991,6 +991,10 @@ class CompetitorEventScrapingService:
         )
         tournaments = list(result.scalars().all())
 
+        # Ensure clean session state before long API phase
+        # This commits any pending operations from previous phases
+        await db.commit()
+
         log.info("Found SportyBet tournaments", count=len(tournaments))
 
         if not tournaments:
@@ -1012,6 +1016,9 @@ class CompetitorEventScrapingService:
             db, events_data, scrape_run_id
         )
 
+        # Commit after storage phase to ensure clean state for full odds phase
+        await db.commit()
+
         # Phase 3: Fetch full odds (fetch-then-store)
         events_with_full_odds = 0
         markets_count = 0
@@ -1025,6 +1032,9 @@ class CompetitorEventScrapingService:
             )
             events_with_full_odds = full_odds_result["events_processed"]
             markets_count = full_odds_result["total_markets"]
+
+            # Commit after full odds phase
+            await db.commit()
 
         log.info(
             "Completed SportyBet event scraping",
@@ -1075,6 +1085,10 @@ class CompetitorEventScrapingService:
         )
         tournaments = list(result.scalars().all())
 
+        # Ensure clean session state before long API phase
+        # This commits any pending operations from previous phases
+        await db.commit()
+
         log.info("Found Bet9ja tournaments", count=len(tournaments))
 
         if not tournaments:
@@ -1096,6 +1110,9 @@ class CompetitorEventScrapingService:
             db, events_data, scrape_run_id
         )
 
+        # Commit after storage phase to ensure clean state for full odds phase
+        await db.commit()
+
         # Phase 3: Fetch full odds (fetch-then-store)
         events_with_full_odds = 0
         markets_count = 0
@@ -1109,6 +1126,9 @@ class CompetitorEventScrapingService:
             )
             events_with_full_odds = full_odds_result["events_processed"]
             markets_count = full_odds_result["total_markets"]
+
+            # Commit after full odds phase
+            await db.commit()
 
         log.info(
             "Completed Bet9ja event scraping",

@@ -469,30 +469,34 @@ class ScrapingOrchestrator:
         yield progress
 
         try:
-            # Run both competitor scrapes in parallel
+            # Run competitor scrapes sequentially to avoid session conflicts
+            # (AsyncSession cannot be shared across concurrent tasks)
             assert self._competitor_service is not None
-            sportybet_task = self._competitor_service.scrape_sportybet_events(db, scrape_run_id)
-            bet9ja_task = self._competitor_service.scrape_bet9ja_events(db, scrape_run_id)
 
-            sportybet_result, bet9ja_result = await asyncio.gather(
-                sportybet_task, bet9ja_task, return_exceptions=True
-            )
-
-            # Process results
             sportybet_events = 0
             bet9ja_events = 0
 
-            if isinstance(sportybet_result, dict):
-                sportybet_events = sportybet_result.get("new", 0) + sportybet_result.get("updated", 0)
-                logger.info("sportybet_scrape_complete", **sportybet_result)
-            elif isinstance(sportybet_result, Exception):
-                logger.error("sportybet_scrape_failed", error=str(sportybet_result))
+            # SportyBet first
+            try:
+                sportybet_result = await self._competitor_service.scrape_sportybet_events(
+                    db, scrape_run_id
+                )
+                if isinstance(sportybet_result, dict):
+                    sportybet_events = sportybet_result.get("new", 0) + sportybet_result.get("updated", 0)
+                    logger.info("sportybet_scrape_complete", **sportybet_result)
+            except Exception as e:
+                logger.error("sportybet_scrape_failed", error=str(e))
 
-            if isinstance(bet9ja_result, dict):
-                bet9ja_events = bet9ja_result.get("new", 0) + bet9ja_result.get("updated", 0)
-                logger.info("bet9ja_scrape_complete", **bet9ja_result)
-            elif isinstance(bet9ja_result, Exception):
-                logger.error("bet9ja_scrape_failed", error=str(bet9ja_result))
+            # Then Bet9ja
+            try:
+                bet9ja_result = await self._competitor_service.scrape_bet9ja_events(
+                    db, scrape_run_id
+                )
+                if isinstance(bet9ja_result, dict):
+                    bet9ja_events = bet9ja_result.get("new", 0) + bet9ja_result.get("updated", 0)
+                    logger.info("bet9ja_scrape_complete", **bet9ja_result)
+            except Exception as e:
+                logger.error("bet9ja_scrape_failed", error=str(e))
 
             competitor_events = sportybet_events + bet9ja_events
             competitor_duration_ms = int((time.perf_counter() - competitor_start_time) * 1000)
