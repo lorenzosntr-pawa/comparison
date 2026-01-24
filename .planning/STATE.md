@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-23)
 ## Current Position
 
 Phase: 17 of 19 (Palimpsest API Endpoints)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-24 — Completed 17-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-24 — Completed 17-02-PLAN.md
 
-Progress: ██████░░░░ 62%
+Progress: ██████░░░░ 65%
 
 ## Milestones
 
@@ -65,6 +65,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 17-01-PLAN.md
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
-Notes: Coverage endpoint live at /api/palimpsest/coverage. 1940 total events, 1041 matched (53.66%). Next: 17-02 (Events Query endpoint)
+Notes: Phase 17 complete. Events endpoint live at /api/palimpsest/events with filters. Next: Phase 18 (Matches Page Filter)
