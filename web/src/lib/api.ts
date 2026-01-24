@@ -7,6 +7,8 @@ import type {
   EventDetailResponse,
   SettingsResponse,
   SettingsUpdate,
+  CoverageStats,
+  PalimpsestEventsResponse,
 } from '@/types/api'
 
 const API_BASE = '/api'
@@ -125,4 +127,30 @@ export const api = {
 
   resumeScheduler: () =>
     fetchJson<void>('/scheduler/resume', { method: 'POST' }),
+
+  // Palimpsest coverage
+  getCoverage: () => fetchJson<CoverageStats>('/palimpsest/coverage'),
+
+  getPalimpsestEvents: (params?: {
+    availability?: 'betpawa-only' | 'competitor-only' | 'matched'
+    platforms?: string[]
+    sport_id?: number
+    search?: string
+    sort?: 'kickoff' | 'tournament'
+  }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.availability)
+      searchParams.set('availability', params.availability)
+    if (params?.platforms && params.platforms.length > 0) {
+      params.platforms.forEach((p) => searchParams.append('platforms', p))
+    }
+    if (params?.sport_id)
+      searchParams.set('sport_id', params.sport_id.toString())
+    if (params?.search) searchParams.set('search', params.search)
+    if (params?.sort) searchParams.set('sort', params.sort)
+    const query = searchParams.toString()
+    return fetchJson<PalimpsestEventsResponse>(
+      `/palimpsest/events${query ? `?${query}` : ''}`
+    )
+  },
 }

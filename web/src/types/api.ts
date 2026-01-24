@@ -130,3 +130,56 @@ export interface BookmakerMarketData {
 export interface EventDetailResponse extends MatchedEvent {
   markets_by_bookmaker: BookmakerMarketData[]
 }
+
+// Palimpsest coverage types
+export interface PlatformCoverage {
+  platform: string
+  total_events: number
+  matched_events: number
+  unmatched_events: number
+  match_rate: number
+}
+
+export interface TournamentCoverage {
+  total: number
+  matched: number
+  betpawa_only: number
+  competitor_only: number
+}
+
+export interface CoverageStats {
+  total_events: number
+  matched_count: number
+  betpawa_only_count: number
+  competitor_only_count: number
+  match_rate: number
+  by_platform: PlatformCoverage[]
+}
+
+export interface PalimpsestEvent {
+  id: number
+  sportradar_id: string
+  name: string
+  home_team: string
+  away_team: string
+  kickoff: string
+  tournament_name: string
+  tournament_country: string | null
+  sport_name: string
+  availability: 'betpawa-only' | 'competitor-only' | 'matched'
+  platforms: string[]
+}
+
+export interface TournamentGroup {
+  tournament_id: number
+  tournament_name: string
+  tournament_country: string | null
+  sport_name: string
+  coverage: TournamentCoverage
+  events: PalimpsestEvent[]
+}
+
+export interface PalimpsestEventsResponse {
+  coverage: CoverageStats
+  tournaments: TournamentGroup[]
+}
