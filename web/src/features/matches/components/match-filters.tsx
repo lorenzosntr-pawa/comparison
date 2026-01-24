@@ -24,6 +24,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { useTournaments } from '../hooks/use-tournaments'
 import { X, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type DatePreset = 'today' | 'tomorrow' | 'weekend' | 'next7days'
 
@@ -83,6 +84,7 @@ export interface MatchFiltersState {
   kickoffTo: string
   minBookmakers: number
   sortBy: 'kickoff' | 'tournament'
+  availability: 'betpawa' | 'all'
 }
 
 interface MatchFiltersProps {
@@ -136,6 +138,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
       kickoffTo: '',
       minBookmakers: 2,
       sortBy: 'kickoff',
+      availability: 'betpawa',
     })
   }
 
@@ -148,6 +151,39 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
   return (
     <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/30 rounded-lg">
+      {/* Availability toggle */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Events</label>
+        <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'h-7 px-3 text-xs font-medium',
+              filters.availability === 'betpawa' &&
+                'bg-background text-foreground shadow-sm'
+            )}
+            onClick={() => updateFilter('availability', 'betpawa')}
+          >
+            BetPawa
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'h-7 px-3 text-xs font-medium',
+              filters.availability === 'all' &&
+                'bg-background text-foreground shadow-sm'
+            )}
+            onClick={() => updateFilter('availability', 'all')}
+          >
+            All Events
+          </Button>
+        </div>
+      </div>
+
       {/* Team search */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground">Team</label>

@@ -75,6 +75,7 @@ export const api = {
     kickoff_from?: string
     kickoff_to?: string
     search?: string
+    availability?: 'betpawa' | 'all'
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -95,6 +96,8 @@ export const api = {
     if (params?.kickoff_to)
       searchParams.set('kickoff_to', params.kickoff_to)
     if (params?.search) searchParams.set('search', params.search)
+    if (params?.availability)
+      searchParams.set('availability', params.availability)
     const query = searchParams.toString()
     return fetchJson<MatchedEventList>(`/events${query ? `?${query}` : ''}`)
   },

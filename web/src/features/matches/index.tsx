@@ -21,6 +21,7 @@ const DEFAULT_FILTERS: MatchFiltersState = {
   kickoffTo: '',
   minBookmakers: 2,
   sortBy: 'kickoff',
+  availability: 'betpawa',
 }
 
 export function MatchList() {
@@ -55,6 +56,7 @@ export function MatchList() {
     kickoffFrom: apiKickoffFrom,
     kickoffTo: apiKickoffTo,
     search: filters.search || undefined,
+    availability: filters.availability,
   })
 
   // Reset to page 1 when filters change

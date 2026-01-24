@@ -9,13 +9,14 @@ export interface UseMatchesParams {
   kickoffFrom?: string
   kickoffTo?: string
   search?: string
+  availability?: 'betpawa' | 'all'
 }
 
 export function useMatches(params: UseMatchesParams = {}) {
-  const { page = 1, pageSize = 50, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search } = params
+  const { page = 1, pageSize = 50, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search, availability } = params
 
   return useQuery({
-    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search }],
+    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search, availability }],
     queryFn: () =>
       api.getEvents({
         page,
@@ -25,6 +26,7 @@ export function useMatches(params: UseMatchesParams = {}) {
         kickoff_from: kickoffFrom,
         kickoff_to: kickoffTo,
         search,
+        availability,
       }),
     staleTime: 30000, // 30 seconds
     gcTime: 60000, // 60 seconds (formerly cacheTime)
