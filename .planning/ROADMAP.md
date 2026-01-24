@@ -82,10 +82,11 @@ Plans:
 **Goal**: Create API endpoints for matched/competitor-only event queries with coverage stats
 **Depends on**: Phase 16
 **Research**: Unlikely (following existing API patterns)
-**Plans**: TBD
+**Plans**: 2
 
 Plans:
-- [ ] 17-01: TBD
+- [ ] 17-01: Pydantic schemas + Coverage Stats endpoint
+- [ ] 17-02: Events Query endpoint with filters and grouping
 
 #### Phase 18: Matches Page Filter + Metadata Priority
 
@@ -132,6 +133,6 @@ Plans:
 | 14. Tournament Discovery Scraping | v1.1 | 1/1 | Complete | 2026-01-23 |
 | 15. Full Event Scraping | v1.1 | 2/2 | Complete | 2026-01-24 |
 | 16. Cross-Platform Matching Enhancement | v1.1 | 0/0 | Complete | 2026-01-24 |
-| 17. Palimpsest API Endpoints | v1.1 | 0/? | Not started | - |
+| 17. Palimpsest API Endpoints | v1.1 | 0/2 | Planned | - |
 | 18. Matches Page Filter + Metadata Priority | v1.1 | 0/? | Not started | - |
 | 19. Palimpsest Comparison Page | v1.1 | 0/? | Not started | - |
