@@ -644,7 +644,7 @@ class CompetitorEventScrapingService:
                         else:
                             updated += 1
 
-                        # Create odds snapshot
+                        # Create odds snapshot placeholder (markets added in Phase 2)
                         snapshot = CompetitorOddsSnapshot(
                             competitor_event_id=event.id,
                             scrape_run_id=scrape_run_id,
@@ -655,14 +655,7 @@ class CompetitorEventScrapingService:
                         snapshots += 1
                         local_snapshot_ids.append(snapshot.id)
 
-                        # Parse and store initial markets (from tournament listing)
-                        market_odds_list = self._parse_sportybet_markets(
-                            parsed["markets"]
-                        )
-                        for market_odds in market_odds_list:
-                            market_odds.snapshot_id = snapshot.id
-                            db.add(market_odds)
-                        markets += len(market_odds_list)
+                        # Markets will be fetched in Phase 2 (full odds fetch)
 
                 except Exception as e:
                     log.warning(
@@ -692,18 +685,17 @@ class CompetitorEventScrapingService:
         await db.commit()
 
         log.info(
-            "Completed SportyBet tournament scraping",
+            "Completed SportyBet tournament scraping (Phase 1: event metadata)",
             new=new_count,
             updated=updated_count,
             snapshots=snapshots_count,
-            initial_markets=markets_count,
         )
 
-        # Fetch full odds for each event if requested
+        # Phase 2: Fetch full odds for each event
         events_with_full_odds = 0
         if fetch_full_odds and snapshot_ids:
             log.info(
-                "Fetching full market data for SportyBet events",
+                "Starting Phase 2: Fetching full market data for SportyBet events",
                 total_events=len(snapshot_ids),
             )
             full_odds_result = await self.scrape_full_odds_for_events(
@@ -713,7 +705,7 @@ class CompetitorEventScrapingService:
             markets_count = full_odds_result["total_markets"]
 
             log.info(
-                "Completed SportyBet full odds fetch",
+                "Completed Phase 2: SportyBet full odds fetch",
                 events_with_full_odds=events_with_full_odds,
                 total_markets=markets_count,
                 errors=full_odds_result["errors"],
@@ -824,7 +816,7 @@ class CompetitorEventScrapingService:
                         else:
                             updated += 1
 
-                        # Create odds snapshot
+                        # Create odds snapshot placeholder (markets added in Phase 2)
                         snapshot = CompetitorOddsSnapshot(
                             competitor_event_id=event.id,
                             scrape_run_id=scrape_run_id,
@@ -835,12 +827,7 @@ class CompetitorEventScrapingService:
                         snapshots += 1
                         local_snapshot_ids.append(snapshot.id)
 
-                        # Parse and store initial markets (from tournament listing)
-                        market_odds_list = self._parse_bet9ja_markets(parsed["odds"])
-                        for market_odds in market_odds_list:
-                            market_odds.snapshot_id = snapshot.id
-                            db.add(market_odds)
-                        markets += len(market_odds_list)
+                        # Markets will be fetched in Phase 2 (full odds fetch)
 
                 except Exception as e:
                     log.warning(
@@ -870,18 +857,17 @@ class CompetitorEventScrapingService:
         await db.commit()
 
         log.info(
-            "Completed Bet9ja tournament scraping",
+            "Completed Bet9ja tournament scraping (Phase 1: event metadata)",
             new=new_count,
             updated=updated_count,
             snapshots=snapshots_count,
-            initial_markets=markets_count,
         )
 
-        # Fetch full odds for each event if requested
+        # Phase 2: Fetch full odds for each event
         events_with_full_odds = 0
         if fetch_full_odds and snapshot_ids:
             log.info(
-                "Fetching full market data for Bet9ja events",
+                "Starting Phase 2: Fetching full market data for Bet9ja events",
                 total_events=len(snapshot_ids),
             )
             full_odds_result = await self.scrape_full_odds_for_events(
@@ -891,7 +877,7 @@ class CompetitorEventScrapingService:
             markets_count = full_odds_result["total_markets"]
 
             log.info(
-                "Completed Bet9ja full odds fetch",
+                "Completed Phase 2: Bet9ja full odds fetch",
                 events_with_full_odds=events_with_full_odds,
                 total_markets=markets_count,
                 errors=full_odds_result["errors"],
