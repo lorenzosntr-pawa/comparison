@@ -140,6 +140,68 @@ class SportyBetClient:
 
         return data
 
+    @_retry
+    async def fetch_events_by_tournament(
+        self,
+        tournament_id: str,
+        market_ids: str = "1,18,10,29,11,26,36,14",
+    ) -> list[dict]:
+        """Fetch events for a tournament from SportyBet API.
+
+        Args:
+            tournament_id: SportRadar tournament ID (e.g., "sr:tournament:17").
+            market_ids: Comma-separated market IDs to include in response.
+                Default includes: 1=1X2, 18=O/U, 10=DC, 29=BTTS, 11=DNB,
+                26=HT/FT, 36=Correct Score, 14=HT 1X2.
+
+        Returns:
+            List of event dicts from data[0]["events"].
+
+        Raises:
+            NetworkError: If a connection or timeout error occurs.
+            ApiError: If response structure is invalid or bizCode != 10000.
+        """
+        payload = [
+            {
+                "sportId": "sr:sport:1",
+                "marketId": market_ids,
+                "tournamentId": [[tournament_id]],
+            }
+        ]
+
+        headers_with_content_type = {
+            **HEADERS,
+            "content-type": "application/json",
+        }
+
+        try:
+            response = await self._client.post(
+                f"{BASE_URL}/api/ng/factsCenter/pcEvents",
+                json=payload,
+                headers=headers_with_content_type,
+            )
+            response.raise_for_status()
+        except (httpx.ConnectError, httpx.TimeoutException) as e:
+            raise NetworkError(
+                f"Network error fetching events for tournament {tournament_id}: {e}",
+                cause=e,
+            ) from e
+
+        data = response.json()
+
+        if data.get("bizCode") != 10000:
+            raise ApiError(
+                f"bizCode={data.get('bizCode')}: {data.get('message', 'Unknown error')}",
+                details={"response": data},
+            )
+
+        # Extract events from data[0]["events"]
+        data_list = data.get("data", [])
+        if not data_list or not isinstance(data_list, list):
+            return []
+
+        return data_list[0].get("events", [])
+
     async def check_health(self) -> bool:
         """Check if the SportyBet API is reachable.
 
