@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-01-23)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.1 Palimpsest Comparison — Phase 16 (Cross-Platform Matching Enhancement)
+**Current focus:** v1.1 Palimpsest Comparison — Phase 17 (Palimpsest API Endpoints)
 
 ## Current Position
 
-Phase: 15 of 20 (Full Event Scraping)
-Plan: 2 of 2 in current phase + FIX3
-Status: Phase complete (including fixes)
-Last activity: 2026-01-24 — Completed 15-02-FIX3.md
+Phase: 16 of 19 (Cross-Platform Matching Enhancement)
+Plan: 0 of 0 (matching already implemented)
+Status: Phase complete (verified via research)
+Last activity: 2026-01-24 — Completed Phase 16 research, consolidated roadmap (17-19)
 
-Progress: ████░░░░░░ 40%
+Progress: █████░░░░░ 57%
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
-- **v1.1 Palimpsest Comparison** — IN PROGRESS (8 phases, Phases 13-20)
+- **v1.1 Palimpsest Comparison** — IN PROGRESS (7 phases, Phases 13-19)
 
 ## Performance Metrics
 
@@ -59,10 +59,12 @@ None.
 ### Roadmap Evolution
 
 - Milestone v1.1 created: Palimpsest Comparison, 8 phases (Phase 13-20)
+- Phase 16 verified complete via research (matching already works)
+- Phase 17 (Metadata Priority) merged into Phase 18 — now 7 phases (13-19)
 
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 15-02-FIX3.md (Session concurrency fix)
+Stopped at: Consolidated roadmap, Phase 16 complete
 Resume file: None
-Notes: Fixed SQLAlchemy session concurrency errors with fetch-then-store pattern. Scrape verified: 1076 BetPawa + 2605 competitor events = 3681 total
+Notes: SR ID matching verified working (75% match rate). ~954 competitor-only events ready for palimpsest comparison. Next: Phase 17 (API endpoints)

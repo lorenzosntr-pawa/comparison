@@ -7,7 +7,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 ## Milestones
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
-- 🚧 **v1.1 Palimpsest Comparison** — Phases 13-20 (in progress)
+- 🚧 **v1.1 Palimpsest Comparison** — Phases 13-19 (in progress)
 
 ## Completed Milestones
 
@@ -68,55 +68,46 @@ Plans:
 - [x] 15-01: Competitor Event Scraping Service (SportyBet/Bet9ja event scraping, API endpoint)
 - [x] 15-02: Orchestrator Integration (Parallel competitor scraping in ScrapingOrchestrator)
 
-#### Phase 16: Cross-Platform Matching Enhancement
+#### Phase 16: Cross-Platform Matching Enhancement ✅
 
-**Goal**: Match events by SR ID across all three platforms with priority chain (betpawa > sportybet > bet9ja)
+**Goal**: Match events by SR ID across all three platforms
 **Depends on**: Phase 15
-**Research**: Unlikely (extending existing matching logic)
-**Plans**: TBD
+**Research**: Complete (16-RESEARCH.md) — verified matching already works at storage layer
+**Plans**: 0 (matching implemented in Phase 15 scraping)
 
-Plans:
-- [ ] 16-01: TBD
+**Status**: Complete. SR ID matching is automatic during competitor scraping. 75% match rate verified. ~954 competitor-only events identified.
 
-#### Phase 17: Metadata Priority System
+#### Phase 17: Palimpsest API Endpoints
 
-**Goal**: Implement display logic to show metadata from best available source
+**Goal**: Create API endpoints for matched/competitor-only event queries with coverage stats
 **Depends on**: Phase 16
-**Research**: Unlikely (internal business logic)
+**Research**: Unlikely (following existing API patterns)
 **Plans**: TBD
 
 Plans:
 - [ ] 17-01: TBD
 
-#### Phase 18: Palimpsest API Endpoints
+#### Phase 18: Matches Page Filter + Metadata Priority
 
-**Goal**: Create new API endpoints for tournament/event availability comparison data
+**Goal**: Add filter to show BetPawa-only, Competitor-only, or Both events. Use metadata priority (sportybet > bet9ja) for competitor-only display.
 **Depends on**: Phase 17
-**Research**: Unlikely (following existing API patterns)
+**Research**: Unlikely (UI work with existing patterns)
 **Plans**: TBD
+
+Note: Absorbed former Phase 17 (Metadata Priority) — priority logic is a display concern handled here.
 
 Plans:
 - [ ] 18-01: TBD
 
-#### Phase 19: Matches Page Filter
-
-**Goal**: Add "Competitor Only" filter to existing odds comparison page
-**Depends on**: Phase 18
-**Research**: Unlikely (UI work with existing patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 19-01: TBD
-
-#### Phase 20: Palimpsest Comparison Page
+#### Phase 19: Palimpsest Comparison Page
 
 **Goal**: New page showing tournament and event coverage comparison across platforms
-**Depends on**: Phase 19
+**Depends on**: Phase 18
 **Research**: Unlikely (following existing React patterns)
 **Plans**: TBD
 
 Plans:
-- [ ] 20-01: TBD
+- [ ] 19-01: TBD
 
 ## Progress
 
@@ -140,8 +131,7 @@ Plans:
 | 13. Database Schema Extension | v1.1 | 2/2 | Complete | 2026-01-23 |
 | 14. Tournament Discovery Scraping | v1.1 | 1/1 | Complete | 2026-01-23 |
 | 15. Full Event Scraping | v1.1 | 2/2 | Complete | 2026-01-24 |
-| 16. Cross-Platform Matching Enhancement | v1.1 | 0/? | Not started | - |
-| 17. Metadata Priority System | v1.1 | 0/? | Not started | - |
-| 18. Palimpsest API Endpoints | v1.1 | 0/? | Not started | - |
-| 19. Matches Page Filter | v1.1 | 0/? | Not started | - |
-| 20. Palimpsest Comparison Page | v1.1 | 0/? | Not started | - |
+| 16. Cross-Platform Matching Enhancement | v1.1 | 0/0 | Complete | 2026-01-24 |
+| 17. Palimpsest API Endpoints | v1.1 | 0/? | Not started | - |
+| 18. Matches Page Filter + Metadata Priority | v1.1 | 0/? | Not started | - |
+| 19. Palimpsest Comparison Page | v1.1 | 0/? | Not started | - |
