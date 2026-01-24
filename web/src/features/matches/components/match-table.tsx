@@ -331,6 +331,9 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         </thead>
         <tbody>
           {events.map((event) => {
+            // Check if this is a competitor-only event (negative ID)
+            const isCompetitorOnly = event.id < 0
+
             // Pre-compute comparison data for color coding
             const comparisonDataByMarket: Record<string, Record<string, ComparisonData>> = {}
             visibleMarkets.forEach((marketId) => {
@@ -347,8 +350,23 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             return (
               <tr
                 key={event.id}
-                className="border-b hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/matches/${event.id}`)}
+                className={cn(
+                  'border-b hover:bg-muted/50 transition-colors',
+                  isCompetitorOnly
+                    ? 'border-l-2 border-l-orange-500/30'
+                    : 'cursor-pointer'
+                )}
+                onClick={() => {
+                  // Don't navigate for competitor-only events (no detail view)
+                  if (!isCompetitorOnly) {
+                    navigate(`/matches/${event.id}`)
+                  }
+                }}
+                title={
+                  isCompetitorOnly
+                    ? 'Competitor-only event - no detail view'
+                    : undefined
+                }
               >
                 <td className="px-3 py-3">
                   <div className="font-medium">{event.home_team}</div>
