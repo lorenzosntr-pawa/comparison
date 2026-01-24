@@ -30,6 +30,7 @@ from src.db.engine import async_session_factory, get_db
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
+from src.scraping.competitor_events import CompetitorEventScrapingService
 from src.scraping.orchestrator import ScrapingOrchestrator
 
 router = APIRouter(prefix="/scrape", tags=["scrape"])
@@ -185,11 +186,19 @@ async def stream_scrape(
         final_status = ScrapeStatus.COMPLETED
 
         async with async_session_factory() as bg_db:
-            # Build orchestrator with captured HTTP clients
+            # Build clients with captured HTTP clients
             sportybet = SportyBetClient(sportybet_http)
             betpawa = BetPawaClient(betpawa_http)
             bet9ja = Bet9jaClient(bet9ja_http)
-            orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+
+            # Create competitor service for full-palimpsest scraping
+            competitor_service = CompetitorEventScrapingService(sportybet, bet9ja)
+
+            # Create orchestrator with competitor service for parallel scraping
+            orchestrator = ScrapingOrchestrator(
+                sportybet, betpawa, bet9ja,
+                competitor_service=competitor_service,
+            )
 
             try:
                 async for progress in orchestrator.scrape_with_progress(

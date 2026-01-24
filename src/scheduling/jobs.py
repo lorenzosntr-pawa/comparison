@@ -11,6 +11,7 @@ from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
+from src.scraping.competitor_events import CompetitorEventScrapingService
 from src.scraping.orchestrator import ScrapingOrchestrator
 from src.scraping.schemas import Platform
 
@@ -86,11 +87,22 @@ async def scrape_all_platforms() -> None:
         broadcaster = progress_registry.create_broadcaster(scrape_run_id)
 
         try:
-            # Create orchestrator with clients from app state
+            # Create clients from app state
+            sportybet_client = SportyBetClient(_app_state.sportybet_client)
+            betpawa_client = BetPawaClient(_app_state.betpawa_client)
+            bet9ja_client = Bet9jaClient(_app_state.bet9ja_client)
+
+            # Create competitor service for full-palimpsest scraping
+            competitor_service = CompetitorEventScrapingService(
+                sportybet_client, bet9ja_client
+            )
+
+            # Create orchestrator with competitor service for parallel scraping
             orchestrator = ScrapingOrchestrator(
-                sportybet_client=SportyBetClient(_app_state.sportybet_client),
-                betpawa_client=BetPawaClient(_app_state.betpawa_client),
-                bet9ja_client=Bet9jaClient(_app_state.bet9ja_client),
+                sportybet_client=sportybet_client,
+                betpawa_client=betpawa_client,
+                bet9ja_client=bet9ja_client,
+                competitor_service=competitor_service,
             )
 
             # Execute scrape with progress streaming
