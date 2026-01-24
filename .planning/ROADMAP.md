@@ -8,6 +8,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
+- 🚧 **v1.2 Settings & Real-time** — Phases 20-24 (in progress)
 
 ## Completed Milestones
 
@@ -45,6 +46,62 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v1.2 Settings & Real-time (In Progress)
+
+**Milestone Goal:** Persistent configuration that survives page refresh/server restart and WebSocket-based real-time data delivery replacing SSE polling.
+
+#### Phase 20: Settings Schema & API
+
+**Goal**: Database table for settings and CRUD endpoints
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (established CRUD patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01: TBD (run /gsd:plan-phase 20 to break down)
+
+#### Phase 21: Settings Persistence Integration
+
+**Goal**: Replace in-memory/hardcoded values with database reads
+**Depends on**: Phase 20
+**Research**: Unlikely (internal refactoring)
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01: TBD
+
+#### Phase 22: History Retention
+
+**Goal**: Configurable data retention policy and cleanup job
+**Depends on**: Phase 21
+**Research**: Unlikely (scheduled job patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01: TBD
+
+#### Phase 23: WebSocket Infrastructure
+
+**Goal**: WebSocket server setup and connection handling
+**Depends on**: Phase 22
+**Research**: Likely (new technology integration)
+**Research topics**: FastAPI WebSocket support, connection management, authentication
+**Plans**: TBD
+
+Plans:
+- [ ] 23-01: TBD
+
+#### Phase 24: WebSocket Integration
+
+**Goal**: Replace SSE with WebSocket for real-time updates
+**Depends on**: Phase 23
+**Research**: Likely (WebSocket client patterns)
+**Research topics**: React WebSocket hooks, real-time state management, SSE migration
+**Plans**: TBD
+
+Plans:
+- [ ] 24-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -71,3 +128,8 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 17. Palimpsest API Endpoints | v1.1 | 2/2 | Complete | 2026-01-24 |
 | 18. Matches Page Filter + Metadata Priority | v1.1 | 1/1 | Complete | 2026-01-24 |
 | 19. Palimpsest Comparison Page | v1.1 | 3/3 | Complete | 2026-01-24 |
+| 20. Settings Schema & API | v1.2 | 0/? | Not started | - |
+| 21. Settings Persistence Integration | v1.2 | 0/? | Not started | - |
+| 22. History Retention | v1.2 | 0/? | Not started | - |
+| 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
+| 24. WebSocket Integration | v1.2 | 0/? | Not started | - |

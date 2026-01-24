@@ -5,21 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v1.2 Settings & Real-time
 
 ## Current Position
 
-Phase: None — between milestones
-Plan: N/A
-Status: Ready to plan v1.2
-Last activity: 2026-01-24 — v1.1 milestone complete
+Phase: 20 of 24 (Settings Schema & API)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-24 — Milestone v1.2 created
 
-Progress: ██████████ 100% (v1.1 complete)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
 - **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
+- **v1.2 Settings & Real-time** — IN PROGRESS (5 phases)
 
 ## Performance Metrics
 
@@ -67,10 +68,11 @@ None.
 - v1.0 MVP shipped 2026-01-23 with 15 phases
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
 - Both milestones archived to .planning/milestones/
+- v1.2 Settings & Real-time created 2026-01-24: persistent config + WebSocket, 5 phases (Phase 20-24)
 
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: v1.1 milestone complete
+Stopped at: Milestone v1.2 initialization
 Resume file: None
-Notes: Use `/gsd:discuss-milestone` or `/gsd:new-milestone` to plan next version.
+Notes: Run `/gsd:plan-phase 20` to plan the first phase.
