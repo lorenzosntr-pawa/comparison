@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useCoverage, usePalimpsestEvents } from './hooks'
 import {
   CoverageStatsCards,
   CoverageFilterBar,
+  TournamentTable,
   type CoverageFilters,
 } from './components'
 
@@ -36,7 +35,6 @@ export function CoveragePage() {
     search: filters.search || undefined,
   })
 
-  const isPending = coveragePending || eventsPending
   const error = coverageError || eventsError
 
   // Extract unique countries from tournaments for the country filter dropdown
@@ -96,27 +94,11 @@ export function CoveragePage() {
         countries={uniqueCountries}
       />
 
-      {/* Tournament data placeholder */}
-      {isPending ? (
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="text-sm text-muted-foreground p-4 border rounded-md">
-          Tournament data: {filteredTournaments.length} tournaments,{' '}
-          {filteredEventCount} events
-          {filters.availability !== 'all' && ` (${filters.availability})`}
-        </div>
-      )}
+      {/* Tournament Table */}
+      <TournamentTable
+        tournaments={filteredTournaments}
+        isLoading={eventsPending}
+      />
     </div>
   )
 }
