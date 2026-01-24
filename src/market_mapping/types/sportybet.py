@@ -107,8 +107,8 @@ class SportybetMarket(BaseModel):
     early_payout_markets: list | None = None
     """Early payout market mappings."""
 
-    source_type: str
-    """Data source type (e.g., 'BET_RADAR')."""
+    source_type: str | None = None
+    """Data source type (e.g., 'BET_RADAR'). Optional - some markets lack this."""
 
     last_odds_change_time: int | None = None
     """Last odds change timestamp in milliseconds. Optional - some markets lack this."""
