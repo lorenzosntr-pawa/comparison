@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-23)
 
 ## Current Position
 
-Phase: 16 of 19 (Cross-Platform Matching Enhancement)
-Plan: 0 of 0 (matching already implemented)
-Status: Phase complete (verified via research)
-Last activity: 2026-01-24 — Completed Phase 16 research, consolidated roadmap (17-19)
+Phase: 17 of 19 (Palimpsest API Endpoints)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-24 — Completed 17-01-PLAN.md
 
-Progress: █████░░░░░ 57%
+Progress: ██████░░░░ 62%
 
 ## Milestones
 
@@ -24,9 +24,9 @@ Progress: █████░░░░░ 57%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 49
+- Total plans completed: 50
 - Average duration: 6 min
-- Total execution time: 4.6 hours
+- Total execution time: 4.7 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
@@ -65,6 +65,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Consolidated roadmap, Phase 16 complete
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
-Notes: SR ID matching verified working (75% match rate). ~954 competitor-only events ready for palimpsest comparison. Next: Phase 17 (API endpoints)
+Notes: Coverage endpoint live at /api/palimpsest/coverage. 1940 total events, 1041 matched (53.66%). Next: 17-02 (Events Query endpoint)
