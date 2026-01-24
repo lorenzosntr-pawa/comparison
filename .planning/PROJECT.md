@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.0 MVP)
+## Current State (v1.1 Palimpsest Comparison)
 
-**Shipped:** 2026-01-23
+**Shipped:** 2026-01-24
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- 18,595 lines of code
+- ~27,000 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
@@ -24,6 +24,9 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Real-time progress streaming via SSE
 - Dashboard with scheduler controls, platform health, and analytics
 - Match list and detail views with color-coded odds comparison
+- Full competitor palimpsest scraping (~200+ tournaments per platform)
+- Coverage Comparison page with tournament/event availability analysis
+- Mode toggle on Matches page for competitor-only events
 
 ## Requirements
 
@@ -44,20 +47,23 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Filtering by league, date/time — v1.0
 - ✓ N/A indicators when competitor lacks a market — v1.0
 - ✓ Per-event data freshness timestamps — v1.0
+- ✓ Competitor tournament discovery scraping — v1.1
+- ✓ Full competitor event scraping with parallel execution — v1.1
+- ✓ Competitor-only event visibility on Matches page — v1.1
+- ✓ Coverage Comparison page with tournament/event availability — v1.1
+- ✓ Palimpsest API with coverage stats and event filtering — v1.1
 
 ### Active
 
 - [ ] WebSocket real-time updates on new scrape data
-- [ ] Unmatched events section for Betpawa-only events
 - [ ] Silent retry on scraper failures with stale data indication
 - [ ] UI banner when data may be stale
+- [ ] Historical trend visualization (data stored, UI deferred)
 
 ### Out of Scope
 
 - User accounts/authentication — internal tool, no access control needed
 - Alerts/notifications to admins — deferred, add after MVP
-- Historical trend charts — data stored but visualization deferred
-- Competitor event import — removed from roadmap, deprioritized
 - Data export (CSV/PDF) — view only for now
 - Sports other than football — focus on football only
 - Regions other than Nigeria — Nigeria focus
@@ -96,6 +102,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | SSE for real-time | Simpler than WebSocket for one-way streaming | ✓ Good — works well for progress |
 | StrEnum for status fields | Type safety + string storage in DB | ✓ Good — clean enums |
 | Betpawa-first metadata | Competitors insert-only except kickoff | ✓ Good — consistent data |
+| Separate competitor tables | Independent tournament/event storage, match at query time | ✓ Good — v1.1 clean schema |
+| Metadata priority sportybet > bet9ja | SportyBet has better SR ID coverage | ✓ Good — v1.1 consistent display |
+| Fetch-then-store pattern | API parallel, DB sequential avoids session conflicts | ✓ Good — v1.1 solved async issues |
+| Negative IDs for competitor events | Distinguish competitor-only from BetPawa events in API | ✓ Good — v1.1 simple frontend check |
 
 ---
-*Last updated: 2026-01-23 after v1.0 milestone*
+*Last updated: 2026-01-24 after v1.1 milestone*

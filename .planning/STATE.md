@@ -2,36 +2,41 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-23)
+See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.1 Palimpsest Comparison — Complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 19 of 19 (Palimpsest Comparison Page)
-Plan: 3 of 3 in current phase
-Status: Phase complete, Milestone complete
-Last activity: 2026-01-24 — Completed 19-03-PLAN.md
+Phase: None — between milestones
+Plan: N/A
+Status: Ready to plan v1.2
+Last activity: 2026-01-24 — v1.1 milestone complete
 
-Progress: ██████████ 100%
+Progress: ██████████ 100% (v1.1 complete)
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
-- **v1.1 Palimpsest Comparison** — Complete (7 phases, 11 plans)
+- **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 53
+- Total plans completed: 57
 - Average duration: 6 min
-- Total execution time: ~5.5 hours
+- Total execution time: ~6 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
 - 4 days from start to ship
 - 18,595 lines of code
+
+**v1.1 Summary:**
+- 7 phases completed
+- 2 days from v1.0 to v1.1
+- ~8,500 lines added
 
 ## Accumulated Context
 
@@ -48,9 +53,10 @@ Progress: ██████████ 100%
 
 ### Key Decisions
 
-- Metadata priority: betpawa > sportybet > bet9ja (v1.1 requirement)
+- Metadata priority: sportybet > bet9ja (v1.1)
 - SportRadar ID as primary cross-platform matching key
 - Store competitor data independently, match at query time
+- Negative IDs distinguish competitor-only events from BetPawa events
 
 ### Blockers/Concerns
 
@@ -58,13 +64,13 @@ None.
 
 ### Roadmap Evolution
 
-- Milestone v1.1 created: Palimpsest Comparison, 8 phases (Phase 13-20)
-- Phase 16 verified complete via research (matching already works)
-- Phase 17 (Metadata Priority) merged into Phase 18 — now 7 phases (13-19)
+- v1.0 MVP shipped 2026-01-23 with 15 phases
+- v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
+- Both milestones archived to .planning/milestones/
 
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 19-03-PLAN.md
+Stopped at: v1.1 milestone complete
 Resume file: None
-Notes: Phase 19 complete. v1.1 Palimpsest Comparison milestone complete. Coverage Comparison page fully functional.
+Notes: Use `/gsd:discuss-milestone` or `/gsd:new-milestone` to plan next version.

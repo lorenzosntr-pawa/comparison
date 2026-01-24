@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.1 Palimpsest Comparison (Shipped: 2026-01-24)
+
+**Delivered:** Full competitor palimpsest comparison enabling visibility into tournaments and events available on SportyBet/Bet9ja but not BetPawa.
+
+**Phases completed:** 13-19 (11 plans total)
+
+**Key accomplishments:**
+
+- Extended database with 5 competitor tables for independent tournament/event/odds storage
+- Tournament discovery service scraping ~200+ tournaments per platform from SportyBet and Bet9ja
+- Full competitor event scraping with parallel execution and SportRadar ID matching
+- Palimpsest API with coverage statistics and comprehensive event filtering
+- Matches page mode toggle for viewing competitor-only events alongside BetPawa matches
+- Coverage Comparison page with stat cards, filters, and expandable tournament table
+
+**Stats:**
+
+- 71 files modified
+- ~8,500 lines of Python + TypeScript added
+- 7 phases, 11 plans
+- 2 days from v1.0 to v1.1 (2026-01-23 to 2026-01-24)
+
+**Git range:** `feat(13-01)` → `docs(19-03)`
+
+**What's next:** Additional competitor analysis features, WebSocket real-time updates, or historical trend visualization.
+
+---
+
 ## v1.0 MVP (Shipped: 2026-01-23)
 
 **Delivered:** Complete odds comparison tool with cross-platform market matching, real-time scraping, and React dashboard for competitive analysis.

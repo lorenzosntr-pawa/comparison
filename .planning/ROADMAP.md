@@ -7,12 +7,12 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 ## Milestones
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
-- ✅ **v1.1 Palimpsest Comparison** — Phases 13-19 (complete 2026-01-24)
+- ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
 
 ## Completed Milestones
 
 <details>
-<summary>v1.0 MVP (Phases 1-12) — SHIPPED 2026-01-23</summary>
+<summary>✅ v1.0 MVP (Phases 1-12) — SHIPPED 2026-01-23</summary>
 
 - [x] Phase 1: Market Mapping Port (6/6 plans) — 2026-01-20
 - [x] Phase 2: Database Schema (3/3 plans) — 2026-01-20
@@ -32,85 +32,18 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### ✅ v1.1 Palimpsest Comparison (Complete)
+<details>
+<summary>✅ v1.1 Palimpsest Comparison (Phases 13-19) — SHIPPED 2026-01-24</summary>
 
-**Milestone Goal:** Enable full competitor palimpsest comparison by scraping all tournaments/events from competitors, matching across platforms by SportRadar ID, and displaying availability differences alongside odds comparison.
+- [x] Phase 13: Database Schema Extension (2/2 plans) — 2026-01-23
+- [x] Phase 14: Tournament Discovery Scraping (1/1 plans) — 2026-01-23
+- [x] Phase 15: Full Event Scraping (2/2 plans) — 2026-01-24
+- [x] Phase 16: Cross-Platform Matching Enhancement (0/0 plans) — 2026-01-24
+- [x] Phase 17: Palimpsest API Endpoints (2/2 plans) — 2026-01-24
+- [x] Phase 18: Matches Page Filter + Metadata Priority (1/1 plans) — 2026-01-24
+- [x] Phase 19: Palimpsest Comparison Page (3/3 plans) — 2026-01-24
 
-#### Phase 13: Database Schema Extension
-
-**Goal**: Add tables for competitor tournaments/events with source tracking and metadata priority
-**Depends on**: v1.0 MVP complete
-**Research**: Unlikely (extending existing schema patterns)
-**Plans**: 2
-
-Plans:
-- [x] 13-01: Competitor Models (CompetitorSource, CompetitorTournament, CompetitorEvent, odds snapshots)
-- [x] 13-02: Migration (ScrapeBatch model, Alembic migration for all tables)
-
-#### Phase 14: Tournament Discovery Scraping ✅
-
-**Goal**: Scrape full tournament lists from SportyBet and Bet9ja APIs
-**Depends on**: Phase 13
-**Research**: Complete (14-RESEARCH.md)
-**Plans**: 1/1
-
-Plans:
-- [x] 14-01: Tournament Discovery Service (SportyBet/Bet9ja tournament scraping, API endpoint)
-
-#### Phase 15: Full Event Scraping ✅
-
-**Goal**: Get all events from competitor tournaments, not limited to betpawa-matched events
-**Depends on**: Phase 14
-**Research**: Unlikely (extending existing scraping patterns)
-**Plans**: 2/2
-
-Plans:
-- [x] 15-01: Competitor Event Scraping Service (SportyBet/Bet9ja event scraping, API endpoint)
-- [x] 15-02: Orchestrator Integration (Parallel competitor scraping in ScrapingOrchestrator)
-
-#### Phase 16: Cross-Platform Matching Enhancement ✅
-
-**Goal**: Match events by SR ID across all three platforms
-**Depends on**: Phase 15
-**Research**: Complete (16-RESEARCH.md) — verified matching already works at storage layer
-**Plans**: 0 (matching implemented in Phase 15 scraping)
-
-**Status**: Complete. SR ID matching is automatic during competitor scraping. 75% match rate verified. ~954 competitor-only events identified.
-
-#### Phase 17: Palimpsest API Endpoints
-
-**Goal**: Create API endpoints for matched/competitor-only event queries with coverage stats
-**Depends on**: Phase 16
-**Research**: Unlikely (following existing API patterns)
-**Plans**: 2
-
-Plans:
-- [x] 17-01: Pydantic schemas + Coverage Stats endpoint
-- [x] 17-02: Events Query endpoint with filters and grouping
-
-#### Phase 18: Matches Page Filter + Metadata Priority
-
-**Goal**: Add filter to show BetPawa-only, Competitor-only, or Both events. Use metadata priority (sportybet > bet9ja) for competitor-only display.
-**Depends on**: Phase 17
-**Research**: Unlikely (UI work with existing patterns)
-**Plans**: 1
-
-Note: Absorbed former Phase 17 (Metadata Priority) — priority logic is a display concern handled here.
-
-Plans:
-- [x] 18-01: Event Mode Toggle (toggle UI, extended API, competitor events in table)
-
-#### Phase 19: Palimpsest Comparison Page ✅
-
-**Goal**: New page showing tournament and event coverage comparison across platforms
-**Depends on**: Phase 18
-**Research**: Unlikely (following existing React patterns)
-**Plans**: 3/3
-
-Plans:
-- [x] 19-01: Coverage Page Foundation (TypeScript types, feature folder, navigation)
-- [x] 19-02: Summary Stats & Filtering (stat cards, availability/search/country filters)
-- [x] 19-03: Tournament Table (tournament list with event counts, expandable rows)
+</details>
 
 ## Progress
 
