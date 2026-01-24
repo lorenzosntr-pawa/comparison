@@ -10,6 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.scheduler import (
+    CompetitorScrapeResponse,
+    CompetitorScrapeResult,
     JobStatus,
     PlatformDiscoveryResult,
     RunHistoryEntry,
@@ -257,4 +259,67 @@ async def discover_tournaments(
             error=results["bet9ja"]["error"],
         ),
         total_tournaments=total_tournaments,
+    )
+
+
+@router.post("/scrape-competitor-events", response_model=CompetitorScrapeResponse)
+async def scrape_competitor_events(
+    db: AsyncSession = Depends(get_db),
+) -> CompetitorScrapeResponse:
+    """Scrape all events from competitor platforms (SportyBet and Bet9ja).
+
+    Fetches events from all discovered tournaments and stores them in
+    competitor_events with odds snapshots. Handles partial failures -
+    if one platform fails, the other continues.
+
+    Requires tournament discovery to have been run first to have
+    tournament records in competitor_tournaments.
+
+    Returns:
+        CompetitorScrapeResponse with scrape counts per platform and duration.
+    """
+    import time
+
+    from src.scraping.competitor_events import CompetitorEventScrapingService
+
+    log.info("Starting competitor event scraping")
+    start_time = time.perf_counter()
+
+    async with httpx.AsyncClient(timeout=60.0) as http_client:
+        sportybet_client = SportyBetClient(http_client)
+        bet9ja_client = Bet9jaClient(http_client)
+
+        service = CompetitorEventScrapingService(sportybet_client, bet9ja_client)
+        results = await service.scrape_all(db)
+
+    end_time = time.perf_counter()
+    duration_ms = int((end_time - start_time) * 1000)
+
+    log.info(
+        "Competitor event scraping completed",
+        sportybet_new=results["sportybet"]["new"],
+        sportybet_updated=results["sportybet"]["updated"],
+        bet9ja_new=results["bet9ja"]["new"],
+        bet9ja_updated=results["bet9ja"]["updated"],
+        duration_ms=duration_ms,
+    )
+
+    return CompetitorScrapeResponse(
+        sportybet=CompetitorScrapeResult(
+            platform="sportybet",
+            new_events=results["sportybet"]["new"],
+            updated_events=results["sportybet"]["updated"],
+            snapshots=results["sportybet"]["snapshots"],
+            markets=results["sportybet"]["markets"],
+            error=results["sportybet"]["error"],
+        ),
+        bet9ja=CompetitorScrapeResult(
+            platform="bet9ja",
+            new_events=results["bet9ja"]["new"],
+            updated_events=results["bet9ja"]["updated"],
+            snapshots=results["bet9ja"]["snapshots"],
+            markets=results["bet9ja"]["markets"],
+            error=results["bet9ja"]["error"],
+        ),
+        duration_ms=duration_ms,
     )

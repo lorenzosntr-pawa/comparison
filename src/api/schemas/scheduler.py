@@ -156,3 +156,22 @@ class TournamentDiscoveryResponse(BaseModel):
     sportybet: PlatformDiscoveryResult
     bet9ja: PlatformDiscoveryResult
     total_tournaments: int
+
+
+class CompetitorScrapeResult(BaseModel):
+    """Scrape results for a single competitor platform."""
+
+    platform: str
+    new_events: int
+    updated_events: int
+    snapshots: int
+    markets: int
+    error: str | None = None
+
+
+class CompetitorScrapeResponse(BaseModel):
+    """Response from competitor event scraping endpoint."""
+
+    sportybet: CompetitorScrapeResult
+    bet9ja: CompetitorScrapeResult
+    duration_ms: int
