@@ -61,5 +61,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 15-01-PLAN.md (Phase 15 complete)
+Stopped at: Completed 15-01-FIX.md (UAT fix for full market depth)
 Resume file: None
+Notes: Fixed UAT-001 - competitor events now scrape full market data from individual event endpoints
