@@ -16,10 +16,10 @@ from src.db.models.bookmaker import Bookmaker
 from src.db.models.event import Event
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import ScrapePhaseLog, ScrapeRun
-from market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
-from market_mapping.mappers.sportybet import map_sportybet_to_betpawa
-from market_mapping.types.errors import MappingError
-from market_mapping.types.sportybet import SportybetMarket
+from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
+from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
+from src.market_mapping.types.errors import MappingError
+from src.market_mapping.types.sportybet import SportybetMarket
 from src.matching.service import EventMatchingService
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.exceptions import InvalidEventIdError
@@ -35,6 +35,8 @@ from src.scraping.schemas import (
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from src.scraping.competitor_events import CompetitorEventScrapingService
+
 logger = structlog.get_logger(__name__)
 
 
@@ -46,6 +48,7 @@ class ScrapingOrchestrator:
         sportybet_client: SportyBetClient,
         betpawa_client: BetPawaClient,
         bet9ja_client: Bet9jaClient,
+        competitor_service: "CompetitorEventScrapingService | None" = None,
     ) -> None:
         """Initialize with client instances.
 
@@ -53,12 +56,17 @@ class ScrapingOrchestrator:
             sportybet_client: Async SportyBet client.
             betpawa_client: Async BetPawa client.
             bet9ja_client: Async Bet9ja client.
+            competitor_service: Optional CompetitorEventScrapingService for
+                full-palimpsest competitor scraping. When provided, scrape_with_progress
+                will use this service for SportyBet/Bet9ja instead of the old
+                sportradar_id-filtered approach.
         """
         self._clients = {
             Platform.SPORTYBET: sportybet_client,
             Platform.BETPAWA: betpawa_client,
             Platform.BET9JA: bet9ja_client,
         }
+        self._competitor_service = competitor_service
 
     async def _emit_phase(
         self,
@@ -263,8 +271,13 @@ class ScrapingOrchestrator:
         Same as scrape_all() but yields ScrapeProgress updates before and after
         each platform scrape. Useful for SSE streaming to clients.
 
-        Collects SportRadar IDs from BetPawa scrape and passes them to
-        SportyBet/Bet9ja for precise event matching within the same session.
+        When competitor_service is configured, uses full-palimpsest approach:
+        - BetPawa scrapes to events table (unchanged)
+        - Competitors scrape to competitor_events table (parallel, independent)
+
+        When competitor_service is NOT configured (backwards compatibility):
+        - Collects SportRadar IDs from BetPawa scrape
+        - Passes IDs to SportyBet/Bet9ja for filtered matching
 
         Args:
             platforms: List of platforms to scrape (default: all).
@@ -281,6 +294,331 @@ class ScrapingOrchestrator:
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(scrape_run_id=scrape_run_id)
 
+        # Determine if using new parallel competitor flow or legacy flow
+        use_competitor_service = self._competitor_service is not None and db is not None
+
+        if use_competitor_service:
+            # NEW FLOW: BetPawa + parallel competitor scraping
+            async for progress in self._scrape_with_competitor_service(
+                sport_id, competition_id, timeout, scrape_run_id, db
+            ):
+                yield progress
+        else:
+            # LEGACY FLOW: Sequential with sportradar_id filtering
+            async for progress in self._scrape_legacy_flow(
+                platforms, sport_id, competition_id, timeout, scrape_run_id, db
+            ):
+                yield progress
+
+    async def _scrape_with_competitor_service(
+        self,
+        sport_id: str | None,
+        competition_id: str | None,
+        timeout: float,
+        scrape_run_id: int | None,
+        db: AsyncSession,
+    ) -> AsyncGenerator[ScrapeProgress, None]:
+        """Scrape using new parallel competitor service flow.
+
+        Flow:
+        1. Scrape BetPawa (stores to events table)
+        2. Scrape competitors in parallel using CompetitorEventScrapingService
+           (stores to competitor_events table)
+
+        Args:
+            sport_id: Filter to specific sport.
+            competition_id: Filter to specific competition.
+            timeout: Per-platform timeout in seconds.
+            scrape_run_id: Optional ScrapeRun ID.
+            db: Database session.
+
+        Yields:
+            ScrapeProgress updates.
+        """
+        # 2 phases: BetPawa + Competitors
+        total_phases = 2
+        total_events = 0
+        competitor_events = 0
+
+        # Log and persist initializing phase
+        logger.info("scrape_starting", mode="parallel_competitor", phases=total_phases)
+        if scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, None, ScrapePhase.INITIALIZING,
+                f"Starting parallel scrape (BetPawa + Competitors)"
+            )
+
+        # Yield starting progress
+        progress = await self._emit_phase(
+            db, scrape_run_id, None, ScrapePhase.INITIALIZING,
+            f"Starting parallel scrape (BetPawa + Competitors)"
+        )
+        progress.current = 0
+        progress.total = total_phases
+        yield progress
+
+        # Phase 1: Scrape BetPawa
+        betpawa_start_time = time.perf_counter()
+        logger.info("platform_scrape_start", platform="betpawa", index=0)
+        if scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, Platform.BETPAWA, ScrapePhase.SCRAPING,
+                "Scraping betpawa..."
+            )
+
+        progress = await self._emit_phase(
+            db, scrape_run_id, Platform.BETPAWA, ScrapePhase.SCRAPING,
+            "Scraping betpawa..."
+        )
+        progress.current = 0
+        progress.total = total_phases
+        yield progress
+
+        try:
+            events, duration_ms = await self._scrape_platform(
+                Platform.BETPAWA, sport_id, competition_id, False, timeout, db
+            )
+
+            logger.info("platform_scrape_complete", platform="betpawa", events_count=len(events), duration_ms=duration_ms)
+
+            # Store BetPawa events
+            if events:
+                if scrape_run_id:
+                    await self._log_phase_history(
+                        db, scrape_run_id, Platform.BETPAWA, ScrapePhase.STORING,
+                        f"Storing {len(events)} betpawa events...",
+                        events_count=len(events)
+                    )
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, Platform.BETPAWA, ScrapePhase.STORING,
+                    f"Storing {len(events)} betpawa events...",
+                    events_count=len(events)
+                )
+                progress.current = 0
+                progress.total = total_phases
+                yield progress
+
+                try:
+                    await self._store_events(db, Platform.BETPAWA, events)
+                except Exception as e:
+                    logger.error("storage_failed", platform="betpawa", error=str(e), exc_info=True)
+                    if scrape_run_id:
+                        await db.rollback()
+                        await self._log_error(db, scrape_run_id, Platform.BETPAWA, e)
+
+            total_events += len(events)
+
+            # Log BetPawa completion
+            if scrape_run_id:
+                await self._log_phase_history(
+                    db, scrape_run_id, Platform.BETPAWA, ScrapePhase.COMPLETED,
+                    f"Scraped {len(events)} events from betpawa ({duration_ms}ms)",
+                    events_count=len(events)
+                )
+
+            progress = await self._emit_phase(
+                db, scrape_run_id, Platform.BETPAWA, ScrapePhase.COMPLETED,
+                f"Scraped {len(events)} events from betpawa ({duration_ms}ms)",
+                events_count=len(events)
+            )
+            progress.current = 1
+            progress.total = total_phases
+            progress.duration_ms = duration_ms
+            yield progress
+
+        except Exception as e:
+            error_ctx = self._create_error_context(e, Platform.BETPAWA, timeout)
+            logger.error("platform_scrape_failed", platform="betpawa", error_type=error_ctx.error_type, error_message=error_ctx.error_message)
+
+            if scrape_run_id:
+                await db.rollback()
+                await self._log_error(db, scrape_run_id, Platform.BETPAWA, e)
+                await self._log_phase_history(
+                    db, scrape_run_id, Platform.BETPAWA, ScrapePhase.FAILED,
+                    f"Failed: {error_ctx.error_message}",
+                    error=error_ctx
+                )
+
+            elapsed_ms = int((time.perf_counter() - betpawa_start_time) * 1000)
+            progress = await self._emit_phase(
+                db, scrape_run_id, Platform.BETPAWA, ScrapePhase.FAILED,
+                f"Failed: {error_ctx.error_message}",
+                error=error_ctx
+            )
+            progress.current = 1
+            progress.total = total_phases
+            progress.elapsed_ms = elapsed_ms
+            yield progress
+
+        # Phase 2: Scrape Competitors in parallel
+        competitor_start_time = time.perf_counter()
+        logger.info("competitor_scrape_start", mode="parallel")
+        if scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, None, ScrapePhase.SCRAPING,
+                "Scraping competitors (SportyBet + Bet9ja)..."
+            )
+
+        progress = await self._emit_phase(
+            db, scrape_run_id, None, ScrapePhase.SCRAPING,
+            "Scraping competitors (SportyBet + Bet9ja)..."
+        )
+        progress.current = 1
+        progress.total = total_phases
+        yield progress
+
+        try:
+            # Run both competitor scrapes in parallel
+            assert self._competitor_service is not None
+            sportybet_task = self._competitor_service.scrape_sportybet_events(db, scrape_run_id)
+            bet9ja_task = self._competitor_service.scrape_bet9ja_events(db, scrape_run_id)
+
+            sportybet_result, bet9ja_result = await asyncio.gather(
+                sportybet_task, bet9ja_task, return_exceptions=True
+            )
+
+            # Process results
+            sportybet_events = 0
+            bet9ja_events = 0
+
+            if isinstance(sportybet_result, dict):
+                sportybet_events = sportybet_result.get("new", 0) + sportybet_result.get("updated", 0)
+                logger.info("sportybet_scrape_complete", **sportybet_result)
+            elif isinstance(sportybet_result, Exception):
+                logger.error("sportybet_scrape_failed", error=str(sportybet_result))
+
+            if isinstance(bet9ja_result, dict):
+                bet9ja_events = bet9ja_result.get("new", 0) + bet9ja_result.get("updated", 0)
+                logger.info("bet9ja_scrape_complete", **bet9ja_result)
+            elif isinstance(bet9ja_result, Exception):
+                logger.error("bet9ja_scrape_failed", error=str(bet9ja_result))
+
+            competitor_events = sportybet_events + bet9ja_events
+            competitor_duration_ms = int((time.perf_counter() - competitor_start_time) * 1000)
+
+            # Log competitor completion
+            if scrape_run_id:
+                await self._log_phase_history(
+                    db, scrape_run_id, None, ScrapePhase.COMPLETED,
+                    f"Scraped {competitor_events} competitor events ({competitor_duration_ms}ms)",
+                    events_count=competitor_events
+                )
+
+            progress = await self._emit_phase(
+                db, scrape_run_id, None, ScrapePhase.COMPLETED,
+                f"Scraped {competitor_events} competitor events ({competitor_duration_ms}ms)",
+                events_count=competitor_events
+            )
+            progress.current = 2
+            progress.total = total_phases
+            progress.duration_ms = competitor_duration_ms
+            yield progress
+
+        except Exception as e:
+            error_ctx = ScrapeErrorContext(
+                error_type="unknown",
+                error_message=str(e) or f"Unknown error: {type(e).__name__}",
+                platform=None,
+                recoverable=False,
+            )
+            logger.error("competitor_scrape_failed", error=str(e))
+
+            if scrape_run_id:
+                await db.rollback()
+                await self._log_phase_history(
+                    db, scrape_run_id, None, ScrapePhase.FAILED,
+                    f"Competitors failed: {error_ctx.error_message}",
+                    error=error_ctx
+                )
+
+            elapsed_ms = int((time.perf_counter() - competitor_start_time) * 1000)
+            progress = await self._emit_phase(
+                db, scrape_run_id, None, ScrapePhase.FAILED,
+                f"Competitors failed: {error_ctx.error_message}",
+                error=error_ctx
+            )
+            progress.current = 2
+            progress.total = total_phases
+            progress.elapsed_ms = elapsed_ms
+            yield progress
+
+        # Commit all changes
+        await db.commit()
+
+        # Log and yield final completion
+        total_all = total_events + competitor_events
+        logger.info("scrape_complete", total_events=total_all, betpawa=total_events, competitors=competitor_events)
+        if scrape_run_id:
+            await self._log_phase_history(
+                db, scrape_run_id, None, ScrapePhase.COMPLETED,
+                f"Scrape complete: {total_events} BetPawa + {competitor_events} competitors = {total_all} total",
+                events_count=total_all
+            )
+
+        progress = await self._emit_phase(
+            db, scrape_run_id, None, ScrapePhase.COMPLETED,
+            f"Scrape complete: {total_events} BetPawa + {competitor_events} competitors = {total_all} total",
+            events_count=total_all
+        )
+        progress.current = total_phases
+        progress.total = total_phases
+        yield progress
+
+    def _create_error_context(
+        self,
+        e: Exception,
+        platform: Platform,
+        timeout: float,
+    ) -> ScrapeErrorContext:
+        """Create a structured error context from an exception."""
+        if isinstance(e, (TimeoutError, asyncio.TimeoutError)):
+            return ScrapeErrorContext(
+                error_type="timeout",
+                error_message=f"Platform scrape timed out after {timeout}s",
+                platform=platform.value,
+                recoverable=True,
+            )
+        elif "connection" in str(e).lower() or "network" in str(e).lower():
+            return ScrapeErrorContext(
+                error_type="network",
+                error_message=str(e) or f"Network error: {type(e).__name__}",
+                platform=platform.value,
+                recoverable=True,
+            )
+        else:
+            return ScrapeErrorContext(
+                error_type="unknown",
+                error_message=str(e) or f"Unknown error: {type(e).__name__}",
+                platform=platform.value,
+                recoverable=False,
+            )
+
+    async def _scrape_legacy_flow(
+        self,
+        platforms: list[Platform] | None,
+        sport_id: str | None,
+        competition_id: str | None,
+        timeout: float,
+        scrape_run_id: int | None,
+        db: AsyncSession | None,
+    ) -> AsyncGenerator[ScrapeProgress, None]:
+        """Legacy scrape flow with sportradar_id filtering.
+
+        Collects SportRadar IDs from BetPawa scrape and passes them to
+        SportyBet/Bet9ja for precise event matching within the same session.
+
+        Args:
+            platforms: List of platforms to scrape (default: all).
+            sport_id: Filter to specific sport.
+            competition_id: Filter to specific competition.
+            timeout: Per-platform timeout in seconds.
+            scrape_run_id: Optional ScrapeRun ID.
+            db: Optional database session.
+
+        Yields:
+            ScrapeProgress updates for each stage of scraping.
+        """
         target_platforms = platforms or list(Platform)
         total = len(target_platforms)
         total_events = 0
@@ -397,28 +735,7 @@ class ScrapingOrchestrator:
 
             except Exception as e:
                 # Create structured error context
-                if isinstance(e, (TimeoutError, asyncio.TimeoutError)):
-                    error_ctx = ScrapeErrorContext(
-                        error_type="timeout",
-                        error_message=f"Platform scrape timed out after {timeout}s",
-                        platform=platform.value,
-                        recoverable=True,
-                    )
-                elif "connection" in str(e).lower() or "network" in str(e).lower():
-                    error_ctx = ScrapeErrorContext(
-                        error_type="network",
-                        error_message=str(e) or f"Network error: {type(e).__name__}",
-                        platform=platform.value,
-                        recoverable=True,
-                    )
-                else:
-                    error_ctx = ScrapeErrorContext(
-                        error_type="unknown",
-                        error_message=str(e) or f"Unknown error: {type(e).__name__}",
-                        platform=platform.value,
-                        recoverable=False,
-                    )
-
+                error_ctx = self._create_error_context(e, platform, timeout)
                 logger.error("platform_scrape_failed", platform=platform.value, error_type=error_ctx.error_type, error_message=error_ctx.error_message)
 
                 # Log error to DB
