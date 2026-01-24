@@ -1,4 +1,8 @@
-"""Competitor event scraping service for SportyBet and Bet9ja."""
+"""Competitor event scraping service for SportyBet and Bet9ja.
+
+Refactored to use fetch-then-store pattern to avoid SQLAlchemy session concurrency issues.
+All API calls happen in parallel (Phase 1), then all DB writes happen sequentially (Phase 2).
+"""
 
 import asyncio
 from datetime import datetime, timezone
@@ -33,6 +37,11 @@ class CompetitorEventScrapingService:
     Uses competitor_tournaments as source for tournament IDs, then fetches
     all events from each tournament. Events are stored in competitor_events
     with odds snapshots in competitor_odds_snapshots/competitor_market_odds.
+
+    Architecture: Fetch-then-Store pattern
+    - Phase 1 (API only): Parallel API calls, collect all data in memory
+    - Phase 2 (DB only): Sequential DB writes with single session
+    This avoids SQLAlchemy async session concurrency issues.
     """
 
     def __init__(
@@ -187,6 +196,7 @@ class CompetitorEventScrapingService:
             "away_team": away_team,
             "kickoff": kickoff,
             "markets": event_data.get("markets", []),
+            "raw_response": event_data,
         }
 
     def _parse_bet9ja_event(
@@ -240,6 +250,7 @@ class CompetitorEventScrapingService:
             "away_team": away_team,
             "kickoff": kickoff,
             "odds": event_data.get("O", {}),
+            "raw_response": event_data,
         }
 
     def _parse_sportybet_markets(
@@ -398,50 +409,506 @@ class CompetitorEventScrapingService:
             )
             return None
 
-    async def _update_snapshot_with_full_odds(
+    # =========================================================================
+    # FETCH-THEN-STORE PATTERN: SportyBet
+    # =========================================================================
+
+    async def _fetch_sportybet_tournaments(self) -> list[dict]:
+        """Fetch list of active SportyBet tournaments from database.
+
+        Note: This is a lightweight DB read done before parallel API calls.
+        Returns list of dicts with tournament info needed for API calls.
+        """
+        # This will be called with a fresh session in the main method
+        return []  # Placeholder - actual implementation reads from caller's session
+
+    async def _fetch_sportybet_events_api_only(
+        self,
+        tournaments: list[CompetitorTournament],
+        scrape_run_id: int | None = None,
+    ) -> list[dict]:
+        """Phase 1: Fetch all SportyBet events via API (no DB writes).
+
+        Args:
+            tournaments: List of tournaments to scrape.
+            scrape_run_id: Optional scrape run ID for tracking.
+
+        Returns:
+            List of dicts containing parsed event data and raw responses.
+        """
+        log.info(
+            "Phase 1: Fetching SportyBet events (API only)",
+            tournament_count=len(tournaments),
+        )
+
+        semaphore = asyncio.Semaphore(10)
+        all_events: list[dict] = []
+
+        async def fetch_tournament(tournament: CompetitorTournament) -> list[dict]:
+            """Fetch events from a single tournament (API only)."""
+            async with semaphore:
+                try:
+                    events = await self._sportybet_client.fetch_events_by_tournament(
+                        tournament.external_id
+                    )
+                    parsed_events = []
+                    for event_data in events:
+                        parsed = self._parse_sportybet_event(event_data, tournament.id)
+                        if parsed:
+                            parsed_events.append(parsed)
+                    return parsed_events
+                except Exception as e:
+                    log.warning(
+                        "Failed to fetch SportyBet tournament",
+                        tournament_id=tournament.external_id,
+                        tournament_name=tournament.name,
+                        error=str(e),
+                    )
+                    return []
+
+        # Parallel API calls
+        results = await asyncio.gather(
+            *[fetch_tournament(t) for t in tournaments],
+            return_exceptions=True,
+        )
+
+        # Collect all events
+        for result in results:
+            if isinstance(result, list):
+                all_events.extend(result)
+
+        log.info(
+            "Phase 1 complete: Fetched SportyBet events",
+            total_events=len(all_events),
+        )
+        return all_events
+
+    async def _store_sportybet_events_sequential(
         self,
         db: AsyncSession,
-        snapshot: CompetitorOddsSnapshot,
-        full_event_data: dict,
-        source: CompetitorSource,
-    ) -> int:
-        """Update a snapshot with full market data from individual event fetch.
+        events_data: list[dict],
+        scrape_run_id: int | None = None,
+    ) -> tuple[dict, list[int]]:
+        """Phase 2: Store SportyBet events in database (sequential, no concurrency).
 
         Args:
             db: Database session.
-            snapshot: Existing snapshot to update.
-            full_event_data: Full event data from fetch_event().
-            source: Source platform.
+            events_data: List of parsed event dicts from Phase 1.
+            scrape_run_id: Optional scrape run ID for tracking.
 
         Returns:
-            Number of markets added.
+            Tuple of (counts dict, list of snapshot IDs for full odds fetch).
         """
-        # Delete existing market_odds for this snapshot (will be replaced)
-        from sqlalchemy import delete
-
-        await db.execute(
-            delete(CompetitorMarketOdds).where(
-                CompetitorMarketOdds.snapshot_id == snapshot.id
-            )
+        log.info(
+            "Phase 2: Storing SportyBet events (DB sequential)",
+            event_count=len(events_data),
         )
 
-        # Parse markets based on source
+        new_count = 0
+        updated_count = 0
+        snapshots_count = 0
+        snapshot_ids: list[int] = []
+
+        # Sequential processing - no concurrency
+        for event_dict in events_data:
+            try:
+                # Upsert event
+                event, is_new = await self._upsert_competitor_event(
+                    db=db,
+                    source=CompetitorSource.SPORTYBET,
+                    tournament_id=event_dict["tournament_id"],
+                    sportradar_id=event_dict["sportradar_id"],
+                    external_id=event_dict["external_id"],
+                    name=event_dict["name"],
+                    home_team=event_dict["home_team"],
+                    away_team=event_dict["away_team"],
+                    kickoff=event_dict["kickoff"],
+                )
+
+                if is_new:
+                    new_count += 1
+                else:
+                    updated_count += 1
+
+                # Create odds snapshot
+                snapshot = CompetitorOddsSnapshot(
+                    competitor_event_id=event.id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=event_dict["raw_response"],
+                )
+                db.add(snapshot)
+                await db.flush()
+                snapshots_count += 1
+                snapshot_ids.append(snapshot.id)
+
+            except Exception as e:
+                log.warning(
+                    "Failed to store SportyBet event",
+                    event_name=event_dict.get("name"),
+                    error=str(e),
+                )
+
+        await db.commit()
+
+        log.info(
+            "Phase 2 complete: Stored SportyBet events",
+            new=new_count,
+            updated=updated_count,
+            snapshots=snapshots_count,
+        )
+
+        return {
+            "new": new_count,
+            "updated": updated_count,
+            "snapshots": snapshots_count,
+        }, snapshot_ids
+
+    # =========================================================================
+    # FETCH-THEN-STORE PATTERN: Bet9ja
+    # =========================================================================
+
+    async def _fetch_bet9ja_events_api_only(
+        self,
+        tournaments: list[CompetitorTournament],
+        scrape_run_id: int | None = None,
+    ) -> list[dict]:
+        """Phase 1: Fetch all Bet9ja events via API (no DB writes).
+
+        Args:
+            tournaments: List of tournaments to scrape.
+            scrape_run_id: Optional scrape run ID for tracking.
+
+        Returns:
+            List of dicts containing parsed event data and raw responses.
+        """
+        log.info(
+            "Phase 1: Fetching Bet9ja events (API only)",
+            tournament_count=len(tournaments),
+        )
+
+        semaphore = asyncio.Semaphore(10)
+        all_events: list[dict] = []
+
+        async def fetch_tournament(tournament: CompetitorTournament) -> list[dict]:
+            """Fetch events from a single tournament (API only)."""
+            async with semaphore:
+                try:
+                    events = await self._bet9ja_client.fetch_events(
+                        tournament.external_id
+                    )
+                    parsed_events = []
+                    for event_data in events:
+                        parsed = self._parse_bet9ja_event(event_data, tournament.id)
+                        if parsed:
+                            parsed_events.append(parsed)
+                    return parsed_events
+                except Exception as e:
+                    log.warning(
+                        "Failed to fetch Bet9ja tournament",
+                        tournament_id=tournament.external_id,
+                        tournament_name=tournament.name,
+                        error=str(e),
+                    )
+                    return []
+
+        # Parallel API calls
+        results = await asyncio.gather(
+            *[fetch_tournament(t) for t in tournaments],
+            return_exceptions=True,
+        )
+
+        # Collect all events
+        for result in results:
+            if isinstance(result, list):
+                all_events.extend(result)
+
+        log.info(
+            "Phase 1 complete: Fetched Bet9ja events",
+            total_events=len(all_events),
+        )
+        return all_events
+
+    async def _store_bet9ja_events_sequential(
+        self,
+        db: AsyncSession,
+        events_data: list[dict],
+        scrape_run_id: int | None = None,
+    ) -> tuple[dict, list[int]]:
+        """Phase 2: Store Bet9ja events in database (sequential, no concurrency).
+
+        Args:
+            db: Database session.
+            events_data: List of parsed event dicts from Phase 1.
+            scrape_run_id: Optional scrape run ID for tracking.
+
+        Returns:
+            Tuple of (counts dict, list of snapshot IDs for full odds fetch).
+        """
+        log.info(
+            "Phase 2: Storing Bet9ja events (DB sequential)",
+            event_count=len(events_data),
+        )
+
+        new_count = 0
+        updated_count = 0
+        snapshots_count = 0
+        snapshot_ids: list[int] = []
+
+        # Sequential processing - no concurrency
+        for event_dict in events_data:
+            try:
+                # Upsert event
+                event, is_new = await self._upsert_competitor_event(
+                    db=db,
+                    source=CompetitorSource.BET9JA,
+                    tournament_id=event_dict["tournament_id"],
+                    sportradar_id=event_dict["sportradar_id"],
+                    external_id=event_dict["external_id"],
+                    name=event_dict["name"],
+                    home_team=event_dict["home_team"],
+                    away_team=event_dict["away_team"],
+                    kickoff=event_dict["kickoff"],
+                )
+
+                if is_new:
+                    new_count += 1
+                else:
+                    updated_count += 1
+
+                # Create odds snapshot
+                snapshot = CompetitorOddsSnapshot(
+                    competitor_event_id=event.id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=event_dict["raw_response"],
+                )
+                db.add(snapshot)
+                await db.flush()
+                snapshots_count += 1
+                snapshot_ids.append(snapshot.id)
+
+            except Exception as e:
+                log.warning(
+                    "Failed to store Bet9ja event",
+                    event_name=event_dict.get("name"),
+                    error=str(e),
+                )
+
+        await db.commit()
+
+        log.info(
+            "Phase 2 complete: Stored Bet9ja events",
+            new=new_count,
+            updated=updated_count,
+            snapshots=snapshots_count,
+        )
+
+        return {
+            "new": new_count,
+            "updated": updated_count,
+            "snapshots": snapshots_count,
+        }, snapshot_ids
+
+    # =========================================================================
+    # FETCH-THEN-STORE PATTERN: Full Odds
+    # =========================================================================
+
+    async def _fetch_full_odds_api_only(
+        self,
+        source: CompetitorSource,
+        events_to_fetch: list[dict],
+    ) -> list[dict]:
+        """Phase 1: Fetch full odds for all events via API (no DB writes).
+
+        Args:
+            source: Platform source.
+            events_to_fetch: List of dicts with {snapshot_id, external_id, raw_response}.
+
+        Returns:
+            List of dicts with {snapshot_id, external_id, full_data, error}.
+        """
+        log.info(
+            "Phase 1: Fetching full odds (API only)",
+            source=source.value,
+            event_count=len(events_to_fetch),
+        )
+
+        # Use different concurrency limits per platform
         if source == CompetitorSource.SPORTYBET:
-            markets = full_event_data.get("markets", [])
-            market_odds_list = self._parse_sportybet_markets(markets)
+            semaphore = asyncio.Semaphore(30)
         else:
-            odds_dict = full_event_data.get("O", {})
-            market_odds_list = self._parse_bet9ja_markets(odds_dict)
+            semaphore = asyncio.Semaphore(10)
 
-        # Add new market odds
-        for market_odds in market_odds_list:
-            market_odds.snapshot_id = snapshot.id
-            db.add(market_odds)
+        results: list[dict] = []
 
-        # Update snapshot raw_response with full data
-        snapshot.raw_response = full_event_data
+        async def fetch_event(event_info: dict) -> dict:
+            """Fetch full odds for a single event (API only)."""
+            async with semaphore:
+                snapshot_id = event_info["snapshot_id"]
+                external_id = event_info["external_id"]
 
-        return len(market_odds_list)
+                try:
+                    if source == CompetitorSource.SPORTYBET:
+                        full_data = await self._fetch_full_sportybet_odds(external_id)
+                    else:
+                        # For Bet9ja, get correct ID from raw_response if needed
+                        raw = event_info.get("raw_response") or {}
+                        bet9ja_event_id = str(raw.get("ID", "")) or external_id
+                        full_data = await self._fetch_full_bet9ja_odds(bet9ja_event_id)
+
+                    return {
+                        "snapshot_id": snapshot_id,
+                        "external_id": external_id,
+                        "full_data": full_data,
+                        "error": None,
+                    }
+                except Exception as e:
+                    return {
+                        "snapshot_id": snapshot_id,
+                        "external_id": external_id,
+                        "full_data": None,
+                        "error": str(e),
+                    }
+
+        # Process in batches
+        batch_size = 100
+        for i in range(0, len(events_to_fetch), batch_size):
+            batch = events_to_fetch[i : i + batch_size]
+
+            batch_results = await asyncio.gather(
+                *[fetch_event(e) for e in batch],
+                return_exceptions=True,
+            )
+
+            for result in batch_results:
+                if isinstance(result, dict):
+                    results.append(result)
+                elif isinstance(result, Exception):
+                    log.warning("Exception in full odds fetch", error=str(result))
+
+            # Log progress
+            log.info(
+                "Full odds fetch progress (API)",
+                source=source.value,
+                processed=min(i + batch_size, len(events_to_fetch)),
+                total=len(events_to_fetch),
+            )
+
+        log.info(
+            "Phase 1 complete: Fetched full odds",
+            source=source.value,
+            fetched=len([r for r in results if r.get("full_data")]),
+            errors=len([r for r in results if r.get("error")]),
+        )
+        return results
+
+    async def _update_snapshots_with_odds_sequential(
+        self,
+        db: AsyncSession,
+        source: CompetitorSource,
+        fetch_results: list[dict],
+    ) -> dict:
+        """Phase 2: Update snapshots with full odds (DB sequential).
+
+        Args:
+            db: Database session.
+            source: Platform source.
+            fetch_results: Results from _fetch_full_odds_api_only.
+
+        Returns:
+            Dict with {events_processed, total_markets, errors}.
+        """
+        from sqlalchemy import delete
+
+        log.info(
+            "Phase 2: Updating snapshots with full odds (DB sequential)",
+            source=source.value,
+            result_count=len(fetch_results),
+        )
+
+        events_processed = 0
+        total_markets = 0
+        errors = 0
+
+        # Sequential processing - no concurrency
+        for result in fetch_results:
+            snapshot_id = result["snapshot_id"]
+            full_data = result.get("full_data")
+
+            if not full_data:
+                errors += 1
+                continue
+
+            try:
+                # Get snapshot
+                snap_result = await db.execute(
+                    select(CompetitorOddsSnapshot, CompetitorEvent)
+                    .join(
+                        CompetitorEvent,
+                        CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+                    )
+                    .where(CompetitorOddsSnapshot.id == snapshot_id)
+                )
+                row = snap_result.first()
+                if not row:
+                    errors += 1
+                    continue
+
+                snapshot, event = row
+
+                # Delete existing market_odds
+                await db.execute(
+                    delete(CompetitorMarketOdds).where(
+                        CompetitorMarketOdds.snapshot_id == snapshot.id
+                    )
+                )
+
+                # Parse markets based on source
+                if source == CompetitorSource.SPORTYBET:
+                    markets = full_data.get("markets", [])
+                    market_odds_list = self._parse_sportybet_markets(markets)
+                else:
+                    odds_dict = full_data.get("O", {})
+                    market_odds_list = self._parse_bet9ja_markets(odds_dict)
+
+                    # Update event.external_id if needed
+                    correct_id = str(full_data.get("ID", ""))
+                    if correct_id and event.external_id != correct_id:
+                        event.external_id = correct_id
+
+                # Add new market odds
+                for market_odds in market_odds_list:
+                    market_odds.snapshot_id = snapshot.id
+                    db.add(market_odds)
+
+                # Update snapshot raw_response
+                snapshot.raw_response = full_data
+
+                total_markets += len(market_odds_list)
+                events_processed += 1
+
+            except Exception as e:
+                log.warning(
+                    "Failed to update snapshot with full odds",
+                    snapshot_id=snapshot_id,
+                    error=str(e),
+                )
+                errors += 1
+
+        await db.commit()
+
+        log.info(
+            "Phase 2 complete: Updated snapshots with full odds",
+            source=source.value,
+            events_processed=events_processed,
+            total_markets=total_markets,
+            errors=errors,
+        )
+
+        return {
+            "events_processed": events_processed,
+            "total_markets": total_markets,
+            "errors": errors,
+        }
 
     async def scrape_full_odds_for_events(
         self,
@@ -449,7 +916,7 @@ class CompetitorEventScrapingService:
         source: CompetitorSource,
         snapshot_ids: list[int],
     ) -> dict[str, Any]:
-        """Fetch full odds for events that were just scraped.
+        """Fetch full odds for events using fetch-then-store pattern.
 
         Args:
             db: Database session.
@@ -462,99 +929,35 @@ class CompetitorEventScrapingService:
         if not snapshot_ids:
             return {"events_processed": 0, "total_markets": 0, "errors": 0}
 
-        # Use different concurrency limits per platform
-        if source == CompetitorSource.SPORTYBET:
-            semaphore = asyncio.Semaphore(30)
-        else:
-            semaphore = asyncio.Semaphore(10)
-
-        events_processed = 0
-        total_markets = 0
-        errors = 0
-
-        async def process_snapshot(snapshot_id: int) -> tuple[int, int]:
-            """Process a single snapshot with rate limiting."""
-            async with semaphore:
-                # Get snapshot with related event
-                result = await db.execute(
-                    select(CompetitorOddsSnapshot, CompetitorEvent)
-                    .join(
-                        CompetitorEvent,
-                        CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
-                    )
-                    .where(CompetitorOddsSnapshot.id == snapshot_id)
+        # Build list of events to fetch (need external_id and raw_response)
+        events_to_fetch: list[dict] = []
+        for snapshot_id in snapshot_ids:
+            result = await db.execute(
+                select(CompetitorOddsSnapshot, CompetitorEvent)
+                .join(
+                    CompetitorEvent,
+                    CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
                 )
-                row = result.first()
-                if not row:
-                    return 0, 0
-
-                snapshot, event = row
-
-                # Fetch full event data
-                if source == CompetitorSource.SPORTYBET:
-                    full_data = await self._fetch_full_sportybet_odds(event.external_id)
-                else:
-                    # For Bet9ja, get the event ID from raw_response["ID"]
-                    # This handles cases where external_id may have old "C" values
-                    raw = snapshot.raw_response or {}
-                    bet9ja_event_id = str(raw.get("ID", "")) or event.external_id
-                    full_data = await self._fetch_full_bet9ja_odds(bet9ja_event_id)
-
-                if not full_data:
-                    return 0, 1  # Error
-
-                # For Bet9ja, update event.external_id if it was using old "C" value
-                if source == CompetitorSource.BET9JA:
-                    correct_id = str(full_data.get("ID", ""))
-                    if correct_id and event.external_id != correct_id:
-                        event.external_id = correct_id
-
-                # Update snapshot with full odds
-                markets = await self._update_snapshot_with_full_odds(
-                    db, snapshot, full_data, source
-                )
-
-                return markets, 0
-
-        # Process in batches to avoid overwhelming the database
-        batch_size = 50
-        for i in range(0, len(snapshot_ids), batch_size):
-            batch = snapshot_ids[i : i + batch_size]
-
-            results = await asyncio.gather(
-                *[process_snapshot(sid) for sid in batch],
-                return_exceptions=True,
+                .where(CompetitorOddsSnapshot.id == snapshot_id)
             )
+            row = result.first()
+            if row:
+                snapshot, event = row
+                events_to_fetch.append({
+                    "snapshot_id": snapshot_id,
+                    "external_id": event.external_id,
+                    "raw_response": snapshot.raw_response,
+                })
 
-            for result in results:
-                if isinstance(result, Exception):
-                    log.warning("Error in full odds fetch", error=str(result))
-                    errors += 1
-                elif isinstance(result, tuple):
-                    markets, err = result
-                    total_markets += markets
-                    errors += err
-                    if markets > 0:
-                        events_processed += 1
+        # Phase 1: Fetch full odds (API only, parallel)
+        fetch_results = await self._fetch_full_odds_api_only(source, events_to_fetch)
 
-            # Log progress every 100 events
-            if (i + batch_size) % 100 == 0 or i + batch_size >= len(snapshot_ids):
-                log.info(
-                    "Full odds fetch progress",
-                    source=source.value,
-                    processed=min(i + batch_size, len(snapshot_ids)),
-                    total=len(snapshot_ids),
-                    markets=total_markets,
-                )
+        # Phase 2: Update snapshots (DB only, sequential)
+        return await self._update_snapshots_with_odds_sequential(db, source, fetch_results)
 
-        # Commit the batch updates
-        await db.commit()
-
-        return {
-            "events_processed": events_processed,
-            "total_markets": total_markets,
-            "errors": errors,
-        }
+    # =========================================================================
+    # PUBLIC API: Main scraping methods
+    # =========================================================================
 
     async def scrape_sportybet_events(
         self,
@@ -564,26 +967,29 @@ class CompetitorEventScrapingService:
     ) -> dict:
         """Scrape all SportyBet events from discovered tournaments.
 
+        Uses fetch-then-store pattern:
+        - Phase 1: Fetch all events via API (parallel)
+        - Phase 2: Store all events in DB (sequential)
+        - Phase 3: Fetch full odds (parallel API, sequential DB)
+
         Args:
             db: Database session.
             scrape_run_id: Optional scrape run ID for tracking.
-            fetch_full_odds: If True, fetch full market data for each event
-                after initial tournament scrape (default: True).
+            fetch_full_odds: If True, fetch full market data for each event.
 
         Returns:
-            Dict with counts: {new: N, updated: N, snapshots: N, markets: N,
-                events_with_full_odds: N}
+            Dict with counts: {new, updated, snapshots, markets, events_with_full_odds}
         """
         log.info("Starting SportyBet event scraping", fetch_full_odds=fetch_full_odds)
 
-        # Get all active SportyBet tournaments
+        # Get all active SportyBet tournaments (lightweight DB read)
         result = await db.execute(
             select(CompetitorTournament).where(
                 CompetitorTournament.source == CompetitorSource.SPORTYBET.value,
                 CompetitorTournament.deleted_at.is_(None),
             )
         )
-        tournaments = result.scalars().all()
+        tournaments = list(result.scalars().all())
 
         log.info("Found SportyBet tournaments", count=len(tournaments))
 
@@ -596,106 +1002,22 @@ class CompetitorEventScrapingService:
                 "events_with_full_odds": 0,
             }
 
-        # Use semaphore to limit concurrent tournament fetches
-        semaphore = asyncio.Semaphore(10)
-        new_count = 0
-        updated_count = 0
-        snapshots_count = 0
-        markets_count = 0
-        snapshot_ids: list[int] = []
-
-        async def process_tournament(
-            tournament: CompetitorTournament,
-        ) -> tuple[int, int, int, int, list[int]]:
-            """Process a single tournament with rate limiting."""
-            async with semaphore:
-                new = 0
-                updated = 0
-                snapshots = 0
-                markets = 0
-                local_snapshot_ids: list[int] = []
-
-                try:
-                    # Fetch events for this tournament
-                    events = await self._sportybet_client.fetch_events_by_tournament(
-                        tournament.external_id
-                    )
-
-                    for event_data in events:
-                        parsed = self._parse_sportybet_event(event_data, tournament.id)
-                        if not parsed:
-                            continue
-
-                        # Upsert event
-                        event, is_new = await self._upsert_competitor_event(
-                            db=db,
-                            source=CompetitorSource.SPORTYBET,
-                            tournament_id=parsed["tournament_id"],
-                            sportradar_id=parsed["sportradar_id"],
-                            external_id=parsed["external_id"],
-                            name=parsed["name"],
-                            home_team=parsed["home_team"],
-                            away_team=parsed["away_team"],
-                            kickoff=parsed["kickoff"],
-                        )
-
-                        if is_new:
-                            new += 1
-                        else:
-                            updated += 1
-
-                        # Create odds snapshot placeholder (markets added in Phase 2)
-                        snapshot = CompetitorOddsSnapshot(
-                            competitor_event_id=event.id,
-                            scrape_run_id=scrape_run_id,
-                            raw_response=event_data,
-                        )
-                        db.add(snapshot)
-                        await db.flush()
-                        snapshots += 1
-                        local_snapshot_ids.append(snapshot.id)
-
-                        # Markets will be fetched in Phase 2 (full odds fetch)
-
-                except Exception as e:
-                    log.warning(
-                        "Failed to scrape SportyBet tournament",
-                        tournament_id=tournament.external_id,
-                        tournament_name=tournament.name,
-                        error=str(e),
-                    )
-
-                return new, updated, snapshots, markets, local_snapshot_ids
-
-        # Process all tournaments concurrently
-        results = await asyncio.gather(
-            *[process_tournament(t) for t in tournaments],
-            return_exceptions=True,
+        # Phase 1: Fetch all events (API only)
+        events_data = await self._fetch_sportybet_events_api_only(
+            tournaments, scrape_run_id
         )
 
-        # Aggregate results
-        for res in results:
-            if isinstance(res, tuple):
-                new_count += res[0]
-                updated_count += res[1]
-                snapshots_count += res[2]
-                markets_count += res[3]
-                snapshot_ids.extend(res[4])
-
-        await db.commit()
-
-        log.info(
-            "Completed SportyBet tournament scraping (Phase 1: event metadata)",
-            new=new_count,
-            updated=updated_count,
-            snapshots=snapshots_count,
+        # Phase 2: Store all events (DB sequential)
+        counts, snapshot_ids = await self._store_sportybet_events_sequential(
+            db, events_data, scrape_run_id
         )
 
-        # Phase 2: Fetch full odds for each event
+        # Phase 3: Fetch full odds (fetch-then-store)
         events_with_full_odds = 0
+        markets_count = 0
         if fetch_full_odds and snapshot_ids:
             log.info(
-                "Starting Phase 2: Fetching full market data for SportyBet events",
+                "Phase 3: Fetching full market data for SportyBet events",
                 total_events=len(snapshot_ids),
             )
             full_odds_result = await self.scrape_full_odds_for_events(
@@ -704,26 +1026,19 @@ class CompetitorEventScrapingService:
             events_with_full_odds = full_odds_result["events_processed"]
             markets_count = full_odds_result["total_markets"]
 
-            log.info(
-                "Completed Phase 2: SportyBet full odds fetch",
-                events_with_full_odds=events_with_full_odds,
-                total_markets=markets_count,
-                errors=full_odds_result["errors"],
-            )
-
         log.info(
             "Completed SportyBet event scraping",
-            new=new_count,
-            updated=updated_count,
-            snapshots=snapshots_count,
+            new=counts["new"],
+            updated=counts["updated"],
+            snapshots=counts["snapshots"],
             markets=markets_count,
             events_with_full_odds=events_with_full_odds,
         )
 
         return {
-            "new": new_count,
-            "updated": updated_count,
-            "snapshots": snapshots_count,
+            "new": counts["new"],
+            "updated": counts["updated"],
+            "snapshots": counts["snapshots"],
             "markets": markets_count,
             "events_with_full_odds": events_with_full_odds,
         }
@@ -736,26 +1051,29 @@ class CompetitorEventScrapingService:
     ) -> dict:
         """Scrape all Bet9ja events from discovered tournaments.
 
+        Uses fetch-then-store pattern:
+        - Phase 1: Fetch all events via API (parallel)
+        - Phase 2: Store all events in DB (sequential)
+        - Phase 3: Fetch full odds (parallel API, sequential DB)
+
         Args:
             db: Database session.
             scrape_run_id: Optional scrape run ID for tracking.
-            fetch_full_odds: If True, fetch full market data for each event
-                after initial tournament scrape (default: True).
+            fetch_full_odds: If True, fetch full market data for each event.
 
         Returns:
-            Dict with counts: {new: N, updated: N, snapshots: N, markets: N,
-                events_with_full_odds: N}
+            Dict with counts: {new, updated, snapshots, markets, events_with_full_odds}
         """
         log.info("Starting Bet9ja event scraping", fetch_full_odds=fetch_full_odds)
 
-        # Get all active Bet9ja tournaments
+        # Get all active Bet9ja tournaments (lightweight DB read)
         result = await db.execute(
             select(CompetitorTournament).where(
                 CompetitorTournament.source == CompetitorSource.BET9JA.value,
                 CompetitorTournament.deleted_at.is_(None),
             )
         )
-        tournaments = result.scalars().all()
+        tournaments = list(result.scalars().all())
 
         log.info("Found Bet9ja tournaments", count=len(tournaments))
 
@@ -768,106 +1086,22 @@ class CompetitorEventScrapingService:
                 "events_with_full_odds": 0,
             }
 
-        # Use semaphore to limit concurrent tournament fetches
-        semaphore = asyncio.Semaphore(10)
-        new_count = 0
-        updated_count = 0
-        snapshots_count = 0
-        markets_count = 0
-        snapshot_ids: list[int] = []
-
-        async def process_tournament(
-            tournament: CompetitorTournament,
-        ) -> tuple[int, int, int, int, list[int]]:
-            """Process a single tournament with rate limiting."""
-            async with semaphore:
-                new = 0
-                updated = 0
-                snapshots = 0
-                markets = 0
-                local_snapshot_ids: list[int] = []
-
-                try:
-                    # Fetch events for this tournament
-                    events = await self._bet9ja_client.fetch_events(
-                        tournament.external_id
-                    )
-
-                    for event_data in events:
-                        parsed = self._parse_bet9ja_event(event_data, tournament.id)
-                        if not parsed:
-                            continue
-
-                        # Upsert event
-                        event, is_new = await self._upsert_competitor_event(
-                            db=db,
-                            source=CompetitorSource.BET9JA,
-                            tournament_id=parsed["tournament_id"],
-                            sportradar_id=parsed["sportradar_id"],
-                            external_id=parsed["external_id"],
-                            name=parsed["name"],
-                            home_team=parsed["home_team"],
-                            away_team=parsed["away_team"],
-                            kickoff=parsed["kickoff"],
-                        )
-
-                        if is_new:
-                            new += 1
-                        else:
-                            updated += 1
-
-                        # Create odds snapshot placeholder (markets added in Phase 2)
-                        snapshot = CompetitorOddsSnapshot(
-                            competitor_event_id=event.id,
-                            scrape_run_id=scrape_run_id,
-                            raw_response=event_data,
-                        )
-                        db.add(snapshot)
-                        await db.flush()
-                        snapshots += 1
-                        local_snapshot_ids.append(snapshot.id)
-
-                        # Markets will be fetched in Phase 2 (full odds fetch)
-
-                except Exception as e:
-                    log.warning(
-                        "Failed to scrape Bet9ja tournament",
-                        tournament_id=tournament.external_id,
-                        tournament_name=tournament.name,
-                        error=str(e),
-                    )
-
-                return new, updated, snapshots, markets, local_snapshot_ids
-
-        # Process all tournaments concurrently
-        results = await asyncio.gather(
-            *[process_tournament(t) for t in tournaments],
-            return_exceptions=True,
+        # Phase 1: Fetch all events (API only)
+        events_data = await self._fetch_bet9ja_events_api_only(
+            tournaments, scrape_run_id
         )
 
-        # Aggregate results
-        for res in results:
-            if isinstance(res, tuple):
-                new_count += res[0]
-                updated_count += res[1]
-                snapshots_count += res[2]
-                markets_count += res[3]
-                snapshot_ids.extend(res[4])
-
-        await db.commit()
-
-        log.info(
-            "Completed Bet9ja tournament scraping (Phase 1: event metadata)",
-            new=new_count,
-            updated=updated_count,
-            snapshots=snapshots_count,
+        # Phase 2: Store all events (DB sequential)
+        counts, snapshot_ids = await self._store_bet9ja_events_sequential(
+            db, events_data, scrape_run_id
         )
 
-        # Phase 2: Fetch full odds for each event
+        # Phase 3: Fetch full odds (fetch-then-store)
         events_with_full_odds = 0
+        markets_count = 0
         if fetch_full_odds and snapshot_ids:
             log.info(
-                "Starting Phase 2: Fetching full market data for Bet9ja events",
+                "Phase 3: Fetching full market data for Bet9ja events",
                 total_events=len(snapshot_ids),
             )
             full_odds_result = await self.scrape_full_odds_for_events(
@@ -876,26 +1110,19 @@ class CompetitorEventScrapingService:
             events_with_full_odds = full_odds_result["events_processed"]
             markets_count = full_odds_result["total_markets"]
 
-            log.info(
-                "Completed Phase 2: Bet9ja full odds fetch",
-                events_with_full_odds=events_with_full_odds,
-                total_markets=markets_count,
-                errors=full_odds_result["errors"],
-            )
-
         log.info(
             "Completed Bet9ja event scraping",
-            new=new_count,
-            updated=updated_count,
-            snapshots=snapshots_count,
+            new=counts["new"],
+            updated=counts["updated"],
+            snapshots=counts["snapshots"],
             markets=markets_count,
             events_with_full_odds=events_with_full_odds,
         )
 
         return {
-            "new": new_count,
-            "updated": updated_count,
-            "snapshots": snapshots_count,
+            "new": counts["new"],
+            "updated": counts["updated"],
+            "snapshots": counts["snapshots"],
             "markets": markets_count,
             "events_with_full_odds": events_with_full_odds,
         }
