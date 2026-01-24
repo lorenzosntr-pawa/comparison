@@ -1,14 +1,22 @@
 """Events API endpoints for querying matched and unmatched events."""
 
 from datetime import datetime, timezone
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
+from src.db.models.competitor import (
+    CompetitorEvent,
+    CompetitorMarketOdds,
+    CompetitorOddsSnapshot,
+    CompetitorSource,
+    CompetitorTournament,
+)
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.sport import Tournament
@@ -177,6 +185,149 @@ async def _load_latest_snapshots_for_events(
         snapshots_by_event[snapshot.event_id][snapshot.bookmaker_id] = snapshot
 
     return snapshots_by_event
+
+
+def _build_competitor_inline_odds(
+    snapshot: CompetitorOddsSnapshot | None,
+) -> list[InlineOdds]:
+    """Extract inline odds for key markets from a competitor snapshot.
+
+    Args:
+        snapshot: CompetitorOddsSnapshot with loaded markets, or None.
+
+    Returns:
+        List of InlineOdds for key markets (1X2, O/U 2.5, BTTS).
+    """
+    if not snapshot or not snapshot.markets:
+        return []
+
+    inline_odds = []
+    for market in snapshot.markets:
+        if market.betpawa_market_id in INLINE_MARKET_IDS:
+            # For Over/Under (5000), only include line=2.5
+            if market.betpawa_market_id == "5000" and market.line != 2.5:
+                continue
+
+            # Parse outcomes from JSONB
+            outcomes = []
+            if isinstance(market.outcomes, list):
+                for outcome in market.outcomes:
+                    if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
+                        outcomes.append(
+                            OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
+                        )
+            if outcomes:
+                inline_odds.append(
+                    InlineOdds(
+                        market_id=market.betpawa_market_id,
+                        market_name=market.betpawa_market_name,
+                        line=market.line,
+                        outcomes=outcomes,
+                    )
+                )
+
+    return inline_odds
+
+
+async def _load_latest_competitor_snapshots(
+    db: AsyncSession,
+    competitor_event_ids: list[int],
+) -> dict[int, CompetitorOddsSnapshot]:
+    """Load the latest CompetitorOddsSnapshot per competitor event.
+
+    Args:
+        db: Async database session.
+        competitor_event_ids: List of competitor event IDs to load snapshots for.
+
+    Returns:
+        Dict mapping competitor_event_id -> CompetitorOddsSnapshot.
+    """
+    if not competitor_event_ids:
+        return {}
+
+    # Subquery to find the latest snapshot ID per competitor_event_id
+    latest_subq = (
+        select(
+            CompetitorOddsSnapshot.competitor_event_id,
+            func.max(CompetitorOddsSnapshot.id).label("max_id"),
+        )
+        .where(CompetitorOddsSnapshot.competitor_event_id.in_(competitor_event_ids))
+        .group_by(CompetitorOddsSnapshot.competitor_event_id)
+        .subquery()
+    )
+
+    # Main query: fetch snapshots matching the latest IDs, with markets eagerly loaded
+    query = (
+        select(CompetitorOddsSnapshot)
+        .join(
+            latest_subq,
+            (CompetitorOddsSnapshot.competitor_event_id == latest_subq.c.competitor_event_id)
+            & (CompetitorOddsSnapshot.id == latest_subq.c.max_id),
+        )
+        .options(selectinload(CompetitorOddsSnapshot.markets))
+    )
+
+    result = await db.execute(query)
+    snapshots = result.scalars().all()
+
+    # Build dict: competitor_event_id -> snapshot
+    return {snapshot.competitor_event_id: snapshot for snapshot in snapshots}
+
+
+def _build_competitor_event_response(
+    primary_event: CompetitorEvent,
+    all_events_by_sr: list[CompetitorEvent],
+    snapshots_by_event: dict[int, CompetitorOddsSnapshot],
+) -> MatchedEvent:
+    """Build a MatchedEvent response for competitor-only events.
+
+    Uses negative ID to distinguish from BetPawa events.
+    Applies metadata priority: sportybet > bet9ja.
+
+    Args:
+        primary_event: The primary competitor event (for metadata).
+        all_events_by_sr: All competitor events with the same SR ID.
+        snapshots_by_event: Dict mapping competitor_event_id to snapshot.
+
+    Returns:
+        MatchedEvent with negative ID and competitor odds.
+    """
+    # Build bookmakers list - one entry per competitor platform
+    bookmakers = []
+    for ce in all_events_by_sr:
+        snapshot = snapshots_by_event.get(ce.id)
+        inline_odds = _build_competitor_inline_odds(snapshot)
+
+        # Map source to bookmaker_slug
+        bookmaker_slug = ce.source  # sportybet or bet9ja
+        bookmaker_name = "SportyBet" if ce.source == CompetitorSource.SPORTYBET else "Bet9ja"
+
+        bookmakers.append(
+            BookmakerOdds(
+                bookmaker_slug=bookmaker_slug,
+                bookmaker_name=bookmaker_name,
+                external_event_id=ce.external_id,
+                event_url=None,  # Competitor events don't have URLs stored
+                has_odds=bool(snapshot and snapshot.markets),
+                inline_odds=inline_odds,
+            )
+        )
+
+    # Use negative ID for competitor-only events
+    return MatchedEvent(
+        id=-primary_event.id,  # Negative ID to distinguish from BetPawa events
+        sportradar_id=primary_event.sportradar_id,
+        name=primary_event.name,
+        home_team=primary_event.home_team,
+        away_team=primary_event.away_team,
+        kickoff=primary_event.kickoff,
+        tournament_id=primary_event.tournament_id,
+        tournament_name=primary_event.tournament.name,
+        tournament_country=primary_event.tournament.country_raw,
+        sport_name=primary_event.tournament.sport.name,
+        bookmakers=bookmakers,
+        created_at=primary_event.created_at,
+    )
 
 
 def _calculate_margin(outcomes: list[OutcomeDetail]) -> float | None:
@@ -499,6 +650,10 @@ async def get_event(
 @router.get("", response_model=MatchedEventList)
 async def list_events(
     db: AsyncSession = Depends(get_db),
+    availability: Literal["betpawa", "all"] = Query(
+        default="betpawa",
+        description="Filter by availability: betpawa (only BetPawa events) | all (include competitor-only)",
+    ),
     tournament_id: int | None = Query(default=None, description="Filter by single tournament (deprecated, use tournament_ids)"),
     tournament_ids: list[int] | None = Query(default=None, description="Filter by multiple tournament IDs"),
     sport_id: int | None = Query(default=None, description="Filter by sport"),
@@ -527,19 +682,29 @@ async def list_events(
 
     By default, only upcoming events are shown (kickoff > now).
     Set include_started=true to also show events that have already started.
+
+    When availability='all', includes competitor-only events (events that exist
+    on SportyBet/Bet9ja but not on BetPawa). These events have negative IDs
+    and use metadata priority: sportybet > bet9ja.
     """
-    # Build base query
+    # Common time filter
+    now = datetime.now(timezone.utc).replace(tzinfo=None)  # DB stores naive UTC
+    kickoff_from_naive = None
+    kickoff_to_naive = None
+    if kickoff_from is not None:
+        kickoff_from_naive = kickoff_from.replace(tzinfo=None) if kickoff_from.tzinfo else kickoff_from
+    if kickoff_to is not None:
+        kickoff_to_naive = kickoff_to.replace(tzinfo=None) if kickoff_to.tzinfo else kickoff_to
+
+    # ---- BetPawa Events Query ----
     query = select(Event).options(
         selectinload(Event.bookmaker_links).selectinload(EventBookmaker.bookmaker),
         selectinload(Event.tournament).selectinload(Tournament.sport),
     )
-
-    # Count query (same filters, no eager loading)
     count_query = select(func.count()).select_from(Event)
 
     # By default, only show upcoming events (kickoff > now)
     if not include_started:
-        now = datetime.now(timezone.utc).replace(tzinfo=None)  # DB stores naive UTC
         query = query.where(Event.kickoff > now)
         count_query = count_query.where(Event.kickoff > now)
 
@@ -548,7 +713,6 @@ async def list_events(
         query = query.where(Event.tournament_id.in_(tournament_ids))
         count_query = count_query.where(Event.tournament_id.in_(tournament_ids))
     elif tournament_id is not None:
-        # Backwards compatibility for single tournament_id
         query = query.where(Event.tournament_id == tournament_id)
         count_query = count_query.where(Event.tournament_id == tournament_id)
 
@@ -559,15 +723,11 @@ async def list_events(
             Tournament.sport_id == sport_id
         )
 
-    # Apply kickoff time filters (overrides default if provided)
-    # Convert to naive UTC to match database storage
-    if kickoff_from is not None:
-        kickoff_from_naive = kickoff_from.replace(tzinfo=None) if kickoff_from.tzinfo else kickoff_from
+    # Apply kickoff time filters
+    if kickoff_from_naive is not None:
         query = query.where(Event.kickoff >= kickoff_from_naive)
         count_query = count_query.where(Event.kickoff >= kickoff_from_naive)
-
-    if kickoff_to is not None:
-        kickoff_to_naive = kickoff_to.replace(tzinfo=None) if kickoff_to.tzinfo else kickoff_to
+    if kickoff_to_naive is not None:
         query = query.where(Event.kickoff <= kickoff_to_naive)
         count_query = count_query.where(Event.kickoff <= kickoff_to_naive)
 
@@ -601,23 +761,155 @@ async def list_events(
             bookmaker_count_subq, Event.id == bookmaker_count_subq.c.event_id
         )
 
-    # Get total count
-    count_result = await db.execute(count_query)
-    total = count_result.scalar() or 0
+    # ---- Competitor-Only Events (when availability='all') ----
+    competitor_events_response: list[MatchedEvent] = []
+    competitor_count = 0
 
-    # Apply pagination and ordering
+    if availability == "all":
+        # Query competitor events where betpawa_event_id IS NULL
+        comp_query = (
+            select(CompetitorEvent)
+            .where(CompetitorEvent.betpawa_event_id.is_(None))
+            .options(
+                selectinload(CompetitorEvent.tournament).selectinload(
+                    CompetitorTournament.sport
+                ),
+            )
+        )
+        comp_count_query = (
+            select(func.count())
+            .select_from(CompetitorEvent)
+            .where(CompetitorEvent.betpawa_event_id.is_(None))
+        )
+
+        # Apply time filters
+        if not include_started:
+            comp_query = comp_query.where(CompetitorEvent.kickoff > now)
+            comp_count_query = comp_count_query.where(CompetitorEvent.kickoff > now)
+        if kickoff_from_naive is not None:
+            comp_query = comp_query.where(CompetitorEvent.kickoff >= kickoff_from_naive)
+            comp_count_query = comp_count_query.where(
+                CompetitorEvent.kickoff >= kickoff_from_naive
+            )
+        if kickoff_to_naive is not None:
+            comp_query = comp_query.where(CompetitorEvent.kickoff <= kickoff_to_naive)
+            comp_count_query = comp_count_query.where(
+                CompetitorEvent.kickoff <= kickoff_to_naive
+            )
+
+        # Apply search filter
+        if search:
+            search_pattern = f"%{search}%"
+            comp_query = comp_query.where(
+                or_(
+                    CompetitorEvent.home_team.ilike(search_pattern),
+                    CompetitorEvent.away_team.ilike(search_pattern),
+                )
+            )
+            comp_count_query = comp_count_query.where(
+                or_(
+                    CompetitorEvent.home_team.ilike(search_pattern),
+                    CompetitorEvent.away_team.ilike(search_pattern),
+                )
+            )
+
+        # Apply sport filter (join through competitor tournament)
+        if sport_id is not None:
+            comp_query = comp_query.join(CompetitorEvent.tournament).where(
+                CompetitorTournament.sport_id == sport_id
+            )
+            comp_count_query = comp_count_query.join(CompetitorEvent.tournament).where(
+                CompetitorTournament.sport_id == sport_id
+            )
+
+        # Tournament filter for competitor events via sportradar_id matching
+        # (more complex - skip for now as competitor tournaments have different IDs)
+
+        # Get all competitor-only events (we need to dedupe by SR ID and apply metadata priority)
+        comp_result = await db.execute(comp_query)
+        comp_events = comp_result.scalars().unique().all()
+
+        # Group by sportradar_id and apply metadata priority
+        sr_id_events: dict[str, list[CompetitorEvent]] = {}
+        for ce in comp_events:
+            if ce.sportradar_id not in sr_id_events:
+                sr_id_events[ce.sportradar_id] = []
+            sr_id_events[ce.sportradar_id].append(ce)
+
+        # Load odds for all competitor events
+        all_comp_event_ids = [ce.id for ce in comp_events]
+        comp_snapshots = await _load_latest_competitor_snapshots(db, all_comp_event_ids)
+
+        # Build response for each unique SR ID (deduplicated)
+        deduped_events: list[tuple[CompetitorEvent, list[CompetitorEvent]]] = []
+        for sr_id, events_list in sr_id_events.items():
+            # Sort by priority: sportybet first
+            events_list.sort(
+                key=lambda e: 0 if e.source == CompetitorSource.SPORTYBET else 1
+            )
+            primary = events_list[0]
+            deduped_events.append((primary, events_list))
+
+        # Count unique competitor events (after deduplication)
+        competitor_count = len(deduped_events)
+
+        # Build response objects
+        for primary, all_events in deduped_events:
+            competitor_events_response.append(
+                _build_competitor_event_response(primary, all_events, comp_snapshots)
+            )
+
+    # Get BetPawa event count
+    count_result = await db.execute(count_query)
+    betpawa_total = count_result.scalar() or 0
+
+    # Total count for pagination
+    total = betpawa_total + competitor_count
+
+    # For pagination with availability='all', we need to merge and sort all events,
+    # then apply pagination to the combined result
+    if availability == "all":
+        # Get ALL BetPawa events (without pagination) for merging
+        result = await db.execute(query.order_by(Event.kickoff))
+        betpawa_events = result.scalars().unique().all()
+
+        # Load BetPawa odds
+        betpawa_event_ids = [event.id for event in betpawa_events]
+        snapshots_by_event = await _load_latest_snapshots_for_events(
+            db, betpawa_event_ids
+        )
+
+        # Build BetPawa response objects
+        betpawa_response = [
+            _build_matched_event(event, snapshots_by_event.get(event.id))
+            for event in betpawa_events
+        ]
+
+        # Merge and sort all events by kickoff
+        all_events = betpawa_response + competitor_events_response
+        all_events.sort(key=lambda e: e.kickoff)
+
+        # Apply pagination
+        offset = (page - 1) * page_size
+        paginated_events = all_events[offset : offset + page_size]
+
+        return MatchedEventList(
+            events=paginated_events,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+
+    # Standard flow (availability='betpawa')
     offset = (page - 1) * page_size
     query = query.order_by(Event.kickoff).offset(offset).limit(page_size)
 
-    # Execute query
     result = await db.execute(query)
     events = result.scalars().unique().all()
 
-    # Load latest odds snapshots for all events
     event_ids = [event.id for event in events]
     snapshots_by_event = await _load_latest_snapshots_for_events(db, event_ids)
 
-    # Build response with inline odds
     matched_events = [
         _build_matched_event(event, snapshots_by_event.get(event.id))
         for event in events
