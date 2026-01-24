@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Current Position
 
-Phase: 20 of 24 (Settings Schema & API)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-24 — Milestone v1.2 created
+Phase: 19.1 of 24 (Fix Sidebar Menu - INSERTED)
+Plan: 19.1-01 (Sidebar overlay with backdrop)
+Status: Ready to execute
+Last activity: 2026-01-25 — Phase 19.1 planned
 
 Progress: ░░░░░░░░░░ 0%
 
@@ -69,10 +69,11 @@ None.
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
 - Both milestones archived to .planning/milestones/
 - v1.2 Settings & Real-time created 2026-01-24: persistent config + WebSocket, 5 phases (Phase 20-24)
+- Phase 19.1 inserted after Phase 19: Fix sidebar menu (URGENT)
 
 ## Session Continuity
 
 Last session: 2026-01-24
 Stopped at: Milestone v1.2 initialization
 Resume file: None
-Notes: Run `/gsd:plan-phase 20` to plan the first phase.
+Notes: Run `/gsd:plan-phase 19.1` to plan the urgent insertion.

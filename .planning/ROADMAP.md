@@ -50,6 +50,16 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Persistent configuration that survives page refresh/server restart and WebSocket-based real-time data delivery replacing SSE polling.
 
+#### Phase 19.1: Fix Sidebar Menu (INSERTED)
+
+**Goal**: Urgent fix for sidebar menu issue
+**Depends on**: Phase 19
+**Research**: Unlikely (bug fix)
+**Plans**: TBD
+
+Plans:
+- [ ] 19.1-01: Sidebar overlay with backdrop
+
 #### Phase 20: Settings Schema & API
 
 **Goal**: Database table for settings and CRUD endpoints
@@ -128,6 +138,7 @@ Plans:
 | 17. Palimpsest API Endpoints | v1.1 | 2/2 | Complete | 2026-01-24 |
 | 18. Matches Page Filter + Metadata Priority | v1.1 | 1/1 | Complete | 2026-01-24 |
 | 19. Palimpsest Comparison Page | v1.1 | 3/3 | Complete | 2026-01-24 |
+| 19.1 Fix Sidebar Menu (INSERTED) | v1.2 | 0/1 | Not started | - |
 | 20. Settings Schema & API | v1.2 | 0/? | Not started | - |
 | 21. Settings Persistence Integration | v1.2 | 0/? | Not started | - |
 | 22. History Retention | v1.2 | 0/? | Not started | - |
