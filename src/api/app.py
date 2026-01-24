@@ -6,11 +6,12 @@ from typing import TypedDict
 import httpx
 from fastapi import FastAPI
 
-from api.routes.events import router as events_router
-from api.routes.health import router as health_router
-from api.routes.scheduler import router as scheduler_router
-from api.routes.scrape import router as scrape_router
-from api.routes.settings import router as settings_router
+from src.api.routes.events import router as events_router
+from src.api.routes.health import router as health_router
+from src.api.routes.palimpsest import router as palimpsest_router
+from src.api.routes.scheduler import router as scheduler_router
+from src.api.routes.scrape import router as scrape_router
+from src.api.routes.settings import router as settings_router
 from src.scheduling.jobs import set_app_state
 from src.scheduling.scheduler import (
     configure_scheduler,
@@ -125,6 +126,7 @@ def create_app() -> FastAPI:
     # Include routers with /api prefix
     app.include_router(events_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
+    app.include_router(palimpsest_router, prefix="/api")
     app.include_router(scheduler_router, prefix="/api")
     app.include_router(scrape_router, prefix="/api")
     app.include_router(settings_router, prefix="/api")
