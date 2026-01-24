@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid, SummarySection } from './components'
 import type { MatchFiltersState } from './components'
 import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
+import { cn } from '@/lib/utils'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
   search: '',
@@ -88,6 +89,35 @@ export function MatchList() {
               {data.total} matches found
             </span>
           )}
+          {/* Availability toggle */}
+          <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-7 px-3 text-xs font-medium',
+                filters.availability === 'betpawa' &&
+                  'bg-background text-foreground shadow-sm'
+              )}
+              onClick={() => handleFiltersChange({ ...filters, availability: 'betpawa' })}
+            >
+              BetPawa
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-7 px-3 text-xs font-medium',
+                filters.availability === 'competitor' &&
+                  'bg-background text-foreground shadow-sm'
+              )}
+              onClick={() => handleFiltersChange({ ...filters, availability: 'competitor' })}
+            >
+              Competitors Only
+            </Button>
+          </div>
           <ColumnSettings
             visibleColumns={visibleColumns}
             onToggleColumn={toggleColumn}
@@ -110,6 +140,7 @@ export function MatchList() {
         events={sortedEvents}
         isLoading={isPending}
         visibleColumns={visibleColumns}
+        excludeBetpawa={filters.availability === 'competitor'}
       />
 
       {/* Pagination */}

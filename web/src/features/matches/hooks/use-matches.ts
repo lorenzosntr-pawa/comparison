@@ -9,7 +9,7 @@ export interface UseMatchesParams {
   kickoffFrom?: string
   kickoffTo?: string
   search?: string
-  availability?: 'betpawa' | 'all'
+  availability?: 'betpawa' | 'competitor'
 }
 
 export function useMatches(params: UseMatchesParams = {}) {

@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import { useHealth, useSchedulerStatus } from '../hooks'
 import { cn } from '@/lib/utils'
 import { Database, Clock, Loader2 } from 'lucide-react'

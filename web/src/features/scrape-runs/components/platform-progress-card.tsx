@@ -163,7 +163,6 @@ export function PlatformProgressCard({
         <div className="flex justify-between">
           {PLATFORM_STEPS.map((step) => {
             const status = getStepStatus(step.id, currentPhase, isComplete, isFailed)
-            const Icon = step.icon
 
             return (
               <div key={step.id} className="flex flex-col items-center gap-1">

@@ -650,9 +650,9 @@ async def get_event(
 @router.get("", response_model=MatchedEventList)
 async def list_events(
     db: AsyncSession = Depends(get_db),
-    availability: Literal["betpawa", "all"] = Query(
+    availability: Literal["betpawa", "competitor"] = Query(
         default="betpawa",
-        description="Filter by availability: betpawa (only BetPawa events) | all (include competitor-only)",
+        description="Filter by availability: betpawa (only BetPawa events) | competitor (competitor-only events)",
     ),
     tournament_id: int | None = Query(default=None, description="Filter by single tournament (deprecated, use tournament_ids)"),
     tournament_ids: list[int] | None = Query(default=None, description="Filter by multiple tournament IDs"),
@@ -761,11 +761,11 @@ async def list_events(
             bookmaker_count_subq, Event.id == bookmaker_count_subq.c.event_id
         )
 
-    # ---- Competitor-Only Events (when availability='all') ----
+    # ---- Competitor-Only Events (when availability='competitor') ----
     competitor_events_response: list[MatchedEvent] = []
     competitor_count = 0
 
-    if availability == "all":
+    if availability == "competitor":
         # Query competitor events where betpawa_event_id IS NULL
         comp_query = (
             select(CompetitorEvent)
@@ -859,48 +859,28 @@ async def list_events(
                 _build_competitor_event_response(primary, all_events, comp_snapshots)
             )
 
-    # Get BetPawa event count
-    count_result = await db.execute(count_query)
-    betpawa_total = count_result.scalar() or 0
-
-    # Total count for pagination
-    total = betpawa_total + competitor_count
-
-    # For pagination with availability='all', we need to merge and sort all events,
-    # then apply pagination to the combined result
-    if availability == "all":
-        # Get ALL BetPawa events (without pagination) for merging
-        result = await db.execute(query.order_by(Event.kickoff))
-        betpawa_events = result.scalars().unique().all()
-
-        # Load BetPawa odds
-        betpawa_event_ids = [event.id for event in betpawa_events]
-        snapshots_by_event = await _load_latest_snapshots_for_events(
-            db, betpawa_event_ids
+    # For availability='competitor', return only competitor events
+    if availability == "competitor":
+        # Sort competitor events by kickoff
+        competitor_events_response.sort(
+            key=lambda e: e.kickoff.replace(tzinfo=None) if e.kickoff.tzinfo else e.kickoff
         )
-
-        # Build BetPawa response objects
-        betpawa_response = [
-            _build_matched_event(event, snapshots_by_event.get(event.id))
-            for event in betpawa_events
-        ]
-
-        # Merge and sort all events by kickoff
-        all_events = betpawa_response + competitor_events_response
-        all_events.sort(key=lambda e: e.kickoff)
 
         # Apply pagination
         offset = (page - 1) * page_size
-        paginated_events = all_events[offset : offset + page_size]
+        paginated_events = competitor_events_response[offset : offset + page_size]
 
         return MatchedEventList(
             events=paginated_events,
-            total=total,
+            total=competitor_count,
             page=page,
             page_size=page_size,
         )
 
     # Standard flow (availability='betpawa')
+    # Get BetPawa event count
+    count_result = await db.execute(count_query)
+    betpawa_total = count_result.scalar() or 0
     offset = (page - 1) * page_size
     query = query.order_by(Event.kickoff).offset(offset).limit(page_size)
 
@@ -917,7 +897,7 @@ async def list_events(
 
     return MatchedEventList(
         events=matched_events,
-        total=total,
+        total=betpawa_total,
         page=page,
         page_size=page_size,
     )

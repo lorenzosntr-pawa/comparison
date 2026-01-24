@@ -43,6 +43,7 @@ interface MatchTableProps {
   events: MatchedEvent[]
   isLoading?: boolean
   visibleColumns?: string[]
+  excludeBetpawa?: boolean
 }
 
 /**
@@ -255,11 +256,14 @@ function formatKickoff(kickoff: string): string {
   })
 }
 
-export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'] }: MatchTableProps) {
+export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false }: MatchTableProps) {
   const navigate = useNavigate()
 
   // Get ordered list of bookmakers from first event
-  const bookmakerOrder = ['betpawa', 'sportybet', 'bet9ja']
+  // Exclude betpawa when showing competitor-only events
+  const bookmakerOrder = excludeBetpawa
+    ? ['sportybet', 'bet9ja']
+    : ['betpawa', 'sportybet', 'bet9ja']
 
   if (isLoading) {
     return (

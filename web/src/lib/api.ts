@@ -75,7 +75,7 @@ export const api = {
     kickoff_from?: string
     kickoff_to?: string
     search?: string
-    availability?: 'betpawa' | 'all'
+    availability?: 'betpawa' | 'competitor'
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
