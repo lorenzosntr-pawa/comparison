@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-23)
 
 ## Current Position
 
-Phase: 17 of 19 (Palimpsest API Endpoints)
-Plan: 2 of 2 in current phase
+Phase: 18 of 19 (Matches Page Filter + Metadata Priority)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-24 — Completed 17-02-PLAN.md
+Last activity: 2026-01-24 — Completed 18-01-PLAN.md
 
-Progress: ██████░░░░ 65%
+Progress: ███████░░░ 70%
 
 ## Milestones
 
@@ -65,6 +65,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 17-02-PLAN.md
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
-Notes: Phase 17 complete. Events endpoint live at /api/palimpsest/events with filters. Next: Phase 18 (Matches Page Filter)
+Notes: Phase 18 complete. Matches page now has availability toggle. Competitor-only events visible with "All Events" mode. Next: Phase 19 (Palimpsest Comparison Page)
