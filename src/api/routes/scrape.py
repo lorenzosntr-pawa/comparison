@@ -681,10 +681,10 @@ async def observe_scrape_progress(
         raise HTTPException(status_code=404, detail="Scrape run not found")
 
     # Check if already completed
-    if scrape_run.status != ScrapeStatus.RUNNING:
+    if scrape_run.status != ScrapeStatus.RUNNING.value:
         raise HTTPException(
             status_code=410,
-            detail=f"Scrape run already {scrape_run.status.value}",
+            detail=f"Scrape run already {scrape_run.status}",
         )
 
     # Get broadcaster for this scrape
