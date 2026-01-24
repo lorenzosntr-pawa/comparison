@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-23)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.1 Palimpsest Comparison — Phase 13 (Database Schema Extension)
+**Current focus:** v1.1 Palimpsest Comparison — Phase 16 (Cross-Platform Matching Enhancement)
 
 ## Current Position
 
 Phase: 15 of 20 (Full Event Scraping)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-24 — Completed 15-02-PLAN.md
+Plan: 2 of 2 in current phase + FIX3
+Status: Phase complete (including fixes)
+Last activity: 2026-01-24 — Completed 15-02-FIX3.md
 
 Progress: ████░░░░░░ 40%
 
@@ -35,7 +35,7 @@ Progress: ████░░░░░░ 40%
 
 ## Accumulated Context
 
-### Key Patterns (v1.0)
+### Key Patterns (v1.0 + v1.1)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -43,6 +43,8 @@ Progress: ████░░░░░░ 40%
 - SSE streaming for real-time progress
 - structlog for structured logging
 - shadcn/ui with Tailwind v4
+- **Fetch-then-store pattern** for async scraping (Phase 1: API parallel, Phase 2: DB sequential)
+- **AsyncSession cannot be shared** across concurrent asyncio tasks - use explicit commits between phases
 
 ### Key Decisions
 
@@ -61,6 +63,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-24
-Stopped at: Completed 15-02-PLAN.md (Orchestrator competitor integration)
+Stopped at: Completed 15-02-FIX3.md (Session concurrency fix)
 Resume file: None
-Notes: Integrated CompetitorEventScrapingService into ScrapingOrchestrator for parallel full-palimpsest scraping
+Notes: Fixed SQLAlchemy session concurrency errors with fetch-then-store pattern. Scrape verified: 1076 BetPawa + 2605 competitor events = 3681 total
