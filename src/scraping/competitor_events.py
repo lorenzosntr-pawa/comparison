@@ -226,8 +226,8 @@ class CompetitorEventScrapingService:
         except (ValueError, TypeError):
             return None
 
-        # Extract event ID
-        event_id = str(event_data.get("C", ""))
+        # Extract event ID - use "ID" for GetEvent API calls, not "C" (short code)
+        event_id = str(event_data.get("ID", ""))
         if not event_id:
             return None
 
