@@ -57,15 +57,15 @@ Plans:
 Plans:
 - [x] 14-01: Tournament Discovery Service (SportyBet/Bet9ja tournament scraping, API endpoint)
 
-#### Phase 15: Full Event Scraping
+#### Phase 15: Full Event Scraping ✅
 
 **Goal**: Get all events from competitor tournaments, not limited to betpawa-matched events
 **Depends on**: Phase 14
 **Research**: Unlikely (extending existing scraping patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 15-01: TBD
+- [x] 15-01: Competitor Event Scraping Service (SportyBet/Bet9ja event scraping, API endpoint)
 
 #### Phase 16: Cross-Platform Matching Enhancement
 
@@ -138,7 +138,7 @@ Plans:
 | 12. Scraping Logging & Workflow | v1.0 | 4/4 | Complete | 2026-01-22 |
 | 13. Database Schema Extension | v1.1 | 2/2 | Complete | 2026-01-23 |
 | 14. Tournament Discovery Scraping | v1.1 | 1/1 | Complete | 2026-01-23 |
-| 15. Full Event Scraping | v1.1 | 0/? | Not started | - |
+| 15. Full Event Scraping | v1.1 | 1/1 | Complete | 2026-01-24 |
 | 16. Cross-Platform Matching Enhancement | v1.1 | 0/? | Not started | - |
 | 17. Metadata Priority System | v1.1 | 0/? | Not started | - |
 | 18. Palimpsest API Endpoints | v1.1 | 0/? | Not started | - |
