@@ -7,7 +7,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 ## Milestones
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
-- 🔄 **v1.1 Palimpsest Comparison** — Phases 13-19 (in progress)
+- ✅ **v1.1 Palimpsest Comparison** — Phases 13-19 (complete 2026-01-24)
 
 ## Completed Milestones
 
@@ -32,7 +32,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### 🔄 v1.1 Palimpsest Comparison (In Progress)
+### ✅ v1.1 Palimpsest Comparison (Complete)
 
 **Milestone Goal:** Enable full competitor palimpsest comparison by scraping all tournaments/events from competitors, matching across platforms by SportRadar ID, and displaying availability differences alongside odds comparison.
 
@@ -100,17 +100,17 @@ Note: Absorbed former Phase 17 (Metadata Priority) — priority logic is a displ
 Plans:
 - [x] 18-01: Event Mode Toggle (toggle UI, extended API, competitor events in table)
 
-#### Phase 19: Palimpsest Comparison Page 🔄
+#### Phase 19: Palimpsest Comparison Page ✅
 
 **Goal**: New page showing tournament and event coverage comparison across platforms
 **Depends on**: Phase 18
 **Research**: Unlikely (following existing React patterns)
-**Plans**: 2/3
+**Plans**: 3/3
 
 Plans:
 - [x] 19-01: Coverage Page Foundation (TypeScript types, feature folder, navigation)
 - [x] 19-02: Summary Stats & Filtering (stat cards, availability/search/country filters)
-- [ ] 19-03: Tournament Table (tournament list with event counts, expandable rows)
+- [x] 19-03: Tournament Table (tournament list with event counts, expandable rows)
 
 ## Progress
 
@@ -137,4 +137,4 @@ Plans:
 | 16. Cross-Platform Matching Enhancement | v1.1 | 0/0 | Complete | 2026-01-24 |
 | 17. Palimpsest API Endpoints | v1.1 | 2/2 | Complete | 2026-01-24 |
 | 18. Matches Page Filter + Metadata Priority | v1.1 | 1/1 | Complete | 2026-01-24 |
-| 19. Palimpsest Comparison Page | v1.1 | 2/3 | In progress | — |
+| 19. Palimpsest Comparison Page | v1.1 | 3/3 | Complete | 2026-01-24 |
