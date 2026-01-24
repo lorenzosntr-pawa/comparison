@@ -93,8 +93,8 @@ class Bet9jaClient:
             )
 
         result_code = data.get("R")
-        if result_code == "D":
-            # Success - return the D payload
+        if result_code in ("D", "OK"):
+            # Success - return the D payload (GetEvent returns "D" or "OK")
             d_data = data.get("D")
             if not isinstance(d_data, dict):
                 raise ApiError(
@@ -110,7 +110,7 @@ class Bet9jaClient:
             )
         else:
             raise ApiError(
-                f"API returned R='{result_code}' for event {event_id}, expected 'D'",
+                f"API returned R='{result_code}' for event {event_id}, expected 'D' or 'OK'",
                 details={"response": data},
             )
 
