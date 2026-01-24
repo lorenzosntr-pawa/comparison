@@ -179,7 +179,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -240,6 +240,17 @@ const Sidebar = React.forwardRef<
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
         />
+        {/* Backdrop overlay for desktop offcanvas */}
+        {collapsible === "offcanvas" && (
+          <div
+            className={cn(
+              "fixed inset-0 z-[9] bg-black/50 transition-opacity duration-200",
+              state === "expanded" ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}
+            onClick={toggleSidebar}
+            aria-hidden="true"
+          />
+        )}
         <div
           className={cn(
             "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
