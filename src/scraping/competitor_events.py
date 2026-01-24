@@ -494,10 +494,20 @@ class CompetitorEventScrapingService:
                 if source == CompetitorSource.SPORTYBET:
                     full_data = await self._fetch_full_sportybet_odds(event.external_id)
                 else:
-                    full_data = await self._fetch_full_bet9ja_odds(event.external_id)
+                    # For Bet9ja, get the event ID from raw_response["ID"]
+                    # This handles cases where external_id may have old "C" values
+                    raw = snapshot.raw_response or {}
+                    bet9ja_event_id = str(raw.get("ID", "")) or event.external_id
+                    full_data = await self._fetch_full_bet9ja_odds(bet9ja_event_id)
 
                 if not full_data:
                     return 0, 1  # Error
+
+                # For Bet9ja, update event.external_id if it was using old "C" value
+                if source == CompetitorSource.BET9JA:
+                    correct_id = str(full_data.get("ID", ""))
+                    if correct_id and event.external_id != correct_id:
+                        event.external_id = correct_id
 
                 # Update snapshot with full odds
                 markets = await self._update_snapshot_with_full_odds(
