@@ -93,12 +93,12 @@ Plans:
 **Goal**: Add filter to show BetPawa-only, Competitor-only, or Both events. Use metadata priority (sportybet > bet9ja) for competitor-only display.
 **Depends on**: Phase 17
 **Research**: Unlikely (UI work with existing patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Note: Absorbed former Phase 17 (Metadata Priority) — priority logic is a display concern handled here.
 
 Plans:
-- [ ] 18-01: TBD
+- [ ] 18-01: Event Mode Toggle (toggle UI, extended API, competitor events in table)
 
 #### Phase 19: Palimpsest Comparison Page
 
