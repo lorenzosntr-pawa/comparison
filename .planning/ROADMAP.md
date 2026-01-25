@@ -70,15 +70,15 @@ Plans:
 Plans:
 - [x] 20-01: Add history_retention_days setting
 
-#### Phase 21: Settings Persistence Integration
+#### Phase 21: Settings Persistence Integration - COMPLETE
 
 **Goal**: Replace in-memory/hardcoded values with database reads
 **Depends on**: Phase 20
 **Research**: Unlikely (internal refactoring)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 21-01: TBD
+- [x] 21-01: Sync settings from DB at startup
 
 #### Phase 22: History Retention
 
@@ -140,7 +140,7 @@ Plans:
 | 19. Palimpsest Comparison Page | v1.1 | 3/3 | Complete | 2026-01-24 |
 | 19.1 Fix Sidebar Menu (INSERTED) | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
-| 21. Settings Persistence Integration | v1.2 | 0/? | Not started | - |
+| 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 0/? | Not started | - |
 | 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
 | 24. WebSocket Integration | v1.2 | 0/? | Not started | - |
