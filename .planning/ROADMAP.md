@@ -90,9 +90,9 @@ Plans:
 Plans:
 - [x] 22-01: Retention settings model and schemas
 - [x] 22-02: Cleanup service and run history
-- [ ] 22-03: Settings UI redesign
-- [ ] 22-04: Manage Data dialog
-- [ ] 22-05: Cleanup history and status
+- [x] 22-03: Cleanup scheduler and API endpoints
+- [ ] 22-04: Settings UI redesign
+- [ ] 22-05: Manage Data dialog
 
 #### Phase 23: WebSocket Infrastructure
 
@@ -145,6 +145,6 @@ Plans:
 | 19.1 Fix Sidebar Menu (INSERTED) | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
-| 22. History Retention | v1.2 | 2/5 | In progress | - |
+| 22. History Retention | v1.2 | 3/5 | In progress | - |
 | 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
 | 24. WebSocket Integration | v1.2 | 0/? | Not started | - |
