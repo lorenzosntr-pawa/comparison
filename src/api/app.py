@@ -17,6 +17,7 @@ from src.scheduling.scheduler import (
     configure_scheduler,
     shutdown_scheduler,
     start_scheduler,
+    sync_settings_on_startup,
 )
 from src.scraping.logging import configure_logging
 
@@ -104,6 +105,9 @@ async def lifespan(app: FastAPI):
                 set_app_state(app.state)
                 configure_scheduler()
                 start_scheduler()
+
+                # Sync scheduler interval from stored settings
+                await sync_settings_on_startup()
 
                 yield
 

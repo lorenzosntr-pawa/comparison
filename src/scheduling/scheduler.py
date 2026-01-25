@@ -89,3 +89,23 @@ def shutdown_scheduler(wait: bool = True) -> None:
     """
     if scheduler.running:
         scheduler.shutdown(wait=wait)
+
+
+async def sync_settings_on_startup() -> None:
+    """Sync scheduler interval from database settings.
+
+    Fetches stored settings and updates scheduler interval if different from default.
+    Called during app lifespan after scheduler is started.
+    """
+    settings = await get_settings_from_db()
+
+    if settings is None:
+        logger.info(f"Using default interval: {DEFAULT_INTERVAL_MINUTES} minutes")
+        return
+
+    stored_interval = settings.scrape_interval_minutes
+    if stored_interval != DEFAULT_INTERVAL_MINUTES:
+        update_scheduler_interval(stored_interval)
+        logger.info(f"Synced scheduler interval from settings: {stored_interval} minutes")
+    else:
+        logger.info(f"Settings match default interval: {DEFAULT_INTERVAL_MINUTES} minutes")
