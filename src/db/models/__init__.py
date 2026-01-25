@@ -2,6 +2,7 @@
 
 from src.db.base import Base
 from src.db.models.bookmaker import Bookmaker
+from src.db.models.cleanup_run import CleanupRun
 from src.db.models.competitor import (
     CompetitorEvent,
     CompetitorMarketOdds,
@@ -36,6 +37,7 @@ __all__ = [
     "ScrapePhaseLog",
     "ScrapeStatus",
     "Settings",
+    "CleanupRun",
     # Competitor models
     "CompetitorSource",
     "CompetitorTournament",

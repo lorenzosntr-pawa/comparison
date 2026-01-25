@@ -23,6 +23,7 @@ from src.db.models.competitor import (
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import ScrapeBatch, ScrapeError, ScrapePhaseLog, ScrapeRun
+from src.db.models.cleanup_run import CleanupRun
 from src.db.models.sport import Tournament
 
 logger = structlog.get_logger()
@@ -433,3 +434,82 @@ async def execute_cleanup(
         oldest_match_date=oldest_match_date,
         duration_seconds=round(duration, 2),
     )
+
+
+async def execute_cleanup_with_tracking(
+    session: AsyncSession,
+    odds_days: int,
+    match_days: int,
+    trigger: str = "manual",
+) -> tuple[CleanupRun, CleanupResult]:
+    """Execute cleanup with run history tracking.
+
+    Creates a CleanupRun record before starting, updates it on completion.
+
+    Args:
+        session: Database session.
+        odds_days: Delete odds older than this many days.
+        match_days: Delete matches with kickoff older than this many days.
+        trigger: Either "scheduled" or "manual".
+
+    Returns:
+        Tuple of (CleanupRun record, CleanupResult with counts).
+    """
+    log = logger.bind(
+        operation="execute_cleanup_with_tracking",
+        odds_days=odds_days,
+        match_days=match_days,
+        trigger=trigger,
+    )
+
+    # Create cleanup run record
+    cleanup_run = CleanupRun(
+        trigger=trigger,
+        odds_retention_days=odds_days,
+        match_retention_days=match_days,
+        status="running",
+    )
+    session.add(cleanup_run)
+    await session.commit()
+    await session.refresh(cleanup_run)
+
+    log.info("Created cleanup run", cleanup_run_id=cleanup_run.id)
+
+    try:
+        # Execute cleanup
+        result = await execute_cleanup(
+            session=session,
+            odds_days=odds_days,
+            match_days=match_days,
+            cleanup_run_id=cleanup_run.id,
+        )
+
+        # Update cleanup run with results
+        cleanup_run.completed_at = datetime.now(timezone.utc)
+        cleanup_run.status = "completed"
+        cleanup_run.odds_deleted = result.odds_deleted
+        cleanup_run.competitor_odds_deleted = result.competitor_odds_deleted
+        cleanup_run.scrape_runs_deleted = result.scrape_runs_deleted
+        cleanup_run.scrape_batches_deleted = result.scrape_batches_deleted
+        cleanup_run.events_deleted = result.events_deleted
+        cleanup_run.competitor_events_deleted = result.competitor_events_deleted
+        cleanup_run.tournaments_deleted = result.tournaments_deleted
+        cleanup_run.competitor_tournaments_deleted = result.competitor_tournaments_deleted
+        cleanup_run.oldest_odds_date = result.oldest_odds_date
+        cleanup_run.oldest_match_date = result.oldest_match_date
+        cleanup_run.duration_seconds = result.duration_seconds
+
+        await session.commit()
+        log.info("Cleanup run completed", cleanup_run_id=cleanup_run.id)
+
+        return cleanup_run, result
+
+    except Exception as e:
+        # Update cleanup run with error
+        cleanup_run.completed_at = datetime.now(timezone.utc)
+        cleanup_run.status = "failed"
+        cleanup_run.error_message = str(e)
+        await session.commit()
+
+        log.error("Cleanup run failed", cleanup_run_id=cleanup_run.id, error=str(e))
+        raise
