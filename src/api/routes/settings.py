@@ -82,6 +82,9 @@ async def update_settings(
             p for p in update.enabled_platforms if p in valid_platforms
         ]
 
+    if update.history_retention_days is not None:
+        settings.history_retention_days = update.history_retention_days
+
     await db.commit()
     await db.refresh(settings)
 

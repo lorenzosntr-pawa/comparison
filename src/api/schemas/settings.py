@@ -17,6 +17,7 @@ class SettingsResponse(BaseModel):
 
     scrape_interval_minutes: int
     enabled_platforms: list[str]
+    history_retention_days: int
     updated_at: datetime | None
 
 
@@ -33,4 +34,7 @@ class SettingsUpdate(BaseModel):
     )
     enabled_platforms: list[str] | None = Field(
         default=None, description="List of platform slugs to enable"
+    )
+    history_retention_days: int | None = Field(
+        default=None, ge=1, le=90, description="Days to keep scrape history (1-90)"
     )
