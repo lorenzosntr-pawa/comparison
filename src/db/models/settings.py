@@ -12,7 +12,7 @@ class Settings(Base):
     """Singleton settings for scraping configuration.
 
     Uses a single-row pattern with id=1 for all settings.
-    Settings include scheduler interval and enabled platforms.
+    Settings include scheduler interval, enabled platforms, and retention policies.
     """
 
     __tablename__ = "settings"
@@ -22,7 +22,9 @@ class Settings(Base):
     enabled_platforms: Mapped[list[str]] = mapped_column(
         JSON, default=["sportybet", "betpawa", "bet9ja"]
     )
-    history_retention_days: Mapped[int] = mapped_column(default=7)
+    odds_retention_days: Mapped[int] = mapped_column(default=30)
+    match_retention_days: Mapped[int] = mapped_column(default=30)
+    cleanup_frequency_hours: Mapped[int] = mapped_column(default=24)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None] = mapped_column(
         onupdate=func.now(), nullable=True
