@@ -30,12 +30,14 @@ export interface SchedulerStatus {
 export interface SettingsResponse {
   scrapeIntervalMinutes: number
   enabledPlatforms: string[]
+  historyRetentionDays: number
   updatedAt: string | null
 }
 
 export interface SettingsUpdate {
   scrapeIntervalMinutes?: number
   enabledPlatforms?: string[]
+  historyRetentionDays?: number
 }
 
 export interface RunHistoryEntry {
