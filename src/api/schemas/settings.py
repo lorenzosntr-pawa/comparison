@@ -17,7 +17,9 @@ class SettingsResponse(BaseModel):
 
     scrape_interval_minutes: int
     enabled_platforms: list[str]
-    history_retention_days: int
+    odds_retention_days: int
+    match_retention_days: int
+    cleanup_frequency_hours: int
     updated_at: datetime | None
 
 
@@ -35,6 +37,12 @@ class SettingsUpdate(BaseModel):
     enabled_platforms: list[str] | None = Field(
         default=None, description="List of platform slugs to enable"
     )
-    history_retention_days: int | None = Field(
-        default=None, ge=1, le=90, description="Days to keep scrape history (1-90)"
+    odds_retention_days: int | None = Field(
+        default=None, ge=1, le=365, description="Days to keep odds snapshots (1-365)"
+    )
+    match_retention_days: int | None = Field(
+        default=None, ge=1, le=365, description="Days to keep matches by kickoff (1-365)"
+    )
+    cleanup_frequency_hours: int | None = Field(
+        default=None, ge=1, le=168, description="Hours between cleanup runs (1-168)"
     )

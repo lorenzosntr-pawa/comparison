@@ -82,8 +82,14 @@ async def update_settings(
             p for p in update.enabled_platforms if p in valid_platforms
         ]
 
-    if update.history_retention_days is not None:
-        settings.history_retention_days = update.history_retention_days
+    if update.odds_retention_days is not None:
+        settings.odds_retention_days = update.odds_retention_days
+
+    if update.match_retention_days is not None:
+        settings.match_retention_days = update.match_retention_days
+
+    if update.cleanup_frequency_hours is not None:
+        settings.cleanup_frequency_hours = update.cleanup_frequency_hours
 
     await db.commit()
     await db.refresh(settings)

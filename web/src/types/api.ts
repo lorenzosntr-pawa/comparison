@@ -30,14 +30,18 @@ export interface SchedulerStatus {
 export interface SettingsResponse {
   scrapeIntervalMinutes: number
   enabledPlatforms: string[]
-  historyRetentionDays: number
+  oddsRetentionDays: number
+  matchRetentionDays: number
+  cleanupFrequencyHours: number
   updatedAt: string | null
 }
 
 export interface SettingsUpdate {
   scrapeIntervalMinutes?: number
   enabledPlatforms?: string[]
-  historyRetentionDays?: number
+  oddsRetentionDays?: number
+  matchRetentionDays?: number
+  cleanupFrequencyHours?: number
 }
 
 export interface RunHistoryEntry {
