@@ -80,15 +80,19 @@ Plans:
 Plans:
 - [x] 21-01: Sync settings from DB at startup
 
-#### Phase 22: History Retention
+#### Phase 22: History Retention - IN PROGRESS
 
 **Goal**: Configurable data retention policy and cleanup job
 **Depends on**: Phase 21
 **Research**: Unlikely (scheduled job patterns)
-**Plans**: TBD
+**Plans**: 5
 
 Plans:
-- [ ] 22-01: TBD
+- [x] 22-01: Retention settings model and schemas
+- [ ] 22-02: Cleanup job implementation
+- [ ] 22-03: Settings UI redesign
+- [ ] 22-04: Manage Data dialog
+- [ ] 22-05: Cleanup history and status
 
 #### Phase 23: WebSocket Infrastructure
 
@@ -141,6 +145,6 @@ Plans:
 | 19.1 Fix Sidebar Menu (INSERTED) | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
-| 22. History Retention | v1.2 | 0/? | Not started | - |
+| 22. History Retention | v1.2 | 1/5 | In progress | - |
 | 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
 | 24. WebSocket Integration | v1.2 | 0/? | Not started | - |
