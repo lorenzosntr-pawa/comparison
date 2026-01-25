@@ -8,7 +8,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
-- 🚧 **v1.2 Settings & Real-time** — Phases 20-24 (in progress)
+- 🚧 **v1.2 Settings & Real-time** — Phases 20-23 (in progress)
 
 ## Completed Milestones
 
@@ -105,17 +105,6 @@ Plans:
 Plans:
 - [ ] 23-01: TBD
 
-#### Phase 24: WebSocket Integration
-
-**Goal**: Replace SSE with WebSocket for real-time updates
-**Depends on**: Phase 23
-**Research**: Likely (WebSocket client patterns)
-**Research topics**: React WebSocket hooks, real-time state management, SSE migration
-**Plans**: TBD
-
-Plans:
-- [ ] 24-01: TBD
-
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -147,4 +136,3 @@ Plans:
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 3/5 | In progress | - |
 | 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
-| 24. WebSocket Integration | v1.2 | 0/? | Not started | - |

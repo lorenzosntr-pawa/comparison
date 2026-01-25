@@ -9,7 +9,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Current Position
 
-Phase: 22 of 24 (History Retention)
+Phase: 22 of 23 (History Retention)
 Plan: 3 of 5 in current phase
 Status: In progress
 Last activity: 2026-01-25 — Completed 22-03-PLAN.md
@@ -20,7 +20,7 @@ Progress: █████░░░░░ 50%
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
 - **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
-- **v1.2 Settings & Real-time** — IN PROGRESS (5 phases)
+- **v1.2 Settings & Real-time** — IN PROGRESS (4 phases)
 
 ## Performance Metrics
 
@@ -68,7 +68,7 @@ None.
 - v1.0 MVP shipped 2026-01-23 with 15 phases
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
 - Both milestones archived to .planning/milestones/
-- v1.2 Settings & Real-time created 2026-01-24: persistent config + WebSocket, 5 phases (Phase 20-24)
+- v1.2 Settings & Real-time created 2026-01-24: persistent config + WebSocket, 4 phases (Phase 20-23)
 - Phase 19.1 inserted after Phase 19: Fix sidebar menu (URGENT)
 
 ## Session Continuity
