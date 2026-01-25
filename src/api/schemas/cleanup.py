@@ -97,3 +97,69 @@ class CleanupResult(BaseModel):
     oldest_match_date: datetime | None = None
 
     duration_seconds: float
+
+
+class CleanupExecuteRequest(BaseModel):
+    """Request body for manual cleanup execution."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    odds_retention_days: int | None = None
+    match_retention_days: int | None = None
+
+
+class CleanupRunResponse(BaseModel):
+    """Response model for a single cleanup run record."""
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    id: int
+    started_at: datetime
+    completed_at: datetime | None = None
+    trigger: str
+    odds_retention_days: int
+    match_retention_days: int
+    odds_deleted: int
+    competitor_odds_deleted: int
+    scrape_runs_deleted: int
+    scrape_batches_deleted: int
+    events_deleted: int
+    competitor_events_deleted: int
+    tournaments_deleted: int
+    competitor_tournaments_deleted: int
+    oldest_odds_date: datetime | None = None
+    oldest_match_date: datetime | None = None
+    status: str
+    error_message: str | None = None
+    duration_seconds: float | None = None
+
+
+class CleanupHistoryResponse(BaseModel):
+    """Response model for cleanup history list."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    runs: list[CleanupRunResponse]
+    total: int
+
+
+class CleanupStatusResponse(BaseModel):
+    """Response model for cleanup/scraping activity status."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    is_cleanup_running: bool
+    is_scraping_active: bool

@@ -6,6 +6,7 @@ from typing import TypedDict
 import httpx
 from fastapi import FastAPI
 
+from src.api.routes.cleanup import router as cleanup_router
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
 from src.api.routes.palimpsest import router as palimpsest_router
@@ -128,6 +129,7 @@ def create_app() -> FastAPI:
     )
 
     # Include routers with /api prefix
+    app.include_router(cleanup_router, prefix="/api")
     app.include_router(events_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
     app.include_router(palimpsest_router, prefix="/api")
