@@ -62,13 +62,13 @@ Plans:
 
 #### Phase 20: Settings Schema & API
 
-**Goal**: Database table for settings and CRUD endpoints
+**Goal**: Add history retention setting to existing settings infrastructure
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (established CRUD patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 20-01: TBD (run /gsd:plan-phase 20 to break down)
+- [ ] 20-01: Add history_retention_days setting
 
 #### Phase 21: Settings Persistence Integration
 
@@ -139,7 +139,7 @@ Plans:
 | 18. Matches Page Filter + Metadata Priority | v1.1 | 1/1 | Complete | 2026-01-24 |
 | 19. Palimpsest Comparison Page | v1.1 | 3/3 | Complete | 2026-01-24 |
 | 19.1 Fix Sidebar Menu (INSERTED) | v1.2 | 1/1 | Complete | 2026-01-25 |
-| 20. Settings Schema & API | v1.2 | 0/? | Not started | - |
+| 20. Settings Schema & API | v1.2 | 0/1 | Not started | - |
 | 21. Settings Persistence Integration | v1.2 | 0/? | Not started | - |
 | 22. History Retention | v1.2 | 0/? | Not started | - |
 | 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |
