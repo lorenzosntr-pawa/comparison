@@ -1,4 +1,4 @@
-"""Scheduled job functions for periodic scraping."""
+"""Scheduled job functions for periodic scraping and cleanup."""
 
 import logging
 from datetime import datetime
@@ -20,6 +20,18 @@ logger = logging.getLogger(__name__)
 # Module-level reference to app.state, set during lifespan startup
 _app_state: Any = None
 
+# Scraping activity tracking for coordination with cleanup
+_scraping_active: bool = False
+
+
+def is_scraping_active() -> bool:
+    """Check if scraping is currently in progress.
+
+    Returns:
+        True if a scraping job is currently running.
+    """
+    return _scraping_active
+
 
 def set_app_state(state: Any) -> None:
     """Set the app state reference for job access to HTTP clients.
@@ -40,6 +52,7 @@ async def scrape_all_platforms() -> None:
     Progress is published to a broadcaster so UI can observe via SSE.
     Respects enabled_platforms from settings to filter which platforms to scrape.
     """
+    global _scraping_active
     logger.info("Starting scheduled scrape job")
 
     if _app_state is None:
@@ -85,6 +98,9 @@ async def scrape_all_platforms() -> None:
 
         # Create broadcaster for this scrape run
         broadcaster = progress_registry.create_broadcaster(scrape_run_id)
+
+        # Mark scraping as active
+        _scraping_active = True
 
         try:
             # Create clients from app state
@@ -174,6 +190,58 @@ async def scrape_all_platforms() -> None:
             await db.commit()
 
         finally:
+            # Mark scraping as inactive
+            _scraping_active = False
+
             # Close broadcaster and remove from registry
             await broadcaster.close()
             progress_registry.remove_broadcaster(scrape_run_id)
+
+
+async def cleanup_old_data() -> None:
+    """Scheduled job to clean up old data based on retention settings.
+
+    Checks if scraping is in progress and skips if so to avoid conflicts.
+    Uses settings from database for retention periods.
+    Records cleanup run in cleanup_runs table.
+    """
+    logger.info("Starting scheduled cleanup job")
+
+    # Skip if scraping is in progress
+    if is_scraping_active():
+        logger.info("Cleanup skipped - scraping is in progress")
+        return
+
+    async with async_session_factory() as session:
+        # Get current retention settings
+        result = await session.execute(select(Settings).where(Settings.id == 1))
+        settings = result.scalar_one_or_none()
+
+        if settings is None:
+            logger.warning("No settings found - using default retention (30 days)")
+            odds_days = 30
+            match_days = 30
+        else:
+            odds_days = settings.odds_retention_days
+            match_days = settings.match_retention_days
+
+        # Execute cleanup with tracking
+        from src.services.cleanup import execute_cleanup_with_tracking
+
+        try:
+            cleanup_run, result = await execute_cleanup_with_tracking(
+                session=session,
+                odds_days=odds_days,
+                match_days=match_days,
+                trigger="scheduled",
+            )
+
+            logger.info(
+                f"Cleanup completed: cleanup_run_id={cleanup_run.id}, "
+                f"odds_deleted={result.odds_deleted}, "
+                f"events_deleted={result.events_deleted}, "
+                f"tournaments_deleted={result.tournaments_deleted}, "
+                f"duration={result.duration_seconds}s"
+            )
+        except Exception as e:
+            logger.exception(f"Cleanup failed: {e}")

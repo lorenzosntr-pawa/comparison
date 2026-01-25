@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 # Module-level scheduler instance with UTC timezone
 scheduler = AsyncIOScheduler(timezone="UTC")
 
-# Default interval used during startup before DB is available
+# Default intervals used during startup before DB is available
 DEFAULT_INTERVAL_MINUTES = 5
+DEFAULT_CLEANUP_HOURS = 24
 
 
 async def get_settings_from_db() -> Settings | None:
@@ -36,16 +37,16 @@ async def get_settings_from_db() -> Settings | None:
 
 
 def configure_scheduler() -> None:
-    """Configure the scheduler with scraping jobs.
+    """Configure the scheduler with scraping and cleanup jobs.
 
-    Adds the scrape_all_platforms job with default interval.
+    Adds the scrape_all_platforms and cleanup_old_data jobs with default intervals.
     Uses deferred import to avoid circular dependencies.
 
-    Note: Uses default interval on startup. Call update_scheduler_interval()
+    Note: Uses default intervals on startup. Call sync_settings_on_startup()
     after DB is available to sync with stored settings.
     """
     # Deferred import to avoid circular dependency
-    from src.scheduling.jobs import scrape_all_platforms
+    from src.scheduling.jobs import cleanup_old_data, scrape_all_platforms
 
     # Use default interval on startup - will be updated when settings are loaded
     scheduler.add_job(
@@ -54,6 +55,16 @@ def configure_scheduler() -> None:
         id="scrape_all_platforms",
         replace_existing=True,
         misfire_grace_time=60,
+        coalesce=True,
+    )
+
+    # Add cleanup job with default 24-hour interval
+    scheduler.add_job(
+        cleanup_old_data,
+        trigger=IntervalTrigger(hours=DEFAULT_CLEANUP_HOURS),
+        id="cleanup_old_data",
+        replace_existing=True,
+        misfire_grace_time=3600,  # 1 hour grace for cleanup
         coalesce=True,
     )
 
@@ -75,6 +86,23 @@ def update_scheduler_interval(interval_minutes: int) -> None:
         logger.info(f"Rescheduled scrape job with interval: {interval_minutes} minutes")
 
 
+def update_cleanup_interval(hours: int) -> None:
+    """Update the cleanup job interval at runtime.
+
+    Reschedules the cleanup_old_data job with the new interval.
+
+    Args:
+        hours: New interval in hours.
+    """
+    job = scheduler.get_job("cleanup_old_data")
+    if job:
+        scheduler.reschedule_job(
+            "cleanup_old_data",
+            trigger=IntervalTrigger(hours=hours),
+        )
+        logger.info(f"Rescheduled cleanup job with interval: {hours} hours")
+
+
 def start_scheduler() -> None:
     """Start the scheduler if not already running."""
     if not scheduler.running:
@@ -92,20 +120,32 @@ def shutdown_scheduler(wait: bool = True) -> None:
 
 
 async def sync_settings_on_startup() -> None:
-    """Sync scheduler interval from database settings.
+    """Sync scheduler intervals from database settings.
 
-    Fetches stored settings and updates scheduler interval if different from default.
+    Fetches stored settings and updates scheduler intervals if different from defaults.
     Called during app lifespan after scheduler is started.
     """
     settings = await get_settings_from_db()
 
     if settings is None:
-        logger.info(f"Using default interval: {DEFAULT_INTERVAL_MINUTES} minutes")
+        logger.info(
+            f"Using default intervals: scrape={DEFAULT_INTERVAL_MINUTES}min, "
+            f"cleanup={DEFAULT_CLEANUP_HOURS}h"
+        )
         return
 
+    # Sync scrape interval
     stored_interval = settings.scrape_interval_minutes
     if stored_interval != DEFAULT_INTERVAL_MINUTES:
         update_scheduler_interval(stored_interval)
-        logger.info(f"Synced scheduler interval from settings: {stored_interval} minutes")
+        logger.info(f"Synced scrape interval from settings: {stored_interval} minutes")
     else:
-        logger.info(f"Settings match default interval: {DEFAULT_INTERVAL_MINUTES} minutes")
+        logger.info(f"Scrape interval matches default: {DEFAULT_INTERVAL_MINUTES} minutes")
+
+    # Sync cleanup interval
+    stored_cleanup_hours = settings.cleanup_frequency_hours
+    if stored_cleanup_hours != DEFAULT_CLEANUP_HOURS:
+        update_cleanup_interval(stored_cleanup_hours)
+        logger.info(f"Synced cleanup interval from settings: {stored_cleanup_hours} hours")
+    else:
+        logger.info(f"Cleanup interval matches default: {DEFAULT_CLEANUP_HOURS} hours")
