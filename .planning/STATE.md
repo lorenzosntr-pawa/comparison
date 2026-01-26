@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v1.4 Odds Comparison UX - table restructure for better comparison experience
 
 ## Current Position
 
-Phase: No active phase
-Plan: N/A
+Phase: 28 of 30 (Table Restructure)
+Plan: Not started
 Status: Ready to plan
-Last activity: 2026-01-26 — v1.3 milestone complete
+Last activity: 2026-01-26 — Milestone v1.4 created
 
-Progress: No active milestone
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -90,10 +90,11 @@ None.
 - v1.2 Settings & Retention shipped 2026-01-26 with 4 phases
 - v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - All milestones archived to .planning/milestones/
+- Milestone v1.4 created: Odds Comparison UX, 3 phases (Phase 28-30)
 
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: v1.3 milestone archived
+Stopped at: Milestone v1.4 initialization
 Resume file: None
-Notes: Use /gsd:new-milestone or /gsd:discuss-milestone to plan v1.4
+Notes: Ready to plan Phase 28 (Table Restructure)
