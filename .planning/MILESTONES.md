@@ -1,5 +1,32 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.3 Coverage Improvements (Shipped: 2026-01-26)
+
+**Delivered:** Enhanced Coverage Comparison page UX with searchable multi-select filters, tournament-level gap analysis, and unified dashboard coverage metrics.
+
+**Phases completed:** 23-27 (5 plans total)
+
+**Key accomplishments:**
+
+- Fixed match rate bug showing 8774% instead of ~87.7%
+- Searchable multi-select country filter with type-to-filter UX
+- Include Started toggle to hide in-play events
+- Tournament gaps cards showing coverage analysis by competitor
+- Dashboard stats cards using live coverage data via useCoverage hook
+
+**Stats:**
+
+- 10 files modified
+- ~385 lines of TypeScript added
+- 5 phases, 5 plans
+- 1 day (same day as v1.2: 2026-01-26)
+
+**Git range:** `dc9ddde` → `f1a0bbc`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features (WebSocket real-time, historical trends, etc.).
+
+---
+
 ## v1.2 Settings & Retention (Shipped: 2026-01-26)
 
 **Delivered:** Persistent configuration with configurable data retention, automatic cleanup scheduling, and improved settings UI with data management controls.

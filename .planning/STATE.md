@@ -5,30 +5,30 @@
 See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.3 Coverage Improvements
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 27 of 27 (Dashboard Coverage Widgets)
-Plan: 1 of 1 complete
-Status: Milestone complete
-Last activity: 2026-01-26 — Completed 27-01-PLAN.md
+Phase: No active phase
+Plan: N/A
+Status: Ready to plan
+Last activity: 2026-01-26 — v1.3 milestone complete
 
-Progress: ██████████ 100%
+Progress: No active milestone
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
 - **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
 - **v1.2 Settings & Retention** — SHIPPED 2026-01-26 (4 phases, 8 plans)
-- **v1.3 Coverage Improvements** — IN PROGRESS (5 phases)
+- **v1.3 Coverage Improvements** — SHIPPED 2026-01-26 (5 phases, 5 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 74
+- Total plans completed: 79
 - Average duration: 6 min
-- Total execution time: ~7.4 hours
+- Total execution time: ~7.9 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
@@ -45,9 +45,14 @@ Progress: ██████████ 100%
 - 2 days from v1.1 to v1.2
 - ~3,800 lines added
 
+**v1.3 Summary:**
+- 5 phases completed
+- Same day as v1.2 ship
+- ~385 lines added
+
 ## Accumulated Context
 
-### Key Patterns (v1.0 + v1.1 + v1.2)
+### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -59,6 +64,8 @@ Progress: ██████████ 100%
 - **AsyncSession cannot be shared** across concurrent asyncio tasks - use explicit commits between phases
 - **Preview-before-delete pattern** for destructive operations (v1.2)
 - **Startup sync pattern** - load DB settings and apply after services start (v1.2)
+- **Command + Popover pattern** for searchable multi-select comboboxes (v1.3)
+- **Cross-feature hook sharing** - reuse hooks across features for consistent data (v1.3)
 
 ### Key Decisions
 
@@ -68,6 +75,9 @@ Progress: ██████████ 100%
 - Negative IDs distinguish competitor-only events from BetPawa events
 - Default 7-day retention, 1-90 day range (v1.2)
 - Daily cleanup at 2 AM UTC (v1.2)
+- Empty selection = all countries (v1.3)
+- Default includeStarted OFF for pre-match focus (v1.3)
+- Reuse useCoverage hook across dashboard and coverage features (v1.3)
 
 ### Blockers/Concerns
 
@@ -78,12 +88,12 @@ None.
 - v1.0 MVP shipped 2026-01-23 with 15 phases
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
 - v1.2 Settings & Retention shipped 2026-01-26 with 4 phases
+- v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - All milestones archived to .planning/milestones/
-- v1.3 Coverage Improvements created 2026-01-26, 5 phases (Phase 23-27)
 
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Phase 27 complete, v1.3 milestone complete
+Stopped at: v1.3 milestone archived
 Resume file: None
-Notes: v1.3 Coverage Improvements milestone complete. Use /gsd:complete-milestone to archive and prepare for v1.4
+Notes: Use /gsd:new-milestone or /gsd:discuss-milestone to plan v1.4

@@ -9,65 +9,24 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
 - ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
-- 🚧 **v1.3 Coverage Improvements** — Phases 23-27 (in progress)
+- ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
 
 ## Current Milestone
 
-### 🚧 v1.3 Coverage Improvements (In Progress)
-
-**Milestone Goal:** Enhance Coverage Comparison page UX and bring key metrics to dashboard
-
-#### Phase 23: Fix Match Rate Bug
-
-**Goal**: Fix match rate calculation showing 8774% instead of ~87.7%
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (bug fix)
-**Plans**: 1
-
-Plans:
-- [x] 23-01: Fix match rate double multiplication
-
-#### Phase 24: Country Filters UX
-
-**Goal**: Make country filter list scrollable with type-to-filter and scroll-to-match highlighting
-**Depends on**: Phase 23
-**Research**: Unlikely (internal UI patterns)
-**Plans**: 1
-
-Plans:
-- [x] 24-01: Searchable multi-select country filter
-
-#### Phase 25: Include Started Toggle
-
-**Goal**: Add toggle to exclude in-play/started events with filtered summary cards
-**Depends on**: Phase 24
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 25-01: Include started toggle with stats card updates
-
-#### Phase 26: Tournament Gaps Cards
-
-**Goal**: Add summary cards showing tournament coverage gaps per competitor
-**Depends on**: Phase 25
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 26-01: Tournament gaps cards component
-
-#### Phase 27: Dashboard Coverage Widgets
-
-**Goal**: Replace dashboard widgets with Total Events and Matched Events cards using live DB data
-**Depends on**: Phase 26
-**Research**: Unlikely (reusing existing components)
-**Plans**: 1
-
-Plans:
-- [x] 27-01: Dashboard stats cards using useCoverage hook
+No active milestone. Use `/gsd:new-milestone` to plan v1.4.
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v1.3 Coverage Improvements (Phases 23-27) — SHIPPED 2026-01-26</summary>
+
+- [x] Phase 23: Fix Match Rate Bug (1/1 plans) — 2026-01-26
+- [x] Phase 24: Country Filters UX (1/1 plans) — 2026-01-26
+- [x] Phase 25: Include Started Toggle (1/1 plans) — 2026-01-26
+- [x] Phase 26: Tournament Gaps Cards (1/1 plans) — 2026-01-26
+- [x] Phase 27: Dashboard Coverage Widgets (1/1 plans) — 2026-01-26
+
+</details>
 
 <details>
 <summary>✅ v1.0 MVP (Phases 1-12) — SHIPPED 2026-01-23</summary>
@@ -148,3 +107,4 @@ Plans:
 | 25. Include Started Toggle | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 26. Tournament Gaps Cards | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 27. Dashboard Coverage Widgets | v1.3 | 1/1 | Complete | 2026-01-26 |
+| **v1.3 SHIPPED** | | | **2026-01-26** | |

@@ -8,24 +8,27 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.2 Settings & Retention)
+## Current State (v1.3 Coverage Improvements)
 
 **Shipped:** 2026-01-26
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~31,000 lines of code
+- ~31,400 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
 - Cross-platform event matching via SportRadar IDs
 - Automated scraping with configurable intervals
 - Real-time progress streaming via SSE
-- Dashboard with scheduler controls, platform health, and analytics
+- Dashboard with scheduler controls, platform health, and live coverage metrics
 - Match list and detail views with color-coded odds comparison
 - Full competitor palimpsest scraping (~200+ tournaments per platform)
 - Coverage Comparison page with tournament/event availability analysis
+- Searchable multi-select country filter with type-to-filter UX
+- Include Started toggle to filter out in-play events
+- Tournament gaps cards showing coverage by competitor
 - Mode toggle on Matches page for competitor-only events
 - Configurable history retention (1-90 days)
 - Automatic cleanup scheduler with daily execution
@@ -60,6 +63,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Automatic cleanup scheduler — v1.2
 - ✓ Settings persistence across restarts — v1.2
 - ✓ Manage Data dialog with cleanup controls — v1.2
+- ✓ Searchable multi-select country filter — v1.3
+- ✓ Include Started toggle for pre-match focus — v1.3
+- ✓ Tournament gaps cards per competitor — v1.3
+- ✓ Dashboard coverage widgets with live data — v1.3
 
 ### Active
 
@@ -118,6 +125,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | 1-90 day retention range | Prevent extremes (immediate deletion or excessive storage) | ✓ Good — v1.2 reasonable bounds |
 | Preview-before-delete pattern | Prevent accidental data loss with confirmation | ✓ Good — v1.2 safe UX |
 | Daily cleanup at 2 AM UTC | Off-peak hours, consistent scheduling | ✓ Good — v1.2 minimal disruption |
+| Command + Popover for multi-select | Consistent with shadcn/ui patterns | ✓ Good — v1.3 searchable combobox |
+| Empty selection = all countries | No explicit "All" option needed | ✓ Good — v1.3 intuitive UX |
+| Default includeStarted OFF | Pre-match focus for odds comparison | ✓ Good — v1.3 sensible default |
+| Reuse useCoverage across features | Single data source, consistent metrics | ✓ Good — v1.3 reduced API calls |
 
 ---
-*Last updated: 2026-01-26 after v1.2 milestone*
+*Last updated: 2026-01-26 after v1.3 milestone*
