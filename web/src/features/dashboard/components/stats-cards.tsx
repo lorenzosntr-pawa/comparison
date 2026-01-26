@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useEventsStats } from '../hooks'
-import { Calendar, CheckCircle } from 'lucide-react'
+import { useCoverage } from '@/features/coverage/hooks'
+import { BarChart3, CheckCircle } from 'lucide-react'
 
 export function StatsCards() {
-  const { totalEvents, matchedEvents, isPending } = useEventsStats()
+  const { data: coverage, isPending } = useCoverage()
 
   if (isPending) {
     return (
@@ -28,10 +28,10 @@ export function StatsCards() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalEvents}</div>
+          <div className="text-2xl font-bold">{coverage?.total_events ?? 0}</div>
           <p className="text-xs text-muted-foreground">Across all platforms</p>
         </CardContent>
       </Card>
@@ -39,14 +39,12 @@ export function StatsCards() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Matched Events</CardTitle>
-          <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CheckCircle className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{matchedEvents}</div>
+          <div className="text-2xl font-bold text-green-600">{coverage?.matched_count ?? 0}</div>
           <p className="text-xs text-muted-foreground">
-            {totalEvents > 0
-              ? `${Math.round((matchedEvents / totalEvents) * 100)}% coverage`
-              : 'No events yet'}
+            {coverage ? `${coverage.match_rate.toFixed(1)}% match rate` : 'No data'}
           </p>
         </CardContent>
       </Card>
