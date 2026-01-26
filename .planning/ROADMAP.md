@@ -43,10 +43,10 @@ Plans:
 **Goal**: Rename "Matches" to "Odds Comparison" in navigation and page title, final polish
 **Depends on**: Phase 29
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 30-01: TBD
+- [ ] 30-01: Page title, back link, and icon updates
 
 ## Completed Milestones
 
@@ -143,4 +143,4 @@ Plans:
 | **v1.3 SHIPPED** | | | **2026-01-26** | |
 | 28. Table Restructure | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 29. Double Chance & Margins | v1.4 | 1/1 | Complete | 2026-01-26 |
-| 30. Page Rename & Polish | v1.4 | 0/? | Not started | - |
+| 30. Page Rename & Polish | v1.4 | 0/1 | Planned | - |
