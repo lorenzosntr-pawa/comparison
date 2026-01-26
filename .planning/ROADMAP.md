@@ -42,10 +42,10 @@ Plans:
 **Goal**: Add toggle to exclude in-play/started events with filtered summary cards
 **Depends on**: Phase 24
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 25-01: TBD
+- [x] 25-01: Include started toggle with stats card updates
 
 #### Phase 26: Tournament Gaps Cards
 
@@ -145,6 +145,6 @@ Plans:
 | 22. History Retention | v1.2 | 5/5 | Complete | 2026-01-26 |
 | 23. Fix Match Rate Bug | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 24. Country Filters UX | v1.3 | 1/1 | Complete | 2026-01-26 |
-| 25. Include Started Toggle | v1.3 | 0/? | Not started | - |
+| 25. Include Started Toggle | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 26. Tournament Gaps Cards | v1.3 | 0/? | Not started | - |
 | 27. Dashboard Coverage Widgets | v1.3 | 0/? | Not started | - |

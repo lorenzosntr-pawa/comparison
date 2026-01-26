@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 24 of 27 (Country Filters UX)
+Phase: 25 of 27 (Include Started Toggle)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-01-26 — Completed 24-01-PLAN.md
+Last activity: 2026-01-26 — Completed 25-01-PLAN.md
 
-Progress: ███░░░░░░░ 40%
+Progress: ████░░░░░░ 45%
 
 ## Milestones
 
@@ -84,6 +84,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Phase 24 complete
+Stopped at: Phase 25 complete
 Resume file: None
-Notes: Phase 24 complete. Ready for Phase 25: Include Started Toggle. Use /gsd:plan-phase 25
+Notes: Phase 25 complete. Ready for Phase 26: Tournament Gaps Cards. Use /gsd:plan-phase 26
