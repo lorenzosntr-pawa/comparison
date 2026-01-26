@@ -10,7 +10,7 @@ import {
 const DEFAULT_FILTERS: CoverageFilters = {
   availability: 'all',
   search: '',
-  country: undefined,
+  countries: [],
 }
 
 export function CoveragePage() {
@@ -49,14 +49,15 @@ export function CoveragePage() {
     return Array.from(countries).sort()
   }, [eventsData?.tournaments])
 
-  // Filter tournaments by country if selected
+  // Filter tournaments by selected countries
   const filteredTournaments = useMemo(() => {
     if (!eventsData?.tournaments) return []
-    if (!filters.country) return eventsData.tournaments
+    if (filters.countries.length === 0) return eventsData.tournaments
     return eventsData.tournaments.filter(
-      (t) => t.tournament_country === filters.country
+      (t) =>
+        t.tournament_country && filters.countries.includes(t.tournament_country)
     )
-  }, [eventsData?.tournaments, filters.country])
+  }, [eventsData?.tournaments, filters.countries])
 
   // Calculate filtered event count
   const filteredEventCount = useMemo(() => {
@@ -79,7 +80,12 @@ export function CoveragePage() {
         {eventsData && (
           <span className="text-sm text-muted-foreground">
             {filteredEventCount} events
-            {filters.country && ` in ${filters.country}`}
+            {filters.countries.length > 0 &&
+              ` in ${
+                filters.countries.length <= 2
+                  ? filters.countries.join(', ')
+                  : `${filters.countries.length} countries`
+              }`}
           </span>
         )}
       </div>

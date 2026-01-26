@@ -1,14 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { Search } from 'lucide-react'
+import { CountryMultiSelect } from './country-multi-select'
 
 export type AvailabilityFilter =
   | 'all'
@@ -19,7 +13,7 @@ export type AvailabilityFilter =
 export interface CoverageFilters {
   availability: AvailabilityFilter
   search: string
-  country?: string
+  countries: string[]
 }
 
 interface CoverageFilterBarProps {
@@ -83,24 +77,11 @@ export function CoverageFilterBar({
 
       {/* Country filter - only shown if countries provided */}
       {countries && countries.length > 0 && (
-        <Select
-          value={filters.country ?? 'all'}
-          onValueChange={(value) =>
-            updateFilter('country', value === 'all' ? undefined : value)
-          }
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="All Countries" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Countries</SelectItem>
-            {countries.map((country) => (
-              <SelectItem key={country} value={country}>
-                {country}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CountryMultiSelect
+          countries={countries}
+          selected={filters.countries}
+          onSelectedChange={(selected) => updateFilter('countries', selected)}
+        />
       )}
     </div>
   )
