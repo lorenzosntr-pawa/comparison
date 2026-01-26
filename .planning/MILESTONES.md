@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.4 Odds Comparison UX (Shipped: 2026-01-26)
+
+**Delivered:** Redesigned Matches page with bookmakers-as-rows table layout, Double Chance market with per-market margins, and renamed to "Odds Comparison" with new URL route.
+
+**Phases completed:** 28-30 (3 plans total)
+
+**Key accomplishments:**
+
+- Restructured table to bookmakers-as-rows layout with rowspan for match grouping
+- Added Double Chance market (1X, X2, 12) as selectable column
+- Added per-market margin display with comparative color coding
+- Renamed page from "Matches" to "Odds Comparison"
+- Changed URL route from /matches to /odds-comparison
+- Updated navigation icon to BarChart3
+
+**Stats:**
+
+- 17 files modified
+- +986 / -159 lines of TypeScript
+- 3 phases, 3 plans
+- Same day as v1.3 (2026-01-26, ~38 min execution)
+
+**Git range:** `0b005ce` → `54a23eb`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features (WebSocket real-time, historical trends, etc.).
+
+---
+
 ## v1.3 Coverage Improvements (Shipped: 2026-01-26)
 
 **Delivered:** Enhanced Coverage Comparison page UX with searchable multi-select filters, tournament-level gap analysis, and unified dashboard coverage metrics.

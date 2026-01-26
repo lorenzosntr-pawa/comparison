@@ -10,45 +10,18 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
 - ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
 - ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
-- 🚧 **v1.4 Odds Comparison UX** — Phases 28-30 (in progress)
-
-## Current Milestone
-
-### 🚧 v1.4 Odds Comparison UX (In Progress)
-
-**Milestone Goal:** Complete redesign of the Matches page table structure with bookmaker rows, Double Chance market, and per-market margins for better odds comparison UX.
-
-#### Phase 28: Table Restructure ✓
-
-**Goal**: Transform table from bookmakers-as-columns to bookmakers-as-rows (3 rows per match with rowspan layout), reorder columns, update match name format
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal React patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 28-01: Restructure table to bookmakers-as-rows layout
-
-#### Phase 29: Double Chance & Margins ✓
-
-**Goal**: Add Double Chance market columns (1X, X2, 12) and per-market margin display per bookmaker row
-**Depends on**: Phase 28
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 29-01: Double Chance columns and per-market margin display
-
-#### Phase 30: Page Rename & Polish ✓
-
-**Goal**: Rename "Matches" to "Odds Comparison" in navigation and page title, final polish
-**Depends on**: Phase 29
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 30-01: Page title, back link, icon, and URL route updates
+- ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v1.4 Odds Comparison UX (Phases 28-30) — SHIPPED 2026-01-26</summary>
+
+- [x] Phase 28: Table Restructure (1/1 plans) — 2026-01-26
+- [x] Phase 29: Double Chance & Margins (1/1 plans) — 2026-01-26
+- [x] Phase 30: Page Rename & Polish (1/1 plans) — 2026-01-26
+
+</details>
 
 <details>
 <summary>✅ v1.3 Coverage Improvements (Phases 23-27) — SHIPPED 2026-01-26</summary>
@@ -144,3 +117,4 @@ Plans:
 | 28. Table Restructure | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 29. Double Chance & Margins | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 30. Page Rename & Polish | v1.4 | 1/1 | Complete | 2026-01-26 |
+| **v1.4 SHIPPED** | | | **2026-01-26** | |

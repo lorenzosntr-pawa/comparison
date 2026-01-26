@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.3 Coverage Improvements)
+## Current State (v1.4 Odds Comparison UX)
 
 **Shipped:** 2026-01-26
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~31,400 lines of code
+- ~32,200 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
@@ -34,6 +34,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Automatic cleanup scheduler with daily execution
 - Settings persistence across server restarts
 - Manage Data dialog for manual cleanup and data overview
+- Bookmakers-as-rows table layout for vertical odds comparison
+- Double Chance market (1X, X2, 12) with per-market margins
+- Comparative margin color coding (Betpawa vs competitors)
+- Renamed page to "Odds Comparison" with /odds-comparison route
 
 ## Requirements
 
@@ -67,6 +71,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Include Started toggle for pre-match focus — v1.3
 - ✓ Tournament gaps cards per competitor — v1.3
 - ✓ Dashboard coverage widgets with live data — v1.3
+- ✓ Bookmakers-as-rows table layout for vertical comparison — v1.4
+- ✓ Double Chance market (1X, X2, 12) as selectable column — v1.4
+- ✓ Per-market margin display with comparative color coding — v1.4
+- ✓ Renamed page to "Odds Comparison" with new URL route — v1.4
 
 ### Active
 
@@ -129,6 +137,11 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Empty selection = all countries | No explicit "All" option needed | ✓ Good — v1.3 intuitive UX |
 | Default includeStarted OFF | Pre-match focus for odds comparison | ✓ Good — v1.3 sensible default |
 | Reuse useCoverage across features | Single data source, consistent metrics | ✓ Good — v1.3 reduced API calls |
+| Bookmakers-as-rows layout | Vertical comparison easier to read than horizontal | ✓ Good — v1.4 better UX |
+| Comparative margin colors | vs competitors more useful than absolute thresholds | ✓ Good — v1.4 clear comparison |
+| Text color for margins | Better readability than background colors | ✓ Good — v1.4 cleaner UI |
+| BarChart3 navigation icon | Better visual representation of odds comparison | ✓ Good — v1.4 intuitive |
+| URL route /odds-comparison | Full naming consistency with page title | ✓ Good — v1.4 coherent |
 
 ---
-*Last updated: 2026-01-26 after v1.3 milestone*
+*Last updated: 2026-01-26 after v1.4 milestone*
