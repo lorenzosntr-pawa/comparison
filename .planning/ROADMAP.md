@@ -22,10 +22,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Fix match rate calculation showing 8774% instead of ~87.7%
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (bug fix)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 23-01: TBD (run /gsd:plan-phase 23 to break down)
+- [ ] 23-01: Fix match rate double multiplication
 
 #### Phase 24: Country Filters UX
 
@@ -143,7 +143,7 @@ Plans:
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 5/5 | Complete | 2026-01-26 |
-| 23. Fix Match Rate Bug | v1.3 | 0/? | Not started | - |
+| 23. Fix Match Rate Bug | v1.3 | 0/1 | Not started | - |
 | 24. Country Filters UX | v1.3 | 0/? | Not started | - |
 | 25. Include Started Toggle | v1.3 | 0/? | Not started | - |
 | 26. Tournament Gaps Cards | v1.3 | 0/? | Not started | - |
