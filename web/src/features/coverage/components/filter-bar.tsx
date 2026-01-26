@@ -14,6 +14,7 @@ export interface CoverageFilters {
   availability: AvailabilityFilter
   search: string
   countries: string[]
+  includeStarted: boolean
 }
 
 interface CoverageFilterBarProps {

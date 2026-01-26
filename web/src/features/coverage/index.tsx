@@ -6,11 +6,14 @@ import {
   TournamentTable,
   type CoverageFilters,
 } from './components'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 const DEFAULT_FILTERS: CoverageFilters = {
   availability: 'all',
   search: '',
   countries: [],
+  includeStarted: false,
 }
 
 export function CoveragePage() {
@@ -24,7 +27,7 @@ export function CoveragePage() {
     data: coverage,
     isPending: coveragePending,
     error: coverageError,
-  } = useCoverage()
+  } = useCoverage({ includeStarted: filters.includeStarted })
 
   const {
     data: eventsData,
@@ -33,6 +36,7 @@ export function CoveragePage() {
   } = usePalimpsestEvents({
     availability: apiAvailability,
     search: filters.search || undefined,
+    includeStarted: filters.includeStarted,
   })
 
   const error = coverageError || eventsError
@@ -77,17 +81,36 @@ export function CoveragePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Coverage Comparison</h1>
-        {eventsData && (
-          <span className="text-sm text-muted-foreground">
-            {filteredEventCount} events
-            {filters.countries.length > 0 &&
-              ` in ${
-                filters.countries.length <= 2
-                  ? filters.countries.join(', ')
-                  : `${filters.countries.length} countries`
-              }`}
-          </span>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Include Started Toggle */}
+          <div className="flex items-center gap-2">
+            <Switch
+              id="include-started"
+              checked={filters.includeStarted}
+              onCheckedChange={(checked) =>
+                setFilters({ ...filters, includeStarted: checked })
+              }
+            />
+            <Label
+              htmlFor="include-started"
+              className="text-sm text-muted-foreground"
+            >
+              Include Started
+            </Label>
+          </div>
+          {/* Event count */}
+          {eventsData && (
+            <span className="text-sm text-muted-foreground">
+              {filteredEventCount} events
+              {filters.countries.length > 0 &&
+                ` in ${
+                  filters.countries.length <= 2
+                    ? filters.countries.join(', ')
+                    : `${filters.countries.length} countries`
+                }`}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
