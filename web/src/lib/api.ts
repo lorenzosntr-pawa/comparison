@@ -133,7 +133,12 @@ export const api = {
     fetchJson<void>('/scheduler/resume', { method: 'POST' }),
 
   // Palimpsest coverage
-  getCoverage: () => fetchJson<CoverageStats>('/palimpsest/coverage'),
+  getCoverage: (params?: { includeStarted?: boolean }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.includeStarted) searchParams.set('include_started', 'true')
+    const query = searchParams.toString()
+    return fetchJson<CoverageStats>(`/palimpsest/coverage${query ? `?${query}` : ''}`)
+  },
 
   getPalimpsestEvents: (params?: {
     availability?: 'betpawa-only' | 'competitor-only' | 'matched'
@@ -141,6 +146,7 @@ export const api = {
     sport_id?: number
     search?: string
     sort?: 'kickoff' | 'tournament'
+    include_started?: boolean
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.availability)
@@ -152,6 +158,7 @@ export const api = {
       searchParams.set('sport_id', params.sport_id.toString())
     if (params?.search) searchParams.set('search', params.search)
     if (params?.sort) searchParams.set('sort', params.sort)
+    if (params?.include_started) searchParams.set('include_started', 'true')
     const query = searchParams.toString()
     return fetchJson<PalimpsestEventsResponse>(
       `/palimpsest/events${query ? `?${query}` : ''}`
