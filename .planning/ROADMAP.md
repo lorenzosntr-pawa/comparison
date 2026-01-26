@@ -8,7 +8,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
-- 🚧 **v1.2 Settings & Real-time** — Phases 20-23 (in progress)
+- 🚧 **v1.2 Settings & Real-time** — Phases 20-22 (in progress)
 
 ## Completed Milestones
 
@@ -48,7 +48,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 ### 🚧 v1.2 Settings & Real-time (In Progress)
 
-**Milestone Goal:** Persistent configuration that survives page refresh/server restart and WebSocket-based real-time data delivery replacing SSE polling.
+**Milestone Goal:** Persistent configuration that survives page refresh/server restart with configurable history retention.
 
 #### Phase 19.1: Fix Sidebar Menu (INSERTED) - COMPLETE
 
@@ -94,17 +94,6 @@ Plans:
 - [x] 22-04: Settings UI redesign
 - [x] 22-05: Manage Data dialog
 
-#### Phase 23: WebSocket Infrastructure
-
-**Goal**: WebSocket server setup and connection handling
-**Depends on**: Phase 22
-**Research**: Likely (new technology integration)
-**Research topics**: FastAPI WebSocket support, connection management, authentication
-**Plans**: TBD
-
-Plans:
-- [ ] 23-01: TBD
-
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -135,4 +124,3 @@ Plans:
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 5/5 | Complete | 2026-01-26 |
-| 23. WebSocket Infrastructure | v1.2 | 0/? | Not started | - |

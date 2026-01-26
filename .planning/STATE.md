@@ -9,18 +9,18 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Current Position
 
-Phase: 22 of 23 (History Retention)
+Phase: 22 of 22 (History Retention)
 Plan: 5 of 5 in current phase
-Status: Phase complete
+Status: Milestone complete
 Last activity: 2026-01-26 — Completed 22-05-PLAN.md
 
-Progress: █████████░ 90%
+Progress: ██████████ 100%
 
 ## Milestones
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
 - **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
-- **v1.2 Settings & Real-time** — IN PROGRESS (4 phases)
+- **v1.2 Settings & Real-time** — IN PROGRESS (3 phases)
 
 ## Performance Metrics
 
@@ -68,7 +68,7 @@ None.
 - v1.0 MVP shipped 2026-01-23 with 15 phases
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
 - Both milestones archived to .planning/milestones/
-- v1.2 Settings & Real-time created 2026-01-24: persistent config + WebSocket, 4 phases (Phase 20-23)
+- v1.2 Settings & Real-time created 2026-01-24: persistent config + history retention, 3 phases (Phase 20-22)
 - Phase 19.1 inserted after Phase 19: Fix sidebar menu (URGENT)
 
 ## Session Continuity
@@ -76,4 +76,4 @@ None.
 Last session: 2026-01-26
 Stopped at: Completed 22-05-PLAN.md
 Resume file: None
-Notes: Phase 22 complete (5/5 plans). Next: Phase 23 (WebSocket Infrastructure).
+Notes: v1.2 milestone complete. All phases finished.

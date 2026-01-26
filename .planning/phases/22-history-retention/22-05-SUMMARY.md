@@ -95,7 +95,7 @@ None.
 
 - Phase 22 (History Retention) is now complete
 - All 5 plans executed: retention settings, cleanup service, scheduler/API, settings UI, manage data dialog
-- Ready for Phase 23 (WebSocket Infrastructure)
+- v1.2 milestone ready for completion
 
 ---
 *Phase: 22-history-retention*
