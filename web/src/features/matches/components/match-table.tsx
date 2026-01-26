@@ -207,36 +207,85 @@ function OddsValue({
 }
 
 /**
+ * Get margin comparison data for color coding.
+ * Returns betpawa margin and best (lowest) competitor margin.
+ */
+interface MarginComparisonData {
+  betpawaMargin: number | null
+  bestCompetitorMargin: number | null
+}
+
+function getMarginComparisonData(
+  bookmakers: BookmakerOdds[],
+  marketId: string
+): MarginComparisonData {
+  const betpawa = bookmakers.find((b) => b.bookmaker_slug === 'betpawa')
+  const betpawaMargin = betpawa ? getMargin(betpawa, marketId) : null
+
+  let bestCompetitorMargin: number | null = null
+
+  for (const b of bookmakers) {
+    if (b.bookmaker_slug === 'betpawa') continue
+    const margin = getMargin(b, marketId)
+    if (margin !== null && (bestCompetitorMargin === null || margin < bestCompetitorMargin)) {
+      bestCompetitorMargin = margin
+    }
+  }
+
+  return { betpawaMargin, bestCompetitorMargin }
+}
+
+/**
  * Render margin cell with color coding.
  *
- * Color coding shows margin competitiveness (text color only):
- * - Green text: margin < 3% (competitive)
- * - Neutral: margin 3-6%
- * - Red text: margin > 6% (high)
+ * Color coding shows competitive position (like odds):
+ * - Green on Betpawa: Betpawa has lower margin than competitors
+ * - Red on Betpawa: Betpawa has higher margin than competitors
+ * - Green on competitor: This competitor has lower margin than Betpawa
  *
  * Best margin per market gets highlighted.
  */
 function MarginValue({
   margin,
+  bookmakerSlug,
+  comparisonData,
   isBestMargin,
 }: {
   margin: number | null
+  bookmakerSlug: string
+  comparisonData: MarginComparisonData
   isBestMargin: boolean
 }) {
   if (margin === null) {
     return <span className="text-muted-foreground text-xs">-</span>
   }
 
+  const isBetpawa = bookmakerSlug === 'betpawa'
+  const { betpawaMargin, bestCompetitorMargin } = comparisonData
+  const tolerance = 0.1 // 0.1% tolerance for margin comparison
+
   let textClass = ''
 
-  if (margin < 3) {
-    // Green text for competitive margins (<3%)
-    textClass = TEXT_COLOR_CLASSES.green
-  } else if (margin > 6) {
-    // Red text for high margins (>6%)
-    textClass = TEXT_COLOR_CLASSES.red
+  if (isBetpawa && bestCompetitorMargin !== null && betpawaMargin !== null) {
+    // Betpawa column: compare to best competitor margin
+    const delta = betpawaMargin - bestCompetitorMargin
+
+    if (delta < -tolerance) {
+      // Betpawa has lower margin (good) - green
+      textClass = TEXT_COLOR_CLASSES.green
+    } else if (delta > tolerance) {
+      // Betpawa has higher margin (bad) - red
+      textClass = TEXT_COLOR_CLASSES.red
+    }
+  } else if (!isBetpawa && betpawaMargin !== null) {
+    // Competitor column: highlight if this competitor has lower margin than Betpawa
+    const delta = margin - betpawaMargin
+
+    if (delta < -tolerance) {
+      // This competitor has lower margin than Betpawa - green
+      textClass = TEXT_COLOR_CLASSES.green
+    }
   }
-  // 3-6% is neutral (no special color)
 
   return (
     <span
@@ -386,6 +435,15 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             // Pre-compute best margins per market for highlighting
             const bestMargins = computeBestMargins(event.bookmakers, visibleMarkets)
 
+            // Pre-compute margin comparison data for color coding
+            const marginComparisonByMarket: Record<string, MarginComparisonData> = {}
+            visibleMarkets.forEach((marketId) => {
+              marginComparisonByMarket[marketId] = getMarginComparisonData(
+                event.bookmakers,
+                marketId
+              )
+            })
+
             // Match name format: "Team A - Team B"
             const matchName = `${event.home_team} - ${event.away_team}`
 
@@ -474,6 +532,8 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                       <td key={`${marketId}-margin`} className="px-2 py-2 text-center border-r border-r-border/50">
                         <MarginValue
                           margin={bookmaker ? getMargin(bookmaker, marketId) : null}
+                          bookmakerSlug={bookmakerSlug}
+                          comparisonData={marginComparisonByMarket[marketId]}
                           isBestMargin={
                             bookmaker
                               ? getMargin(bookmaker, marketId) === bestMargins[marketId] &&
