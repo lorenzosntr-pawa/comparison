@@ -40,6 +40,12 @@ const COLOR_CLASSES = {
   },
 } as const
 
+// Text color classes for margin display
+const TEXT_COLOR_CLASSES = {
+  green: 'text-green-600 dark:text-green-400',
+  red: 'text-red-600 dark:text-red-400',
+} as const
+
 type OpacityLevel = 10 | 20 | 30 | 40 | 50
 
 interface MatchTableProps {
@@ -203,10 +209,10 @@ function OddsValue({
 /**
  * Render margin cell with color coding.
  *
- * Color coding shows margin competitiveness:
- * - Green: margin < 3% (competitive)
+ * Color coding shows margin competitiveness (text color only):
+ * - Green text: margin < 3% (competitive)
  * - Neutral: margin 3-6%
- * - Red: margin > 6% (high)
+ * - Red text: margin > 6% (high)
  *
  * Best margin per market gets highlighted.
  */
@@ -221,33 +227,23 @@ function MarginValue({
     return <span className="text-muted-foreground text-xs">-</span>
   }
 
-  let bgClass = ''
+  let textClass = ''
 
   if (margin < 3) {
-    // Green for competitive margins (<3%)
-    const intensity = Math.max(0, 1 - margin / 3) // 0% → 1, 3% → 0
-    const opacityLevel = Math.min(
-      Math.max(Math.ceil(intensity * 5) * 10, 10),
-      50
-    ) as OpacityLevel
-    bgClass = COLOR_CLASSES.green[opacityLevel]
+    // Green text for competitive margins (<3%)
+    textClass = TEXT_COLOR_CLASSES.green
   } else if (margin > 6) {
-    // Red for high margins (>6%)
-    const intensity = Math.min((margin - 6) / 6, 1) // 6% → 0, 12%+ → 1
-    const opacityLevel = Math.min(
-      Math.max(Math.ceil(intensity * 5) * 10, 10),
-      50
-    ) as OpacityLevel
-    bgClass = COLOR_CLASSES.red[opacityLevel]
+    // Red text for high margins (>6%)
+    textClass = TEXT_COLOR_CLASSES.red
   }
-  // 3-6% is neutral (no color)
+  // 3-6% is neutral (no special color)
 
   return (
     <span
       className={cn(
-        'inline-block px-1.5 py-0.5 rounded text-xs min-w-[2.5rem] text-center',
-        bgClass,
-        isBestMargin && 'font-bold ring-1 ring-green-500/50'
+        'inline-block px-1.5 py-0.5 text-xs min-w-[2.5rem] text-center',
+        textClass,
+        isBestMargin && 'font-bold underline'
       )}
     >
       {margin.toFixed(1)}%
@@ -333,11 +329,14 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             <th className="px-3 py-3 text-left font-medium">Match</th>
             <th className="px-3 py-3 text-center font-medium w-12">Book</th>
             {/* Market group headers (outcomes + margin column) */}
-            {visibleMarkets.map((marketId) => (
+            {visibleMarkets.map((marketId, index) => (
               <th
                 key={marketId}
                 colSpan={MARKET_CONFIG[marketId].outcomes.length + 1}
-                className="px-2 py-3 text-center font-medium border-l"
+                className={cn(
+                  'px-2 py-3 text-center font-medium border-l',
+                  index < visibleMarkets.length - 1 && 'border-r border-r-border/50'
+                )}
               >
                 {MARKET_CONFIG[marketId].label}
               </th>
@@ -358,7 +357,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                 ))}
                 <th
                   key={`${marketId}-margin`}
-                  className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap"
+                  className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap border-r border-r-border/50"
                 >
                   %
                 </th>
@@ -472,7 +471,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                         )
                       })}
                       {/* Margin cell for this market */}
-                      <td key={`${marketId}-margin`} className="px-2 py-2 text-center">
+                      <td key={`${marketId}-margin`} className="px-2 py-2 text-center border-r border-r-border/50">
                         <MarginValue
                           margin={bookmaker ? getMargin(bookmaker, marketId) : null}
                           isBestMargin={
