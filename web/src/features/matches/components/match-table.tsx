@@ -467,7 +467,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                   onClick={() => {
                     // Don't navigate for competitor-only events (no detail view)
                     if (!isCompetitorOnly) {
-                      navigate(`/matches/${event.id}`)
+                      navigate(`/odds-comparison/${event.id}`)
                     }
                   }}
                   title={

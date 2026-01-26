@@ -15,7 +15,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: Home },
-  { title: 'Odds Comparison', url: '/matches', icon: BarChart3 },
+  { title: 'Odds Comparison', url: '/odds-comparison', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },

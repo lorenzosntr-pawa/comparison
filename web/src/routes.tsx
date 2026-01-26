@@ -9,8 +9,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
-      <Route path="/matches" element={<MatchList />} />
-      <Route path="/matches/:id" element={<MatchDetail />} />
+      <Route path="/odds-comparison" element={<MatchList />} />
+      <Route path="/odds-comparison/:id" element={<MatchDetail />} />
       <Route path="/coverage" element={<CoveragePage />} />
       <Route path="/scrape-runs" element={<ScrapeRunsPage />} />
       <Route path="/scrape-runs/:id" element={<ScrapeRunDetailPage />} />
