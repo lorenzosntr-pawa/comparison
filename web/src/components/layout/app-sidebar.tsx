@@ -1,4 +1,4 @@
-import { Home, List, Settings, Activity, History, GitCompare } from 'lucide-react'
+import { Home, BarChart3, Settings, Activity, History, GitCompare } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: Home },
-  { title: 'Odds Comparison', url: '/matches', icon: List },
+  { title: 'Odds Comparison', url: '/matches', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
