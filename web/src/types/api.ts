@@ -189,3 +189,82 @@ export interface PalimpsestEventsResponse {
   coverage: CoverageStats
   tournaments: TournamentGroup[]
 }
+
+// Cleanup types
+export interface TableStats {
+  count: number
+  oldest: string | null
+  newest: string | null
+}
+
+export interface PlatformCount {
+  platform: string
+  count: number
+}
+
+export interface DataStats {
+  oddsSnapshots: TableStats
+  competitorOddsSnapshots: TableStats
+  events: TableStats
+  competitorEvents: TableStats
+  tournaments: TableStats
+  competitorTournaments: TableStats
+  scrapeRuns: TableStats
+  scrapeBatches: TableStats
+  eventsByPlatform: PlatformCount[]
+  competitorEventsBySource: PlatformCount[]
+}
+
+export interface CleanupPreview {
+  oddsCutoffDate: string
+  matchCutoffDate: string
+  oddsSnapshotsCount: number
+  competitorOddsSnapshotsCount: number
+  scrapeRunsCount: number
+  scrapeBatchesCount: number
+  eventsCount: number
+  competitorEventsCount: number
+  tournamentsCount: number
+  competitorTournamentsCount: number
+}
+
+export interface CleanupResult {
+  oddsDeleted: number
+  competitorOddsDeleted: number
+  scrapeRunsDeleted: number
+  scrapeBatchesDeleted: number
+  eventsDeleted: number
+  competitorEventsDeleted: number
+  tournamentsDeleted: number
+  competitorTournamentsDeleted: number
+  oldestOddsDate: string | null
+  oldestMatchDate: string | null
+  durationSeconds: number
+}
+
+export interface CleanupRun {
+  id: number
+  startedAt: string
+  completedAt: string | null
+  trigger: string
+  oddsRetentionDays: number
+  matchRetentionDays: number
+  oddsDeleted: number
+  competitorOddsDeleted: number
+  scrapeRunsDeleted: number
+  scrapeBatchesDeleted: number
+  eventsDeleted: number
+  competitorEventsDeleted: number
+  tournamentsDeleted: number
+  competitorTournamentsDeleted: number
+  oldestOddsDate: string | null
+  oldestMatchDate: string | null
+  status: string
+  errorMessage: string | null
+  durationSeconds: number | null
+}
+
+export interface CleanupHistoryResponse {
+  runs: CleanupRun[]
+  total: number
+}

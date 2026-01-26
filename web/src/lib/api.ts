@@ -9,6 +9,10 @@ import type {
   SettingsUpdate,
   CoverageStats,
   PalimpsestEventsResponse,
+  DataStats,
+  CleanupPreview,
+  CleanupResult,
+  CleanupHistoryResponse,
 } from '@/types/api'
 
 const API_BASE = '/api'
@@ -153,4 +157,29 @@ export const api = {
       `/palimpsest/events${query ? `?${query}` : ''}`
     )
   },
+
+  // Cleanup
+  getCleanupStats: () => fetchJson<DataStats>('/cleanup/stats'),
+
+  getCleanupPreview: (params?: { oddsDays?: number; matchDays?: number }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.oddsDays)
+      searchParams.set('odds_days', params.oddsDays.toString())
+    if (params?.matchDays)
+      searchParams.set('match_days', params.matchDays.toString())
+    const query = searchParams.toString()
+    return fetchJson<CleanupPreview>(`/cleanup/preview${query ? `?${query}` : ''}`)
+  },
+
+  executeCleanup: (params?: { oddsDays?: number; matchDays?: number }) =>
+    fetchJson<CleanupResult>('/cleanup/execute', {
+      method: 'POST',
+      body: JSON.stringify({
+        oddsRetentionDays: params?.oddsDays,
+        matchRetentionDays: params?.matchDays,
+      }),
+    }),
+
+  getCleanupHistory: (limit = 10) =>
+    fetchJson<CleanupHistoryResponse>(`/cleanup/history?limit=${limit}`),
 }
