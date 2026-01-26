@@ -82,7 +82,7 @@ export function MatchList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Matches</h1>
+        <h1 className="text-2xl font-bold">Odds Comparison</h1>
         <div className="flex items-center gap-4">
           {data && (
             <span className="text-sm text-muted-foreground">
