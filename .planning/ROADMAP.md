@@ -62,10 +62,10 @@ Plans:
 **Goal**: Replace dashboard widgets with Total Events and Matched Events cards using live DB data
 **Depends on**: Phase 26
 **Research**: Unlikely (reusing existing components)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 27-01: TBD
+- [x] 27-01: Dashboard stats cards using useCoverage hook
 
 ## Completed Milestones
 
@@ -147,4 +147,4 @@ Plans:
 | 24. Country Filters UX | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 25. Include Started Toggle | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 26. Tournament Gaps Cards | v1.3 | 1/1 | Complete | 2026-01-26 |
-| 27. Dashboard Coverage Widgets | v1.3 | 0/? | Not started | - |
+| 27. Dashboard Coverage Widgets | v1.3 | 1/1 | Complete | 2026-01-26 |
