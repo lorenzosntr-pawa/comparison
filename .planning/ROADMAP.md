@@ -9,6 +9,63 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
 - ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
+- 🚧 **v1.3 Coverage Improvements** — Phases 23-27 (in progress)
+
+## Current Milestone
+
+### 🚧 v1.3 Coverage Improvements (In Progress)
+
+**Milestone Goal:** Enhance Coverage Comparison page UX and bring key metrics to dashboard
+
+#### Phase 23: Fix Match Rate Bug
+
+**Goal**: Fix match rate calculation showing 8774% instead of ~87.7%
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (bug fix)
+**Plans**: TBD
+
+Plans:
+- [ ] 23-01: TBD (run /gsd:plan-phase 23 to break down)
+
+#### Phase 24: Country Filters UX
+
+**Goal**: Make country filter list scrollable with type-to-filter and scroll-to-match highlighting
+**Depends on**: Phase 23
+**Research**: Unlikely (internal UI patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 24-01: TBD
+
+#### Phase 25: Include Started Toggle
+
+**Goal**: Add toggle to exclude in-play/started events with filtered summary cards
+**Depends on**: Phase 24
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 25-01: TBD
+
+#### Phase 26: Tournament Gaps Cards
+
+**Goal**: Add summary cards showing tournament coverage gaps per competitor
+**Depends on**: Phase 25
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 26-01: TBD
+
+#### Phase 27: Dashboard Coverage Widgets
+
+**Goal**: Replace dashboard widgets with Total Events and Matched Events cards using live DB data
+**Depends on**: Phase 26
+**Research**: Unlikely (reusing existing components)
+**Plans**: TBD
+
+Plans:
+- [ ] 27-01: TBD
 
 ## Completed Milestones
 
@@ -86,3 +143,8 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 20. Settings Schema & API | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 5/5 | Complete | 2026-01-26 |
+| 23. Fix Match Rate Bug | v1.3 | 0/? | Not started | - |
+| 24. Country Filters UX | v1.3 | 0/? | Not started | - |
+| 25. Include Started Toggle | v1.3 | 0/? | Not started | - |
+| 26. Tournament Gaps Cards | v1.3 | 0/? | Not started | - |
+| 27. Dashboard Coverage Widgets | v1.3 | 0/? | Not started | - |
