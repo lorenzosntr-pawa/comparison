@@ -28,15 +28,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 28-01: Restructure table to bookmakers-as-rows layout
 
-#### Phase 29: Double Chance & Margins
+#### Phase 29: Double Chance & Margins ✓
 
 **Goal**: Add Double Chance market columns (1X, X2, 12) and per-market margin display per bookmaker row
 **Depends on**: Phase 28
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 29-01: TBD
+- [x] 29-01: Double Chance columns and per-market margin display
 
 #### Phase 30: Page Rename & Polish
 
@@ -142,5 +142,5 @@ Plans:
 | 27. Dashboard Coverage Widgets | v1.3 | 1/1 | Complete | 2026-01-26 |
 | **v1.3 SHIPPED** | | | **2026-01-26** | |
 | 28. Table Restructure | v1.4 | 1/1 | Complete | 2026-01-26 |
-| 29. Double Chance & Margins | v1.4 | 0/? | Not started | - |
+| 29. Double Chance & Margins | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 30. Page Rename & Polish | v1.4 | 0/? | Not started | - |

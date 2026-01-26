@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 28 of 30 (Table Restructure)
+Phase: 29 of 30 (Double Chance & Margins)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-01-26 — Completed 28-01-PLAN.md
+Last activity: 2026-01-26 — Completed 29-01-PLAN.md
 
-Progress: █░░░░░░░░░ 33%
+Progress: ██░░░░░░░░ 67%
 
 ## Milestones
 
@@ -67,6 +67,7 @@ Progress: █░░░░░░░░░ 33%
 - **Command + Popover pattern** for searchable multi-select comboboxes (v1.3)
 - **Cross-feature hook sharing** - reuse hooks across features for consistent data (v1.3)
 - **Bookmakers-as-rows layout** - rowspan for match info, stacked rows per bookmaker (v1.4)
+- **Comparative margin color coding** - green/red based on Betpawa vs competitors, not absolute values (v1.4)
 
 ### Key Decisions
 
@@ -96,6 +97,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Completed Phase 28 (Table Restructure)
+Stopped at: Completed Phase 29 (Double Chance & Margins)
 Resume file: None
-Notes: Ready to plan Phase 29 (Double Chance & Margins)
+Notes: Ready to plan Phase 30 (Page Rename & Polish)
