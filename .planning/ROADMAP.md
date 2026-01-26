@@ -38,15 +38,15 @@ Plans:
 Plans:
 - [x] 29-01: Double Chance columns and per-market margin display
 
-#### Phase 30: Page Rename & Polish
+#### Phase 30: Page Rename & Polish ✓
 
 **Goal**: Rename "Matches" to "Odds Comparison" in navigation and page title, final polish
 **Depends on**: Phase 29
 **Research**: Unlikely (internal patterns)
-**Plans**: 1
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 30-01: Page title, back link, and icon updates
+- [x] 30-01: Page title, back link, icon, and URL route updates
 
 ## Completed Milestones
 
@@ -143,4 +143,4 @@ Plans:
 | **v1.3 SHIPPED** | | | **2026-01-26** | |
 | 28. Table Restructure | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 29. Double Chance & Margins | v1.4 | 1/1 | Complete | 2026-01-26 |
-| 30. Page Rename & Polish | v1.4 | 0/1 | Planned | - |
+| 30. Page Rename & Polish | v1.4 | 1/1 | Complete | 2026-01-26 |
