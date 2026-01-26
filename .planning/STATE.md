@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 ## Current Position
 
 Phase: 28 of 30 (Table Restructure)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-26 — Milestone v1.4 created
+Plan: 1 of 1 complete
+Status: Phase complete
+Last activity: 2026-01-26 — Completed 28-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 33%
 
 ## Milestones
 
@@ -26,9 +26,9 @@ Progress: ░░░░░░░░░░ 0%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 79
+- Total plans completed: 80
 - Average duration: 6 min
-- Total execution time: ~7.9 hours
+- Total execution time: ~8.0 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
@@ -66,6 +66,7 @@ Progress: ░░░░░░░░░░ 0%
 - **Startup sync pattern** - load DB settings and apply after services start (v1.2)
 - **Command + Popover pattern** for searchable multi-select comboboxes (v1.3)
 - **Cross-feature hook sharing** - reuse hooks across features for consistent data (v1.3)
+- **Bookmakers-as-rows layout** - rowspan for match info, stacked rows per bookmaker (v1.4)
 
 ### Key Decisions
 
@@ -95,6 +96,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Milestone v1.4 initialization
+Stopped at: Completed Phase 28 (Table Restructure)
 Resume file: None
-Notes: Ready to plan Phase 28 (Table Restructure)
+Notes: Ready to plan Phase 29 (Double Chance & Margins)

@@ -18,15 +18,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Complete redesign of the Matches page table structure with bookmaker rows, Double Chance market, and per-market margins for better odds comparison UX.
 
-#### Phase 28: Table Restructure
+#### Phase 28: Table Restructure ✓
 
 **Goal**: Transform table from bookmakers-as-columns to bookmakers-as-rows (3 rows per match with rowspan layout), reorder columns, update match name format
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal React patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 28-01: TBD (run /gsd:plan-phase 28 to break down)
+- [x] 28-01: Restructure table to bookmakers-as-rows layout
 
 #### Phase 29: Double Chance & Margins
 
@@ -141,6 +141,6 @@ Plans:
 | 26. Tournament Gaps Cards | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 27. Dashboard Coverage Widgets | v1.3 | 1/1 | Complete | 2026-01-26 |
 | **v1.3 SHIPPED** | | | **2026-01-26** | |
-| 28. Table Restructure | v1.4 | 0/? | Not started | - |
+| 28. Table Restructure | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 29. Double Chance & Margins | v1.4 | 0/? | Not started | - |
 | 30. Page Rename & Polish | v1.4 | 0/? | Not started | - |
