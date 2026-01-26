@@ -32,10 +32,10 @@ Plans:
 **Goal**: Make country filter list scrollable with type-to-filter and scroll-to-match highlighting
 **Depends on**: Phase 23
 **Research**: Unlikely (internal UI patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 24-01: Searchable multi-select country filter
+- [x] 24-01: Searchable multi-select country filter
 
 #### Phase 25: Include Started Toggle
 
@@ -144,7 +144,7 @@ Plans:
 | 21. Settings Persistence Integration | v1.2 | 1/1 | Complete | 2026-01-25 |
 | 22. History Retention | v1.2 | 5/5 | Complete | 2026-01-26 |
 | 23. Fix Match Rate Bug | v1.3 | 1/1 | Complete | 2026-01-26 |
-| 24. Country Filters UX | v1.3 | 0/1 | Not started | - |
+| 24. Country Filters UX | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 25. Include Started Toggle | v1.3 | 0/? | Not started | - |
 | 26. Tournament Gaps Cards | v1.3 | 0/? | Not started | - |
 | 27. Dashboard Coverage Widgets | v1.3 | 0/? | Not started | - |
