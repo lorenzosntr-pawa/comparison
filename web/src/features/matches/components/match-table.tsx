@@ -11,6 +11,8 @@ const MARKET_CONFIG = {
   '3795': { id: '3795', label: 'BTTS', outcomes: ['Yes', 'No'] },
 } as const
 
+type MarketId = keyof typeof MARKET_CONFIG
+
 // Bookmaker display config
 const BOOKMAKER_LABELS: Record<string, string> = {
   betpawa: 'BP',
@@ -167,64 +169,6 @@ function OddsValue({
 }
 
 /**
- * Render market odds header (outcome names).
- */
-function MarketHeader({ marketId }: { marketId: string }) {
-  const config = MARKET_CONFIG[marketId as keyof typeof MARKET_CONFIG]
-  if (!config) return null
-
-  return (
-    <>
-      {config.outcomes.map((outcome) => (
-        <th
-          key={outcome}
-          className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap"
-        >
-          {outcome}
-        </th>
-      ))}
-    </>
-  )
-}
-
-/**
- * Render market odds cells for a bookmaker.
- */
-function MarketCells({
-  bookmaker,
-  marketId,
-  comparisonDataByOutcome,
-}: {
-  bookmaker: BookmakerOdds | undefined
-  marketId: string
-  comparisonDataByOutcome: Record<string, ComparisonData>
-}) {
-  const config = MARKET_CONFIG[marketId as keyof typeof MARKET_CONFIG]
-  if (!config) return null
-
-  const bookmakerSlug = bookmaker?.bookmaker_slug ?? ''
-
-  return (
-    <>
-      {config.outcomes.map((outcome) => {
-        const odds = bookmaker ? getOutcomeOdds(bookmaker, marketId, outcome) : null
-        const comparisonData = comparisonDataByOutcome[outcome]
-
-        return (
-          <td key={outcome} className="px-2 py-2 text-center">
-            <OddsValue
-              odds={odds}
-              bookmakerSlug={bookmakerSlug}
-              comparisonData={comparisonData}
-            />
-          </td>
-        )
-      })}
-    </>
-  )
-}
-
-/**
  * Format kickoff time for display.
  */
 function formatKickoff(kickoff: string): string {
@@ -259,11 +203,18 @@ function formatKickoff(kickoff: string): string {
 export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false }: MatchTableProps) {
   const navigate = useNavigate()
 
-  // Get ordered list of bookmakers from first event
+  // Get ordered list of bookmakers
   // Exclude betpawa when showing competitor-only events
   const bookmakerOrder = excludeBetpawa
     ? ['sportybet', 'bet9ja']
     : ['betpawa', 'sportybet', 'bet9ja']
+
+  const rowsPerMatch = bookmakerOrder.length
+
+  // Filter visible markets
+  const visibleMarkets = visibleColumns.filter(
+    (id) => id in MARKET_CONFIG
+  ) as MarketId[]
 
   if (isLoading) {
     return (
@@ -283,52 +234,39 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
     )
   }
 
-  // Filter visible markets
-  const visibleMarkets = visibleColumns.filter(
-    (id) => id in MARKET_CONFIG
-  ) as (keyof typeof MARKET_CONFIG)[]
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b">
-            <th className="px-3 py-3 text-left font-medium">Match</th>
-            <th className="px-3 py-3 text-left font-medium whitespace-nowrap">Kickoff</th>
-            <th className="px-3 py-3 text-left font-medium">Tournament</th>
+          {/* Main header row */}
+          <tr className="border-b bg-muted/30">
             <th className="px-3 py-3 text-left font-medium">Region</th>
-            {/* Market columns grouped by bookmaker */}
+            <th className="px-3 py-3 text-left font-medium">Tournament</th>
+            <th className="px-3 py-3 text-left font-medium whitespace-nowrap">Kickoff</th>
+            <th className="px-3 py-3 text-left font-medium">Match</th>
+            <th className="px-3 py-3 text-center font-medium w-12">Book</th>
+            {/* Market group headers */}
             {visibleMarkets.map((marketId) => (
               <th
                 key={marketId}
-                colSpan={MARKET_CONFIG[marketId].outcomes.length * bookmakerOrder.length}
-                className="px-2 py-2 text-center font-medium border-l"
+                colSpan={MARKET_CONFIG[marketId].outcomes.length}
+                className="px-2 py-3 text-center font-medium border-l"
               >
                 {MARKET_CONFIG[marketId].label}
               </th>
             ))}
           </tr>
-          {/* Sub-header with bookmaker labels and outcomes */}
-          <tr className="border-b bg-muted/30">
-            <th colSpan={4}></th>
-            {visibleMarkets.map((marketId) =>
-              bookmakerOrder.map((slug) => (
-                <th
-                  key={`${marketId}-${slug}-header`}
-                  colSpan={MARKET_CONFIG[marketId].outcomes.length}
-                  className="px-2 py-1 text-xs font-medium text-center border-l first:border-l-0"
-                >
-                  {BOOKMAKER_LABELS[slug] || slug}
-                </th>
-              ))
-            )}
-          </tr>
-          {/* Outcome headers */}
+          {/* Outcome sub-headers */}
           <tr className="border-b bg-muted/10">
-            <th colSpan={4}></th>
+            <th colSpan={5}></th>
             {visibleMarkets.map((marketId) =>
-              bookmakerOrder.map((slug) => (
-                <MarketHeader key={`${marketId}-${slug}-outcomes`} marketId={marketId} />
+              MARKET_CONFIG[marketId].outcomes.map((outcome) => (
+                <th
+                  key={`${marketId}-${outcome}`}
+                  className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap border-l first:border-l-0"
+                >
+                  {outcome}
+                </th>
               ))
             )}
           </tr>
@@ -351,58 +289,93 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
               })
             })
 
-            return (
-              <tr
-                key={event.id}
-                className={cn(
-                  'border-b hover:bg-muted/50 transition-colors',
-                  isCompetitorOnly
-                    ? 'border-l-2 border-l-orange-500/30'
-                    : 'cursor-pointer'
-                )}
-                onClick={() => {
-                  // Don't navigate for competitor-only events (no detail view)
-                  if (!isCompetitorOnly) {
-                    navigate(`/matches/${event.id}`)
+            // Match name format: "Team A - Team B"
+            const matchName = `${event.home_team} - ${event.away_team}`
+
+            return bookmakerOrder.map((bookmakerSlug, bookmakerIndex) => {
+              const isFirstRow = bookmakerIndex === 0
+              const isLastRow = bookmakerIndex === rowsPerMatch - 1
+              const bookmaker = event.bookmakers.find(
+                (b) => b.bookmaker_slug === bookmakerSlug
+              )
+
+              return (
+                <tr
+                  key={`${event.id}-${bookmakerSlug}`}
+                  className={cn(
+                    'hover:bg-muted/50 transition-colors',
+                    isLastRow && 'border-b',
+                    isCompetitorOnly
+                      ? 'border-l-2 border-l-orange-500/30'
+                      : 'cursor-pointer'
+                  )}
+                  onClick={() => {
+                    // Don't navigate for competitor-only events (no detail view)
+                    if (!isCompetitorOnly) {
+                      navigate(`/matches/${event.id}`)
+                    }
+                  }}
+                  title={
+                    isCompetitorOnly
+                      ? 'Competitor-only event - no detail view'
+                      : undefined
                   }
-                }}
-                title={
-                  isCompetitorOnly
-                    ? 'Competitor-only event - no detail view'
-                    : undefined
-                }
-              >
-                <td className="px-3 py-3">
-                  <div className="font-medium">{event.home_team}</div>
-                  <div className="text-muted-foreground text-xs">vs {event.away_team}</div>
-                </td>
-                <td className="px-3 py-3 whitespace-nowrap text-sm">
-                  {formatKickoff(event.kickoff)}
-                </td>
-                <td className="px-3 py-3 text-sm text-muted-foreground">
-                  {event.tournament_name}
-                </td>
-                <td className="px-3 py-3 text-sm text-muted-foreground">
-                  {event.tournament_country ?? '-'}
-                </td>
-                {/* Market cells */}
-                {visibleMarkets.map((marketId) =>
-                  bookmakerOrder.map((slug) => {
-                    const bookmaker = event.bookmakers.find(
-                      (b) => b.bookmaker_slug === slug
-                    )
-                    return (
-                      <MarketCells
-                        key={`${event.id}-${marketId}-${slug}`}
-                        bookmaker={bookmaker}
-                        marketId={marketId}
-                        comparisonDataByOutcome={comparisonDataByMarket[marketId]}
-                      />
-                    )
-                  })
-                )}
-              </tr>
-            )
+                >
+                  {/* Rowspan cells - only render on first row */}
+                  {isFirstRow && (
+                    <>
+                      <td
+                        className="px-3 py-2 text-sm text-muted-foreground align-middle"
+                        rowSpan={rowsPerMatch}
+                      >
+                        {event.tournament_country ?? '-'}
+                      </td>
+                      <td
+                        className="px-3 py-2 text-sm text-muted-foreground align-middle"
+                        rowSpan={rowsPerMatch}
+                      >
+                        {event.tournament_name}
+                      </td>
+                      <td
+                        className="px-3 py-2 whitespace-nowrap text-sm align-middle"
+                        rowSpan={rowsPerMatch}
+                      >
+                        {formatKickoff(event.kickoff)}
+                      </td>
+                      <td
+                        className="px-3 py-2 font-medium align-middle"
+                        rowSpan={rowsPerMatch}
+                      >
+                        {matchName}
+                      </td>
+                    </>
+                  )}
+                  {/* Bookmaker label */}
+                  <td className="px-2 py-2 text-center text-xs font-medium text-muted-foreground">
+                    {BOOKMAKER_LABELS[bookmakerSlug] || bookmakerSlug}
+                  </td>
+                  {/* Odds cells for all markets */}
+                  {visibleMarkets.map((marketId) =>
+                    MARKET_CONFIG[marketId].outcomes.map((outcome) => {
+                      const odds = bookmaker
+                        ? getOutcomeOdds(bookmaker, marketId, outcome)
+                        : null
+                      const comparisonData = comparisonDataByMarket[marketId][outcome]
+
+                      return (
+                        <td key={`${marketId}-${outcome}`} className="px-2 py-2 text-center">
+                          <OddsValue
+                            odds={odds}
+                            bookmakerSlug={bookmakerSlug}
+                            comparisonData={comparisonData}
+                          />
+                        </td>
+                      )
+                    })
+                  )}
+                </tr>
+              )
+            })
           })}
         </tbody>
       </table>
