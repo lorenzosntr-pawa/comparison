@@ -4,11 +4,12 @@ import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds } from '@/types/api'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
-// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
+// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
 const MARKET_CONFIG = {
   '3743': { id: '3743', label: '1X2', outcomes: ['1', 'X', '2'] },
   '5000': { id: '5000', label: 'O/U 2.5', outcomes: ['Over', 'Under'] },
   '3795': { id: '3795', label: 'BTTS', outcomes: ['Yes', 'No'] },
+  '4693': { id: '4693', label: 'DC', outcomes: ['1X', 'X2', '12'] },
 } as const
 
 type MarketId = keyof typeof MARKET_CONFIG
@@ -64,6 +65,37 @@ function getOutcomeOdds(
     o.name === outcomeName
   )
   return outcome?.odds ?? null
+}
+
+/**
+ * Get margin for a specific market from inline odds.
+ */
+function getMargin(bookmaker: BookmakerOdds, marketId: string): number | null {
+  const market = bookmaker.inline_odds?.find((m) => m.market_id === marketId)
+  return market?.margin ?? null
+}
+
+/**
+ * Compute best (lowest) margin per market across all bookmakers.
+ */
+function computeBestMargins(
+  bookmakers: BookmakerOdds[],
+  marketIds: string[]
+): Record<string, number | null> {
+  const bestMargins: Record<string, number | null> = {}
+
+  for (const marketId of marketIds) {
+    let best: number | null = null
+    for (const bookmaker of bookmakers) {
+      const margin = getMargin(bookmaker, marketId)
+      if (margin !== null && (best === null || margin < best)) {
+        best = margin
+      }
+    }
+    bestMargins[marketId] = best
+  }
+
+  return bestMargins
 }
 
 /**
@@ -169,6 +201,61 @@ function OddsValue({
 }
 
 /**
+ * Render margin cell with color coding.
+ *
+ * Color coding shows margin competitiveness:
+ * - Green: margin < 3% (competitive)
+ * - Neutral: margin 3-6%
+ * - Red: margin > 6% (high)
+ *
+ * Best margin per market gets highlighted.
+ */
+function MarginValue({
+  margin,
+  isBestMargin,
+}: {
+  margin: number | null
+  isBestMargin: boolean
+}) {
+  if (margin === null) {
+    return <span className="text-muted-foreground text-xs">-</span>
+  }
+
+  let bgClass = ''
+
+  if (margin < 3) {
+    // Green for competitive margins (<3%)
+    const intensity = Math.max(0, 1 - margin / 3) // 0% → 1, 3% → 0
+    const opacityLevel = Math.min(
+      Math.max(Math.ceil(intensity * 5) * 10, 10),
+      50
+    ) as OpacityLevel
+    bgClass = COLOR_CLASSES.green[opacityLevel]
+  } else if (margin > 6) {
+    // Red for high margins (>6%)
+    const intensity = Math.min((margin - 6) / 6, 1) // 6% → 0, 12%+ → 1
+    const opacityLevel = Math.min(
+      Math.max(Math.ceil(intensity * 5) * 10, 10),
+      50
+    ) as OpacityLevel
+    bgClass = COLOR_CLASSES.red[opacityLevel]
+  }
+  // 3-6% is neutral (no color)
+
+  return (
+    <span
+      className={cn(
+        'inline-block px-1.5 py-0.5 rounded text-xs min-w-[2.5rem] text-center',
+        bgClass,
+        isBestMargin && 'font-bold ring-1 ring-green-500/50'
+      )}
+    >
+      {margin.toFixed(1)}%
+    </span>
+  )
+}
+
+/**
  * Format kickoff time for display.
  */
 function formatKickoff(kickoff: string): string {
@@ -245,30 +332,38 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             <th className="px-3 py-3 text-left font-medium whitespace-nowrap">Kickoff</th>
             <th className="px-3 py-3 text-left font-medium">Match</th>
             <th className="px-3 py-3 text-center font-medium w-12">Book</th>
-            {/* Market group headers */}
+            {/* Market group headers (outcomes + margin column) */}
             {visibleMarkets.map((marketId) => (
               <th
                 key={marketId}
-                colSpan={MARKET_CONFIG[marketId].outcomes.length}
+                colSpan={MARKET_CONFIG[marketId].outcomes.length + 1}
                 className="px-2 py-3 text-center font-medium border-l"
               >
                 {MARKET_CONFIG[marketId].label}
               </th>
             ))}
           </tr>
-          {/* Outcome sub-headers */}
+          {/* Outcome sub-headers (with margin column per market) */}
           <tr className="border-b bg-muted/10">
             <th colSpan={5}></th>
-            {visibleMarkets.map((marketId) =>
-              MARKET_CONFIG[marketId].outcomes.map((outcome) => (
+            {visibleMarkets.map((marketId) => (
+              <>
+                {MARKET_CONFIG[marketId].outcomes.map((outcome) => (
+                  <th
+                    key={`${marketId}-${outcome}`}
+                    className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap border-l first:border-l-0"
+                  >
+                    {outcome}
+                  </th>
+                ))}
                 <th
-                  key={`${marketId}-${outcome}`}
-                  className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap border-l first:border-l-0"
+                  key={`${marketId}-margin`}
+                  className="px-2 py-2 text-xs font-medium text-muted-foreground text-center whitespace-nowrap"
                 >
-                  {outcome}
+                  %
                 </th>
-              ))
-            )}
+              </>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -288,6 +383,9 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                 )
               })
             })
+
+            // Pre-compute best margins per market for highlighting
+            const bestMargins = computeBestMargins(event.bookmakers, visibleMarkets)
 
             // Match name format: "Team A - Team B"
             const matchName = `${event.home_team} - ${event.away_team}`
@@ -354,25 +452,39 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                   <td className="px-2 py-2 text-center text-xs font-medium text-muted-foreground">
                     {BOOKMAKER_LABELS[bookmakerSlug] || bookmakerSlug}
                   </td>
-                  {/* Odds cells for all markets */}
-                  {visibleMarkets.map((marketId) =>
-                    MARKET_CONFIG[marketId].outcomes.map((outcome) => {
-                      const odds = bookmaker
-                        ? getOutcomeOdds(bookmaker, marketId, outcome)
-                        : null
-                      const comparisonData = comparisonDataByMarket[marketId][outcome]
+                  {/* Odds cells for all markets (with margin per market) */}
+                  {visibleMarkets.map((marketId) => (
+                    <>
+                      {MARKET_CONFIG[marketId].outcomes.map((outcome) => {
+                        const odds = bookmaker
+                          ? getOutcomeOdds(bookmaker, marketId, outcome)
+                          : null
+                        const comparisonData = comparisonDataByMarket[marketId][outcome]
 
-                      return (
-                        <td key={`${marketId}-${outcome}`} className="px-2 py-2 text-center">
-                          <OddsValue
-                            odds={odds}
-                            bookmakerSlug={bookmakerSlug}
-                            comparisonData={comparisonData}
-                          />
-                        </td>
-                      )
-                    })
-                  )}
+                        return (
+                          <td key={`${marketId}-${outcome}`} className="px-2 py-2 text-center">
+                            <OddsValue
+                              odds={odds}
+                              bookmakerSlug={bookmakerSlug}
+                              comparisonData={comparisonData}
+                            />
+                          </td>
+                        )
+                      })}
+                      {/* Margin cell for this market */}
+                      <td key={`${marketId}-margin`} className="px-2 py-2 text-center">
+                        <MarginValue
+                          margin={bookmaker ? getMargin(bookmaker, marketId) : null}
+                          isBestMargin={
+                            bookmaker
+                              ? getMargin(bookmaker, marketId) === bestMargins[marketId] &&
+                                bestMargins[marketId] !== null
+                              : false
+                          }
+                        />
+                      </td>
+                    </>
+                  ))}
                 </tr>
               )
             })

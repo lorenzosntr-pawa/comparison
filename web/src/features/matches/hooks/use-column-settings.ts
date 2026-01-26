@@ -8,11 +8,12 @@ export interface ColumnConfig {
 }
 
 // Available market columns matching backend INLINE_MARKET_IDS (Betpawa taxonomy)
-// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
+// 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
 export const AVAILABLE_COLUMNS: ColumnConfig[] = [
   { id: '3743', label: '1X2' },
   { id: '5000', label: 'O/U 2.5' },
   { id: '3795', label: 'BTTS' },
+  { id: '4693', label: 'Double Chance' },
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = ['3743', '5000', '3795']
