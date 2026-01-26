@@ -37,8 +37,8 @@ from src.matching.schemas import (
 router = APIRouter(prefix="/events", tags=["events"])
 
 # Key market IDs for inline odds (Betpawa taxonomy)
-# 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time
-INLINE_MARKET_IDS = ["3743", "5000", "3795"]
+# 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
+INLINE_MARKET_IDS = ["3743", "5000", "3795", "4693"]
 
 # Market names to exclude from detail view (goalscorer markets - not focus for now)
 EXCLUDED_MARKET_PATTERNS = ["goalscorer", "scorer"]
@@ -72,12 +72,22 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                             OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
                         )
             if outcomes:
+                # Calculate margin: (sum(1/odds) - 1) * 100
+                margin = None
+                try:
+                    total_implied_prob = sum(1.0 / o.odds for o in outcomes if o.odds > 0)
+                    if total_implied_prob > 0:
+                        margin = round((total_implied_prob - 1) * 100, 2)
+                except (ZeroDivisionError, TypeError):
+                    pass
+
                 inline_odds.append(
                     InlineOdds(
                         market_id=market.betpawa_market_id,
                         market_name=market.betpawa_market_name,
                         line=market.line,
                         outcomes=outcomes,
+                        margin=margin,
                     )
                 )
 
@@ -217,12 +227,22 @@ def _build_competitor_inline_odds(
                             OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
                         )
             if outcomes:
+                # Calculate margin: (sum(1/odds) - 1) * 100
+                margin = None
+                try:
+                    total_implied_prob = sum(1.0 / o.odds for o in outcomes if o.odds > 0)
+                    if total_implied_prob > 0:
+                        margin = round((total_implied_prob - 1) * 100, 2)
+                except (ZeroDivisionError, TypeError):
+                    pass
+
                 inline_odds.append(
                     InlineOdds(
                         market_id=market.betpawa_market_id,
                         market_name=market.betpawa_market_name,
                         line=market.line,
                         outcomes=outcomes,
+                        margin=margin,
                     )
                 )
 

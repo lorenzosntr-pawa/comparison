@@ -27,6 +27,7 @@ class InlineOdds(BaseModel):
     market_name: str
     line: float | None = None
     outcomes: list[OutcomeOdds]
+    margin: float | None = None
 
 
 class BookmakerOdds(BaseModel):

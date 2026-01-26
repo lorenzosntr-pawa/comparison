@@ -78,6 +78,7 @@ export interface InlineOdds {
   market_name: string
   line: number | null
   outcomes: OutcomeOdds[]
+  margin: number | null
 }
 
 export interface BookmakerOdds {
