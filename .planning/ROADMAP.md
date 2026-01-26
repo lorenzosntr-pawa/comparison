@@ -52,10 +52,10 @@ Plans:
 **Goal**: Add summary cards showing tournament coverage gaps per competitor
 **Depends on**: Phase 25
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 26-01: TBD
+- [x] 26-01: Tournament gaps cards component
 
 #### Phase 27: Dashboard Coverage Widgets
 
@@ -146,5 +146,5 @@ Plans:
 | 23. Fix Match Rate Bug | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 24. Country Filters UX | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 25. Include Started Toggle | v1.3 | 1/1 | Complete | 2026-01-26 |
-| 26. Tournament Gaps Cards | v1.3 | 0/? | Not started | - |
+| 26. Tournament Gaps Cards | v1.3 | 1/1 | Complete | 2026-01-26 |
 | 27. Dashboard Coverage Widgets | v1.3 | 0/? | Not started | - |
