@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useCoverage, usePalimpsestEvents } from './hooks'
 import {
   CoverageStatsCards,
+  TournamentStatsCards,
   CoverageFilterBar,
   TournamentTable,
   type CoverageFilters,
@@ -113,8 +114,14 @@ export function CoveragePage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Event Stats Cards */}
       <CoverageStatsCards coverage={coverage} isLoading={coveragePending} />
+
+      {/* Tournament Stats Cards */}
+      <TournamentStatsCards
+        tournaments={filteredTournaments}
+        isLoading={eventsPending}
+      />
 
       {/* Filters */}
       <CoverageFilterBar
