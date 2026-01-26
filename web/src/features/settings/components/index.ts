@@ -1,3 +1,6 @@
+export { CleanupFrequencySelector } from './cleanup-frequency-selector'
 export { IntervalSelector } from './interval-selector'
+export { ManageDataButton } from './manage-data-button'
 export { PlatformToggles } from './platform-toggles'
+export { RetentionSelector } from './retention-selector'
 export { SchedulerControl } from './scheduler-control'
