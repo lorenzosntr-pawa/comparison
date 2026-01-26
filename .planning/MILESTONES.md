@@ -1,5 +1,34 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.2 Settings & Retention (Shipped: 2026-01-26)
+
+**Delivered:** Persistent configuration with configurable data retention, automatic cleanup scheduling, and improved settings UI with data management controls.
+
+**Phases completed:** 19.1-22 (8 plans total)
+
+**Key accomplishments:**
+
+- Desktop sidebar overlay with backdrop dimming and click-to-close
+- History retention settings (1-90 day configurable, default 7 days)
+- Settings persistence at startup (scheduler syncs interval from DB)
+- Cleanup service with preview-before-delete pattern
+- Automatic cleanup scheduler running daily at 2 AM UTC
+- Settings UI redesign with compact 4-row layout
+- Manage Data dialog with overview, cleanup, and history tabs
+
+**Stats:**
+
+- 47 files modified
+- ~3,800 lines of Python + TypeScript added
+- 4 phases (including decimal), 8 plans
+- 2 days from v1.1 to v1.2 (2026-01-25 to 2026-01-26)
+
+**Git range:** `docs(19.1)` → `chore: remove phase 23`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features (WebSocket real-time, historical trends, etc.).
+
+---
+
 ## v1.1 Palimpsest Comparison (Shipped: 2026-01-24)
 
 **Delivered:** Full competitor palimpsest comparison enabling visibility into tournaments and events available on SportyBet/Bet9ja but not BetPawa.

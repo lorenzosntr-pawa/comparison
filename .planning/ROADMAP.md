@@ -8,7 +8,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 - ✅ [v1.0 MVP](milestones/v1.0-ROADMAP.md) — Phases 1-12 (shipped 2026-01-23)
 - ✅ [v1.1 Palimpsest Comparison](milestones/v1.1-ROADMAP.md) — Phases 13-19 (shipped 2026-01-24)
-- 🚧 **v1.2 Settings & Real-time** — Phases 20-22 (in progress)
+- ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
 
 ## Completed Milestones
 
@@ -46,53 +46,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### 🚧 v1.2 Settings & Real-time (In Progress)
+<details>
+<summary>✅ v1.2 Settings & Retention (Phases 19.1-22) — SHIPPED 2026-01-26</summary>
 
-**Milestone Goal:** Persistent configuration that survives page refresh/server restart with configurable history retention.
+- [x] Phase 19.1: Fix Sidebar Menu (1/1 plans) — 2026-01-25
+- [x] Phase 20: Settings Schema & API (1/1 plans) — 2026-01-25
+- [x] Phase 21: Settings Persistence Integration (1/1 plans) — 2026-01-25
+- [x] Phase 22: History Retention (5/5 plans) — 2026-01-26
 
-#### Phase 19.1: Fix Sidebar Menu (INSERTED) - COMPLETE
-
-**Goal**: Urgent fix for sidebar menu issue
-**Depends on**: Phase 19
-**Research**: Unlikely (bug fix)
-**Plans**: 1
-
-Plans:
-- [x] 19.1-01: Sidebar overlay with backdrop
-
-#### Phase 20: Settings Schema & API - COMPLETE
-
-**Goal**: Add history retention setting to existing settings infrastructure
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (established CRUD patterns)
-**Plans**: 1
-
-Plans:
-- [x] 20-01: Add history_retention_days setting
-
-#### Phase 21: Settings Persistence Integration - COMPLETE
-
-**Goal**: Replace in-memory/hardcoded values with database reads
-**Depends on**: Phase 20
-**Research**: Unlikely (internal refactoring)
-**Plans**: 1
-
-Plans:
-- [x] 21-01: Sync settings from DB at startup
-
-#### Phase 22: History Retention - COMPLETE
-
-**Goal**: Configurable data retention policy and cleanup job
-**Depends on**: Phase 21
-**Research**: Unlikely (scheduled job patterns)
-**Plans**: 5
-
-Plans:
-- [x] 22-01: Retention settings model and schemas
-- [x] 22-02: Cleanup service and run history
-- [x] 22-03: Cleanup scheduler and API endpoints
-- [x] 22-04: Settings UI redesign
-- [x] 22-05: Manage Data dialog
+</details>
 
 ## Progress
 

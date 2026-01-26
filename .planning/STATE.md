@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-24)
+See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.2 Settings & Real-time
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 22 of 22 (History Retention)
-Plan: 5 of 5 in current phase
-Status: Milestone complete
-Last activity: 2026-01-26 — Completed 22-05-PLAN.md
+Phase: 22 of 22 (All complete)
+Plan: All plans complete
+Status: Ready to plan next milestone
+Last activity: 2026-01-26 — v1.2 milestone shipped
 
 Progress: ██████████ 100%
 
@@ -20,14 +20,14 @@ Progress: ██████████ 100%
 
 - **v1.0 MVP** — SHIPPED 2026-01-23 (15 phases, 46 plans)
 - **v1.1 Palimpsest Comparison** — SHIPPED 2026-01-24 (7 phases, 11 plans)
-- **v1.2 Settings & Real-time** — IN PROGRESS (3 phases)
+- **v1.2 Settings & Retention** — SHIPPED 2026-01-26 (4 phases, 8 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 65
+- Total plans completed: 73
 - Average duration: 6 min
-- Total execution time: ~6.6 hours
+- Total execution time: ~7.3 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
@@ -39,9 +39,14 @@ Progress: ██████████ 100%
 - 2 days from v1.0 to v1.1
 - ~8,500 lines added
 
+**v1.2 Summary:**
+- 4 phases completed (including decimal)
+- 2 days from v1.1 to v1.2
+- ~3,800 lines added
+
 ## Accumulated Context
 
-### Key Patterns (v1.0 + v1.1)
+### Key Patterns (v1.0 + v1.1 + v1.2)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -51,6 +56,8 @@ Progress: ██████████ 100%
 - shadcn/ui with Tailwind v4
 - **Fetch-then-store pattern** for async scraping (Phase 1: API parallel, Phase 2: DB sequential)
 - **AsyncSession cannot be shared** across concurrent asyncio tasks - use explicit commits between phases
+- **Preview-before-delete pattern** for destructive operations (v1.2)
+- **Startup sync pattern** - load DB settings and apply after services start (v1.2)
 
 ### Key Decisions
 
@@ -58,6 +65,8 @@ Progress: ██████████ 100%
 - SportRadar ID as primary cross-platform matching key
 - Store competitor data independently, match at query time
 - Negative IDs distinguish competitor-only events from BetPawa events
+- Default 7-day retention, 1-90 day range (v1.2)
+- Daily cleanup at 2 AM UTC (v1.2)
 
 ### Blockers/Concerns
 
@@ -67,13 +76,12 @@ None.
 
 - v1.0 MVP shipped 2026-01-23 with 15 phases
 - v1.1 Palimpsest Comparison shipped 2026-01-24 with 7 phases
-- Both milestones archived to .planning/milestones/
-- v1.2 Settings & Real-time created 2026-01-24: persistent config + history retention, 3 phases (Phase 20-22)
-- Phase 19.1 inserted after Phase 19: Fix sidebar menu (URGENT)
+- v1.2 Settings & Retention shipped 2026-01-26 with 4 phases
+- All milestones archived to .planning/milestones/
 
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Completed 22-05-PLAN.md
+Stopped at: v1.2 milestone complete
 Resume file: None
-Notes: v1.2 milestone complete. All phases finished.
+Notes: Ready to plan next milestone. Use /gsd:discuss-milestone or /gsd:new-milestone.

@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.1 Palimpsest Comparison)
+## Current State (v1.2 Settings & Retention)
 
-**Shipped:** 2026-01-24
+**Shipped:** 2026-01-26
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~27,000 lines of code
+- ~31,000 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
@@ -27,6 +27,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Full competitor palimpsest scraping (~200+ tournaments per platform)
 - Coverage Comparison page with tournament/event availability analysis
 - Mode toggle on Matches page for competitor-only events
+- Configurable history retention (1-90 days)
+- Automatic cleanup scheduler with daily execution
+- Settings persistence across server restarts
+- Manage Data dialog for manual cleanup and data overview
 
 ## Requirements
 
@@ -52,6 +56,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Competitor-only event visibility on Matches page — v1.1
 - ✓ Coverage Comparison page with tournament/event availability — v1.1
 - ✓ Palimpsest API with coverage stats and event filtering — v1.1
+- ✓ Configurable history retention (1-90 days) — v1.2
+- ✓ Automatic cleanup scheduler — v1.2
+- ✓ Settings persistence across restarts — v1.2
+- ✓ Manage Data dialog with cleanup controls — v1.2
 
 ### Active
 
@@ -106,6 +114,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Metadata priority sportybet > bet9ja | SportyBet has better SR ID coverage | ✓ Good — v1.1 consistent display |
 | Fetch-then-store pattern | API parallel, DB sequential avoids session conflicts | ✓ Good — v1.1 solved async issues |
 | Negative IDs for competitor events | Distinguish competitor-only from BetPawa events in API | ✓ Good — v1.1 simple frontend check |
+| Default 7-day retention | Balance storage vs analysis needs for frequently changing odds | ✓ Good — v1.2 sensible default |
+| 1-90 day retention range | Prevent extremes (immediate deletion or excessive storage) | ✓ Good — v1.2 reasonable bounds |
+| Preview-before-delete pattern | Prevent accidental data loss with confirmation | ✓ Good — v1.2 safe UX |
+| Daily cleanup at 2 AM UTC | Off-peak hours, consistent scheduling | ✓ Good — v1.2 minimal disruption |
 
 ---
-*Last updated: 2026-01-24 after v1.1 milestone*
+*Last updated: 2026-01-26 after v1.2 milestone*
