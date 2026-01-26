@@ -75,7 +75,7 @@ export function CoverageStatsCards({
             {coverage?.matched_count ?? 0}
           </div>
           <p className="text-xs text-muted-foreground">
-            {coverage ? `${(coverage.match_rate * 100).toFixed(1)}% match rate` : 'No data'}
+            {coverage ? `${coverage.match_rate.toFixed(1)}% match rate` : 'No data'}
           </p>
         </CardContent>
       </Card>
