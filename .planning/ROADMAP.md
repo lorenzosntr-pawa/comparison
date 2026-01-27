@@ -22,10 +22,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Background monitor that auto-fails hung scrapes stuck in RUNNING status
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal patterns, existing scheduler infrastructure)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 31-01: TBD (run /gsd:plan-phase 31 to break down)
+- [x] 31-01: Backend Heartbeat & Stale Run Detection (2026-01-27)
 
 #### Phase 32: Connection Loss Logging
 
@@ -173,7 +173,7 @@ Plans:
 | 29. Double Chance & Margins | v1.4 | 1/1 | Complete | 2026-01-26 |
 | 30. Page Rename & Polish | v1.4 | 1/1 | Complete | 2026-01-26 |
 | **v1.4 SHIPPED** | | | **2026-01-26** | |
-| 31. Backend Heartbeat & Stale Run Detection | v1.5 | 0/? | Not started | - |
+| 31. Backend Heartbeat & Stale Run Detection | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 32. Connection Loss Logging | v1.5 | 0/? | Not started | - |
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 0/? | Not started | - |
 | 34. Inline Error Visibility | v1.5 | 0/? | Not started | - |
