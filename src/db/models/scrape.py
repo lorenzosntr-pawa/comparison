@@ -23,6 +23,7 @@ class ScrapeStatus(StrEnum):
     COMPLETED = "completed"
     PARTIAL = "partial"  # Some bookmakers succeeded, some failed
     FAILED = "failed"
+    CONNECTION_FAILED = "connection_failed"
 
 
 class ScrapeBatch(Base):

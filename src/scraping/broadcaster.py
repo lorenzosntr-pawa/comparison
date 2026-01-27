@@ -103,6 +103,11 @@ class ProgressBroadcaster:
                     pass
 
     @property
+    def subscriber_count(self) -> int:
+        """Get the number of active subscribers."""
+        return len(self._subscribers)
+
+    @property
     def is_completed(self) -> bool:
         """Check if the scrape has completed."""
         return self._completed

@@ -4,6 +4,7 @@ import asyncio
 import json
 from datetime import datetime
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
@@ -216,6 +217,20 @@ async def stream_scrape(
                             "events_count": progress.events_count or 0,
                         }
                         total_events += progress.events_count or 0
+
+                        # Disconnect detection: after each platform completion,
+                        # check if all SSE subscribers have disconnected
+                        if broadcaster.subscriber_count == 0:
+                            log = structlog.get_logger()
+                            log.warning(
+                                "SSE connection lost during manual scrape",
+                                scrape_run_id=scrape_run_id,
+                                last_platform=progress.platform.value,
+                                platforms_completed=list(platform_timings.keys()),
+                            )
+                            final_status = ScrapeStatus.CONNECTION_FAILED
+                            break
+
                     elif progress.platform and progress.phase == "failed":
                         failed_count += 1
 
