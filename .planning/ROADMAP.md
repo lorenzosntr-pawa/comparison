@@ -35,7 +35,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 32-01: TBD
+- [x] 32-01: Connection Loss Logging (2026-01-27)
 
 #### Phase 33: Detailed Per-Platform Progress Messages
 
@@ -174,7 +174,7 @@ Plans:
 | 30. Page Rename & Polish | v1.4 | 1/1 | Complete | 2026-01-26 |
 | **v1.4 SHIPPED** | | | **2026-01-26** | |
 | 31. Backend Heartbeat & Stale Run Detection | v1.5 | 1/1 | Complete | 2026-01-27 |
-| 32. Connection Loss Logging | v1.5 | 0/? | Not started | - |
+| 32. Connection Loss Logging | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 0/? | Not started | - |
 | 34. Inline Error Visibility | v1.5 | 0/? | Not started | - |
 | 35. Enhanced History Widget | v1.5 | 0/? | Not started | - |
