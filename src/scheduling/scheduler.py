@@ -47,12 +47,23 @@ def configure_scheduler() -> None:
     """
     # Deferred import to avoid circular dependency
     from src.scheduling.jobs import cleanup_old_data, scrape_all_platforms
+    from src.scheduling.stale_detection import detect_stale_runs
 
     # Use default interval on startup - will be updated when settings are loaded
     scheduler.add_job(
         scrape_all_platforms,
         trigger=IntervalTrigger(minutes=DEFAULT_INTERVAL_MINUTES),
         id="scrape_all_platforms",
+        replace_existing=True,
+        misfire_grace_time=60,
+        coalesce=True,
+    )
+
+    # Add stale run detection watchdog (every 2 minutes)
+    scheduler.add_job(
+        detect_stale_runs,
+        trigger=IntervalTrigger(minutes=2),
+        id="detect_stale_runs",
         replace_existing=True,
         misfire_grace_time=60,
         coalesce=True,
