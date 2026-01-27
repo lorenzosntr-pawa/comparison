@@ -20,6 +20,7 @@ from src.scheduling.scheduler import (
     start_scheduler,
     sync_settings_on_startup,
 )
+from src.scheduling.stale_detection import recover_stale_runs_on_startup
 from src.scraping.logging import configure_logging
 
 
@@ -104,6 +105,10 @@ async def lifespan(app: FastAPI):
 
                 # Initialize scheduler with app state access
                 set_app_state(app.state)
+
+                # Recover any runs left in RUNNING from previous process
+                recovered = await recover_stale_runs_on_startup()
+
                 configure_scheduler()
                 start_scheduler()
 
