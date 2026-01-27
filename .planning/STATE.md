@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-26)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v1.5 Scraping Observability
 
 ## Current Position
 
-Phase: Complete
-Plan: N/A
-Status: Awaiting next milestone
-Last activity: 2026-01-26 — v1.4 milestone shipped
+Phase: 31 of 35 (Backend Heartbeat & Stale Run Detection)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-27 — Milestone v1.5 created
 
-Progress: ██████████ 100% (v1.4 complete)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -23,6 +23,7 @@ Progress: ██████████ 100% (v1.4 complete)
 - **v1.2 Settings & Retention** — SHIPPED 2026-01-26 (4 phases, 8 plans)
 - **v1.3 Coverage Improvements** — SHIPPED 2026-01-26 (5 phases, 5 plans)
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
+- **v1.5 Scraping Observability** — IN PROGRESS (5 phases)
 
 ## Performance Metrics
 
@@ -99,10 +100,10 @@ None.
 - v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - v1.4 Odds Comparison UX shipped 2026-01-26 with 3 phases
 - All milestones archived to .planning/milestones/
+- Milestone v1.5 created: Scraping Observability, 5 phases (Phase 31-35)
 
 ## Session Continuity
 
-Last session: 2026-01-26
-Stopped at: v1.4 milestone shipped
+Last session: 2026-01-27
+Stopped at: Milestone v1.5 initialization
 Resume file: None
-Notes: All 30 phases complete. Use /gsd:new-milestone or /gsd:discuss-milestone to plan next version.
