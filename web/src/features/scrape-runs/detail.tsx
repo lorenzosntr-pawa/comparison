@@ -29,8 +29,14 @@ const statusVariants: Record<
   completed: 'default',
   partial: 'secondary',
   failed: 'destructive',
+  connection_failed: 'destructive',
   running: 'outline',
   pending: 'outline',
+}
+
+function formatStatus(status: string): string {
+  if (status === 'connection_failed') return 'Connection Lost'
+  return status
 }
 
 function formatDuration(
@@ -57,7 +63,7 @@ export function ScrapeRunDetailPage() {
   const [retryDialogOpen, setRetryDialogOpen] = useState(false)
 
   const isRunning = data?.status === 'running'
-  const canRetry = data?.status === 'partial' || data?.status === 'failed'
+  const canRetry = data?.status === 'partial' || data?.status === 'failed' || data?.status === 'connection_failed'
 
   // SSE streaming for real-time phase updates
   const {
@@ -286,7 +292,7 @@ export function ScrapeRunDetailPage() {
                       'bg-green-500 hover:bg-green-600'
                   )}
                 >
-                  {data.status}
+                  {formatStatus(data.status)}
                 </Badge>
               </div>
             </div>

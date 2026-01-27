@@ -22,8 +22,14 @@ const statusVariants: Record<
   completed: 'default',
   partial: 'secondary',
   failed: 'destructive',
+  connection_failed: 'destructive',
   running: 'outline',
   pending: 'outline',
+}
+
+function formatStatus(status: string): string {
+  if (status === 'connection_failed') return 'Connection Lost'
+  return status
 }
 
 function formatDuration(run: ScrapeRun): string {
@@ -136,7 +142,7 @@ export function RunsTable() {
                           'bg-green-500 hover:bg-green-600'
                       )}
                     >
-                      {run.status}
+                      {formatStatus(run.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDuration(run)}</TableCell>

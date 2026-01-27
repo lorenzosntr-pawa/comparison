@@ -42,8 +42,14 @@ const statusVariants: Record<
   completed: 'default',
   partial: 'secondary',
   failed: 'destructive',
+  connection_failed: 'destructive',
   running: 'outline',
   pending: 'outline',
+}
+
+function formatStatus(status: string): string {
+  if (status === 'connection_failed') return 'Connection Lost'
+  return status
 }
 
 // Platform-specific colors for progress bars
@@ -108,7 +114,7 @@ function getPlatformStatuses(
       } else {
         statuses[platform] = 'pending'
       }
-    } else if (run.status === 'failed' || run.status === 'partial') {
+    } else if (run.status === 'failed' || run.status === 'partial' || run.status === 'connection_failed') {
       // Run finished with failures - platforms not in timings failed
       statuses[platform] = 'failed'
     } else {
@@ -212,6 +218,19 @@ export function RecentRuns() {
   useEffect(() => {
     return cleanup
   }, [cleanup])
+
+  // Auto-rescrape: if latest run has connection_failed status, auto-trigger new scrape
+  const autoRescrapeTriggered = useRef(false)
+  useEffect(() => {
+    if (
+      data?.runs?.[0]?.status === 'connection_failed' &&
+      !autoRescrapeTriggered.current &&
+      !isStreaming
+    ) {
+      autoRescrapeTriggered.current = true
+      startScrape()
+    }
+  }, [data?.runs, isStreaming, startScrape])
 
   // Calculate progress percentage for manual scrapes
   const manualProgressPercent =
@@ -437,7 +456,7 @@ export function RecentRuns() {
                             'animate-pulse'
                         )}
                       >
-                        {run.status}
+                        {formatStatus(run.status)}
                       </Badge>
                       {run.trigger === 'scheduled' && (
                         <Radio className="h-3 w-3 text-blue-500" />
