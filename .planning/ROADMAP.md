@@ -120,14 +120,15 @@ Plans:
 - Compare API responses with direct SQL queries
 - Identify root cause of stale/incorrect display
 
-#### Phase 35: Apply Remediation Query
+#### Phase 35: Apply Remediation Query ✅
 
 **Goal**: Fix 2 timing-affected events with one-time SQL query, optionally add periodic re-matching job
 **Depends on**: Phase 34
 **Scope**: Minimal — audit found only 2 events affected (not major rework)
+**Status**: Complete — 2026-01-28
 
 Plans:
-- [ ] 35-01: One-time remediation + optional periodic job
+- [x] 35-01: Coverage stats fix (API-001) + timing remediation SQL
 
 #### Phase 36: Coverage Gap Analysis (Optional)
 
@@ -194,6 +195,6 @@ Plans:
 | **v1.5 SHIPPED** | | | **2026-01-28** | |
 | 34. Investigation & Matching Audit Report | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 34.1 API/UI Data Flow Audit (INSERTED) | v1.6 | 1/1 | Complete | 2026-01-28 |
-| 35. Apply Remediation Query | v1.6 | 0/1 | Not started | - |
+| 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 36. Coverage Gap Analysis (Optional) | v1.6 | 0/1 | Not started | - |
 | 37. Documentation Update (Optional) | v1.6 | 0/1 | Not started | - |
