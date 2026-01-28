@@ -115,10 +115,9 @@ async def get_coverage_stats(
     matched_betpawa_result = await db.execute(matched_betpawa_query)
     matched_count = matched_betpawa_result.scalar() or 0
 
-    # Competitor-only count: competitor events with no BetPawa match
+    # Competitor-only count: unique SR IDs with no BetPawa match (not raw rows)
     competitor_only_query = (
-        select(func.count())
-        .select_from(CompetitorEvent)
+        select(func.count(distinct(CompetitorEvent.sportradar_id)))
         .where(CompetitorEvent.betpawa_event_id.is_(None))
     )
     if not include_started:
