@@ -291,19 +291,26 @@ export function RecentRuns() {
         <CardTitle className="text-sm font-medium">Recent Scrape Runs</CardTitle>
         <div className="flex items-center gap-2">
           {/* Interval badge */}
-          {scheduler?.jobs[0]?.interval_minutes && (
-            <Badge variant="outline" className="gap-1 text-xs">
-              <Clock className="h-3 w-3" />
-              {scheduler.jobs[0].interval_minutes}m
-            </Badge>
-          )}
+          {(() => {
+            const scrapeJob = scheduler?.jobs?.find((j) => j.id === 'scrape_all_platforms')
+            return (
+              <>
+                {scrapeJob?.interval_minutes && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    {scrapeJob.interval_minutes}m
+                  </Badge>
+                )}
 
-          {/* Next run time */}
-          {scheduler?.jobs[0]?.next_run && !scheduler?.paused && (
-            <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
-              Next: {formatDistanceToNow(new Date(scheduler.jobs[0].next_run), { addSuffix: true })}
-            </Badge>
-          )}
+                {/* Next run time */}
+                {scrapeJob?.next_run && !scheduler?.paused && (
+                  <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
+                    Next: {formatDistanceToNow(new Date(scrapeJob.next_run), { addSuffix: true })}
+                  </Badge>
+                )}
+              </>
+            )
+          })()}
 
           {/* Scheduler status */}
           <Badge

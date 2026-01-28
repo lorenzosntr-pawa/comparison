@@ -11,7 +11,7 @@ export function SchedulerControl() {
 
   const isRunning = status?.running ?? false
   const isPaused = status?.paused ?? false
-  const scrapeJob = status?.jobs?.find((j) => j.id === 'scrape_odds')
+  const scrapeJob = status?.jobs?.find((j) => j.id === 'scrape_all_platforms')
   const nextRun = scrapeJob?.next_run
 
   const formatNextRun = (dateStr: string | null | undefined) => {
