@@ -11,7 +11,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
 - ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
-- 🚧 **v1.5 Scraping Observability** — Phases 31-33 (in progress)
+- 🚧 **v1.5 Scraping Observability** — Phases 31-33.1 (in progress)
 
 ### 🚧 v1.5 Scraping Observability (In Progress)
 
@@ -46,6 +46,16 @@ Plans:
 
 Plans:
 - [x] 33-01: Per-Platform Progress Events (2026-01-28)
+
+#### Phase 33.1: Fix Scheduler Interval Display (INSERTED)
+
+**Goal**: Fix job ID mismatch causing scheduler UI to show 2-minute watchdog interval instead of actual scrape interval
+**Depends on**: Phase 33
+**Research**: Unlikely (known root cause in ISS-003)
+**Plans**: 1
+
+Plans:
+- [x] 33.1-01: Fix Scheduler Interval Display (2026-01-28)
 
 ## Completed Milestones
 
@@ -156,3 +166,4 @@ Plans:
 | 31. Backend Heartbeat & Stale Run Detection | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 32. Connection Loss Logging | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 1/1 | Complete | 2026-01-28 |
+| 33.1 Fix Scheduler Interval Display (INSERTED) | v1.5 | 1/1 | Complete | 2026-01-28 |
