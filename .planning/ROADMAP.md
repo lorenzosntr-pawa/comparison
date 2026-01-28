@@ -94,45 +94,41 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Fix SportRadar ID-based event matching across Sporty, Betpawa, and Bet9ja — investigation report first, then targeted fixes.
 
-#### Phase 34: Investigation & Matching Audit Report
+#### Phase 34: Investigation & Matching Audit Report ✅
 
 **Goal**: Deep dive into SportRadar ID extraction and matching pipeline, produce findings document identifying specific bugs
 **Depends on**: Previous milestone complete
-**Research**: Unlikely (internal codebase audit)
-**Plans**: TBD
+**Status**: Complete — 2026-01-28
 
 Plans:
-- [ ] 34-01: TBD (run /gsd:plan-phase 34 to break down)
+- [x] 34-01: Code audit + SQL diagnostics + findings report
 
-#### Phase 35: Fix SportRadar ID Extraction
+#### Phase 35: Apply Remediation Query
 
-**Goal**: Fix how IDs are parsed/normalized from each platform's API response format (Sporty URL-encoded sr:match:id, Betpawa widgets, Bet9ja extid)
+**Goal**: Fix 2 timing-affected events with one-time SQL query, optionally add periodic re-matching job
 **Depends on**: Phase 34
-**Research**: Unlikely (fixing existing parsers)
-**Plans**: TBD
+**Scope**: Minimal — audit found only 2 events affected (not major rework)
 
 Plans:
-- [ ] 35-01: TBD
+- [ ] 35-01: One-time remediation + optional periodic job
 
-#### Phase 36: Fix Event Matching Logic
+#### Phase 36: Coverage Gap Analysis (Optional)
 
-**Goal**: Correct wrong pairings and recover missing matches for events available on all 3 platforms
+**Goal**: Analyze which events BetPawa is missing (592 SportyBet-only, 723 Bet9ja-only)
 **Depends on**: Phase 35
-**Research**: Unlikely (internal matching logic)
-**Plans**: TBD
+**Scope**: Business analysis, not technical fix — may skip
 
 Plans:
-- [ ] 36-01: TBD
+- [ ] 36-01: TBD (may skip based on Phase 35 results)
 
-#### Phase 37: Validation & Fresh DB Testing
+#### Phase 37: Documentation Update (Optional)
 
-**Goal**: New branch, fresh database, end-to-end validation of matching accuracy
+**Goal**: Update architecture docs to clarify dual-system design, add match rate monitoring
 **Depends on**: Phase 36
-**Research**: Unlikely (internal testing/validation)
-**Plans**: TBD
+**Scope**: Optional cleanup — may skip if not needed
 
 Plans:
-- [ ] 37-01: TBD
+- [ ] 37-01: TBD (may skip based on Phase 36 results)
 
 ## Progress
 
@@ -179,7 +175,7 @@ Plans:
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 1/1 | Complete | 2026-01-28 |
 | 33.1 Fix Scheduler Interval Display (INSERTED) | v1.5 | 1/1 | Complete | 2026-01-28 |
 | **v1.5 SHIPPED** | | | **2026-01-28** | |
-| 34. Investigation & Matching Audit Report | v1.6 | 0/? | Not started | - |
-| 35. Fix SportRadar ID Extraction | v1.6 | 0/? | Not started | - |
-| 36. Fix Event Matching Logic | v1.6 | 0/? | Not started | - |
-| 37. Validation & Fresh DB Testing | v1.6 | 0/? | Not started | - |
+| 34. Investigation & Matching Audit Report | v1.6 | 1/1 | Complete | 2026-01-28 |
+| 35. Apply Remediation Query | v1.6 | 0/1 | Not started | - |
+| 36. Coverage Gap Analysis (Optional) | v1.6 | 0/1 | Not started | - |
+| 37. Documentation Update (Optional) | v1.6 | 0/1 | Not started | - |
