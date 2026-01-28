@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 32 of 35 (Connection Loss Logging)
+Phase: 33 of 35 (Detailed Per-Platform Progress)
 Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-01-27 — Completed 32-01-PLAN.md
+Last activity: 2026-01-28 — Completed 33-01-PLAN.md
 
-Progress: ████░░░░░░ 40%
+Progress: █████░░░░░ 60%
 
 ## Milestones
 
@@ -104,6 +104,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-27
-Stopped at: Completed 32-01-PLAN.md
+Last session: 2026-01-28
+Stopped at: Completed 33-01-PLAN.md
 Resume file: None

@@ -45,7 +45,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 33-01: TBD
+- [x] 33-01: Per-Platform Progress Events (2026-01-28)
 
 #### Phase 34: Inline Error Visibility
 
@@ -175,6 +175,6 @@ Plans:
 | **v1.4 SHIPPED** | | | **2026-01-26** | |
 | 31. Backend Heartbeat & Stale Run Detection | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 32. Connection Loss Logging | v1.5 | 1/1 | Complete | 2026-01-27 |
-| 33. Detailed Per-Platform Progress Messages | v1.5 | 0/? | Not started | - |
+| 33. Detailed Per-Platform Progress Messages | v1.5 | 1/1 | Complete | 2026-01-28 |
 | 34. Inline Error Visibility | v1.5 | 0/? | Not started | - |
 | 35. Enhanced History Widget | v1.5 | 0/? | Not started | - |
