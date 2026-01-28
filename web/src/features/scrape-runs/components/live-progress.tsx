@@ -11,6 +11,8 @@ export interface ScrapeProgressEvent {
   current: number
   total: number
   events_count: number | null
+  duration_ms: number | null
+  elapsed_ms: number | null
   message: string | null
   timestamp: string
 }
@@ -20,6 +22,8 @@ interface PlatformProgress {
   eventsCount: number
   isComplete: boolean
   isFailed: boolean
+  durationMs: number | null
+  startedAt: number | null
 }
 
 interface LiveProgressPanelProps {
@@ -88,11 +92,14 @@ export function LiveProgressPanel({
         if (data.platform) {
           setPlatformProgress((prev) => {
             const updated = new Map(prev)
+            const existing = prev.get(data.platform!)
             updated.set(data.platform!, {
               phase: data.phase,
-              eventsCount: data.events_count ?? 0,
+              eventsCount: data.events_count ?? existing?.eventsCount ?? 0,
               isComplete: data.phase === 'completed' || data.phase === 'storing_complete',
               isFailed: data.phase === 'failed',
+              durationMs: data.duration_ms ?? existing?.durationMs ?? null,
+              startedAt: existing?.startedAt ?? (data.phase === 'scraping' ? Date.now() : null),
             })
             return updated
           })
@@ -251,7 +258,20 @@ export function LiveProgressPanel({
                       )}
                     </span>
                     <span className="text-muted-foreground">
-                      {progress?.eventsCount ?? 0} events
+                      {progress?.isComplete ? (
+                        <>
+                          {progress.eventsCount} events
+                          {progress.durationMs != null && (
+                            <span className="ml-1 text-xs">({(progress.durationMs / 1000).toFixed(1)}s)</span>
+                          )}
+                        </>
+                      ) : isActive ? (
+                        'scraping...'
+                      ) : progress?.isFailed ? (
+                        'failed'
+                      ) : (
+                        'pending'
+                      )}
                       {progress && (
                         <span className="ml-2">
                           {progress.isComplete && (
