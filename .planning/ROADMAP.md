@@ -12,6 +12,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
+- 🚧 **v1.6 Event Matching Accuracy** — Phases 34-37 (in progress)
 
 ## Completed Milestones
 
@@ -89,6 +90,50 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v1.6 Event Matching Accuracy (In Progress)
+
+**Milestone Goal:** Fix SportRadar ID-based event matching across Sporty, Betpawa, and Bet9ja — investigation report first, then targeted fixes.
+
+#### Phase 34: Investigation & Matching Audit Report
+
+**Goal**: Deep dive into SportRadar ID extraction and matching pipeline, produce findings document identifying specific bugs
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal codebase audit)
+**Plans**: TBD
+
+Plans:
+- [ ] 34-01: TBD (run /gsd:plan-phase 34 to break down)
+
+#### Phase 35: Fix SportRadar ID Extraction
+
+**Goal**: Fix how IDs are parsed/normalized from each platform's API response format (Sporty URL-encoded sr:match:id, Betpawa widgets, Bet9ja extid)
+**Depends on**: Phase 34
+**Research**: Unlikely (fixing existing parsers)
+**Plans**: TBD
+
+Plans:
+- [ ] 35-01: TBD
+
+#### Phase 36: Fix Event Matching Logic
+
+**Goal**: Correct wrong pairings and recover missing matches for events available on all 3 platforms
+**Depends on**: Phase 35
+**Research**: Unlikely (internal matching logic)
+**Plans**: TBD
+
+Plans:
+- [ ] 36-01: TBD
+
+#### Phase 37: Validation & Fresh DB Testing
+
+**Goal**: New branch, fresh database, end-to-end validation of matching accuracy
+**Depends on**: Phase 36
+**Research**: Unlikely (internal testing/validation)
+**Plans**: TBD
+
+Plans:
+- [ ] 37-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -134,3 +179,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 1/1 | Complete | 2026-01-28 |
 | 33.1 Fix Scheduler Interval Display (INSERTED) | v1.5 | 1/1 | Complete | 2026-01-28 |
 | **v1.5 SHIPPED** | | | **2026-01-28** | |
+| 34. Investigation & Matching Audit Report | v1.6 | 0/? | Not started | - |
+| 35. Fix SportRadar ID Extraction | v1.6 | 0/? | Not started | - |
+| 36. Fix Event Matching Logic | v1.6 | 0/? | Not started | - |
+| 37. Validation & Fresh DB Testing | v1.6 | 0/? | Not started | - |

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v1.6 Event Matching Accuracy
 
 ## Current Position
 
-Phase: 33.1 of 33.1 (Fix Scheduler Interval Display)
-Plan: 1 of 1
-Status: Milestone v1.5 complete
-Last activity: 2026-01-28 — v1.5 milestone complete
+Phase: 34 of 37 (Investigation & Matching Audit Report)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-28 — Milestone v1.6 created
 
-Progress: ██████████ 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -24,6 +24,7 @@ Progress: ██████████ 100%
 - **v1.3 Coverage Improvements** — SHIPPED 2026-01-26 (5 phases, 5 plans)
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
 - **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
+- **v1.6 Event Matching Accuracy** — IN PROGRESS (4 phases)
 
 ## Performance Metrics
 
@@ -111,9 +112,10 @@ None.
 - v1.4 Odds Comparison UX shipped 2026-01-26 with 3 phases
 - v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
 - All milestones archived to .planning/milestones/
+- Milestone v1.6 created: Event Matching Accuracy, 4 phases (Phase 34-37)
 
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: v1.5 milestone complete
+Stopped at: Milestone v1.6 initialization
 Resume file: None
