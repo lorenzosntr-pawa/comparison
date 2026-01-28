@@ -1,5 +1,32 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.5 Scraping Observability (Shipped: 2026-01-28)
+
+**Delivered:** Made scraping progress transparent with stale run detection, connection loss recovery, per-platform progress events, and scheduler interval display fix.
+
+**Phases completed:** 31-33.1 (4 plans total)
+
+**Key accomplishments:**
+
+- Background watchdog that auto-fails scrape runs stuck in RUNNING status
+- Startup recovery for runs left stale after server crashes
+- SSE connection loss detection with CONNECTION_FAILED status and auto-rescrape on recovery
+- Per-platform progress events showing real event counts and timing per bookmaker
+- Fixed scheduler interval display showing correct scrape interval instead of watchdog interval
+
+**Stats:**
+
+- 32 files modified
+- +2,243 / -88 lines of Python + TypeScript
+- 4 phases (including 1 decimal), 4 plans
+- 2 days (2026-01-27 to 2026-01-28)
+
+**Git range:** `4bc1260` → `ad7a74a`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features.
+
+---
+
 ## v1.4 Odds Comparison UX (Shipped: 2026-01-26)
 
 **Delivered:** Redesigned Matches page with bookmakers-as-rows table layout, Double Chance market with per-market margins, and renamed to "Odds Comparison" with new URL route.

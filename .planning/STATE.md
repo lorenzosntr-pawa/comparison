@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-26)
+See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.5 Scraping Observability
+**Current focus:** Planning next milestone
 
 ## Current Position
 
 Phase: 33.1 of 33.1 (Fix Scheduler Interval Display)
 Plan: 1 of 1
-Status: Phase complete
-Last activity: 2026-01-28 — Completed 33.1-01-PLAN.md
+Status: Milestone v1.5 complete
+Last activity: 2026-01-28 — v1.5 milestone complete
 
 Progress: ██████████ 100%
 
@@ -23,12 +23,12 @@ Progress: ██████████ 100%
 - **v1.2 Settings & Retention** — SHIPPED 2026-01-26 (4 phases, 8 plans)
 - **v1.3 Coverage Improvements** — SHIPPED 2026-01-26 (5 phases, 5 plans)
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
-- **v1.5 Scraping Observability** — IN PROGRESS (5 phases)
+- **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 86
+- Total plans completed: 80
 - Average duration: 6 min
 - Total execution time: ~8.5 hours
 
@@ -57,9 +57,14 @@ Progress: ██████████ 100%
 - Same day as v1.3 ship
 - +986 / -159 lines (net +827)
 
+**v1.5 Summary:**
+- 4 phases completed (including 1 decimal)
+- 2 days from v1.4 to v1.5
+- +2,243 / -88 lines (net +2,155)
+
 ## Accumulated Context
 
-### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3)
+### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -75,6 +80,9 @@ Progress: ██████████ 100%
 - **Cross-feature hook sharing** - reuse hooks across features for consistent data (v1.3)
 - **Bookmakers-as-rows layout** - rowspan for match info, stacked rows per bookmaker (v1.4)
 - **Comparative margin color coding** - green/red based on Betpawa vs competitors, not absolute values (v1.4)
+- **APScheduler watchdog pattern** - background job auto-fails stale runs (v1.5)
+- **CONNECTION_FAILED as distinct status** - enables specific UI treatment and auto-rescrape (v1.5)
+- **Per-platform SSE events** - real counts and timing per bookmaker in progress stream (v1.5)
 
 ### Key Decisions
 
@@ -87,6 +95,8 @@ Progress: ██████████ 100%
 - Empty selection = all countries (v1.3)
 - Default includeStarted OFF for pre-match focus (v1.3)
 - Reuse useCoverage hook across dashboard and coverage features (v1.3)
+- 2-min watchdog interval for stale detection (v1.5)
+- Auto-rescrape on connection recovery (v1.5)
 
 ### Blockers/Concerns
 
@@ -99,12 +109,11 @@ None.
 - v1.2 Settings & Retention shipped 2026-01-26 with 4 phases
 - v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - v1.4 Odds Comparison UX shipped 2026-01-26 with 3 phases
+- v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
 - All milestones archived to .planning/milestones/
-- Milestone v1.5 created: Scraping Observability, 3 phases (Phase 31-33)
-- Phase 33.1 inserted after Phase 33: Fix ISS-003 scheduler interval display bug (URGENT)
 
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 33.1-01-PLAN.md
+Stopped at: v1.5 milestone complete
 Resume file: None

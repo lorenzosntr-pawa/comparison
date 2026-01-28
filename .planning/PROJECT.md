@@ -8,20 +8,20 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.4 Odds Comparison UX)
+## Current State (v1.5 Scraping Observability)
 
-**Shipped:** 2026-01-26
+**Shipped:** 2026-01-28
 
 **Tech Stack:**
-- Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL
+- Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~32,200 lines of code
+- ~27,325 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
 - Cross-platform event matching via SportRadar IDs
 - Automated scraping with configurable intervals
-- Real-time progress streaming via SSE
+- Real-time progress streaming via SSE with per-platform event counts and timing
 - Dashboard with scheduler controls, platform health, and live coverage metrics
 - Match list and detail views with color-coded odds comparison
 - Full competitor palimpsest scraping (~200+ tournaments per platform)
@@ -38,6 +38,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Double Chance market (1X, X2, 12) with per-market margins
 - Comparative margin color coding (Betpawa vs competitors)
 - Renamed page to "Odds Comparison" with /odds-comparison route
+- Stale run detection watchdog with auto-fail for hung scrapes
+- Startup recovery for stale runs after server crashes
+- Connection loss detection with CONNECTION_FAILED status and auto-rescrape
+- Per-platform progress events with real counts and elapsed time
 
 ## Requirements
 
@@ -75,12 +79,15 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Double Chance market (1X, X2, 12) as selectable column — v1.4
 - ✓ Per-market margin display with comparative color coding — v1.4
 - ✓ Renamed page to "Odds Comparison" with new URL route — v1.4
+- ✓ Stale run detection watchdog with auto-fail for hung scrapes — v1.5
+- ✓ Startup recovery for stale runs after server crashes — v1.5
+- ✓ Connection loss detection with CONNECTION_FAILED status and auto-rescrape — v1.5
+- ✓ Per-platform progress events with real counts and timing — v1.5
+- ✓ Correct scheduler interval display (ISS-003 fix) — v1.5
 
 ### Active
 
 - [ ] WebSocket real-time updates on new scrape data
-- [ ] Silent retry on scraper failures with stale data indication
-- [ ] UI banner when data may be stale
 - [ ] Historical trend visualization (data stored, UI deferred)
 
 ### Out of Scope
@@ -142,6 +149,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Text color for margins | Better readability than background colors | ✓ Good — v1.4 cleaner UI |
 | BarChart3 navigation icon | Better visual representation of odds comparison | ✓ Good — v1.4 intuitive |
 | URL route /odds-comparison | Full naming consistency with page title | ✓ Good — v1.4 coherent |
+| 2-min watchdog interval | Balance responsiveness vs overhead for stale detection | ✓ Good — v1.5 catches hangs quickly |
+| CONNECTION_FAILED as distinct status | Different from FAILED, enables specific UI treatment | ✓ Good — v1.5 clear UX |
+| Auto-rescrape on connection recovery | User doesn't need to manually retry after disconnect | ✓ Good — v1.5 seamless recovery |
+| Per-platform SSE events | Reuse existing SSE infrastructure, no WebSocket needed | ✓ Good — v1.5 minimal complexity |
 
 ---
-*Last updated: 2026-01-26 after v1.4 milestone*
+*Last updated: 2026-01-28 after v1.5 milestone*
