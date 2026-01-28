@@ -86,7 +86,11 @@ export function LiveProgressPanel({
       try {
         const data = JSON.parse(event.data) as ScrapeProgressEvent
         setCurrentProgress(data)
-        setOverallPhase(data.phase)
+        // Only update overall phase from non-platform events (overall status)
+        // Per-platform completion should not flip overallPhase to "completed"
+        if (!data.platform || (data.phase !== 'completed' && data.phase !== 'failed')) {
+          setOverallPhase(data.phase)
+        }
 
         // Update per-platform progress
         if (data.platform) {
@@ -105,8 +109,9 @@ export function LiveProgressPanel({
           })
         }
 
-        // Handle completion
-        if (data.phase === 'completed' || data.phase === 'failed') {
+        // Handle completion — only close on overall completion (platform=null),
+        // not per-platform completion
+        if ((data.phase === 'completed' || data.phase === 'failed') && !data.platform) {
           eventSource.close()
           setIsConnected(false)
           setIsStreaming(false)
