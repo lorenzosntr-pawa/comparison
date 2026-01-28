@@ -477,6 +477,18 @@ class ScrapingOrchestrator:
             bet9ja_events = 0
 
             # SportyBet first
+            sportybet_start_time = time.perf_counter()
+
+            # Emit per-platform SCRAPING event for SportyBet
+            progress = await self._emit_phase(
+                db, scrape_run_id, Platform.SPORTYBET, ScrapePhase.SCRAPING,
+                "Scraping sportybet..."
+            )
+            progress.current = 1
+            progress.total = total_phases
+            progress.elapsed_ms = 0
+            yield progress
+
             try:
                 sportybet_result = await self._competitor_service.scrape_sportybet_events(
                     db, scrape_run_id
@@ -484,10 +496,53 @@ class ScrapingOrchestrator:
                 if isinstance(sportybet_result, dict):
                     sportybet_events = sportybet_result.get("new", 0) + sportybet_result.get("updated", 0)
                     logger.info("sportybet_scrape_complete", **sportybet_result)
+
+                sportybet_duration_ms = int((time.perf_counter() - sportybet_start_time) * 1000)
+
+                # Emit per-platform COMPLETED event for SportyBet
+                if scrape_run_id:
+                    await self._log_phase_history(
+                        db, scrape_run_id, Platform.SPORTYBET, ScrapePhase.COMPLETED,
+                        f"Scraped {sportybet_events} events from sportybet ({sportybet_duration_ms}ms)",
+                        events_count=sportybet_events
+                    )
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, Platform.SPORTYBET, ScrapePhase.COMPLETED,
+                    f"Scraped {sportybet_events} events from sportybet ({sportybet_duration_ms}ms)",
+                    events_count=sportybet_events
+                )
+                progress.current = 1
+                progress.total = total_phases
+                progress.duration_ms = sportybet_duration_ms
+                yield progress
+
             except Exception as e:
                 logger.error("sportybet_scrape_failed", error=str(e))
+                sportybet_elapsed_ms = int((time.perf_counter() - sportybet_start_time) * 1000)
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, Platform.SPORTYBET, ScrapePhase.FAILED,
+                    f"SportyBet failed: {e}"
+                )
+                progress.current = 1
+                progress.total = total_phases
+                progress.elapsed_ms = sportybet_elapsed_ms
+                yield progress
 
             # Then Bet9ja
+            bet9ja_start_time = time.perf_counter()
+
+            # Emit per-platform SCRAPING event for Bet9ja
+            progress = await self._emit_phase(
+                db, scrape_run_id, Platform.BET9JA, ScrapePhase.SCRAPING,
+                "Scraping bet9ja..."
+            )
+            progress.current = 1
+            progress.total = total_phases
+            progress.elapsed_ms = 0
+            yield progress
+
             try:
                 bet9ja_result = await self._competitor_service.scrape_bet9ja_events(
                     db, scrape_run_id
@@ -495,8 +550,39 @@ class ScrapingOrchestrator:
                 if isinstance(bet9ja_result, dict):
                     bet9ja_events = bet9ja_result.get("new", 0) + bet9ja_result.get("updated", 0)
                     logger.info("bet9ja_scrape_complete", **bet9ja_result)
+
+                bet9ja_duration_ms = int((time.perf_counter() - bet9ja_start_time) * 1000)
+
+                # Emit per-platform COMPLETED event for Bet9ja
+                if scrape_run_id:
+                    await self._log_phase_history(
+                        db, scrape_run_id, Platform.BET9JA, ScrapePhase.COMPLETED,
+                        f"Scraped {bet9ja_events} events from bet9ja ({bet9ja_duration_ms}ms)",
+                        events_count=bet9ja_events
+                    )
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, Platform.BET9JA, ScrapePhase.COMPLETED,
+                    f"Scraped {bet9ja_events} events from bet9ja ({bet9ja_duration_ms}ms)",
+                    events_count=bet9ja_events
+                )
+                progress.current = 1
+                progress.total = total_phases
+                progress.duration_ms = bet9ja_duration_ms
+                yield progress
+
             except Exception as e:
                 logger.error("bet9ja_scrape_failed", error=str(e))
+                bet9ja_elapsed_ms = int((time.perf_counter() - bet9ja_start_time) * 1000)
+
+                progress = await self._emit_phase(
+                    db, scrape_run_id, Platform.BET9JA, ScrapePhase.FAILED,
+                    f"Bet9ja failed: {e}"
+                )
+                progress.current = 1
+                progress.total = total_phases
+                progress.elapsed_ms = bet9ja_elapsed_ms
+                yield progress
 
             competitor_events = sportybet_events + bet9ja_events
             competitor_duration_ms = int((time.perf_counter() - competitor_start_time) * 1000)
