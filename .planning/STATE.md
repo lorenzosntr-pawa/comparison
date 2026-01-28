@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 34 of 37 (Investigation & Matching Audit Report)
+Phase: 34.1 of 37 (API/UI Data Flow Audit)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-28 — Completed 34-01-PLAN.md
+Last activity: 2026-01-28 — Completed 34.1-01-PLAN.md (API/UI Data Flow Audit)
 
-Progress: █░░░░░░░░░ 25%
+Progress: ██░░░░░░░░ 22%
 
 ## Milestones
 
@@ -100,6 +100,9 @@ Progress: █░░░░░░░░░ 25%
 - Auto-rescrape on connection recovery (v1.5)
 - Event matching is 99.9% accurate (v1.6 audit) — 23-26% unmatched are competitor-only events
 - Only 2 events affected by timing edge case, fixable with 1 SQL query (v1.6 audit)
+- API-001: Coverage count must use DISTINCT sportradar_id (v1.6 audit 34.1)
+- API-002: Event detail uses legacy odds tables, missing ~50% competitor data (v1.6 audit 34.1)
+- Frontend has no bugs — UI correctly displays what API provides (v1.6 audit 34.1)
 
 ### Blockers/Concerns
 
@@ -115,9 +118,10 @@ None.
 - v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
 - All milestones archived to .planning/milestones/
 - Milestone v1.6 created: Event Matching Accuracy, 4 phases (Phase 34-37)
+- Phase 34.1 inserted after Phase 34: API/UI Data Flow Audit (URGENT) — UAT revealed frontend shows bad data despite healthy backend
 
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed Phase 34 (audit), ready for Phase 35 (remediation)
+Stopped at: Completed 34.1-01-PLAN.md — Phase 34.1 complete, ready for Phase 35
 Resume file: None

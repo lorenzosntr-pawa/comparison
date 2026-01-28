@@ -103,6 +103,23 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 34-01: Code audit + SQL diagnostics + findings report
 
+#### Phase 34.1: API/UI Data Flow Audit (INSERTED) ✅
+
+**Goal**: Investigate why frontend shows incorrect/stale data despite healthy backend matching (99.9% accuracy)
+**Depends on**: Phase 34
+**Status**: Complete — 2026-01-28
+**Trigger**: UAT of Phase 34 revealed frontend displays bad data while backend is healthy
+
+Plans:
+- [x] 34.1-01: Trace data flow from DB → API → Frontend, identify where accuracy degrades
+
+**Scope:**
+- Audit API query logic for matches/odds endpoints
+- Check frontend state management and data fetching
+- Verify caching behavior
+- Compare API responses with direct SQL queries
+- Identify root cause of stale/incorrect display
+
 #### Phase 35: Apply Remediation Query
 
 **Goal**: Fix 2 timing-affected events with one-time SQL query, optionally add periodic re-matching job
@@ -176,6 +193,7 @@ Plans:
 | 33.1 Fix Scheduler Interval Display (INSERTED) | v1.5 | 1/1 | Complete | 2026-01-28 |
 | **v1.5 SHIPPED** | | | **2026-01-28** | |
 | 34. Investigation & Matching Audit Report | v1.6 | 1/1 | Complete | 2026-01-28 |
+| 34.1 API/UI Data Flow Audit (INSERTED) | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 35. Apply Remediation Query | v1.6 | 0/1 | Not started | - |
 | 36. Coverage Gap Analysis (Optional) | v1.6 | 0/1 | Not started | - |
 | 37. Documentation Update (Optional) | v1.6 | 0/1 | Not started | - |
