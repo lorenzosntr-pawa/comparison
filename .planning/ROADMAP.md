@@ -11,7 +11,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.2 Settings & Retention](milestones/v1.2-ROADMAP.md) — Phases 19.1-22 (shipped 2026-01-26)
 - ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
-- 🚧 **v1.5 Scraping Observability** — Phases 31-35 (in progress)
+- 🚧 **v1.5 Scraping Observability** — Phases 31-33 (in progress)
 
 ### 🚧 v1.5 Scraping Observability (In Progress)
 
@@ -46,26 +46,6 @@ Plans:
 
 Plans:
 - [x] 33-01: Per-Platform Progress Events (2026-01-28)
-
-#### Phase 34: Inline Error Visibility
-
-**Goal**: Surface errors in live progress view and dashboard widget during scraping
-**Depends on**: Phase 33
-**Research**: Unlikely (internal UI patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 34-01: TBD
-
-#### Phase 35: Enhanced History Widget
-
-**Goal**: Richer dashboard widget with per-platform breakdown and failure reasons
-**Depends on**: Phase 34
-**Research**: Unlikely (internal UI patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 35-01: TBD
 
 ## Completed Milestones
 
@@ -176,5 +156,3 @@ Plans:
 | 31. Backend Heartbeat & Stale Run Detection | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 32. Connection Loss Logging | v1.5 | 1/1 | Complete | 2026-01-27 |
 | 33. Detailed Per-Platform Progress Messages | v1.5 | 1/1 | Complete | 2026-01-28 |
-| 34. Inline Error Visibility | v1.5 | 0/? | Not started | - |
-| 35. Enhanced History Widget | v1.5 | 0/? | Not started | - |

@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-26)
 
 ## Current Position
 
-Phase: 33 of 35 (Detailed Per-Platform Progress)
+Phase: 33 of 33 (Detailed Per-Platform Progress)
 Plan: 1 of 1
 Status: Phase complete
 Last activity: 2026-01-28 — Completed 33-01-PLAN.md
 
-Progress: █████░░░░░ 60%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -100,7 +100,7 @@ None.
 - v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - v1.4 Odds Comparison UX shipped 2026-01-26 with 3 phases
 - All milestones archived to .planning/milestones/
-- Milestone v1.5 created: Scraping Observability, 5 phases (Phase 31-35)
+- Milestone v1.5 created: Scraping Observability, 3 phases (Phase 31-33)
 
 ## Session Continuity
 
