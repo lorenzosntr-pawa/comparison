@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 42 of 42 (Validation & Cleanup)
-Plan: 1 of 1 + FIX + FIX2 plans
-Status: Milestone complete (UAT fixes applied)
-Last activity: 2026-01-29 — Completed 42-01-FIX2.md (BetPawa discovery fix)
+Plan: 1 of 1 + FIX + FIX2 + FIX3 plans
+Status: Milestone complete (all UAT issues resolved)
+Last activity: 2026-01-29 — Completed 42-01-FIX3.md (BetPawa SR ID extraction fix)
 
 Progress: ██████████ 100%
 
@@ -102,6 +102,7 @@ Progress: ██████████ 100%
 - **Event-centric parallel scraping** - scrape all platforms simultaneously per event, not sequentially by platform (v1.7)
 - **Dict-based SSE progress events** - EventCoordinator yields dict events, mapped to ScrapeProgress for broadcaster (v1.7)
 - **Single-flush batch insert pattern** - add all records, single flush to get IDs, link FKs, commit (v1.7 FIX)
+- **BetPawa SPORTRADAR widget.id** - SR ID is in widget["id"], not widget["data"]["matchId"] (v1.7 FIX3)
 
 ### Key Decisions
 
@@ -142,5 +143,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 42-01-FIX2.md (BetPawa discovery fix)
+Stopped at: Completed 42-01-FIX3.md (BetPawa SR ID extraction fix)
 Resume file: None
