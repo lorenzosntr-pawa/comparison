@@ -24,6 +24,8 @@ from src.api.schemas.scheduler import (
     ScrapePhaseLogResponse,
     ScrapeRunResponse,
     ScrapeStatsResponse,
+    SingleEventPlatformResult,
+    SingleEventScrapeResponse,
 )
 from src.api.schemas.settings import (
     SettingsResponse,
@@ -62,6 +64,8 @@ __all__ = [
     "ScrapePhaseLogResponse",
     "ScrapeRunResponse",
     "ScrapeStatsResponse",
+    "SingleEventPlatformResult",
+    "SingleEventScrapeResponse",
     # Settings schemas
     "SettingsResponse",
     "SettingsUpdate",

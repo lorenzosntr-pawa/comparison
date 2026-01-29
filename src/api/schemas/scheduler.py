@@ -199,3 +199,28 @@ class EventScrapeMetricsResponse(BaseModel):
     events_partially_scraped: int  # some platforms succeeded
     events_failed: int  # no platforms succeeded
     platform_metrics: list[EventMetricsByPlatform]
+
+
+class SingleEventPlatformResult(BaseModel):
+    """Per-platform result for single-event on-demand scrape."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    platform: str
+    success: bool
+    timing_ms: int | None = None
+    error: str | None = None
+    markets_count: int | None = None
+
+
+class SingleEventScrapeResponse(BaseModel):
+    """Response from single-event on-demand scrape endpoint POST /api/scrape/{sr_id}."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    sportradar_id: str
+    status: str  # "completed" | "partial" | "failed"
+    platforms_scraped: list[str]
+    platforms_failed: list[str]
+    platform_results: list[SingleEventPlatformResult]
+    total_timing_ms: int
