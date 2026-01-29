@@ -378,54 +378,11 @@ class EventCoordinator:
 
         return events
 
-    def _parse_betpawa_event(
-        self,
-        event_data: dict,
-        now: datetime,
-    ) -> dict | None:
-        """Parse a BetPawa event and extract SR ID and platform ID.
-
-        Args:
-            event_data: Raw event data from BetPawa API.
-            now: Current UTC time for filtering started events.
-
-        Returns:
-            Dict with {sr_id, kickoff, platform_id} or None if not parseable/started.
-        """
-        # Extract SR ID from widgets array
-        widgets = event_data.get("widgets", [])
-        sr_id = None
-        for widget in widgets:
-            if widget.get("type") == "SPORTRADAR":
-                # Widget data format: {"matchId": "12345678", ...}
-                widget_data = widget.get("data", {})
-                sr_id = str(widget_data.get("matchId", ""))
-                break
-
-        if not sr_id:
-            return None
-
-        # Extract BetPawa platform-specific event ID
-        platform_id = str(event_data.get("id", ""))
-        if not platform_id:
-            return None
-
-        # Parse kickoff time
-        start_time_str = event_data.get("startTime")
-        if not start_time_str:
-            return None
-
-        try:
-            # BetPawa format: "2026-01-30T15:00:00Z"
-            kickoff = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
-        except (ValueError, TypeError):
-            return None
-
-        # Filter out started events
-        if kickoff <= now:
-            return None
-
-        return {"sr_id": sr_id, "kickoff": kickoff, "platform_id": platform_id}
+    # BetPawa discovery flow:
+    # 1. fetch_categories() -> competition IDs
+    # 2. fetch_events(comp_id) -> BetPawa event IDs (list response, no widgets)
+    # 3. fetch_event(event_id) -> full event with widgets array (contains SR ID)
+    # Note: SR ID extraction is done inline in fetch_full_event() within _discover_betpawa()
 
     async def _discover_sportybet(self) -> list[dict]:
         """Discover events from SportyBet.
