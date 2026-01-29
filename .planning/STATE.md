@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.7 Scraping Architecture Overhaul
+**Current focus:** Milestone complete - ready for next milestone
 
 ## Current Position
 
-Phase: 41 of 42 (On-Demand API)
+Phase: 42 of 42 (Validation & Cleanup)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 41-01-PLAN.md
+Status: Milestone complete
+Last activity: 2026-01-29 — Completed 42-01-PLAN.md
 
-Progress: █████████░ 86%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -25,12 +25,12 @@ Progress: █████████░ 86%
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
 - **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
 - **v1.6 Event Matching Accuracy** — SHIPPED 2026-01-29 (3 phases, 3 plans)
-- **v1.7 Scraping Architecture Overhaul** — IN PROGRESS (7 phases, Phases 36-42)
+- **v1.7 Scraping Architecture Overhaul** — SHIPPED 2026-01-29 (7 phases, 7 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 90
+- Total plans completed: 91
 - Average duration: 6 min
 - Total execution time: ~9 hours
 
@@ -69,9 +69,15 @@ Progress: █████████░ 86%
 - 2 days from v1.5 to v1.6
 - +2,194 / -12 lines (net +2,182)
 
+**v1.7 Summary:**
+- 7 phases completed
+- 1 day from v1.6 to v1.7
+- Event-centric parallel scraping architecture
+- ~1,884 lines removed (legacy orchestrator deleted)
+
 ## Accumulated Context
 
-### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6)
+### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6 + v1.7)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -93,6 +99,8 @@ Progress: █████████░ 86%
 - **SQL-based audit methodology** - comprehensive SQL diagnostics to verify data quality (v1.6)
 - **DISTINCT SR ID for counts** - use unique sportradar_id, not duplicate rows across runs (v1.6)
 - **Factory method for configurable initialization** - EventCoordinator.from_settings() creates instances with tuning from Settings (v1.7)
+- **Event-centric parallel scraping** - scrape all platforms simultaneously per event, not sequentially by platform (v1.7)
+- **Dict-based SSE progress events** - EventCoordinator yields dict events, mapped to ScrapeProgress for broadcaster (v1.7)
 
 ### Key Decisions
 
@@ -127,10 +135,11 @@ None.
 - v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
 - v1.6 Event Matching Accuracy shipped 2026-01-29 with 3 phases
 - All milestones archived to .planning/milestones/
-- Milestone v1.7 created: Scraping Architecture Overhaul, 7 phases (Phase 36-42)
+- v1.7 Scraping Architecture Overhaul shipped 2026-01-29 with 7 phases
+- All milestones archived to .planning/milestones/
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 41-01-PLAN.md (Phase 41 complete)
+Stopped at: Completed 42-01-PLAN.md (v1.7 milestone complete)
 Resume file: None

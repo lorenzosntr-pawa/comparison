@@ -13,9 +13,9 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
-- 🚧 **v1.7 Scraping Architecture Overhaul** — Phases 36-42 (in progress)
+- ✅ **v1.7 Scraping Architecture Overhaul** — Phases 36-42 (shipped 2026-01-29)
 
-### 🚧 v1.7 Scraping Architecture Overhaul (In Progress)
+### ✅ v1.7 Scraping Architecture Overhaul (Shipped 2026-01-29)
 
 **Milestone Goal:** Redesign scraping to capture odds simultaneously across all bookmakers for reliable trader comparison
 
@@ -79,7 +79,7 @@ Plans:
 Plans:
 - [x] 41-01: POST /api/scrape/event/{sr_id} endpoint with parallel platform scraping — 2026-01-29
 
-#### Phase 42: Validation & Cleanup
+#### Phase 42: Validation & Cleanup ✓
 
 **Goal**: Integrate EventCoordinator, remove legacy ScrapingOrchestrator
 **Depends on**: Phase 41
@@ -87,7 +87,7 @@ Plans:
 **Plans**: 1/1
 
 Plans:
-- [ ] 42-01: Update scheduler and API to use EventCoordinator, delete orchestrator.py — TBD
+- [x] 42-01: Update scheduler and API to use EventCoordinator, delete orchestrator.py — 2026-01-29
 
 ## Completed Milestones
 
@@ -229,4 +229,5 @@ Plans:
 | 39. Batch DB Storage | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 40. Concurrency Tuning & Metrics | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 41. On-Demand API | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 42. Validation & Cleanup | v1.7 | 0/? | Not started | - |
+| 42. Validation & Cleanup | v1.7 | 1/1 | Complete | 2026-01-29 |
+| **v1.7 SHIPPED** | | | **2026-01-29** | |
