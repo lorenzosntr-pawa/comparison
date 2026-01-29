@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 ## Current Position
 
-Phase: 39 of 42 (Batch DB Storage)
+Phase: 40 of 42 (Concurrency Tuning & Metrics)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-29 — Completed 39-01-PLAN.md
+Last activity: 2026-01-29 — Completed 40-01-PLAN.md
 
-Progress: ████░░░░░░ 45%
+Progress: █████░░░░░ 50%
 
 ## Milestones
 
@@ -30,7 +30,7 @@ Progress: ████░░░░░░ 45%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 88
+- Total plans completed: 89
 - Average duration: 6 min
 - Total execution time: ~9 hours
 
@@ -92,6 +92,7 @@ Progress: ████░░░░░░ 45%
 - **Per-platform SSE events** - real counts and timing per bookmaker in progress stream (v1.5)
 - **SQL-based audit methodology** - comprehensive SQL diagnostics to verify data quality (v1.6)
 - **DISTINCT SR ID for counts** - use unique sportradar_id, not duplicate rows across runs (v1.6)
+- **Factory method for configurable initialization** - EventCoordinator.from_settings() creates instances with tuning from Settings (v1.7)
 
 ### Key Decisions
 
@@ -131,5 +132,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 39-01-PLAN.md (Phase 39 complete)
+Stopped at: Completed 40-01-PLAN.md (Phase 40 complete)
 Resume file: None

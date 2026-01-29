@@ -59,15 +59,15 @@ Plans:
 Plans:
 - [x] 39-01: EventScrapeStatus model, store_batch_results(), run_full_cycle() — 2026-01-29
 
-#### Phase 40: Concurrency Tuning & Metrics
+#### Phase 40: Concurrency Tuning & Metrics ✓
 
 **Goal**: Optimize semaphores, add performance tracking
 **Depends on**: Phase 39
 **Research**: Unlikely (internal optimization)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 40-01: TBD
+- [x] 40-01: Configurable tuning settings, EventCoordinator integration, event metrics API — 2026-01-29
 
 #### Phase 41: On-Demand API
 
@@ -227,6 +227,6 @@ Plans:
 | 37. Event Coordination Layer | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 38. SR ID Parallel Scraping | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 39. Batch DB Storage | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 40. Concurrency Tuning & Metrics | v1.7 | 0/? | Not started | - |
+| 40. Concurrency Tuning & Metrics | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 41. On-Demand API | v1.7 | 0/? | Not started | - |
 | 42. Validation & Cleanup | v1.7 | 0/? | Not started | - |
