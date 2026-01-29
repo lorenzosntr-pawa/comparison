@@ -20,6 +20,14 @@ class SettingsResponse(BaseModel):
     odds_retention_days: int
     match_retention_days: int
     cleanup_frequency_hours: int
+
+    # Scraping tuning parameters (Phase 40)
+    betpawa_concurrency: int
+    sportybet_concurrency: int
+    bet9ja_concurrency: int
+    bet9ja_delay_ms: int
+    batch_size: int
+
     updated_at: datetime | None
 
 
@@ -45,4 +53,21 @@ class SettingsUpdate(BaseModel):
     )
     cleanup_frequency_hours: int | None = Field(
         default=None, ge=1, le=168, description="Hours between cleanup runs (1-168)"
+    )
+
+    # Scraping tuning parameters (Phase 40)
+    betpawa_concurrency: int | None = Field(
+        default=None, ge=1, le=100, description="BetPawa concurrent requests (1-100)"
+    )
+    sportybet_concurrency: int | None = Field(
+        default=None, ge=1, le=100, description="SportyBet concurrent requests (1-100)"
+    )
+    bet9ja_concurrency: int | None = Field(
+        default=None, ge=1, le=50, description="Bet9ja concurrent requests (1-50)"
+    )
+    bet9ja_delay_ms: int | None = Field(
+        default=None, ge=0, le=100, description="Bet9ja delay between requests in ms (0-100)"
+    )
+    batch_size: int | None = Field(
+        default=None, ge=10, le=200, description="Events per batch (10-200)"
     )
