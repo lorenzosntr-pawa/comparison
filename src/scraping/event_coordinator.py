@@ -286,25 +286,61 @@ class EventCoordinator:
                             events_count=len(events_data),
                         )
 
-                        # Collect BetPawa event IDs from list response
-                        # NOTE: List response does NOT contain widgets array with SR ID
-                        # We only extract basic data here; full event fetch is needed for SR IDs
+                        # Collect events from list response
+                        # Try to get SR ID from list response first (old working pattern)
+                        # Only queue for full fetch if SR ID not in list response
+                        events_from_list: list[dict] = []
                         betpawa_event_ids: list[tuple[str, datetime]] = []
+
                         for event_data in events_data:
                             event_id = str(event_data.get("id", ""))
                             start_time = event_data.get("startTime")
-                            if event_id and start_time:
-                                try:
-                                    kickoff = datetime.fromisoformat(
-                                        start_time.replace("Z", "+00:00")
-                                    )
-                                    if kickoff > now:  # Filter started events
-                                        betpawa_event_ids.append((event_id, kickoff))
-                                except (ValueError, TypeError):
-                                    pass
+                            if not event_id or not start_time:
+                                continue
 
-                        if not betpawa_event_ids:
+                            try:
+                                kickoff = datetime.fromisoformat(
+                                    start_time.replace("Z", "+00:00")
+                                )
+                                if kickoff <= now:  # Skip started events
+                                    continue
+                            except (ValueError, TypeError):
+                                continue
+
+                            # Try to get SR ID from list response widgets (old working pattern)
+                            widgets = event_data.get("widgets", [])
+                            sr_id = None
+                            for widget in widgets:
+                                if widget.get("type") == "SPORTRADAR":
+                                    # Try widget.id first (old pattern)
+                                    sr_id = widget.get("id")
+                                    if not sr_id:
+                                        widget_data = widget.get("data", {})
+                                        sr_id = widget_data.get("matchId")
+                                    if sr_id:
+                                        sr_id = str(sr_id)
+                                    break
+
+                            if sr_id:
+                                # Got SR ID from list response - no need for full fetch
+                                events_from_list.append({
+                                    "sr_id": sr_id,
+                                    "kickoff": kickoff,
+                                    "platform_id": event_id,
+                                })
+                            else:
+                                # No SR ID in list - queue for full fetch
+                                betpawa_event_ids.append((event_id, kickoff))
+
+                        if not events_from_list and not betpawa_event_ids:
                             return []
+
+                        logger.debug(
+                            "BetPawa competition events parsed",
+                            competition_id=comp_id,
+                            from_list=len(events_from_list),
+                            need_full_fetch=len(betpawa_event_ids),
+                        )
 
                         # Fetch full event details (with SR ID in widgets array)
                         # Uses nested semaphore for concurrency control
@@ -317,12 +353,19 @@ class EventCoordinator:
                                 try:
                                     full_data = await client.fetch_event(event_id)
                                     # Extract SR ID from widgets array
+                                    # OLD WORKING PATTERN: widget["id"] (NOT widget["data"]["matchId"])
                                     widgets = full_data.get("widgets", [])
                                     sr_id = None
                                     for widget in widgets:
                                         if widget.get("type") == "SPORTRADAR":
-                                            widget_data = widget.get("data", {})
-                                            sr_id = str(widget_data.get("matchId", ""))
+                                            # Try direct widget.id first (old working pattern)
+                                            sr_id = widget.get("id")
+                                            if not sr_id:
+                                                # Fall back to widget.data.matchId
+                                                widget_data = widget.get("data", {})
+                                                sr_id = widget_data.get("matchId")
+                                            if sr_id:
+                                                sr_id = str(sr_id)
                                             break
 
                                     if sr_id:
@@ -339,19 +382,36 @@ class EventCoordinator:
                                     )
                                 return None
 
-                        results = await asyncio.gather(
-                            *[
-                                fetch_full_event(eid, ko)
-                                for eid, ko in betpawa_event_ids
-                            ],
-                            return_exceptions=True,
-                        )
+                        # Fetch full events only for those without SR ID in list
+                        events_from_full: list[dict] = []
+                        if betpawa_event_ids:
+                            results = await asyncio.gather(
+                                *[
+                                    fetch_full_event(eid, ko)
+                                    for eid, ko in betpawa_event_ids
+                                ],
+                                return_exceptions=True,
+                            )
 
-                        return [
-                            r
-                            for r in results
-                            if r is not None and not isinstance(r, Exception)
-                        ]
+                            events_from_full = [
+                                r
+                                for r in results
+                                if r is not None and not isinstance(r, Exception)
+                            ]
+
+                        # Combine events from list and full fetch
+                        all_events = events_from_list + events_from_full
+
+                        if events_from_list or events_from_full:
+                            logger.debug(
+                                "BetPawa competition events collected",
+                                competition_id=comp_id,
+                                from_list=len(events_from_list),
+                                from_full_fetch=len(events_from_full),
+                                total=len(all_events),
+                            )
+
+                        return all_events
 
                     except Exception as e:
                         logger.debug(
