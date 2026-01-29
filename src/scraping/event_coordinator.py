@@ -12,7 +12,9 @@ that replaces the sequential platform-by-platform scraping approach.
 from __future__ import annotations
 
 import asyncio
+import time
 import uuid
+from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -26,6 +28,14 @@ if TYPE_CHECKING:
     from src.scraping.clients.sportybet import SportyBetClient
 
 logger = structlog.get_logger(__name__)
+
+# Platform concurrency limits (from Phase 36 rate limit investigation)
+PLATFORM_SEMAPHORES = {
+    "betpawa": 50,
+    "sportybet": 50,
+    "bet9ja": 15,
+}
+BET9JA_DELAY_MS = 25  # 25ms delay after each Bet9ja request
 
 
 class EventCoordinator:
@@ -624,3 +634,153 @@ class EventCoordinator:
         self._event_map.clear()
         self._priority_queue.clear()
         logger.debug("Coordinator cleared")
+
+    # =========================================================================
+    # BATCH SCRAPING: Phase 3 - Parallel platform scraping per event
+    # =========================================================================
+
+    async def _scrape_event_all_platforms(
+        self,
+        event: EventTarget,
+        semaphores: dict[str, asyncio.Semaphore],
+    ) -> dict:
+        """Scrape single event from all available platforms in parallel.
+
+        For each platform in event.platforms, fetch odds using the platform-specific
+        event ID. Uses semaphores for concurrency control and adds delay for Bet9ja.
+
+        Args:
+            event: EventTarget with platforms and platform_ids populated.
+            semaphores: Dict of platform -> Semaphore for concurrency control.
+
+        Returns:
+            Dict with keys: data (platform->result), errors (platform->error_str), timing_ms
+        """
+        start_time = time.perf_counter()
+        data: dict[str, dict] = {}
+        errors: dict[str, str] = {}
+
+        async def scrape_platform(platform: str) -> tuple[str, dict | None, str | None]:
+            """Scrape a single platform for this event."""
+            # Check if we have the platform ID
+            platform_id = event.platform_ids.get(platform)
+            if not platform_id:
+                return (platform, None, "No platform ID available")
+
+            try:
+                async with semaphores[platform]:
+                    client = self._clients[platform]
+                    result = await client.fetch_event(platform_id)
+
+                    # Add delay for Bet9ja to avoid rate limiting
+                    if platform == "bet9ja":
+                        await asyncio.sleep(BET9JA_DELAY_MS / 1000)
+
+                    return (platform, result, None)
+            except Exception as e:
+                logger.debug(
+                    "Platform scrape failed",
+                    platform=platform,
+                    sr_id=event.sr_id,
+                    platform_id=platform_id,
+                    error=str(e),
+                )
+                return (platform, None, str(e))
+
+        # Scrape all platforms in parallel
+        tasks = [scrape_platform(p) for p in event.platforms]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Process results
+        for result in results:
+            if isinstance(result, Exception):
+                # This shouldn't happen since we catch exceptions in scrape_platform
+                logger.error("Unexpected exception in scrape_platform", error=str(result))
+                continue
+
+            platform, platform_data, error = result
+            if platform_data is not None:
+                data[platform] = platform_data
+            if error is not None:
+                errors[platform] = error
+
+        elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+
+        return {
+            "data": data,
+            "errors": errors,
+            "timing_ms": elapsed_ms,
+        }
+
+    async def scrape_batch(
+        self,
+        batch: ScrapeBatch,
+    ) -> AsyncGenerator[dict, None]:
+        """Scrape all events in batch, yielding progress for each.
+
+        Processes events sequentially in priority order. For each event,
+        scrapes all platforms in parallel, updates event status and results,
+        and yields progress events for SSE streaming.
+
+        Args:
+            batch: ScrapeBatch containing events to scrape.
+
+        Yields:
+            Progress dicts with event_type, sr_id, and platform results.
+        """
+        # Create semaphores for all platforms (reuse across batch)
+        semaphores = {
+            platform: asyncio.Semaphore(limit)
+            for platform, limit in PLATFORM_SEMAPHORES.items()
+        }
+
+        logger.debug(
+            "Starting batch scrape",
+            batch_id=batch["batch_id"],
+            event_count=len(batch["events"]),
+        )
+
+        for event in batch["events"]:
+            # Mark event as in progress
+            event.status = ScrapeStatus.IN_PROGRESS
+
+            # Yield "scraping started" progress event
+            yield {
+                "event_type": "EVENT_SCRAPING",
+                "sr_id": event.sr_id,
+                "platforms_pending": list(event.platforms),
+            }
+
+            # Scrape all platforms in parallel
+            result = await self._scrape_event_all_platforms(event, semaphores)
+
+            # Update event with results
+            event.results = result["data"]
+            event.errors = result["errors"]
+
+            # Determine final status
+            if result["errors"]:
+                # Some platforms failed
+                if result["data"]:
+                    # Partial success - at least some data
+                    event.status = ScrapeStatus.COMPLETED
+                else:
+                    # Complete failure - no data at all
+                    event.status = ScrapeStatus.FAILED
+            else:
+                # All platforms succeeded
+                event.status = ScrapeStatus.COMPLETED
+
+            # Yield "scraping complete" progress event
+            yield {
+                "event_type": "EVENT_SCRAPED",
+                "sr_id": event.sr_id,
+                "platforms_scraped": list(result["data"].keys()),
+                "platforms_failed": list(result["errors"].keys()),
+                "timing_ms": result["timing_ms"],
+            }
+
+        logger.debug(
+            "Batch scrape complete",
+            batch_id=batch["batch_id"],
+        )
