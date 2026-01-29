@@ -38,3 +38,7 @@ Current market mapping library handles basic markets (1X2, O/U, BTTS, Handicaps)
 
 ### ISS-003: Scheduler interval displays 2 minutes instead of settings value (RESOLVED)
 **Resolution:** Fixed in Phase 33.1 - Job ID corrected from `scrape_odds` to `scrape_all_platforms`, index access replaced with named lookup
+
+### ISS-004: Tournament discovery not included in scheduled scrape cycle (RESOLVED)
+**Discovered:** Phase 35 UAT - 2026-01-28
+**Resolution:** Fixed 2026-01-29 - Added `TournamentDiscoveryService.discover_all()` call at start of `scrape_all_platforms` job. Competitors' new tournaments are now discovered on each scrape run.

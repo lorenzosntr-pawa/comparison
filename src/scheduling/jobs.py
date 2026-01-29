@@ -14,6 +14,7 @@ from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.competitor_events import CompetitorEventScrapingService
 from src.scraping.orchestrator import ScrapingOrchestrator
 from src.scraping.schemas import Platform
+from src.scraping.tournament_discovery import TournamentDiscoveryService
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,16 @@ async def scrape_all_platforms() -> None:
             sportybet_client = SportyBetClient(_app_state.sportybet_client)
             betpawa_client = BetPawaClient(_app_state.betpawa_client)
             bet9ja_client = Bet9jaClient(_app_state.bet9ja_client)
+
+            # Run tournament discovery to pick up any new tournaments
+            discovery_service = TournamentDiscoveryService()
+            discovery_results = await discovery_service.discover_all(
+                sportybet_client, bet9ja_client, db
+            )
+            logger.info(
+                f"Tournament discovery: sportybet new={discovery_results['sportybet']['new']}, "
+                f"bet9ja new={discovery_results['bet9ja']['new']}"
+            )
 
             # Create competitor service for full-palimpsest scraping
             competitor_service = CompetitorEventScrapingService(
