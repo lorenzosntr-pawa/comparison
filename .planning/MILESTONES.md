@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.6 Event Matching Accuracy (Shipped: 2026-01-29)
+
+**Delivered:** Investigated and fixed event matching accuracy issues — audit confirmed 99.9% backend accuracy, fixed API-001 coverage inflation bug, and remediated 2 timing-affected events.
+
+**Phases completed:** 34, 34.1, 35 (3 plans total)
+
+**Key accomplishments:**
+
+- Comprehensive audit of SportRadar ID matching across all 3 platforms — confirmed 99.9% accuracy
+- Identified 23-26% unmatched rate is correct behavior (competitor-only events, not bugs)
+- Discovered only 2 events affected by timing edge case (scraped before BetPawa existed)
+- Identified 2 API bugs: coverage inflation (API-001) and legacy odds architecture (API-002)
+- Fixed API-001: Coverage stats now use DISTINCT SR ID counting (92% reduction in inflated count)
+- Remediated 2 timing-orphaned events with one-time SQL query
+
+**Stats:**
+
+- 18 files modified
+- +2,194 / -12 lines of Python
+- 3 phases (including 1 decimal), 3 plans
+- 2 days (2026-01-28 to 2026-01-29)
+
+**Git range:** `3bf13d5` → `ec8c1c0`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features (API-002 fix, WebSocket real-time, historical trends).
+
+---
+
 ## v1.5 Scraping Observability (Shipped: 2026-01-28)
 
 **Delivered:** Made scraping progress transparent with stale run detection, connection loss recovery, per-platform progress events, and scheduler interval display fix.

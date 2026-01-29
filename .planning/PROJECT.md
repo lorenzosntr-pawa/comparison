@@ -8,24 +8,24 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.5 Scraping Observability)
+## Current State (v1.6 Event Matching Accuracy)
 
-**Shipped:** 2026-01-28
+**Shipped:** 2026-01-29
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~27,325 lines of code
+- ~27,500 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
-- Cross-platform event matching via SportRadar IDs
+- Cross-platform event matching via SportRadar IDs (99.9% accuracy confirmed)
 - Automated scraping with configurable intervals
 - Real-time progress streaming via SSE with per-platform event counts and timing
 - Dashboard with scheduler controls, platform health, and live coverage metrics
 - Match list and detail views with color-coded odds comparison
 - Full competitor palimpsest scraping (~200+ tournaments per platform)
-- Coverage Comparison page with tournament/event availability analysis
+- Coverage Comparison page with accurate tournament/event availability analysis
 - Searchable multi-select country filter with type-to-filter UX
 - Include Started toggle to filter out in-play events
 - Tournament gaps cards showing coverage by competitor
@@ -42,6 +42,7 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Startup recovery for stale runs after server crashes
 - Connection loss detection with CONNECTION_FAILED status and auto-rescrape
 - Per-platform progress events with real counts and elapsed time
+- Accurate coverage statistics with DISTINCT SportRadar ID counting
 
 ## Requirements
 
@@ -84,6 +85,8 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Connection loss detection with CONNECTION_FAILED status and auto-rescrape — v1.5
 - ✓ Per-platform progress events with real counts and timing — v1.5
 - ✓ Correct scheduler interval display (ISS-003 fix) — v1.5
+- ✓ Event matching accuracy audit with SQL evidence — v1.6
+- ✓ Coverage statistics using DISTINCT SportRadar IDs (API-001 fix) — v1.6
 
 ### Active
 
@@ -153,6 +156,9 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | CONNECTION_FAILED as distinct status | Different from FAILED, enables specific UI treatment | ✓ Good — v1.5 clear UX |
 | Auto-rescrape on connection recovery | User doesn't need to manually retry after disconnect | ✓ Good — v1.5 seamless recovery |
 | Per-platform SSE events | Reuse existing SSE infrastructure, no WebSocket needed | ✓ Good — v1.5 minimal complexity |
+| SQL-based audit methodology | Comprehensive SQL diagnostics to verify data quality | ✓ Good — v1.6 found real issues |
+| DISTINCT SR ID for coverage | Count unique events, not duplicate rows across runs | ✓ Good — v1.6 fixed 92% inflation |
+| One-time SQL for timing fix | Data fix, not migration - edge case won't recur | ✓ Good — v1.6 clean remediation |
 
 ---
-*Last updated: 2026-01-28 after v1.5 milestone*
+*Last updated: 2026-01-29 after v1.6 milestone*

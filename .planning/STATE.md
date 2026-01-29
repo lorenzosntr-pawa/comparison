@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-28)
+See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.6 Event Matching Accuracy
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 35 of 37 (Apply Remediation Query)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-01-28 — Completed 35-01-PLAN.md (Coverage Stats & Matching Fixes)
+Phase: None active
+Plan: None active
+Status: Milestone complete
+Last activity: 2026-01-29 — v1.6 Event Matching Accuracy shipped
 
-Progress: ███░░░░░░░ 25%
+Progress: N/A (awaiting next milestone)
 
 ## Milestones
 
@@ -24,14 +24,14 @@ Progress: ███░░░░░░░ 25%
 - **v1.3 Coverage Improvements** — SHIPPED 2026-01-26 (5 phases, 5 plans)
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
 - **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
-- **v1.6 Event Matching Accuracy** — IN PROGRESS (4 phases)
+- **v1.6 Event Matching Accuracy** — SHIPPED 2026-01-29 (3 phases, 3 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 82
+- Total plans completed: 85
 - Average duration: 6 min
-- Total execution time: ~8.7 hours
+- Total execution time: ~9 hours
 
 **v1.0 Summary:**
 - 15 phases completed (including decimal phases)
@@ -63,9 +63,14 @@ Progress: ███░░░░░░░ 25%
 - 2 days from v1.4 to v1.5
 - +2,243 / -88 lines (net +2,155)
 
+**v1.6 Summary:**
+- 3 phases completed (including 1 decimal)
+- 2 days from v1.5 to v1.6
+- +2,194 / -12 lines (net +2,182)
+
 ## Accumulated Context
 
-### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5)
+### Key Patterns (v1.0 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6)
 
 - Pydantic v2 with frozen models and ConfigDict
 - SQLAlchemy 2.0 async with Mapped[] columns
@@ -84,6 +89,8 @@ Progress: ███░░░░░░░ 25%
 - **APScheduler watchdog pattern** - background job auto-fails stale runs (v1.5)
 - **CONNECTION_FAILED as distinct status** - enables specific UI treatment and auto-rescrape (v1.5)
 - **Per-platform SSE events** - real counts and timing per bookmaker in progress stream (v1.5)
+- **SQL-based audit methodology** - comprehensive SQL diagnostics to verify data quality (v1.6)
+- **DISTINCT SR ID for counts** - use unique sportradar_id, not duplicate rows across runs (v1.6)
 
 ### Key Decisions
 
@@ -116,12 +123,12 @@ None.
 - v1.3 Coverage Improvements shipped 2026-01-26 with 5 phases
 - v1.4 Odds Comparison UX shipped 2026-01-26 with 3 phases
 - v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
+- v1.6 Event Matching Accuracy shipped 2026-01-29 with 3 phases
 - All milestones archived to .planning/milestones/
-- Milestone v1.6 created: Event Matching Accuracy, 4 phases (Phase 34-37)
-- Phase 34.1 inserted after Phase 34: API/UI Data Flow Audit (URGENT) — UAT revealed frontend shows bad data despite healthy backend
+- Optional phases 36-37 skipped (business analysis and docs not needed)
 
 ## Session Continuity
 
-Last session: 2026-01-28
-Stopped at: Completed 35-01-PLAN.md — Phase 35 complete, ready for Phase 36 (optional)
+Last session: 2026-01-29
+Stopped at: v1.6 milestone completed
 Resume file: None

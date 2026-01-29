@@ -12,7 +12,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.3 Coverage Improvements](milestones/v1.3-ROADMAP.md) — Phases 23-27 (shipped 2026-01-26)
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
-- 🚧 **v1.6 Event Matching Accuracy** — Phases 34-37 (in progress)
+- ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
 
 ## Completed Milestones
 
@@ -90,63 +90,14 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### 🚧 v1.6 Event Matching Accuracy (In Progress)
+<details>
+<summary>✅ v1.6 Event Matching Accuracy (Phases 34-35) — SHIPPED 2026-01-29</summary>
 
-**Milestone Goal:** Fix SportRadar ID-based event matching across Sporty, Betpawa, and Bet9ja — investigation report first, then targeted fixes.
+- [x] Phase 34: Investigation & Matching Audit Report (1/1 plans) — 2026-01-28
+- [x] Phase 34.1: API/UI Data Flow Audit (1/1 plans) — 2026-01-28
+- [x] Phase 35: Apply Remediation Query (1/1 plans) — 2026-01-28
 
-#### Phase 34: Investigation & Matching Audit Report ✅
-
-**Goal**: Deep dive into SportRadar ID extraction and matching pipeline, produce findings document identifying specific bugs
-**Depends on**: Previous milestone complete
-**Status**: Complete — 2026-01-28
-
-Plans:
-- [x] 34-01: Code audit + SQL diagnostics + findings report
-
-#### Phase 34.1: API/UI Data Flow Audit (INSERTED) ✅
-
-**Goal**: Investigate why frontend shows incorrect/stale data despite healthy backend matching (99.9% accuracy)
-**Depends on**: Phase 34
-**Status**: Complete — 2026-01-28
-**Trigger**: UAT of Phase 34 revealed frontend displays bad data while backend is healthy
-
-Plans:
-- [x] 34.1-01: Trace data flow from DB → API → Frontend, identify where accuracy degrades
-
-**Scope:**
-- Audit API query logic for matches/odds endpoints
-- Check frontend state management and data fetching
-- Verify caching behavior
-- Compare API responses with direct SQL queries
-- Identify root cause of stale/incorrect display
-
-#### Phase 35: Apply Remediation Query ✅
-
-**Goal**: Fix 2 timing-affected events with one-time SQL query, optionally add periodic re-matching job
-**Depends on**: Phase 34
-**Scope**: Minimal — audit found only 2 events affected (not major rework)
-**Status**: Complete — 2026-01-28
-
-Plans:
-- [x] 35-01: Coverage stats fix (API-001) + timing remediation SQL
-
-#### Phase 36: Coverage Gap Analysis (Optional)
-
-**Goal**: Analyze which events BetPawa is missing (592 SportyBet-only, 723 Bet9ja-only)
-**Depends on**: Phase 35
-**Scope**: Business analysis, not technical fix — may skip
-
-Plans:
-- [ ] 36-01: TBD (may skip based on Phase 35 results)
-
-#### Phase 37: Documentation Update (Optional)
-
-**Goal**: Update architecture docs to clarify dual-system design, add match rate monitoring
-**Depends on**: Phase 36
-**Scope**: Optional cleanup — may skip if not needed
-
-Plans:
-- [ ] 37-01: TBD (may skip based on Phase 36 results)
+</details>
 
 ## Progress
 
@@ -195,6 +146,5 @@ Plans:
 | **v1.5 SHIPPED** | | | **2026-01-28** | |
 | 34. Investigation & Matching Audit Report | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 34.1 API/UI Data Flow Audit (INSERTED) | v1.6 | 1/1 | Complete | 2026-01-28 |
-| 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-28 |
-| 36. Coverage Gap Analysis (Optional) | v1.6 | 0/1 | Not started | - |
-| 37. Documentation Update (Optional) | v1.6 | 0/1 | Not started | - |
+| 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-29 |
+| **v1.6 SHIPPED** | | | **2026-01-29** | |
