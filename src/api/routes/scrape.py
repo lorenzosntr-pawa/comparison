@@ -14,6 +14,8 @@ from sqlalchemy.orm import selectinload
 
 from src.api.schemas import (
     DailyMetric,
+    EventMetricsByPlatform,
+    EventScrapeMetricsResponse,
     PlatformMetric,
     RetryRequest,
     RetryResponse,
@@ -28,6 +30,7 @@ from src.api.schemas import (
 )
 from src.scraping.schemas import Platform, ScrapeProgress
 from src.db.engine import async_session_factory, get_db
+from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
@@ -788,3 +791,111 @@ async def get_phase_history(
         )
         for log in phase_logs
     ]
+
+
+@router.get("/event-metrics", response_model=EventScrapeMetricsResponse)
+async def get_event_scrape_metrics(
+    db: AsyncSession = Depends(get_db),
+    days: int = Query(default=7, ge=1, le=30, description="Number of days to analyze"),
+) -> EventScrapeMetricsResponse:
+    """Get per-event scrape metrics from the new EventCoordinator flow.
+
+    Aggregates data from EventScrapeStatus records to provide insights on
+    per-event success rates and per-platform performance.
+
+    Returns metrics broken down by platform showing:
+    - Total events requested per platform
+    - Total events successfully scraped
+    - Total events that failed
+    - Success rate percentage
+    - Average timing in ms
+    """
+    from collections import defaultdict
+    from datetime import timedelta
+
+    from sqlalchemy import func
+
+    # Calculate date range
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+
+    # Query all EventScrapeStatus records in date range
+    result = await db.execute(
+        select(EventScrapeStatus).where(
+            EventScrapeStatus.created_at >= start_date
+        )
+    )
+    records = result.scalars().all()
+
+    # Aggregate metrics
+    total_events = len(records)
+    events_fully_scraped = 0
+    events_partially_scraped = 0
+    events_failed = 0
+
+    # Per-platform aggregation
+    platform_stats: dict[str, dict] = defaultdict(
+        lambda: {
+            "requested": 0,
+            "scraped": 0,
+            "failed": 0,
+            "total_timing_ms": 0,
+            "timing_count": 0,
+        }
+    )
+
+    for record in records:
+        # Count event outcomes
+        if not record.platforms_scraped:
+            events_failed += 1
+        elif len(record.platforms_scraped) == len(record.platforms_requested):
+            events_fully_scraped += 1
+        else:
+            events_partially_scraped += 1
+
+        # Per-platform stats
+        for platform in record.platforms_requested:
+            platform_stats[platform]["requested"] += 1
+
+        for platform in record.platforms_scraped:
+            platform_stats[platform]["scraped"] += 1
+            platform_stats[platform]["total_timing_ms"] += record.timing_ms
+            platform_stats[platform]["timing_count"] += 1
+
+        for platform in record.platforms_failed:
+            platform_stats[platform]["failed"] += 1
+
+    # Build platform metrics response
+    platform_metrics = []
+    for platform in sorted(platform_stats.keys()):
+        stats = platform_stats[platform]
+        success_rate = (
+            round((stats["scraped"] / stats["requested"]) * 100, 1)
+            if stats["requested"] > 0
+            else 0.0
+        )
+        avg_timing_ms = (
+            round(stats["total_timing_ms"] / stats["timing_count"], 1)
+            if stats["timing_count"] > 0
+            else 0.0
+        )
+        platform_metrics.append(
+            EventMetricsByPlatform(
+                platform=platform,
+                total_requested=stats["requested"],
+                total_scraped=stats["scraped"],
+                total_failed=stats["failed"],
+                success_rate=success_rate,
+                avg_timing_ms=avg_timing_ms,
+            )
+        )
+
+    return EventScrapeMetricsResponse(
+        period_start=start_date.date().isoformat(),
+        period_end=end_date.date().isoformat(),
+        total_events=total_events,
+        events_fully_scraped=events_fully_scraped,
+        events_partially_scraped=events_partially_scraped,
+        events_failed=events_failed,
+        platform_metrics=platform_metrics,
+    )

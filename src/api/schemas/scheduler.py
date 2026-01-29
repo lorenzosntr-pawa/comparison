@@ -176,3 +176,26 @@ class CompetitorScrapeResponse(BaseModel):
     sportybet: CompetitorScrapeResult
     bet9ja: CompetitorScrapeResult
     duration_ms: int
+
+
+class EventMetricsByPlatform(BaseModel):
+    """Per-platform metrics from EventScrapeStatus."""
+
+    platform: str
+    total_requested: int
+    total_scraped: int
+    total_failed: int
+    success_rate: float  # percentage 0-100
+    avg_timing_ms: float
+
+
+class EventScrapeMetricsResponse(BaseModel):
+    """Response for event-level scrape metrics from new EventCoordinator flow."""
+
+    period_start: str  # YYYY-MM-DD
+    period_end: str  # YYYY-MM-DD
+    total_events: int
+    events_fully_scraped: int  # all requested platforms succeeded
+    events_partially_scraped: int  # some platforms succeeded
+    events_failed: int  # no platforms succeeded
+    platform_metrics: list[EventMetricsByPlatform]

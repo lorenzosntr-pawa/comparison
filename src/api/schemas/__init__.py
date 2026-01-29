@@ -10,6 +10,8 @@ from src.api.schemas.api import (
 )
 from src.api.schemas.scheduler import (
     DailyMetric,
+    EventMetricsByPlatform,
+    EventScrapeMetricsResponse,
     JobStatus,
     PlatformMetric,
     RetryRequest,
@@ -46,6 +48,8 @@ __all__ = [
     "ScrapeStatusResponse",
     # Scheduler schemas
     "DailyMetric",
+    "EventMetricsByPlatform",
+    "EventScrapeMetricsResponse",
     "JobStatus",
     "PlatformMetric",
     "RetryRequest",
