@@ -19,7 +19,23 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import structlog
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db.models.bookmaker import Bookmaker
+from src.db.models.competitor import (
+    CompetitorEvent,
+    CompetitorMarketOdds,
+    CompetitorOddsSnapshot,
+    CompetitorSource,
+)
+from src.db.models.event import Event
+from src.db.models.event_scrape_status import EventScrapeStatus
+from src.db.models.odds import MarketOdds, OddsSnapshot
+from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
+from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
+from src.market_mapping.types.errors import MappingError
+from src.market_mapping.types.sportybet import SportybetMarket
 from src.scraping.schemas.coordinator import EventTarget, ScrapeBatch, ScrapeStatus
 
 if TYPE_CHECKING:
@@ -784,3 +800,427 @@ class EventCoordinator:
             "Batch scrape complete",
             batch_id=batch["batch_id"],
         )
+
+    # =========================================================================
+    # STORAGE: Phase 4 - Store scraped results in database
+    # =========================================================================
+
+    async def store_batch_results(
+        self,
+        db: AsyncSession,
+        batch: ScrapeBatch,
+        scrape_run_id: int,
+    ) -> dict:
+        """Store scraped batch results in database using bulk insert pattern.
+
+        Processes events from batch, creates EventScrapeStatus records for tracking,
+        and stores odds data to appropriate tables based on platform:
+        - BetPawa -> OddsSnapshot + MarketOdds
+        - SportyBet/Bet9ja -> CompetitorOddsSnapshot + CompetitorMarketOdds
+
+        Args:
+            db: AsyncSession for database operations.
+            batch: ScrapeBatch containing events with results populated.
+            scrape_run_id: FK to scrape_runs.id for tracking.
+
+        Returns:
+            Dict with {events_stored, snapshots_created, errors}.
+        """
+        logger.debug(
+            "Storing batch results",
+            batch_id=batch["batch_id"],
+            event_count=len(batch["events"]),
+        )
+
+        # Counters for summary
+        events_stored = 0
+        snapshots_created = 0
+        errors = 0
+
+        # Pre-fetch bookmaker IDs
+        bookmaker_ids = await self._get_bookmaker_ids(db)
+
+        # Pre-fetch event mappings (SR ID -> DB event ID)
+        sr_ids = [event.sr_id for event in batch["events"]]
+        event_id_map = await self._get_event_ids_by_sr_ids(db, sr_ids)
+
+        # Pre-fetch competitor event mappings (SR ID -> CompetitorEvent ID by source)
+        competitor_event_map = await self._get_competitor_event_ids_by_sr_ids(db, sr_ids)
+
+        # Collect all records for bulk operations
+        status_records: list[EventScrapeStatus] = []
+        betpawa_snapshots: list[tuple[OddsSnapshot, list[MarketOdds]]] = []
+        competitor_snapshots: list[tuple[CompetitorOddsSnapshot, list[CompetitorMarketOdds]]] = []
+
+        # Process each event in batch
+        for event in batch["events"]:
+            # Skip events that completely failed (no data at all)
+            if event.status == ScrapeStatus.FAILED and not event.results:
+                # Create EventScrapeStatus for failed event
+                status_record = EventScrapeStatus(
+                    scrape_run_id=scrape_run_id,
+                    sportradar_id=event.sr_id,
+                    status="failed",
+                    platforms_requested=list(event.platforms),
+                    platforms_scraped=[],
+                    platforms_failed=list(event.errors.keys()) if event.errors else list(event.platforms),
+                    timing_ms=0,
+                    error_details=event.errors if event.errors else None,
+                )
+                status_records.append(status_record)
+                errors += 1
+                continue
+
+            # Calculate timing from event result (stored during scrape)
+            timing_ms = 0
+            if event.results:
+                # Timing is tracked per-event during scrape_batch
+                # For now, estimate from available data
+                timing_ms = 0  # Will be updated when we have timing data
+
+            # Create EventScrapeStatus record
+            status_record = EventScrapeStatus(
+                scrape_run_id=scrape_run_id,
+                sportradar_id=event.sr_id,
+                status="completed" if event.status == ScrapeStatus.COMPLETED else "failed",
+                platforms_requested=list(event.platforms),
+                platforms_scraped=list(event.results.keys()),
+                platforms_failed=list(event.errors.keys()) if event.errors else [],
+                timing_ms=timing_ms,
+                error_details=event.errors if event.errors else None,
+            )
+            status_records.append(status_record)
+
+            # Process platform results
+            for platform, raw_data in event.results.items():
+                if raw_data is None:
+                    continue
+
+                try:
+                    if platform == "betpawa":
+                        # BetPawa -> OddsSnapshot + MarketOdds
+                        event_id = event_id_map.get(event.sr_id)
+                        if event_id is None:
+                            logger.debug(
+                                "No DB event for BetPawa result",
+                                sr_id=event.sr_id,
+                            )
+                            continue
+
+                        bookmaker_id = bookmaker_ids.get("betpawa")
+                        if bookmaker_id is None:
+                            continue
+
+                        # Create snapshot
+                        snapshot = OddsSnapshot(
+                            event_id=event_id,
+                            bookmaker_id=bookmaker_id,
+                            scrape_run_id=scrape_run_id,
+                            raw_response=raw_data,
+                        )
+
+                        # Parse markets
+                        markets = self._parse_betpawa_markets(raw_data)
+                        betpawa_snapshots.append((snapshot, markets))
+                        snapshots_created += 1
+
+                    else:
+                        # SportyBet/Bet9ja -> CompetitorOddsSnapshot + CompetitorMarketOdds
+                        source = CompetitorSource.SPORTYBET if platform == "sportybet" else CompetitorSource.BET9JA
+                        competitor_event_id = competitor_event_map.get((event.sr_id, source.value))
+
+                        if competitor_event_id is None:
+                            logger.debug(
+                                "No competitor event for result",
+                                sr_id=event.sr_id,
+                                platform=platform,
+                            )
+                            continue
+
+                        # Create competitor snapshot
+                        snapshot = CompetitorOddsSnapshot(
+                            competitor_event_id=competitor_event_id,
+                            scrape_run_id=scrape_run_id,
+                            raw_response=raw_data,
+                        )
+
+                        # Parse markets based on platform
+                        if platform == "sportybet":
+                            markets = self._parse_sportybet_markets(raw_data)
+                        else:  # bet9ja
+                            markets = self._parse_bet9ja_markets(raw_data)
+
+                        competitor_snapshots.append((snapshot, markets))
+                        snapshots_created += 1
+
+                except Exception as e:
+                    logger.warning(
+                        "Failed to process platform result",
+                        sr_id=event.sr_id,
+                        platform=platform,
+                        error=str(e),
+                    )
+                    errors += 1
+
+            events_stored += 1
+
+        # Bulk insert all records (sequential for session safety)
+        # Insert EventScrapeStatus records
+        for status_record in status_records:
+            db.add(status_record)
+
+        # Insert BetPawa snapshots and markets
+        for snapshot, markets in betpawa_snapshots:
+            db.add(snapshot)
+            await db.flush()  # Get snapshot ID
+            for market in markets:
+                market.snapshot_id = snapshot.id
+                db.add(market)
+
+        # Insert competitor snapshots and markets
+        for snapshot, markets in competitor_snapshots:
+            db.add(snapshot)
+            await db.flush()  # Get snapshot ID
+            for market in markets:
+                market.snapshot_id = snapshot.id
+                db.add(market)
+
+        # Commit all changes
+        await db.commit()
+
+        logger.info(
+            "Batch storage complete",
+            batch_id=batch["batch_id"],
+            events_stored=events_stored,
+            snapshots_created=snapshots_created,
+            errors=errors,
+        )
+
+        return {
+            "events_stored": events_stored,
+            "snapshots_created": snapshots_created,
+            "errors": errors,
+        }
+
+    async def _get_bookmaker_ids(self, db: AsyncSession) -> dict[str, int]:
+        """Get bookmaker IDs for all platforms.
+
+        Args:
+            db: AsyncSession for database operations.
+
+        Returns:
+            Dict mapping platform slug to bookmaker ID.
+        """
+        result = await db.execute(select(Bookmaker))
+        bookmakers = result.scalars().all()
+        return {b.slug: b.id for b in bookmakers}
+
+    async def _get_event_ids_by_sr_ids(
+        self,
+        db: AsyncSession,
+        sr_ids: list[str],
+    ) -> dict[str, int]:
+        """Get Event IDs by SportRadar IDs.
+
+        Args:
+            db: AsyncSession for database operations.
+            sr_ids: List of SportRadar IDs to look up.
+
+        Returns:
+            Dict mapping SR ID to Event ID.
+        """
+        if not sr_ids:
+            return {}
+
+        result = await db.execute(
+            select(Event.id, Event.sportradar_id).where(
+                Event.sportradar_id.in_(sr_ids)
+            )
+        )
+        return {row.sportradar_id: row.id for row in result.all()}
+
+    async def _get_competitor_event_ids_by_sr_ids(
+        self,
+        db: AsyncSession,
+        sr_ids: list[str],
+    ) -> dict[tuple[str, str], int]:
+        """Get CompetitorEvent IDs by SportRadar IDs.
+
+        Args:
+            db: AsyncSession for database operations.
+            sr_ids: List of SportRadar IDs to look up.
+
+        Returns:
+            Dict mapping (SR ID, source) to CompetitorEvent ID.
+        """
+        if not sr_ids:
+            return {}
+
+        result = await db.execute(
+            select(CompetitorEvent.id, CompetitorEvent.sportradar_id, CompetitorEvent.source).where(
+                CompetitorEvent.sportradar_id.in_(sr_ids)
+            )
+        )
+        return {(row.sportradar_id, row.source): row.id for row in result.all()}
+
+    def _parse_betpawa_markets(self, raw_data: dict) -> list[MarketOdds]:
+        """Parse BetPawa raw response into MarketOdds records.
+
+        BetPawa markets ARE the canonical format - no mapping needed.
+        Direct extraction from the markets array.
+
+        Args:
+            raw_data: Raw API response from BetPawa (full event data).
+
+        Returns:
+            List of MarketOdds objects (snapshot_id will be set later).
+        """
+        market_odds_list: list[MarketOdds] = []
+        markets = raw_data.get("markets", [])
+
+        for market_data in markets:
+            market_type = market_data.get("marketType", {})
+            market_id = market_type.get("id")
+
+            if not market_id:
+                continue
+
+            for row in market_data.get("row", []):
+                prices = row.get("prices", [])
+                line = row.get("formattedHandicap")
+
+                # Parse line to float if present
+                line_value = None
+                if line:
+                    try:
+                        line_value = float(line)
+                    except (ValueError, TypeError):
+                        line_value = None
+
+                if line_value is None and prices:
+                    # Fall back to handicap from first price
+                    price_handicap = prices[0].get("handicap")
+                    if price_handicap:
+                        try:
+                            line_value = float(price_handicap)
+                        except (ValueError, TypeError):
+                            line_value = None
+
+                outcomes = [
+                    {
+                        "name": p.get("name"),
+                        "odds": p.get("price"),
+                        "is_active": not p.get("suspended", False),
+                    }
+                    for p in prices
+                    if p.get("name") and p.get("price")
+                ]
+
+                if not outcomes:
+                    continue
+
+                market_odds = MarketOdds(
+                    betpawa_market_id=str(market_id),
+                    betpawa_market_name=market_type.get("displayName", ""),
+                    line=line_value,
+                    outcomes=outcomes,
+                )
+                market_odds_list.append(market_odds)
+
+        return market_odds_list
+
+    def _parse_sportybet_markets(self, raw_data: dict) -> list[CompetitorMarketOdds]:
+        """Parse SportyBet raw response into CompetitorMarketOdds records.
+
+        Args:
+            raw_data: Raw API response from SportyBet (event data).
+
+        Returns:
+            List of CompetitorMarketOdds objects (snapshot_id will be set later).
+        """
+        market_odds_list: list[CompetitorMarketOdds] = []
+        markets = raw_data.get("markets", [])
+
+        for market_data in markets:
+            try:
+                # Parse into Pydantic model
+                sportybet_market = SportybetMarket.model_validate(market_data)
+
+                # Map to Betpawa format
+                mapped = map_sportybet_to_betpawa(sportybet_market)
+
+                # Convert MappedMarket to CompetitorMarketOdds
+                outcomes = [
+                    {
+                        "name": o.betpawa_outcome_name,
+                        "odds": o.odds,
+                        "is_active": o.is_active,
+                    }
+                    for o in mapped.outcomes
+                ]
+
+                market_odds = CompetitorMarketOdds(
+                    betpawa_market_id=mapped.betpawa_market_id,
+                    betpawa_market_name=mapped.betpawa_market_name,
+                    line=mapped.line,
+                    handicap_type=mapped.handicap.type if mapped.handicap else None,
+                    handicap_home=mapped.handicap.home if mapped.handicap else None,
+                    handicap_away=mapped.handicap.away if mapped.handicap else None,
+                    outcomes=outcomes,
+                )
+                market_odds_list.append(market_odds)
+
+            except MappingError:
+                # Market not mappable - skip it (common for exotic markets)
+                pass
+            except Exception as e:
+                logger.debug("Error parsing SportyBet market", error=str(e))
+
+        return market_odds_list
+
+    def _parse_bet9ja_markets(self, raw_data: dict) -> list[CompetitorMarketOdds]:
+        """Parse Bet9ja raw response into CompetitorMarketOdds records.
+
+        Args:
+            raw_data: Raw API response from Bet9ja (event data).
+
+        Returns:
+            List of CompetitorMarketOdds objects (snapshot_id will be set later).
+        """
+        market_odds_list: list[CompetitorMarketOdds] = []
+
+        # Bet9ja odds are nested inside the "O" object
+        odds_dict = raw_data.get("O", {})
+
+        if not odds_dict or not isinstance(odds_dict, dict):
+            return market_odds_list
+
+        try:
+            # Map all odds at once
+            mapped_markets = map_bet9ja_odds_to_betpawa(odds_dict)
+
+            for mapped in mapped_markets:
+                outcomes = [
+                    {
+                        "name": o.betpawa_outcome_name,
+                        "odds": o.odds,
+                        "is_active": o.is_active,
+                    }
+                    for o in mapped.outcomes
+                ]
+
+                market_odds = CompetitorMarketOdds(
+                    betpawa_market_id=mapped.betpawa_market_id,
+                    betpawa_market_name=mapped.betpawa_market_name,
+                    line=mapped.line,
+                    handicap_type=mapped.handicap.type if mapped.handicap else None,
+                    handicap_home=mapped.handicap.home if mapped.handicap else None,
+                    handicap_away=mapped.handicap.away if mapped.handicap else None,
+                    outcomes=outcomes,
+                )
+                market_odds_list.append(market_odds)
+
+        except Exception as e:
+            logger.warning("Error parsing Bet9ja markets", error=str(e))
+
+        return market_odds_list
