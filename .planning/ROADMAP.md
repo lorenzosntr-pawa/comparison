@@ -69,15 +69,15 @@ Plans:
 Plans:
 - [x] 40-01: Configurable tuning settings, EventCoordinator integration, event metrics API — 2026-01-29
 
-#### Phase 41: On-Demand API
+#### Phase 41: On-Demand API ✓
 
 **Goal**: Single-event refresh endpoint POST /api/scrape/{sr_id}
 **Depends on**: Phase 40
 **Research**: Unlikely (existing FastAPI patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 41-01: TBD
+- [x] 41-01: POST /api/scrape/event/{sr_id} endpoint with parallel platform scraping — 2026-01-29
 
 #### Phase 42: Validation & Cleanup
 
@@ -228,5 +228,5 @@ Plans:
 | 38. SR ID Parallel Scraping | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 39. Batch DB Storage | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 40. Concurrency Tuning & Metrics | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 41. On-Demand API | v1.7 | 0/? | Not started | - |
+| 41. On-Demand API | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 42. Validation & Cleanup | v1.7 | 0/? | Not started | - |

@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 ## Current Position
 
-Phase: 40 of 42 (Concurrency Tuning & Metrics)
+Phase: 41 of 42 (On-Demand API)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-29 — Completed 40-01-PLAN.md
+Last activity: 2026-01-29 — Completed 41-01-PLAN.md
 
-Progress: █████░░░░░ 50%
+Progress: █████████░ 86%
 
 ## Milestones
 
@@ -30,7 +30,7 @@ Progress: █████░░░░░ 50%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 89
+- Total plans completed: 90
 - Average duration: 6 min
 - Total execution time: ~9 hours
 
@@ -132,5 +132,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 40-01-PLAN.md (Phase 40 complete)
+Stopped at: Completed 41-01-PLAN.md (Phase 41 complete)
 Resume file: None
