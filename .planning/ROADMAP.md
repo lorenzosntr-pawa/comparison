@@ -29,15 +29,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 36-01: Profile bottlenecks, investigate rate limits, design EventCoordinator — 2026-01-29
 
-#### Phase 37: Event Coordination Layer
+#### Phase 37: Event Coordination Layer ✓
 
 **Goal**: New EventCoordinator with SR ID collection and priority queue
 **Depends on**: Phase 36
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 37-01: TBD
+- [x] 37-01: Create EventCoordinator with discovery and priority queue — 2026-01-29
 
 #### Phase 38: SR ID Parallel Scraping
 
@@ -224,7 +224,7 @@ Plans:
 | 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-29 |
 | **v1.6 SHIPPED** | | | **2026-01-29** | |
 | 36. Investigation & Architecture Design | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 37. Event Coordination Layer | v1.7 | 0/? | Not started | - |
+| 37. Event Coordination Layer | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 38. SR ID Parallel Scraping | v1.7 | 0/? | Not started | - |
 | 39. Batch DB Storage | v1.7 | 0/? | Not started | - |
 | 40. Concurrency Tuning & Metrics | v1.7 | 0/? | Not started | - |
