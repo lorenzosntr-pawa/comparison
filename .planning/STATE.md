@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 42 of 42 (Validation & Cleanup)
-Plan: 1 of 1 in current phase
-Status: Milestone complete
-Last activity: 2026-01-29 — Completed 42-01-PLAN.md
+Plan: 1 of 1 + FIX plan
+Status: Milestone complete (UAT fixes applied)
+Last activity: 2026-01-29 — Completed 42-01-FIX.md (3 UAT fixes)
 
 Progress: ██████████ 100%
 
@@ -101,6 +101,7 @@ Progress: ██████████ 100%
 - **Factory method for configurable initialization** - EventCoordinator.from_settings() creates instances with tuning from Settings (v1.7)
 - **Event-centric parallel scraping** - scrape all platforms simultaneously per event, not sequentially by platform (v1.7)
 - **Dict-based SSE progress events** - EventCoordinator yields dict events, mapped to ScrapeProgress for broadcaster (v1.7)
+- **Single-flush batch insert pattern** - add all records, single flush to get IDs, link FKs, commit (v1.7 FIX)
 
 ### Key Decisions
 
@@ -141,5 +142,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 42-01-PLAN.md (v1.7 milestone complete)
+Stopped at: Completed 42-01-FIX.md (UAT bug fixes applied)
 Resume file: None
