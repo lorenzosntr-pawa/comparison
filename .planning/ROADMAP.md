@@ -19,15 +19,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Redesign scraping to capture odds simultaneously across all bookmakers for reliable trader comparison
 
-#### Phase 36: Investigation & Architecture Design
+#### Phase 36: Investigation & Architecture Design ✓
 
 **Goal**: Profile current bottlenecks, design new coordination layer
 **Depends on**: v1.6 complete
 **Research**: Unlikely (internal profiling and design)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 36-01: TBD (run /gsd:plan-phase 36 to break down)
+- [x] 36-01: Profile bottlenecks, investigate rate limits, design EventCoordinator — 2026-01-29
 
 #### Phase 37: Event Coordination Layer
 
@@ -223,7 +223,7 @@ Plans:
 | 34.1 API/UI Data Flow Audit (INSERTED) | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-29 |
 | **v1.6 SHIPPED** | | | **2026-01-29** | |
-| 36. Investigation & Architecture Design | v1.7 | 0/? | Not started | - |
+| 36. Investigation & Architecture Design | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 37. Event Coordination Layer | v1.7 | 0/? | Not started | - |
 | 38. SR ID Parallel Scraping | v1.7 | 0/? | Not started | - |
 | 39. Batch DB Storage | v1.7 | 0/? | Not started | - |
