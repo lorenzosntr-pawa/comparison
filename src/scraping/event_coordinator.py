@@ -216,7 +216,7 @@ class EventCoordinator:
         Returns:
             List of dicts with {sr_id, kickoff} for each upcoming event.
         """
-        logger.debug("Discovering BetPawa events")
+        logger.info("Discovering BetPawa events")
         events: list[dict] = []
         now = datetime.now(timezone.utc)
 
@@ -225,17 +225,34 @@ class EventCoordinator:
             # Fetch competition list
             categories_data = await client.fetch_categories()
 
+            # Log response structure for debugging
+            response_keys = list(categories_data.keys()) if isinstance(categories_data, dict) else []
+            logger.info(
+                "BetPawa categories response",
+                response_keys=response_keys,
+            )
+
             # Extract competition IDs from the nested structure
+            # API structure: withRegions[0].regions[i].competitions[j].competition.id
             competition_ids: list[str] = []
-            regions = categories_data.get("regions", [])
+            with_regions = categories_data.get("withRegions", [])
+            regions = with_regions[0].get("regions", []) if with_regions else []
+
+            logger.info(
+                "BetPawa regions",
+                regions_count=len(regions),
+            )
+
             for region in regions:
                 competitions = region.get("competitions", [])
                 for comp in competitions:
-                    comp_id = str(comp.get("id", ""))
+                    # Competition ID is nested inside "competition" key
+                    competition_data = comp.get("competition", {})
+                    comp_id = str(competition_data.get("id", ""))
                     if comp_id:
                         competition_ids.append(comp_id)
 
-            logger.debug(
+            logger.info(
                 "Found BetPawa competitions",
                 count=len(competition_ids),
             )
@@ -273,7 +290,7 @@ class EventCoordinator:
                 if isinstance(result, list):
                     events.extend(result)
 
-            logger.debug("Discovered BetPawa events", count=len(events))
+            logger.info("Discovered BetPawa events", count=len(events))
 
         except Exception as e:
             logger.error("BetPawa discovery failed", error=str(e))
