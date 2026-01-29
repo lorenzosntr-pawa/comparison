@@ -1023,23 +1023,29 @@ class EventCoordinator:
 
             events_stored += 1
 
-        # Bulk insert all records (sequential for session safety)
-        # Insert EventScrapeStatus records
+        # Bulk insert all records with optimized flush pattern
+        # (Reduced from N flushes to 2: one for snapshots, one for markets)
+
+        # Insert EventScrapeStatus records (no FK dependencies)
         for status_record in status_records:
             db.add(status_record)
 
-        # Insert BetPawa snapshots and markets
-        for snapshot, markets in betpawa_snapshots:
+        # Add all snapshots first (both BetPawa and competitor)
+        for snapshot, _markets in betpawa_snapshots:
             db.add(snapshot)
-            await db.flush()  # Get snapshot ID
+        for snapshot, _markets in competitor_snapshots:
+            db.add(snapshot)
+
+        # Single flush to get all snapshot IDs at once
+        await db.flush()
+
+        # Now add all markets with their snapshot IDs (IDs populated after flush)
+        for snapshot, markets in betpawa_snapshots:
             for market in markets:
                 market.snapshot_id = snapshot.id
                 db.add(market)
 
-        # Insert competitor snapshots and markets
         for snapshot, markets in competitor_snapshots:
-            db.add(snapshot)
-            await db.flush()  # Get snapshot ID
             for market in markets:
                 market.snapshot_id = snapshot.id
                 db.add(market)
