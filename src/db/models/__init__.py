@@ -11,6 +11,7 @@ from src.db.models.competitor import (
     CompetitorTournament,
 )
 from src.db.models.event import Event, EventBookmaker
+from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import (
     ScrapeBatch,
@@ -44,4 +45,6 @@ __all__ = [
     "CompetitorEvent",
     "CompetitorOddsSnapshot",
     "CompetitorMarketOdds",
+    # Event-centric architecture models
+    "EventScrapeStatus",
 ]
