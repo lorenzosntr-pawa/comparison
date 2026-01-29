@@ -13,6 +13,81 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
+- 🚧 **v1.7 Scraping Architecture Overhaul** — Phases 36-42 (in progress)
+
+### 🚧 v1.7 Scraping Architecture Overhaul (In Progress)
+
+**Milestone Goal:** Redesign scraping to capture odds simultaneously across all bookmakers for reliable trader comparison
+
+#### Phase 36: Investigation & Architecture Design
+
+**Goal**: Profile current bottlenecks, design new coordination layer
+**Depends on**: v1.6 complete
+**Research**: Unlikely (internal profiling and design)
+**Plans**: TBD
+
+Plans:
+- [ ] 36-01: TBD (run /gsd:plan-phase 36 to break down)
+
+#### Phase 37: Event Coordination Layer
+
+**Goal**: New EventCoordinator with SR ID collection and priority queue
+**Depends on**: Phase 36
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 37-01: TBD
+
+#### Phase 38: SR ID Parallel Scraping
+
+**Goal**: Simultaneous multi-bookmaker scraping with batch processing
+**Depends on**: Phase 37
+**Research**: Unlikely (established async patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 38-01: TBD
+
+#### Phase 39: Batch DB Storage
+
+**Goal**: Bulk inserts, per-event status tracking table
+**Depends on**: Phase 38
+**Research**: Unlikely (SQLAlchemy bulk patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 39-01: TBD
+
+#### Phase 40: Concurrency Tuning & Metrics
+
+**Goal**: Optimize semaphores, add performance tracking
+**Depends on**: Phase 39
+**Research**: Unlikely (internal optimization)
+**Plans**: TBD
+
+Plans:
+- [ ] 40-01: TBD
+
+#### Phase 41: On-Demand API
+
+**Goal**: Single-event refresh endpoint POST /api/scrape/{sr_id}
+**Depends on**: Phase 40
+**Research**: Unlikely (existing FastAPI patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 41-01: TBD
+
+#### Phase 42: Validation & Cleanup
+
+**Goal**: Side-by-side testing, remove legacy flow
+**Depends on**: Phase 41
+**Research**: Unlikely (internal testing)
+**Plans**: TBD
+
+Plans:
+- [ ] 42-01: TBD
 
 ## Completed Milestones
 
@@ -148,3 +223,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 34.1 API/UI Data Flow Audit (INSERTED) | v1.6 | 1/1 | Complete | 2026-01-28 |
 | 35. Apply Remediation Query | v1.6 | 1/1 | Complete | 2026-01-29 |
 | **v1.6 SHIPPED** | | | **2026-01-29** | |
+| 36. Investigation & Architecture Design | v1.7 | 0/? | Not started | - |
+| 37. Event Coordination Layer | v1.7 | 0/? | Not started | - |
+| 38. SR ID Parallel Scraping | v1.7 | 0/? | Not started | - |
+| 39. Batch DB Storage | v1.7 | 0/? | Not started | - |
+| 40. Concurrency Tuning & Metrics | v1.7 | 0/? | Not started | - |
+| 41. On-Demand API | v1.7 | 0/? | Not started | - |
+| 42. Validation & Cleanup | v1.7 | 0/? | Not started | - |

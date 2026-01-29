@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v1.7 Scraping Architecture Overhaul
 
 ## Current Position
 
-Phase: None active
-Plan: None active
-Status: Milestone complete
-Last activity: 2026-01-29 — v1.6 Event Matching Accuracy shipped
+Phase: 36 of 42 (Investigation & Architecture Design)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-29 — Milestone v1.7 created
 
-Progress: N/A (awaiting next milestone)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -25,6 +25,7 @@ Progress: N/A (awaiting next milestone)
 - **v1.4 Odds Comparison UX** — SHIPPED 2026-01-26 (3 phases, 3 plans)
 - **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
 - **v1.6 Event Matching Accuracy** — SHIPPED 2026-01-29 (3 phases, 3 plans)
+- **v1.7 Scraping Architecture Overhaul** — IN PROGRESS (7 phases, Phases 36-42)
 
 ## Performance Metrics
 
@@ -125,10 +126,10 @@ None.
 - v1.5 Scraping Observability shipped 2026-01-28 with 4 phases
 - v1.6 Event Matching Accuracy shipped 2026-01-29 with 3 phases
 - All milestones archived to .planning/milestones/
-- Optional phases 36-37 skipped (business analysis and docs not needed)
+- Milestone v1.7 created: Scraping Architecture Overhaul, 7 phases (Phase 36-42)
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: v1.6 milestone completed
+Stopped at: v1.7 milestone created
 Resume file: None
