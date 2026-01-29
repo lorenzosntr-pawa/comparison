@@ -1224,3 +1224,133 @@ class EventCoordinator:
             logger.warning("Error parsing Bet9ja markets", error=str(e))
 
         return market_odds_list
+
+    # =========================================================================
+    # FULL CYCLE: Complete scrape orchestration
+    # =========================================================================
+
+    async def run_full_cycle(
+        self,
+        db: AsyncSession,
+        scrape_run_id: int,
+    ) -> AsyncGenerator[dict, None]:
+        """Run a complete scrape cycle: discovery -> queue -> scrape -> store.
+
+        This method orchestrates the full event-centric scraping pipeline:
+        1. Discovery: Parallel discovery from all platforms
+        2. Build queue: Priority queue based on kickoff + coverage
+        3. Process batches: Scrape all platforms per event, store results
+        4. Cleanup: Clear coordinator state for next cycle
+
+        Yields SSE-compatible progress events at each stage.
+
+        Args:
+            db: AsyncSession for database operations.
+            scrape_run_id: FK to scrape_runs.id for tracking.
+
+        Yields:
+            Progress dicts with event_type and relevant data for SSE streaming.
+        """
+        # Phase 1: Cycle start
+        yield {
+            "event_type": "CYCLE_START",
+            "scrape_run_id": scrape_run_id,
+        }
+
+        # Phase 2: Discovery
+        await self.discover_events()
+
+        discovery_counts = {
+            platform: sum(
+                1 for e in self._event_map.values()
+                if platform in e.platforms
+            )
+            for platform in ["betpawa", "sportybet", "bet9ja"]
+        }
+
+        yield {
+            "event_type": "DISCOVERY_COMPLETE",
+            "discovery_counts": discovery_counts,
+            "total_events": len(self._event_map),
+        }
+
+        # Phase 3: Build queue
+        self.build_priority_queue()
+        batch_count = (len(self._priority_queue) + self._batch_size - 1) // self._batch_size
+
+        yield {
+            "event_type": "QUEUE_BUILT",
+            "total_events": len(self._event_map),
+            "batch_count": batch_count,
+            "batch_size": self._batch_size,
+            "queue_stats": self.get_queue_stats(),
+        }
+
+        # Phase 4: Process batches
+        batch_index = 0
+        events_scraped = 0
+        events_failed = 0
+        total_snapshots = 0
+        total_start = time.perf_counter()
+
+        while batch := self.get_next_batch():
+            batch_start = time.perf_counter()
+
+            yield {
+                "event_type": "BATCH_START",
+                "batch_id": batch["batch_id"],
+                "batch_index": batch_index,
+                "batch_count": batch_count,
+                "event_count": len(batch["events"]),
+            }
+
+            # Scrape and yield per-event progress
+            async for progress in self.scrape_batch(batch):
+                yield progress
+
+            batch_scrape_ms = int((time.perf_counter() - batch_start) * 1000)
+
+            # Store results
+            store_start = time.perf_counter()
+            store_result = await self.store_batch_results(db, batch, scrape_run_id)
+            store_ms = int((time.perf_counter() - store_start) * 1000)
+
+            # Count successes and failures
+            batch_success = sum(
+                1 for e in batch["events"]
+                if e.status == ScrapeStatus.COMPLETED
+            )
+            batch_failed = len(batch["events"]) - batch_success
+
+            yield {
+                "event_type": "BATCH_COMPLETE",
+                "batch_id": batch["batch_id"],
+                "batch_index": batch_index,
+                "events_stored": store_result["events_stored"],
+                "snapshots_created": store_result["snapshots_created"],
+                "errors": store_result["errors"],
+                "batch_scrape_ms": batch_scrape_ms,
+                "batch_store_ms": store_ms,
+            }
+
+            batch_index += 1
+            events_scraped += batch_success
+            events_failed += batch_failed
+            total_snapshots += store_result["snapshots_created"]
+
+        # Phase 5: Cycle complete
+        total_ms = int((time.perf_counter() - total_start) * 1000)
+
+        yield {
+            "event_type": "CYCLE_COMPLETE",
+            "scrape_run_id": scrape_run_id,
+            "total_events": len(self._event_map),
+            "events_scraped": events_scraped,
+            "events_failed": events_failed,
+            "total_snapshots": total_snapshots,
+            "batch_count": batch_index,
+            "total_timing_ms": total_ms,
+        }
+
+        # Clear for next cycle
+        self.clear()
