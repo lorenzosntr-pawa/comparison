@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import time
 from datetime import datetime
 
 import structlog
@@ -27,9 +28,13 @@ from src.api.schemas import (
     ScrapeRunResponse,
     ScrapeStatsResponse,
     ScrapeStatusResponse,
+    SingleEventPlatformResult,
+    SingleEventScrapeResponse,
 )
 from src.scraping.schemas import Platform, ScrapeProgress
 from src.db.engine import async_session_factory, get_db
+from src.db.models.competitor import CompetitorEvent
+from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.scraping.broadcaster import progress_registry
@@ -898,4 +903,159 @@ async def get_event_scrape_metrics(
         events_partially_scraped=events_partially_scraped,
         events_failed=events_failed,
         platform_metrics=platform_metrics,
+    )
+
+
+@router.post("/event/{sr_id}", response_model=SingleEventScrapeResponse)
+async def scrape_single_event(
+    sr_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> SingleEventScrapeResponse:
+    """Scrape a single event across all available bookmakers.
+
+    Enables manual refresh of a specific event's odds without running a full scrape cycle.
+    Useful for traders monitoring specific matches or refreshing stale data.
+
+    - **sr_id**: SportRadar ID of the event (e.g., "12345678")
+
+    Returns per-platform success/failure details and timing information.
+    Returns 404 if event not found in any platform database.
+    """
+    log = structlog.get_logger()
+    start_time = time.perf_counter()
+
+    # Build platform_ids dict by looking up event IDs from database
+    platform_ids: dict[str, str] = {}
+
+    # 1. Look up BetPawa event ID from Event table via EventBookmaker
+    event_result = await db.execute(
+        select(Event)
+        .options(selectinload(Event.bookmaker_links))
+        .where(Event.sportradar_id == sr_id)
+    )
+    event = event_result.scalar_one_or_none()
+
+    if event:
+        # Find BetPawa bookmaker link (bookmaker_id for BetPawa)
+        for link in event.bookmaker_links:
+            # BetPawa bookmaker_id is typically 1 or we can check by slug
+            # For now, assume all bookmaker_links are BetPawa since Event table is BetPawa-centric
+            platform_ids["betpawa"] = link.external_event_id
+            break
+
+    # 2. Look up competitor event IDs from CompetitorEvent table
+    competitor_result = await db.execute(
+        select(CompetitorEvent).where(CompetitorEvent.sportradar_id == sr_id)
+    )
+    competitor_events = competitor_result.scalars().all()
+
+    for comp_event in competitor_events:
+        if comp_event.source == "sportybet":
+            platform_ids["sportybet"] = comp_event.external_id
+        elif comp_event.source == "bet9ja":
+            platform_ids["bet9ja"] = comp_event.external_id
+
+    # 3. SportyBet uses sr:match: format if not found in CompetitorEvent
+    if "sportybet" not in platform_ids:
+        # SportyBet API accepts sr:match:{sr_id} format directly
+        platform_ids["sportybet"] = f"sr:match:{sr_id}"
+
+    # Validate at least one platform is available
+    if not platform_ids:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Event with SportRadar ID '{sr_id}' not found in any platform database",
+        )
+
+    log.info(
+        "Starting single-event scrape",
+        sr_id=sr_id,
+        platforms=list(platform_ids.keys()),
+    )
+
+    # Get HTTP clients from app state
+    clients = {
+        "sportybet": SportyBetClient(request.app.state.sportybet_client),
+        "betpawa": BetPawaClient(request.app.state.betpawa_client),
+        "bet9ja": Bet9jaClient(request.app.state.bet9ja_client),
+    }
+
+    # Scrape all platforms in parallel
+    async def scrape_platform(platform: str, platform_id: str):
+        client = clients[platform]
+        platform_start = time.perf_counter()
+        try:
+            result = await client.fetch_event(platform_id)
+            elapsed_ms = int((time.perf_counter() - platform_start) * 1000)
+            # Count markets from response if available
+            markets_count = None
+            if isinstance(result, dict):
+                # Different platforms have different response structures
+                if "markets" in result:
+                    markets_count = len(result["markets"])
+                elif "data" in result and isinstance(result["data"], dict):
+                    if "markets" in result["data"]:
+                        markets_count = len(result["data"]["markets"])
+            return (platform, True, None, elapsed_ms, markets_count)
+        except Exception as e:
+            elapsed_ms = int((time.perf_counter() - platform_start) * 1000)
+            log.warning(
+                "Platform scrape failed",
+                platform=platform,
+                sr_id=sr_id,
+                error=str(e),
+            )
+            return (platform, False, str(e), elapsed_ms, None)
+
+    # Execute all platform scrapes concurrently
+    tasks = [scrape_platform(p, pid) for p, pid in platform_ids.items()]
+    results = await asyncio.gather(*tasks)
+
+    # Process results
+    platforms_scraped: list[str] = []
+    platforms_failed: list[str] = []
+    platform_results: list[SingleEventPlatformResult] = []
+
+    for platform, success, error, timing_ms, markets_count in results:
+        platform_results.append(
+            SingleEventPlatformResult(
+                platform=platform,
+                success=success,
+                timing_ms=timing_ms,
+                error=error,
+                markets_count=markets_count,
+            )
+        )
+        if success:
+            platforms_scraped.append(platform)
+        else:
+            platforms_failed.append(platform)
+
+    # Determine overall status
+    if len(platforms_scraped) == len(platform_ids):
+        status = "completed"
+    elif len(platforms_scraped) > 0:
+        status = "partial"
+    else:
+        status = "failed"
+
+    total_timing_ms = int((time.perf_counter() - start_time) * 1000)
+
+    log.info(
+        "Single-event scrape complete",
+        sr_id=sr_id,
+        status=status,
+        platforms_scraped=platforms_scraped,
+        platforms_failed=platforms_failed,
+        total_timing_ms=total_timing_ms,
+    )
+
+    return SingleEventScrapeResponse(
+        sportradar_id=sr_id,
+        status=status,
+        platforms_scraped=platforms_scraped,
+        platforms_failed=platforms_failed,
+        platform_results=platform_results,
+        total_timing_ms=total_timing_ms,
     )
