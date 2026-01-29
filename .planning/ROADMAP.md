@@ -81,13 +81,13 @@ Plans:
 
 #### Phase 42: Validation & Cleanup
 
-**Goal**: Side-by-side testing, remove legacy flow
+**Goal**: Integrate EventCoordinator, remove legacy ScrapingOrchestrator
 **Depends on**: Phase 41
-**Research**: Unlikely (internal testing)
-**Plans**: TBD
+**Research**: Unlikely (internal integration)
+**Plans**: 1/1
 
 Plans:
-- [ ] 42-01: TBD
+- [ ] 42-01: Update scheduler and API to use EventCoordinator, delete orchestrator.py — TBD
 
 ## Completed Milestones
 
