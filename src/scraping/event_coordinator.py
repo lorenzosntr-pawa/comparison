@@ -111,16 +111,21 @@ class EventCoordinator:
             for event in events:
                 sr_id = event["sr_id"]
                 kickoff = event["kickoff"]
+                platform_id = event.get("platform_id", "")
 
                 if sr_id in self._event_map:
                     # Event already discovered from another platform - add this platform
                     self._event_map[sr_id].platforms.add(platform)
+                    # Store platform-specific ID for API calls
+                    if platform_id:
+                        self._event_map[sr_id].platform_ids[platform] = platform_id
                 else:
                     # New event - create EventTarget
                     self._event_map[sr_id] = EventTarget(
                         sr_id=sr_id,
                         kickoff=kickoff,
                         platforms={platform},
+                        platform_ids={platform: platform_id} if platform_id else {},
                         status=ScrapeStatus.PENDING,
                     )
 
@@ -213,14 +218,14 @@ class EventCoordinator:
         event_data: dict,
         now: datetime,
     ) -> dict | None:
-        """Parse a BetPawa event and extract SR ID.
+        """Parse a BetPawa event and extract SR ID and platform ID.
 
         Args:
             event_data: Raw event data from BetPawa API.
             now: Current UTC time for filtering started events.
 
         Returns:
-            Dict with {sr_id, kickoff} or None if not parseable/started.
+            Dict with {sr_id, kickoff, platform_id} or None if not parseable/started.
         """
         # Extract SR ID from widgets array
         widgets = event_data.get("widgets", [])
@@ -233,6 +238,11 @@ class EventCoordinator:
                 break
 
         if not sr_id:
+            return None
+
+        # Extract BetPawa platform-specific event ID
+        platform_id = str(event_data.get("id", ""))
+        if not platform_id:
             return None
 
         # Parse kickoff time
@@ -250,7 +260,7 @@ class EventCoordinator:
         if kickoff <= now:
             return None
 
-        return {"sr_id": sr_id, "kickoff": kickoff}
+        return {"sr_id": sr_id, "kickoff": kickoff, "platform_id": platform_id}
 
     async def _discover_sportybet(self) -> list[dict]:
         """Discover events from SportyBet.
@@ -330,20 +340,25 @@ class EventCoordinator:
         event_data: dict,
         now: datetime,
     ) -> dict | None:
-        """Parse a SportyBet event and extract SR ID.
+        """Parse a SportyBet event and extract SR ID and platform ID.
 
         Args:
             event_data: Raw event data from SportyBet API.
             now: Current UTC time for filtering started events.
 
         Returns:
-            Dict with {sr_id, kickoff} or None if not parseable/started.
+            Dict with {sr_id, kickoff, platform_id} or None if not parseable/started.
         """
         # Extract SR ID from eventId (format: "sr:match:12345678")
+        # The eventId IS the platform ID for SportyBet API calls
         event_id = event_data.get("eventId", "")
         if not event_id.startswith("sr:match:"):
             return None
 
+        # Platform ID is the full format (sr:match:12345678)
+        platform_id = event_id
+
+        # SR ID is just the numeric part for cross-platform matching
         sr_id = event_id.replace("sr:match:", "")
         if not sr_id:
             return None
@@ -362,7 +377,7 @@ class EventCoordinator:
         if kickoff <= now:
             return None
 
-        return {"sr_id": sr_id, "kickoff": kickoff}
+        return {"sr_id": sr_id, "kickoff": kickoff, "platform_id": platform_id}
 
     async def _discover_bet9ja(self) -> list[dict]:
         """Discover events from Bet9ja.
@@ -442,18 +457,24 @@ class EventCoordinator:
         event_data: dict,
         now: datetime,
     ) -> dict | None:
-        """Parse a Bet9ja event and extract SR ID.
+        """Parse a Bet9ja event and extract SR ID and platform ID.
 
         Args:
             event_data: Raw event data from Bet9ja API.
             now: Current UTC time for filtering started events.
 
         Returns:
-            Dict with {sr_id, kickoff} or None if not parseable/started.
+            Dict with {sr_id, kickoff, platform_id} or None if not parseable/started.
         """
-        # Extract SR ID from EXTID field
+        # Extract SR ID from EXTID field (for cross-platform matching)
         sr_id = event_data.get("EXTID")
         if not sr_id:
+            return None
+
+        # Extract Bet9ja platform-specific event ID (for fetch_event API calls)
+        # Use "ID" field, NOT "EXTID" - EXTID is the SR ID
+        platform_id = str(event_data.get("ID", ""))
+        if not platform_id:
             return None
 
         # Parse kickoff from STARTDATE (format: "YYYY-MM-DD HH:MM:SS")
@@ -469,7 +490,7 @@ class EventCoordinator:
         if kickoff <= now:
             return None
 
-        return {"sr_id": sr_id, "kickoff": kickoff}
+        return {"sr_id": sr_id, "kickoff": kickoff, "platform_id": platform_id}
 
     # =========================================================================
     # PRIORITY QUEUE: Phase 2 - Build queue and extract batches

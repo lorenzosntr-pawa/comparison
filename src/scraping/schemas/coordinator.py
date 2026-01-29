@@ -35,6 +35,7 @@ class EventTarget:
         sr_id: SportRadar ID (unique identifier across platforms).
         kickoff: Event start time (UTC).
         platforms: Set of bookmakers where this event is available.
+        platform_ids: Maps platform name to platform-specific event ID for API calls.
         status: Current scrape status.
         results: Scraped data per platform (None if not yet scraped).
         errors: Error messages per platform (if any failures).
@@ -43,6 +44,7 @@ class EventTarget:
     sr_id: str
     kickoff: datetime
     platforms: set[str] = field(default_factory=set)
+    platform_ids: dict[str, str] = field(default_factory=dict)
     status: ScrapeStatus = ScrapeStatus.PENDING
     results: dict[str, dict | None] = field(default_factory=dict)
     errors: dict[str, str] = field(default_factory=dict)
