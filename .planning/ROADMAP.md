@@ -39,15 +39,15 @@ Plans:
 Plans:
 - [x] 37-01: Create EventCoordinator with discovery and priority queue — 2026-01-29
 
-#### Phase 38: SR ID Parallel Scraping
+#### Phase 38: SR ID Parallel Scraping ✓
 
 **Goal**: Simultaneous multi-bookmaker scraping with batch processing
 **Depends on**: Phase 37
 **Research**: Unlikely (established async patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 38-01: TBD
+- [x] 38-01: Extend EventTarget and implement parallel scraping — 2026-01-29
 
 #### Phase 39: Batch DB Storage
 
@@ -225,7 +225,7 @@ Plans:
 | **v1.6 SHIPPED** | | | **2026-01-29** | |
 | 36. Investigation & Architecture Design | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 37. Event Coordination Layer | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 38. SR ID Parallel Scraping | v1.7 | 0/? | Not started | - |
+| 38. SR ID Parallel Scraping | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 39. Batch DB Storage | v1.7 | 0/? | Not started | - |
 | 40. Concurrency Tuning & Metrics | v1.7 | 0/? | Not started | - |
 | 41. On-Demand API | v1.7 | 0/? | Not started | - |
