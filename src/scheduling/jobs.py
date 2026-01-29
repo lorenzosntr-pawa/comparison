@@ -11,9 +11,8 @@ from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
-from src.scraping.competitor_events import CompetitorEventScrapingService
-from src.scraping.orchestrator import ScrapingOrchestrator
-from src.scraping.schemas import Platform
+from src.scraping.event_coordinator import EventCoordinator
+from src.scraping.schemas import Platform, ScrapeProgress
 from src.scraping.tournament_discovery import TournamentDiscoveryService
 
 logger = logging.getLogger(__name__)
@@ -119,54 +118,74 @@ async def scrape_all_platforms() -> None:
                 f"bet9ja new={discovery_results['bet9ja']['new']}"
             )
 
-            # Create competitor service for full-palimpsest scraping
-            competitor_service = CompetitorEventScrapingService(
-                sportybet_client, bet9ja_client
-            )
-
-            # Create orchestrator with competitor service for parallel scraping
-            orchestrator = ScrapingOrchestrator(
-                sportybet_client=sportybet_client,
+            # Create EventCoordinator from settings
+            coordinator = EventCoordinator.from_settings(
                 betpawa_client=betpawa_client,
+                sportybet_client=sportybet_client,
                 bet9ja_client=bet9ja_client,
-                competitor_service=competitor_service,
+                settings=settings,
             )
 
             # Execute scrape with progress streaming
-            # scrape_with_progress yields progress updates sequentially
             platform_timings: dict[str, dict] = {}
             total_events = 0
             failed_count = 0
             final_status = ScrapeStatus.COMPLETED
 
-            async for progress in orchestrator.scrape_with_progress(
-                platforms=enabled_platforms,
-                timeout=300.0,
-                scrape_run_id=scrape_run_id,
+            async for progress_event in coordinator.run_full_cycle(
                 db=db,
+                scrape_run_id=scrape_run_id,
             ):
-                # Publish progress to broadcaster for SSE observers
-                await broadcaster.publish(progress)
+                # Convert dict events to ScrapeProgress for broadcaster compatibility
+                event_type = progress_event.get("event_type", "")
 
-                # Track metrics from progress events
-                if progress.platform and progress.phase == "completed":
-                    # Platform completed successfully - store timing data
-                    platform_timings[progress.platform.value] = {
-                        "duration_ms": progress.duration_ms or 0,
-                        "events_count": progress.events_count or 0,
-                    }
-                    total_events += progress.events_count or 0
-                elif progress.platform and progress.phase == "failed":
-                    # Platform failed
-                    failed_count += 1
+                if event_type == "CYCLE_START":
+                    await broadcaster.publish(ScrapeProgress(
+                        platform=None,
+                        phase="starting",
+                        current=0,
+                        total=3,
+                        message="Starting event-centric scrape cycle",
+                    ))
+                elif event_type == "DISCOVERY_COMPLETE":
+                    total = progress_event.get("total_events", 0)
+                    await broadcaster.publish(ScrapeProgress(
+                        platform=None,
+                        phase="discovery",
+                        current=1,
+                        total=3,
+                        message=f"Discovered {total} events across all platforms",
+                        events_count=total,
+                    ))
+                elif event_type == "BATCH_COMPLETE":
+                    processed = progress_event.get("events_stored", 0)
+                    await broadcaster.publish(ScrapeProgress(
+                        platform=None,
+                        phase="scraping",
+                        current=2,
+                        total=3,
+                        message=f"Processed batch: {processed} events stored",
+                        events_count=processed,
+                    ))
+                elif event_type == "CYCLE_COMPLETE":
+                    total_events = progress_event.get("events_scraped", 0)
+                    failed_count = progress_event.get("events_failed", 0)
+                    total_ms = progress_event.get("total_timing_ms", 0)
 
-                # Check final status (overall completion event has platform=None)
-                if progress.platform is None and progress.phase in ("completed", "failed"):
-                    if progress.phase == "failed":
-                        final_status = ScrapeStatus.FAILED
-                    elif failed_count > 0 and len(platform_timings) > 0:
+                    await broadcaster.publish(ScrapeProgress(
+                        platform=None,
+                        phase="completed",
+                        current=3,
+                        total=3,
+                        message=f"Completed: {total_events} events scraped ({total_ms}ms)",
+                        events_count=total_events,
+                        duration_ms=total_ms,
+                    ))
+
+                    # Determine final status
+                    if failed_count > 0 and total_events > 0:
                         final_status = ScrapeStatus.PARTIAL
-                    elif failed_count > 0:
+                    elif total_events == 0:
                         final_status = ScrapeStatus.FAILED
 
             scrape_run.status = final_status

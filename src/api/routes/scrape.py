@@ -37,10 +37,10 @@ from src.db.models.competitor import CompetitorEvent
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
+from src.db.models.settings import Settings
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
-from src.scraping.competitor_events import CompetitorEventScrapingService
-from src.scraping.orchestrator import ScrapingOrchestrator
+from src.scraping.event_coordinator import EventCoordinator
 
 router = APIRouter(prefix="/scrape", tags=["scrape"])
 
@@ -93,56 +93,49 @@ async def trigger_scrape(
     betpawa = BetPawaClient(request.app.state.betpawa_client)
     bet9ja = Bet9jaClient(request.app.state.bet9ja_client)
 
-    orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
+    # Get settings for EventCoordinator tuning
+    settings_result = await db.execute(select(Settings).where(Settings.id == 1))
+    settings = settings_result.scalar_one_or_none()
 
-    # Execute scrape with DB session for error logging
-    include_data = detail == "full"
-    result = await orchestrator.scrape_all(
-        platforms=body.platforms if body else None,
-        sport_id=body.sport_id if body else None,
-        competition_id=body.competition_id if body else None,
-        include_data=include_data,
-        timeout=float(timeout),
-        scrape_run_id=scrape_run_id,
-        db=db,
+    # Create coordinator
+    coordinator = EventCoordinator.from_settings(
+        betpawa_client=betpawa,
+        sportybet_client=sportybet,
+        bet9ja_client=bet9ja,
+        settings=settings,
     )
+
+    # Run cycle and collect results
+    total_events = 0
+    failed_count = 0
+    final_status = "completed"
+
+    async for progress in coordinator.run_full_cycle(db=db, scrape_run_id=scrape_run_id):
+        if progress.get("event_type") == "CYCLE_COMPLETE":
+            total_events = progress.get("events_scraped", 0)
+            failed_count = progress.get("events_failed", 0)
+            if failed_count > 0 and total_events > 0:
+                final_status = "partial"
+            elif total_events == 0:
+                final_status = "failed"
 
     # Update ScrapeRun with results
-    scrape_run.status = _STATUS_MAP[result.status]
+    scrape_run.status = _STATUS_MAP[final_status]
     scrape_run.completed_at = datetime.utcnow()
-    scrape_run.events_scraped = result.total_events
-    scrape_run.events_failed = sum(
-        1 for p in result.platforms if not p.success
-    )
-
-    # Store per-platform timing metrics
-    scrape_run.platform_timings = {
-        p.platform.value: {
-            "duration_ms": p.duration_ms,
-            "events_count": p.events_count,
-        }
-        for p in result.platforms
-        if p.success
-    }
+    scrape_run.events_scraped = total_events
+    scrape_run.events_failed = failed_count
+    scrape_run.platform_timings = None  # EventCoordinator doesn't track platform-level timings
 
     await db.commit()
 
-    # Extract events from platform results if detail=full
-    events = None
-    if include_data:
-        events = []
-        for platform_result in result.platforms:
-            if platform_result.events:
-                events.extend(platform_result.events)
-
     return ScrapeResponse(
         scrape_run_id=scrape_run_id,
-        status=result.status,
-        started_at=result.started_at,
-        completed_at=result.completed_at,
-        platforms=result.platforms,
-        total_events=result.total_events,
-        events=events if include_data else None,
+        status=final_status,
+        started_at=scrape_run.started_at,
+        completed_at=scrape_run.completed_at,
+        platforms=[],  # EventCoordinator doesn't return platform-level results
+        total_events=total_events,
+        events=None,  # EventCoordinator doesn't support include_data
     )
 
 
@@ -189,7 +182,6 @@ async def stream_scrape(
         Broadcasts progress via progress_registry for SSE subscribers.
         """
         # Track metrics for final update
-        platform_timings: dict[str, dict] = {}
         total_events = 0
         failed_count = 0
         final_status = ScrapeStatus.COMPLETED
@@ -200,56 +192,87 @@ async def stream_scrape(
             betpawa = BetPawaClient(betpawa_http)
             bet9ja = Bet9jaClient(bet9ja_http)
 
-            # Create competitor service for full-palimpsest scraping
-            competitor_service = CompetitorEventScrapingService(sportybet, bet9ja)
+            # Get settings for EventCoordinator tuning
+            settings_result = await bg_db.execute(select(Settings).where(Settings.id == 1))
+            settings = settings_result.scalar_one_or_none()
 
-            # Create orchestrator with competitor service for parallel scraping
-            orchestrator = ScrapingOrchestrator(
-                sportybet, betpawa, bet9ja,
-                competitor_service=competitor_service,
+            # Create EventCoordinator from settings
+            coordinator = EventCoordinator.from_settings(
+                betpawa_client=betpawa,
+                sportybet_client=sportybet,
+                bet9ja_client=bet9ja,
+                settings=settings,
             )
 
             try:
-                async for progress in orchestrator.scrape_with_progress(
-                    timeout=float(timeout),
-                    scrape_run_id=scrape_run_id,
+                async for progress_event in coordinator.run_full_cycle(
                     db=bg_db,
+                    scrape_run_id=scrape_run_id,
                 ):
-                    # Broadcast progress to any connected SSE clients
-                    await broadcaster.publish(progress)
+                    # Convert dict events to ScrapeProgress for broadcaster compatibility
+                    event_type = progress_event.get("event_type", "")
 
-                    # Track metrics (same logic as before)
-                    if progress.platform and progress.phase == "completed":
-                        platform_timings[progress.platform.value] = {
-                            "duration_ms": progress.duration_ms or 0,
-                            "events_count": progress.events_count or 0,
-                        }
-                        total_events += progress.events_count or 0
+                    if event_type == "CYCLE_START":
+                        await broadcaster.publish(ScrapeProgress(
+                            platform=None,
+                            phase="starting",
+                            current=0,
+                            total=3,
+                            message="Starting event-centric scrape cycle",
+                        ))
+                    elif event_type == "DISCOVERY_COMPLETE":
+                        total = progress_event.get("total_events", 0)
+                        await broadcaster.publish(ScrapeProgress(
+                            platform=None,
+                            phase="discovery",
+                            current=1,
+                            total=3,
+                            message=f"Discovered {total} events across all platforms",
+                            events_count=total,
+                        ))
 
-                        # Disconnect detection: after each platform completion,
-                        # check if all SSE subscribers have disconnected
+                        # Disconnect detection after discovery
                         if broadcaster.subscriber_count == 0:
                             log = structlog.get_logger()
                             log.warning(
                                 "SSE connection lost during manual scrape",
                                 scrape_run_id=scrape_run_id,
-                                last_platform=progress.platform.value,
-                                platforms_completed=list(platform_timings.keys()),
+                                phase="discovery",
                             )
                             final_status = ScrapeStatus.CONNECTION_FAILED
                             break
 
-                    elif progress.platform and progress.phase == "failed":
-                        failed_count += 1
+                    elif event_type == "BATCH_COMPLETE":
+                        processed = progress_event.get("events_stored", 0)
+                        await broadcaster.publish(ScrapeProgress(
+                            platform=None,
+                            phase="scraping",
+                            current=2,
+                            total=3,
+                            message=f"Processed batch: {processed} events stored",
+                            events_count=processed,
+                        ))
+                    elif event_type == "CYCLE_COMPLETE":
+                        total_events = progress_event.get("events_scraped", 0)
+                        failed_count = progress_event.get("events_failed", 0)
+                        total_ms = progress_event.get("total_timing_ms", 0)
 
-                    # Check final status
-                    if progress.platform is None and progress.phase in ("completed", "failed"):
-                        if progress.phase == "failed":
-                            final_status = ScrapeStatus.FAILED
-                        elif failed_count > 0 and len(platform_timings) > 0:
+                        await broadcaster.publish(ScrapeProgress(
+                            platform=None,
+                            phase="completed",
+                            current=3,
+                            total=3,
+                            message=f"Completed: {total_events} events scraped ({total_ms}ms)",
+                            events_count=total_events,
+                            duration_ms=total_ms,
+                        ))
+
+                        # Determine final status
+                        if failed_count > 0 and total_events > 0:
                             final_status = ScrapeStatus.PARTIAL
-                        elif failed_count > 0:
+                        elif total_events == 0:
                             final_status = ScrapeStatus.FAILED
+
             except Exception as e:
                 final_status = ScrapeStatus.FAILED
                 await broadcaster.publish(ScrapeProgress(
@@ -263,7 +286,7 @@ async def stream_scrape(
                     scrape_run_obj.completed_at = datetime.utcnow()
                     scrape_run_obj.events_scraped = total_events
                     scrape_run_obj.events_failed = failed_count
-                    scrape_run_obj.platform_timings = platform_timings if platform_timings else None
+                    scrape_run_obj.platform_timings = None
                     await bg_db.commit()
 
                 # Signal completion and clean up
@@ -594,40 +617,49 @@ async def retry_scrape_run(
     await db.commit()
     await db.refresh(retry_run)
 
-    # Build orchestrator and execute scrape
+    # Build EventCoordinator and execute scrape
     sportybet = SportyBetClient(request.app.state.sportybet_client)
     betpawa = BetPawaClient(request.app.state.betpawa_client)
     bet9ja = Bet9jaClient(request.app.state.bet9ja_client)
-    orchestrator = ScrapingOrchestrator(sportybet, betpawa, bet9ja)
 
-    result = await orchestrator.scrape_all(
-        platforms=platform_enums,
-        include_data=False,
-        timeout=float(timeout),
-        scrape_run_id=retry_run.id,
-        db=db,
+    # Get settings for EventCoordinator tuning
+    settings_result = await db.execute(select(Settings).where(Settings.id == 1))
+    settings = settings_result.scalar_one_or_none()
+
+    coordinator = EventCoordinator.from_settings(
+        betpawa_client=betpawa,
+        sportybet_client=sportybet,
+        bet9ja_client=bet9ja,
+        settings=settings,
     )
 
+    # Run full cycle (event-centric covers all platforms)
+    total_events = 0
+    failed_count = 0
+    final_status = "completed"
+
+    async for progress in coordinator.run_full_cycle(db=db, scrape_run_id=retry_run.id):
+        if progress.get("event_type") == "CYCLE_COMPLETE":
+            total_events = progress.get("events_scraped", 0)
+            failed_count = progress.get("events_failed", 0)
+            if failed_count > 0 and total_events > 0:
+                final_status = "partial"
+            elif total_events == 0:
+                final_status = "failed"
+
     # Update retry run with results
-    retry_run.status = _STATUS_MAP[result.status]
+    retry_run.status = _STATUS_MAP[final_status]
     retry_run.completed_at = datetime.utcnow()
-    retry_run.events_scraped = result.total_events
-    retry_run.events_failed = sum(1 for p in result.platforms if not p.success)
-    retry_run.platform_timings = {
-        p.platform.value: {
-            "duration_ms": p.duration_ms,
-            "events_count": p.events_count,
-        }
-        for p in result.platforms
-        if p.success
-    }
+    retry_run.events_scraped = total_events
+    retry_run.events_failed = failed_count
+    retry_run.platform_timings = None
 
     await db.commit()
 
     return RetryResponse(
         new_run_id=retry_run.id,
         platforms_retried=platforms_to_retry,
-        message=f"Retry {result.status}: {len(platforms_to_retry)} platform(s) retried",
+        message=f"Retry {final_status}: {len(platforms_to_retry)} platform(s) retried",
     )
 
 
