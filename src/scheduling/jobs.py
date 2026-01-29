@@ -204,8 +204,7 @@ async def scrape_all_platforms() -> None:
         except Exception as e:
             logger.exception(f"ScrapeRun {scrape_run_id} failed: {e}")
 
-            # Publish failure to broadcaster
-            from src.scraping.schemas import ScrapeProgress
+            # Publish failure to broadcaster (uses module-level ScrapeProgress import)
             await broadcaster.publish(ScrapeProgress(
                 platform=None,
                 phase="failed",
