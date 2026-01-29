@@ -264,15 +264,95 @@ class EventCoordinator:
                 async with semaphore:
                     try:
                         data = await client.fetch_events(comp_id)
-                        # Parse events from response
-                        comp_events: list[dict] = []
-                        event_lists = data.get("eventLists", [])
-                        for event_list in event_lists:
-                            for event_data in event_list.get("events", []):
-                                parsed = self._parse_betpawa_event(event_data, now)
-                                if parsed:
-                                    comp_events.append(parsed)
-                        return comp_events
+
+                        # Parse events from response using correct structure
+                        # API structure: responses[0].responses[] (not eventLists[].events[])
+                        responses = data.get("responses", [])
+                        if not responses:
+                            logger.debug(
+                                "BetPawa events response empty",
+                                competition_id=comp_id,
+                                response_keys=list(data.keys()),
+                            )
+                            return []
+
+                        first_response = responses[0]
+                        events_data = first_response.get("responses", [])
+
+                        logger.debug(
+                            "BetPawa events response structure",
+                            competition_id=comp_id,
+                            responses_count=len(responses),
+                            events_count=len(events_data),
+                        )
+
+                        # Collect BetPawa event IDs from list response
+                        # NOTE: List response does NOT contain widgets array with SR ID
+                        # We only extract basic data here; full event fetch is needed for SR IDs
+                        betpawa_event_ids: list[tuple[str, datetime]] = []
+                        for event_data in events_data:
+                            event_id = str(event_data.get("id", ""))
+                            start_time = event_data.get("startTime")
+                            if event_id and start_time:
+                                try:
+                                    kickoff = datetime.fromisoformat(
+                                        start_time.replace("Z", "+00:00")
+                                    )
+                                    if kickoff > now:  # Filter started events
+                                        betpawa_event_ids.append((event_id, kickoff))
+                                except (ValueError, TypeError):
+                                    pass
+
+                        if not betpawa_event_ids:
+                            return []
+
+                        # Fetch full event details (with SR ID in widgets array)
+                        # Uses nested semaphore for concurrency control
+                        event_semaphore = asyncio.Semaphore(10)
+
+                        async def fetch_full_event(
+                            event_id: str, kickoff: datetime
+                        ) -> dict | None:
+                            async with event_semaphore:
+                                try:
+                                    full_data = await client.fetch_event(event_id)
+                                    # Extract SR ID from widgets array
+                                    widgets = full_data.get("widgets", [])
+                                    sr_id = None
+                                    for widget in widgets:
+                                        if widget.get("type") == "SPORTRADAR":
+                                            widget_data = widget.get("data", {})
+                                            sr_id = str(widget_data.get("matchId", ""))
+                                            break
+
+                                    if sr_id:
+                                        return {
+                                            "sr_id": sr_id,
+                                            "kickoff": kickoff,
+                                            "platform_id": event_id,
+                                        }
+                                except Exception as e:
+                                    logger.debug(
+                                        "Failed to fetch BetPawa event",
+                                        event_id=event_id,
+                                        error=str(e),
+                                    )
+                                return None
+
+                        results = await asyncio.gather(
+                            *[
+                                fetch_full_event(eid, ko)
+                                for eid, ko in betpawa_event_ids
+                            ],
+                            return_exceptions=True,
+                        )
+
+                        return [
+                            r
+                            for r in results
+                            if r is not None and not isinstance(r, Exception)
+                        ]
+
                     except Exception as e:
                         logger.debug(
                             "Failed to fetch BetPawa competition",
