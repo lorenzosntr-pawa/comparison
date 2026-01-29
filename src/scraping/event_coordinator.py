@@ -39,19 +39,22 @@ from src.market_mapping.types.sportybet import SportybetMarket
 from src.scraping.schemas.coordinator import EventTarget, ScrapeBatch, ScrapeStatus
 
 if TYPE_CHECKING:
+    from src.db.models.settings import Settings
     from src.scraping.clients.bet9ja import Bet9jaClient
     from src.scraping.clients.betpawa import BetPawaClient
     from src.scraping.clients.sportybet import SportyBetClient
 
 logger = structlog.get_logger(__name__)
 
-# Platform concurrency limits (from Phase 36 rate limit investigation)
-PLATFORM_SEMAPHORES = {
+# Default platform concurrency limits (from Phase 36 rate limit investigation)
+# Use instance attributes for actual limits - use from_settings() for configurable values
+DEFAULT_PLATFORM_CONCURRENCY = {
     "betpawa": 50,
     "sportybet": 50,
     "bet9ja": 15,
 }
-BET9JA_DELAY_MS = 25  # 25ms delay after each Bet9ja request
+DEFAULT_BET9JA_DELAY_MS = 25  # 25ms delay after each Bet9ja request
+DEFAULT_BATCH_SIZE = 50
 
 
 class EventCoordinator:
@@ -75,7 +78,9 @@ class EventCoordinator:
         betpawa_client: BetPawaClient,
         sportybet_client: SportyBetClient,
         bet9ja_client: Bet9jaClient,
-        batch_size: int = 50,
+        batch_size: int = DEFAULT_BATCH_SIZE,
+        platform_concurrency: dict[str, int] | None = None,
+        bet9ja_delay_ms: int = DEFAULT_BET9JA_DELAY_MS,
     ) -> None:
         """Initialize the EventCoordinator.
 
@@ -84,6 +89,9 @@ class EventCoordinator:
             sportybet_client: SportyBet API client.
             bet9ja_client: Bet9ja API client.
             batch_size: Number of events per batch (default 50).
+            platform_concurrency: Dict of platform -> max concurrent requests.
+                Defaults to {betpawa: 50, sportybet: 50, bet9ja: 15}.
+            bet9ja_delay_ms: Delay in ms after each Bet9ja request (default 25).
         """
         self._clients: dict[str, BetPawaClient | SportyBetClient | Bet9jaClient] = {
             "betpawa": betpawa_client,
@@ -91,8 +99,42 @@ class EventCoordinator:
             "bet9ja": bet9ja_client,
         }
         self._batch_size = batch_size
+        self._platform_concurrency = platform_concurrency or DEFAULT_PLATFORM_CONCURRENCY.copy()
+        self._bet9ja_delay_ms = bet9ja_delay_ms
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
+
+    @classmethod
+    def from_settings(
+        cls,
+        betpawa_client: BetPawaClient,
+        sportybet_client: SportyBetClient,
+        bet9ja_client: Bet9jaClient,
+        settings: Settings,
+    ) -> EventCoordinator:
+        """Create EventCoordinator with tuning parameters from Settings model.
+
+        Args:
+            betpawa_client: BetPawa API client.
+            sportybet_client: SportyBet API client.
+            bet9ja_client: Bet9ja API client.
+            settings: Settings model with tuning parameters.
+
+        Returns:
+            Configured EventCoordinator instance.
+        """
+        return cls(
+            betpawa_client=betpawa_client,
+            sportybet_client=sportybet_client,
+            bet9ja_client=bet9ja_client,
+            batch_size=settings.batch_size,
+            platform_concurrency={
+                "betpawa": settings.betpawa_concurrency,
+                "sportybet": settings.sportybet_concurrency,
+                "bet9ja": settings.bet9ja_concurrency,
+            },
+            bet9ja_delay_ms=settings.bet9ja_delay_ms,
+        )
 
     # =========================================================================
     # DISCOVERY: Phase 1 - Parallel event discovery from all platforms
@@ -690,7 +732,7 @@ class EventCoordinator:
 
                     # Add delay for Bet9ja to avoid rate limiting
                     if platform == "bet9ja":
-                        await asyncio.sleep(BET9JA_DELAY_MS / 1000)
+                        await asyncio.sleep(self._bet9ja_delay_ms / 1000)
 
                     return (platform, result, None)
             except Exception as e:
@@ -747,7 +789,7 @@ class EventCoordinator:
         # Create semaphores for all platforms (reuse across batch)
         semaphores = {
             platform: asyncio.Semaphore(limit)
-            for platform, limit in PLATFORM_SEMAPHORES.items()
+            for platform, limit in self._platform_concurrency.items()
         }
 
         logger.debug(
