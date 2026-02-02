@@ -265,10 +265,10 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         name="Home Team Over/Under - Full Time",
         betpawa_id="5006",
         sportybet_id="19",
-        bet9ja_key="S_HAOU",
+        bet9ja_key=None,  # Bet9ja uses combined HAOU market - see haou_combined below
         outcome_mapping=(
-            OutcomeMapping(canonical_id="over", betpawa_name="Over", sportybet_desc="Over", bet9ja_suffix="OH", position=0),
-            OutcomeMapping(canonical_id="under", betpawa_name="Under", sportybet_desc="Under", bet9ja_suffix="UH", position=1),
+            OutcomeMapping(canonical_id="over", betpawa_name="Over", sportybet_desc="Over", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="under", betpawa_name="Under", sportybet_desc="Under", bet9ja_suffix=None, position=1),
         ),
     ),
 
@@ -277,10 +277,26 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         name="Away Team Over/Under - Full Time",
         betpawa_id="5003",
         sportybet_id="20",
+        bet9ja_key=None,  # Bet9ja uses combined HAOU market - see haou_combined below
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="over", betpawa_name="Over", sportybet_desc="Over", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="under", betpawa_name="Under", sportybet_desc="Under", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # Bet9ja HAOU is a combined market with 4 outcomes (home O/U + away O/U)
+    # This mapping handles bet9ja data; Sportybet uses separate markets (19, 20)
+    MarketMapping(
+        canonical_id="haou_combined",
+        name="Home/Away Over/Under - Full Time",
+        betpawa_id=None,  # No direct Betpawa equivalent for combined market
+        sportybet_id=None,
         bet9ja_key="S_HAOU",
         outcome_mapping=(
-            OutcomeMapping(canonical_id="over", betpawa_name="Over", sportybet_desc="Over", bet9ja_suffix="OA", position=0),
-            OutcomeMapping(canonical_id="under", betpawa_name="Under", sportybet_desc="Under", bet9ja_suffix="UA", position=1),
+            OutcomeMapping(canonical_id="home_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="OH", position=0),
+            OutcomeMapping(canonical_id="home_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="UH", position=1),
+            OutcomeMapping(canonical_id="away_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="OA", position=2),
+            OutcomeMapping(canonical_id="away_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="UA", position=3),
         ),
     ),
 
@@ -950,8 +966,54 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         sportybet_id="46",
         bet9ja_key="S_HTFTCS",
         outcome_mapping=(
-            # HT/FT Correct Score combinations - position-based matching
-            OutcomeMapping(canonical_id="pos_0", betpawa_name=None, sportybet_desc=None, bet9ja_suffix=None, position=0),
+            # HT/FT Correct Score: bet9ja suffix format "HT-HT/FT-FT", sportybet desc format "HT:HT FT:FT"
+            # 46 combinations covering common score outcomes
+            OutcomeMapping(canonical_id="0-0_0-0", betpawa_name=None, sportybet_desc="0:0 0:0", bet9ja_suffix="0-0/0-0", position=0),
+            OutcomeMapping(canonical_id="0-0_0-1", betpawa_name=None, sportybet_desc="0:0 0:1", bet9ja_suffix="0-0/0-1", position=1),
+            OutcomeMapping(canonical_id="0-0_0-2", betpawa_name=None, sportybet_desc="0:0 0:2", bet9ja_suffix="0-0/0-2", position=2),
+            OutcomeMapping(canonical_id="0-0_0-3", betpawa_name=None, sportybet_desc="0:0 0:3", bet9ja_suffix="0-0/0-3", position=3),
+            OutcomeMapping(canonical_id="0-0_1-0", betpawa_name=None, sportybet_desc="0:0 1:0", bet9ja_suffix="0-0/1-0", position=4),
+            OutcomeMapping(canonical_id="0-0_1-1", betpawa_name=None, sportybet_desc="0:0 1:1", bet9ja_suffix="0-0/1-1", position=5),
+            OutcomeMapping(canonical_id="0-0_1-2", betpawa_name=None, sportybet_desc="0:0 1:2", bet9ja_suffix="0-0/1-2", position=6),
+            OutcomeMapping(canonical_id="0-0_2-0", betpawa_name=None, sportybet_desc="0:0 2:0", bet9ja_suffix="0-0/2-0", position=7),
+            OutcomeMapping(canonical_id="0-0_2-1", betpawa_name=None, sportybet_desc="0:0 2:1", bet9ja_suffix="0-0/2-1", position=8),
+            OutcomeMapping(canonical_id="0-0_3-0", betpawa_name=None, sportybet_desc="0:0 3:0", bet9ja_suffix="0-0/3-0", position=9),
+            OutcomeMapping(canonical_id="0-0_4+", betpawa_name=None, sportybet_desc="0:0 4+", bet9ja_suffix="0-0/4+", position=10),
+            OutcomeMapping(canonical_id="0-1_0-1", betpawa_name=None, sportybet_desc="0:1 0:1", bet9ja_suffix="0-1/0-1", position=11),
+            OutcomeMapping(canonical_id="0-1_0-2", betpawa_name=None, sportybet_desc="0:1 0:2", bet9ja_suffix="0-1/0-2", position=12),
+            OutcomeMapping(canonical_id="0-1_0-3", betpawa_name=None, sportybet_desc="0:1 0:3", bet9ja_suffix="0-1/0-3", position=13),
+            OutcomeMapping(canonical_id="0-1_1-1", betpawa_name=None, sportybet_desc="0:1 1:1", bet9ja_suffix="0-1/1-1", position=14),
+            OutcomeMapping(canonical_id="0-1_1-2", betpawa_name=None, sportybet_desc="0:1 1:2", bet9ja_suffix="0-1/1-2", position=15),
+            OutcomeMapping(canonical_id="0-1_2-1", betpawa_name=None, sportybet_desc="0:1 2:1", bet9ja_suffix="0-1/2-1", position=16),
+            OutcomeMapping(canonical_id="0-1_4+", betpawa_name=None, sportybet_desc="0:1 4+", bet9ja_suffix="0-1/4+", position=17),
+            OutcomeMapping(canonical_id="0-2_0-2", betpawa_name=None, sportybet_desc="0:2 0:2", bet9ja_suffix="0-2/0-2", position=18),
+            OutcomeMapping(canonical_id="0-2_0-3", betpawa_name=None, sportybet_desc="0:2 0:3", bet9ja_suffix="0-2/0-3", position=19),
+            OutcomeMapping(canonical_id="0-2_1-2", betpawa_name=None, sportybet_desc="0:2 1:2", bet9ja_suffix="0-2/1-2", position=20),
+            OutcomeMapping(canonical_id="0-2_4+", betpawa_name=None, sportybet_desc="0:2 4+", bet9ja_suffix="0-2/4+", position=21),
+            OutcomeMapping(canonical_id="0-3_0-3", betpawa_name=None, sportybet_desc="0:3 0:3", bet9ja_suffix="0-3/0-3", position=22),
+            OutcomeMapping(canonical_id="0-3_4+", betpawa_name=None, sportybet_desc="0:3 4+", bet9ja_suffix="0-3/4+", position=23),
+            OutcomeMapping(canonical_id="1-0_1-0", betpawa_name=None, sportybet_desc="1:0 1:0", bet9ja_suffix="1-0/1-0", position=24),
+            OutcomeMapping(canonical_id="1-0_1-1", betpawa_name=None, sportybet_desc="1:0 1:1", bet9ja_suffix="1-0/1-1", position=25),
+            OutcomeMapping(canonical_id="1-0_1-2", betpawa_name=None, sportybet_desc="1:0 1:2", bet9ja_suffix="1-0/1-2", position=26),
+            OutcomeMapping(canonical_id="1-0_2-0", betpawa_name=None, sportybet_desc="1:0 2:0", bet9ja_suffix="1-0/2-0", position=27),
+            OutcomeMapping(canonical_id="1-0_2-1", betpawa_name=None, sportybet_desc="1:0 2:1", bet9ja_suffix="1-0/2-1", position=28),
+            OutcomeMapping(canonical_id="1-0_3-0", betpawa_name=None, sportybet_desc="1:0 3:0", bet9ja_suffix="1-0/3-0", position=29),
+            OutcomeMapping(canonical_id="1-0_4+", betpawa_name=None, sportybet_desc="1:0 4+", bet9ja_suffix="1-0/4+", position=30),
+            OutcomeMapping(canonical_id="1-1_1-1", betpawa_name=None, sportybet_desc="1:1 1:1", bet9ja_suffix="1-1/1-1", position=31),
+            OutcomeMapping(canonical_id="1-1_1-2", betpawa_name=None, sportybet_desc="1:1 1:2", bet9ja_suffix="1-1/1-2", position=32),
+            OutcomeMapping(canonical_id="1-1_2-1", betpawa_name=None, sportybet_desc="1:1 2:1", bet9ja_suffix="1-1/2-1", position=33),
+            OutcomeMapping(canonical_id="1-1_4+", betpawa_name=None, sportybet_desc="1:1 4+", bet9ja_suffix="1-1/4+", position=34),
+            OutcomeMapping(canonical_id="1-2_1-2", betpawa_name=None, sportybet_desc="1:2 1:2", bet9ja_suffix="1-2/1-2", position=35),
+            OutcomeMapping(canonical_id="1-2_4+", betpawa_name=None, sportybet_desc="1:2 4+", bet9ja_suffix="1-2/4+", position=36),
+            OutcomeMapping(canonical_id="2-0_2-0", betpawa_name=None, sportybet_desc="2:0 2:0", bet9ja_suffix="2-0/2-0", position=37),
+            OutcomeMapping(canonical_id="2-0_2-1", betpawa_name=None, sportybet_desc="2:0 2:1", bet9ja_suffix="2-0/2-1", position=38),
+            OutcomeMapping(canonical_id="2-0_3-0", betpawa_name=None, sportybet_desc="2:0 3:0", bet9ja_suffix="2-0/3-0", position=39),
+            OutcomeMapping(canonical_id="2-0_4+", betpawa_name=None, sportybet_desc="2:0 4+", bet9ja_suffix="2-0/4+", position=40),
+            OutcomeMapping(canonical_id="2-1_2-1", betpawa_name=None, sportybet_desc="2:1 2:1", bet9ja_suffix="2-1/2-1", position=41),
+            OutcomeMapping(canonical_id="2-1_4+", betpawa_name=None, sportybet_desc="2:1 4+", bet9ja_suffix="2-1/4+", position=42),
+            OutcomeMapping(canonical_id="3-0_3-0", betpawa_name=None, sportybet_desc="3:0 3:0", bet9ja_suffix="3-0/3-0", position=43),
+            OutcomeMapping(canonical_id="3-0_4+", betpawa_name=None, sportybet_desc="3:0 4+", bet9ja_suffix="3-0/4+", position=44),
+            OutcomeMapping(canonical_id="4+_4+", betpawa_name=None, sportybet_desc="4+ 4+", bet9ja_suffix="4+/4+", position=45),
         ),
     ),
 
@@ -962,8 +1024,26 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         sportybet_id="818",
         bet9ja_key="S_HTFTOU",
         outcome_mapping=(
-            # Many outcomes - position-based matching
-            OutcomeMapping(canonical_id="pos_0", betpawa_name=None, sportybet_desc=None, bet9ja_suffix=None, position=0),
+            # HT/FT and Over/Under combo: bet9ja suffix format "{HT_result}/{FT_result}{O|U}"
+            # 18 combinations: 1, X, 2 for HT and FT, combined with O or U
+            OutcomeMapping(canonical_id="1_1_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/1O", position=0),
+            OutcomeMapping(canonical_id="1_1_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/1U", position=1),
+            OutcomeMapping(canonical_id="1_x_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/XO", position=2),
+            OutcomeMapping(canonical_id="1_x_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/XU", position=3),
+            OutcomeMapping(canonical_id="1_2_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/2O", position=4),
+            OutcomeMapping(canonical_id="1_2_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="1/2U", position=5),
+            OutcomeMapping(canonical_id="x_1_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/1O", position=6),
+            OutcomeMapping(canonical_id="x_1_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/1U", position=7),
+            OutcomeMapping(canonical_id="x_x_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/XO", position=8),
+            OutcomeMapping(canonical_id="x_x_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/XU", position=9),
+            OutcomeMapping(canonical_id="x_2_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/2O", position=10),
+            OutcomeMapping(canonical_id="x_2_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="X/2U", position=11),
+            OutcomeMapping(canonical_id="2_1_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/1O", position=12),
+            OutcomeMapping(canonical_id="2_1_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/1U", position=13),
+            OutcomeMapping(canonical_id="2_x_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/XO", position=14),
+            OutcomeMapping(canonical_id="2_x_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/XU", position=15),
+            OutcomeMapping(canonical_id="2_2_over", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/2O", position=16),
+            OutcomeMapping(canonical_id="2_2_under", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="2/2U", position=17),
         ),
     ),
 
@@ -1017,9 +1097,12 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         sportybet_id="549",
         bet9ja_key="S_TMGHO",
         outcome_mapping=(
+            # Bet9ja uses HO12 (1-2), HO13 (1-3), HO23 (2-3) - different ranges than Betpawa/Sportybet
             OutcomeMapping(canonical_id="0", betpawa_name="No goal", sportybet_desc="0 Goals", bet9ja_suffix=None, position=0),
-            OutcomeMapping(canonical_id="1_2", betpawa_name="1-2", sportybet_desc="1-2 Goals", bet9ja_suffix=None, position=1),
-            OutcomeMapping(canonical_id="3+", betpawa_name="3+", sportybet_desc="3+ Goals", bet9ja_suffix=None, position=2),
+            OutcomeMapping(canonical_id="1_2", betpawa_name="1-2", sportybet_desc="1-2 Goals", bet9ja_suffix="HO12", position=1),
+            OutcomeMapping(canonical_id="1_3", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="HO13", position=2),
+            OutcomeMapping(canonical_id="2_3", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="HO23", position=3),
+            OutcomeMapping(canonical_id="3+", betpawa_name="3+", sportybet_desc="3+ Goals", bet9ja_suffix=None, position=4),
         ),
     ),
 
@@ -1030,9 +1113,12 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         sportybet_id="550",
         bet9ja_key="S_TMGAW",
         outcome_mapping=(
+            # Bet9ja uses AW12 (1-2), AW13 (1-3), AW23 (2-3) - different ranges than Betpawa/Sportybet
             OutcomeMapping(canonical_id="0", betpawa_name="No goal", sportybet_desc="0 Goals", bet9ja_suffix=None, position=0),
-            OutcomeMapping(canonical_id="1_2", betpawa_name="1-2", sportybet_desc="1-2 Goals", bet9ja_suffix=None, position=1),
-            OutcomeMapping(canonical_id="3+", betpawa_name="3+", sportybet_desc="3+ Goals", bet9ja_suffix=None, position=2),
+            OutcomeMapping(canonical_id="1_2", betpawa_name="1-2", sportybet_desc="1-2 Goals", bet9ja_suffix="AW12", position=1),
+            OutcomeMapping(canonical_id="1_3", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="AW13", position=2),
+            OutcomeMapping(canonical_id="2_3", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="AW23", position=3),
+            OutcomeMapping(canonical_id="3+", betpawa_name="3+", sportybet_desc="3+ Goals", bet9ja_suffix=None, position=4),
         ),
     ),
 
@@ -1045,8 +1131,18 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
         sportybet_id="551",
         bet9ja_key=None,
         outcome_mapping=(
-            # Position-based matching for score ranges
-            OutcomeMapping(canonical_id="pos_0", betpawa_name=None, sportybet_desc=None, bet9ja_suffix=None, position=0),
+            # Sportybet Multiscores outcome descriptions - 11 outcomes covering score ranges
+            OutcomeMapping(canonical_id="home_123", betpawa_name=None, sportybet_desc="1:0, 2:0 or 3:0", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="away_123", betpawa_name=None, sportybet_desc="0:1, 0:2 or 0:3", bet9ja_suffix=None, position=1),
+            OutcomeMapping(canonical_id="home_456", betpawa_name=None, sportybet_desc="4:0, 5:0 or 6:0", bet9ja_suffix=None, position=2),
+            OutcomeMapping(canonical_id="away_456", betpawa_name=None, sportybet_desc="0:4, 0:5 or 0:6", bet9ja_suffix=None, position=3),
+            OutcomeMapping(canonical_id="home_2141", betpawa_name=None, sportybet_desc="2:1, 3:1 or 4:1", bet9ja_suffix=None, position=4),
+            OutcomeMapping(canonical_id="away_1214", betpawa_name=None, sportybet_desc="1:2, 1:3 or 1:4", bet9ja_suffix=None, position=5),
+            OutcomeMapping(canonical_id="home_3243", betpawa_name=None, sportybet_desc="3:2, 4:2, 4:3 or 5:1", bet9ja_suffix=None, position=6),
+            OutcomeMapping(canonical_id="away_2334", betpawa_name=None, sportybet_desc="2:3, 2:4, 3:4 or 1:5", bet9ja_suffix=None, position=7),
+            OutcomeMapping(canonical_id="draw", betpawa_name=None, sportybet_desc="Draw", bet9ja_suffix=None, position=8),
+            OutcomeMapping(canonical_id="other_home", betpawa_name=None, sportybet_desc="Other Homewin", bet9ja_suffix=None, position=9),
+            OutcomeMapping(canonical_id="other_away", betpawa_name=None, sportybet_desc="Other Awaywin", bet9ja_suffix=None, position=10),
         ),
     ),
 
