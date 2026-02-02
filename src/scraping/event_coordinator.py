@@ -28,10 +28,12 @@ from src.db.models.competitor import (
     CompetitorMarketOdds,
     CompetitorOddsSnapshot,
     CompetitorSource,
+    CompetitorTournament,
 )
-from src.db.models.event import Event
+from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.odds import MarketOdds, OddsSnapshot
+from src.db.models.sport import Sport, Tournament
 from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
 from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
 from src.market_mapping.types.errors import MappingError
@@ -307,16 +309,13 @@ class EventCoordinator:
                             except (ValueError, TypeError):
                                 continue
 
-                            # Try to get SR ID from list response widgets (old working pattern)
+                            # Try to get SR ID from list response widgets
+                            # BetPawa's widget.id IS the SportRadar ID (8-digit numeric)
                             widgets = event_data.get("widgets", [])
                             sr_id = None
                             for widget in widgets:
                                 if widget.get("type") == "SPORTRADAR":
-                                    # Try widget.id first (old pattern)
                                     sr_id = widget.get("id")
-                                    if not sr_id:
-                                        widget_data = widget.get("data", {})
-                                        sr_id = widget_data.get("matchId")
                                     if sr_id:
                                         sr_id = str(sr_id)
                                     break
@@ -353,17 +352,12 @@ class EventCoordinator:
                                 try:
                                     full_data = await client.fetch_event(event_id)
                                     # Extract SR ID from widgets array
-                                    # OLD WORKING PATTERN: widget["id"] (NOT widget["data"]["matchId"])
+                                    # BetPawa's widget.id IS the SportRadar ID (8-digit numeric)
                                     widgets = full_data.get("widgets", [])
                                     sr_id = None
                                     for widget in widgets:
                                         if widget.get("type") == "SPORTRADAR":
-                                            # Try direct widget.id first (old working pattern)
                                             sr_id = widget.get("id")
-                                            if not sr_id:
-                                                # Fall back to widget.data.matchId
-                                                widget_data = widget.get("data", {})
-                                                sr_id = widget_data.get("matchId")
                                             if sr_id:
                                                 sr_id = str(sr_id)
                                             break
@@ -1003,6 +997,18 @@ class EventCoordinator:
         # Pre-fetch competitor event mappings (SR ID -> CompetitorEvent ID by source)
         competitor_event_map = await self._get_competitor_event_ids_by_sr_ids(db, sr_ids)
 
+        # Get/create fallback tournaments for events discovered during scraping
+        sport_id = await self._get_or_create_fallback_sport(db)
+        fallback_tournament_id = await self._get_or_create_fallback_tournament(db, sport_id)
+        fallback_competitor_tournament_ids = {
+            CompetitorSource.SPORTYBET: await self._get_or_create_fallback_competitor_tournament(
+                db, CompetitorSource.SPORTYBET, sport_id
+            ),
+            CompetitorSource.BET9JA: await self._get_or_create_fallback_competitor_tournament(
+                db, CompetitorSource.BET9JA, sport_id
+            ),
+        }
+
         # Collect all records for bulk operations
         status_records: list[EventScrapeStatus] = []
         betpawa_snapshots: list[tuple[OddsSnapshot, list[MarketOdds]]] = []
@@ -1055,17 +1061,30 @@ class EventCoordinator:
                 try:
                     if platform == "betpawa":
                         # BetPawa -> OddsSnapshot + MarketOdds
-                        event_id = event_id_map.get(event.sr_id)
-                        if event_id is None:
-                            logger.debug(
-                                "No DB event for BetPawa result",
-                                sr_id=event.sr_id,
-                            )
-                            continue
-
                         bookmaker_id = bookmaker_ids.get("betpawa")
                         if bookmaker_id is None:
                             continue
+
+                        event_id = event_id_map.get(event.sr_id)
+                        if event_id is None:
+                            # Create Event from raw data (FIX: v1.7 was skipping this)
+                            # Get or create proper tournament from competition/region in raw_data
+                            actual_tournament_id = await self._get_or_create_tournament_from_betpawa_raw(
+                                db=db,
+                                raw_data=raw_data,
+                                sport_id=sport_id,
+                            )
+                            platform_id = event.platform_ids.get("betpawa", str(raw_data.get("id", "")))
+                            event_id = await self._create_event_from_betpawa_raw(
+                                db=db,
+                                sr_id=event.sr_id,
+                                raw_data=raw_data,
+                                tournament_id=actual_tournament_id,
+                                bookmaker_id=bookmaker_id,
+                                platform_id=platform_id,
+                            )
+                            # Update map for any subsequent lookups
+                            event_id_map[event.sr_id] = event_id
 
                         # Create snapshot
                         snapshot = OddsSnapshot(
@@ -1086,12 +1105,51 @@ class EventCoordinator:
                         competitor_event_id = competitor_event_map.get((event.sr_id, source.value))
 
                         if competitor_event_id is None:
-                            logger.debug(
-                                "No competitor event for result",
-                                sr_id=event.sr_id,
-                                platform=platform,
+                            # Create CompetitorEvent from raw data (FIX: v1.7 was skipping this)
+                            platform_id = event.platform_ids.get(platform, "")
+                            if not platform_id and source == CompetitorSource.BET9JA:
+                                # Bet9ja uses ID field
+                                platform_id = str(raw_data.get("ID", ""))
+
+                            # Get or create proper tournament from raw data with country
+                            competitor_tournament_id = await self._get_or_create_competitor_tournament_from_raw(
+                                db=db,
+                                source=source,
+                                raw_data=raw_data,
+                                sport_id=sport_id,
                             )
-                            continue
+
+                            competitor_event_id = await self._create_competitor_event_from_raw(
+                                db=db,
+                                sr_id=event.sr_id,
+                                source=source,
+                                raw_data=raw_data,
+                                tournament_id=competitor_tournament_id,
+                                platform_id=platform_id,
+                            )
+                            # Update map for any subsequent lookups
+                            competitor_event_map[(event.sr_id, source.value)] = competitor_event_id
+
+                        # FIX: Also create EventBookmaker for this platform if BetPawa Event exists
+                        # This enables min_bookmakers filter to work for cross-platform events
+                        bp_event_id = event_id_map.get(event.sr_id)
+                        if bp_event_id is not None:
+                            bookmaker_id = bookmaker_ids.get(platform)
+                            if bookmaker_id is not None:
+                                # Get platform_id for EventBookmaker
+                                platform_id = event.platform_ids.get(platform, "")
+                                if not platform_id:
+                                    if source == CompetitorSource.SPORTYBET:
+                                        platform_id = raw_data.get("eventId", f"sr:match:{event.sr_id}")
+                                    else:
+                                        platform_id = str(raw_data.get("ID", ""))
+                                # Create EventBookmaker if not exists
+                                await self._ensure_event_bookmaker(
+                                    db=db,
+                                    event_id=bp_event_id,
+                                    bookmaker_id=bookmaker_id,
+                                    external_event_id=platform_id,
+                                )
 
                         # Create competitor snapshot
                         snapshot = CompetitorOddsSnapshot(
@@ -1224,6 +1282,413 @@ class EventCoordinator:
             )
         )
         return {(row.sportradar_id, row.source): row.id for row in result.all()}
+
+    async def _get_or_create_fallback_sport(self, db: AsyncSession) -> int:
+        """Get or create Football sport for fallback tournament.
+
+        Returns:
+            Sport ID for Football.
+        """
+        result = await db.execute(
+            select(Sport.id).where(Sport.slug == "football")
+        )
+        row = result.first()
+        if row:
+            return row[0]
+
+        # Create Football sport
+        sport = Sport(name="Football", slug="football")
+        db.add(sport)
+        await db.flush()
+        return sport.id
+
+    async def _get_or_create_fallback_tournament(
+        self,
+        db: AsyncSession,
+        sport_id: int,
+    ) -> int:
+        """Get or create fallback tournament for BetPawa events discovered via scraping.
+
+        Args:
+            db: AsyncSession for database operations.
+            sport_id: Sport ID for Football.
+
+        Returns:
+            Tournament ID for the fallback tournament.
+        """
+        fallback_name = "Discovered Events"
+        result = await db.execute(
+            select(Tournament.id).where(
+                Tournament.name == fallback_name,
+                Tournament.sport_id == sport_id,
+            )
+        )
+        row = result.first()
+        if row:
+            return row[0]
+
+        # Create fallback tournament
+        tournament = Tournament(
+            name=fallback_name,
+            sport_id=sport_id,
+            country=None,
+            sportradar_id=None,
+        )
+        db.add(tournament)
+        await db.flush()
+        return tournament.id
+
+    async def _get_or_create_fallback_competitor_tournament(
+        self,
+        db: AsyncSession,
+        source: CompetitorSource,
+        sport_id: int,
+    ) -> int:
+        """Get or create fallback competitor tournament for events discovered via scraping.
+
+        Args:
+            db: AsyncSession for database operations.
+            source: Platform source (SPORTYBET or BET9JA).
+            sport_id: Sport ID for Football.
+
+        Returns:
+            CompetitorTournament ID for the fallback tournament.
+        """
+        fallback_name = "Discovered Events"
+        fallback_external_id = f"discovered-{source.value}"
+
+        result = await db.execute(
+            select(CompetitorTournament.id).where(
+                CompetitorTournament.source == source.value,
+                CompetitorTournament.external_id == fallback_external_id,
+            )
+        )
+        row = result.first()
+        if row:
+            return row[0]
+
+        # Create fallback competitor tournament
+        tournament = CompetitorTournament(
+            source=source.value,
+            sport_id=sport_id,
+            name=fallback_name,
+            external_id=fallback_external_id,
+            sportradar_id=None,
+        )
+        db.add(tournament)
+        await db.flush()
+        return tournament.id
+
+    async def _get_or_create_competitor_tournament_from_raw(
+        self,
+        db: AsyncSession,
+        source: CompetitorSource,
+        raw_data: dict,
+        sport_id: int,
+    ) -> int:
+        """Get or create CompetitorTournament from raw API response.
+
+        Extracts tournament name and country from competitor raw response
+        to create proper tournament records with country_raw populated.
+
+        Args:
+            db: AsyncSession for database operations.
+            source: Platform source (SPORTYBET or BET9JA).
+            raw_data: Raw API response from the competitor platform.
+            sport_id: Sport ID for Football.
+
+        Returns:
+            CompetitorTournament ID.
+        """
+        if source == CompetitorSource.SPORTYBET:
+            # SportyBet has tournamentName and categoryName (country)
+            tournament_name = raw_data.get("tournamentName", "Unknown")
+            country_raw = raw_data.get("categoryName")  # This is the country/region
+            external_id = raw_data.get("tournamentId", "")
+        else:  # BET9JA
+            # Bet9ja has GN (group name) and SGN (sport group name / country)
+            tournament_name = raw_data.get("GN", "Unknown")
+            country_raw = raw_data.get("SGN")  # Sport group name (often country)
+            external_id = str(raw_data.get("GID", ""))  # Group ID
+
+        if not external_id:
+            # Generate fallback external_id
+            external_id = f"discovered-{source.value}-{hash(tournament_name) % 10000}"
+
+        # Try to find existing tournament by source and external_id
+        result = await db.execute(
+            select(CompetitorTournament.id).where(
+                CompetitorTournament.source == source.value,
+                CompetitorTournament.external_id == external_id,
+            )
+        )
+        row = result.first()
+        if row:
+            return row[0]
+
+        # Create new tournament with country
+        tournament = CompetitorTournament(
+            source=source.value,
+            sport_id=sport_id,
+            name=tournament_name,
+            external_id=external_id,
+            country_raw=country_raw,
+            sportradar_id=None,
+        )
+        db.add(tournament)
+        await db.flush()
+
+        logger.debug(
+            "Created competitor tournament from raw data",
+            source=source.value,
+            name=tournament_name,
+            country_raw=country_raw,
+            tournament_id=tournament.id,
+        )
+
+        return tournament.id
+
+    async def _get_or_create_tournament_from_betpawa_raw(
+        self,
+        db: AsyncSession,
+        raw_data: dict,
+        sport_id: int,
+    ) -> int:
+        """Get or create Tournament from BetPawa event raw response.
+
+        Parses competition and region info from raw_data to find/create a proper tournament.
+
+        Args:
+            db: AsyncSession for database operations.
+            raw_data: Raw BetPawa event response containing competition/region.
+            sport_id: Sport ID for Football.
+
+        Returns:
+            Tournament ID.
+        """
+        # Parse competition and region from raw_data
+        competition = raw_data.get("competition", {})
+        region = raw_data.get("region", {})
+
+        comp_name = competition.get("name", "Unknown")
+        comp_id = competition.get("id")
+        region_name = region.get("name")
+
+        # Try to find existing tournament by name
+        result = await db.execute(
+            select(Tournament.id).where(
+                Tournament.name == comp_name,
+                Tournament.sport_id == sport_id,
+            )
+        )
+        row = result.first()
+        if row:
+            return row[0]
+
+        # Create new tournament
+        tournament = Tournament(
+            name=comp_name,
+            sport_id=sport_id,
+            country=region_name,  # Use region name as country
+            sportradar_id=None,  # BetPawa doesn't provide SR ID for tournaments in event data
+        )
+        db.add(tournament)
+        await db.flush()
+
+        logger.debug(
+            "Created tournament from BetPawa raw data",
+            name=comp_name,
+            country=region_name,
+            tournament_id=tournament.id,
+        )
+
+        return tournament.id
+
+    async def _create_event_from_betpawa_raw(
+        self,
+        db: AsyncSession,
+        sr_id: str,
+        raw_data: dict,
+        tournament_id: int,
+        bookmaker_id: int,
+        platform_id: str,
+    ) -> int:
+        """Create Event record from BetPawa raw API response.
+
+        Args:
+            db: AsyncSession for database operations.
+            sr_id: SportRadar ID.
+            raw_data: Raw BetPawa event response.
+            tournament_id: FK to tournaments table.
+            bookmaker_id: FK to bookmakers table.
+            platform_id: BetPawa event ID.
+
+        Returns:
+            Event ID.
+        """
+        # Parse participants (teams) - position 1 = home, position 2 = away
+        participants = raw_data.get("participants", [])
+        home_team = "Unknown"
+        away_team = "Unknown"
+
+        for p in participants:
+            if p.get("position") == 1:
+                home_team = p.get("name", "Unknown")
+            elif p.get("position") == 2:
+                away_team = p.get("name", "Unknown")
+
+        # Parse kickoff
+        start_time = raw_data.get("startTime", "")
+        try:
+            kickoff = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+            kickoff = kickoff.replace(tzinfo=None)  # Store as naive UTC
+        except (ValueError, TypeError):
+            kickoff = datetime.utcnow()
+
+        # Create event
+        name = raw_data.get("name", f"{home_team} - {away_team}")
+        event = Event(
+            sportradar_id=sr_id,
+            tournament_id=tournament_id,
+            name=name,
+            home_team=home_team,
+            away_team=away_team,
+            kickoff=kickoff,
+        )
+        db.add(event)
+        await db.flush()
+
+        # Create event-bookmaker link
+        event_bookmaker = EventBookmaker(
+            event_id=event.id,
+            bookmaker_id=bookmaker_id,
+            external_event_id=platform_id,
+        )
+        db.add(event_bookmaker)
+        await db.flush()
+
+        logger.debug(
+            "Created BetPawa event from raw data",
+            sr_id=sr_id,
+            event_id=event.id,
+            name=name,
+        )
+
+        return event.id
+
+    async def _create_competitor_event_from_raw(
+        self,
+        db: AsyncSession,
+        sr_id: str,
+        source: CompetitorSource,
+        raw_data: dict,
+        tournament_id: int,
+        platform_id: str,
+    ) -> int:
+        """Create CompetitorEvent record from raw API response.
+
+        Args:
+            db: AsyncSession for database operations.
+            sr_id: SportRadar ID.
+            source: Platform source (SPORTYBET or BET9JA).
+            raw_data: Raw API response.
+            tournament_id: FK to competitor_tournaments table.
+            platform_id: Platform-specific event ID.
+
+        Returns:
+            CompetitorEvent ID.
+        """
+        if source == CompetitorSource.SPORTYBET:
+            # SportyBet format
+            home_team = raw_data.get("homeTeamName", "Unknown")
+            away_team = raw_data.get("awayTeamName", "Unknown")
+            estimate_start = raw_data.get("estimateStartTime")
+            try:
+                kickoff = datetime.fromtimestamp(estimate_start / 1000, tz=timezone.utc)
+                kickoff = kickoff.replace(tzinfo=None)
+            except (ValueError, TypeError):
+                kickoff = datetime.utcnow()
+        else:
+            # Bet9ja format - parse DS field "Home Team - Away Team"
+            ds_field = raw_data.get("DS", "Unknown - Unknown")
+            parts = ds_field.split(" - ", 1)
+            home_team = parts[0].strip() if parts else "Unknown"
+            away_team = parts[1].strip() if len(parts) > 1 else "Unknown"
+
+            start_date_str = raw_data.get("STARTDATE", "")
+            try:
+                kickoff = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
+                kickoff = datetime.utcnow()
+
+        name = f"{home_team} - {away_team}"
+
+        event = CompetitorEvent(
+            source=source.value,
+            tournament_id=tournament_id,
+            sportradar_id=sr_id,
+            external_id=platform_id,
+            name=name,
+            home_team=home_team,
+            away_team=away_team,
+            kickoff=kickoff,
+        )
+        db.add(event)
+        await db.flush()
+
+        logger.debug(
+            "Created competitor event from raw data",
+            sr_id=sr_id,
+            source=source.value,
+            event_id=event.id,
+            name=name,
+        )
+
+        return event.id
+
+    async def _ensure_event_bookmaker(
+        self,
+        db: AsyncSession,
+        event_id: int,
+        bookmaker_id: int,
+        external_event_id: str,
+    ) -> None:
+        """Ensure EventBookmaker record exists for a platform.
+
+        Creates the link between a BetPawa Event and another bookmaker if it doesn't exist.
+        This enables the min_bookmakers filter to work for cross-platform events.
+
+        Args:
+            db: AsyncSession for database operations.
+            event_id: FK to events table.
+            bookmaker_id: FK to bookmakers table.
+            external_event_id: Platform-specific event ID.
+        """
+        # Check if EventBookmaker already exists
+        result = await db.execute(
+            select(EventBookmaker.id).where(
+                EventBookmaker.event_id == event_id,
+                EventBookmaker.bookmaker_id == bookmaker_id,
+            )
+        )
+        if result.first() is not None:
+            return  # Already exists
+
+        # Create new EventBookmaker
+        link = EventBookmaker(
+            event_id=event_id,
+            bookmaker_id=bookmaker_id,
+            external_event_id=external_event_id,
+        )
+        db.add(link)
+        await db.flush()
+
+        logger.debug(
+            "Created EventBookmaker link",
+            event_id=event_id,
+            bookmaker_id=bookmaker_id,
+            external_event_id=external_event_id,
+        )
 
     def _parse_betpawa_markets(self, raw_data: dict) -> list[MarketOdds]:
         """Parse BetPawa raw response into MarketOdds records.
