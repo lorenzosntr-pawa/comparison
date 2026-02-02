@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v1.7 complete — ready for next milestone
+**Current focus:** v1.8 Market Matching Accuracy — systematic audit of all market mapping issues
 
 ## Current Position
 
-Phase: Complete (v1.7 shipped)
-Plan: N/A
-Status: Milestone v1.7 archived
-Last activity: 2026-02-02 — Archived v1.7 Scraping Architecture Overhaul
+Phase: 43 of ? (Comprehensive Market Mapping Audit)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-02-02 — Milestone v1.8 created
 
-Progress: ██████████ 100% (8 milestones shipped)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -26,6 +26,7 @@ Progress: ██████████ 100% (8 milestones shipped)
 - **v1.5 Scraping Observability** — SHIPPED 2026-01-28 (4 phases, 4 plans)
 - **v1.6 Event Matching Accuracy** — SHIPPED 2026-01-29 (3 phases, 3 plans)
 - **v1.7 Scraping Architecture Overhaul** — SHIPPED 2026-02-02 (7 phases, 16 plans)
+- **v1.8 Market Matching Accuracy** — IN PROGRESS (audit-driven phases)
 
 ## Performance Metrics
 
@@ -146,9 +147,10 @@ None.
 - All milestones archived to .planning/milestones/
 - v1.7 Scraping Architecture Overhaul shipped 2026-02-02 with 7 phases + 9 FIX plans
 - All milestones archived to .planning/milestones/
+- v1.8 Market Matching Accuracy created 2026-02-02: audit-driven approach with Phase 43 audit, then TBD fix phases
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Milestone v1.7 archived
+Stopped at: Milestone v1.8 created
 Resume file: None
