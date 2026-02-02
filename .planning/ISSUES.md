@@ -31,6 +31,12 @@ Current market mapping library handles basic markets (1X2, O/U, BTTS, Handicaps)
 
 ---
 
+## Open Bugs
+
+None.
+
+---
+
 ## Closed Enhancements
 
 ### ISS-001: SportyBet/Bet9ja scraping not implemented (RESOLVED)
@@ -42,3 +48,14 @@ Current market mapping library handles basic markets (1X2, O/U, BTTS, Handicaps)
 ### ISS-004: Tournament discovery not included in scheduled scrape cycle (RESOLVED)
 **Discovered:** Phase 35 UAT - 2026-01-28
 **Resolution:** Fixed 2026-01-29 - Added `TournamentDiscoveryService.discover_all()` call at start of `scrape_all_platforms` job. Competitors' new tournaments are now discovered on each scrape run.
+
+### BUG-001: BetPawa events not matching with competitors (RESOLVED)
+**Discovered:** v1.7 UAT - 2026-02-02
+**Resolution:** Fixed 2026-02-02 - Debugging confirmed `widget.id` IS the correct SportRadar ID (8-digit numeric, same format as competitors). Cleaned up SR ID extraction code to use `widget.id` directly without unnecessary fallback to `widget.data.matchId` (which doesn't exist in the API response).
+
+### BUG-002: Tournament/region missing for competitors (RESOLVED)
+**Discovered:** v1.7 UAT - 2026-02-02
+**Resolution:** Fixed 2026-02-02 - Added `_get_or_create_competitor_tournament_from_raw()` to extract proper tournament info from raw API responses:
+- SportyBet: extracts `tournamentName` and `categoryName` (country)
+- Bet9ja: extracts `GN` (group name) and `SGN` (sport group name/country)
+Competitor events now created with proper tournaments containing `country_raw` instead of using fallback "Discovered Events" tournaments.

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 42 of 42 (Validation & Cleanup)
-Plan: 1 of 1 + FIX + FIX2 + FIX3 plans
-Status: Milestone complete (all UAT issues resolved)
-Last activity: 2026-01-29 — Completed 42-01-FIX3.md (BetPawa SR ID extraction fix)
+Plan: 1 of 1 + FIX + FIX2 + FIX3 + FIX4 plans
+Status: FIX4 complete (v1.7 ready for testing)
+Last activity: 2026-02-02 — Completed 42-01-FIX4.md (BetPawa matching & competitor tournaments fix)
 
-Progress: ██████████ 100%
+Progress: ██████████ 100% (FIX4 complete)
 
 ## Milestones
 
@@ -102,7 +102,8 @@ Progress: ██████████ 100%
 - **Event-centric parallel scraping** - scrape all platforms simultaneously per event, not sequentially by platform (v1.7)
 - **Dict-based SSE progress events** - EventCoordinator yields dict events, mapped to ScrapeProgress for broadcaster (v1.7)
 - **Single-flush batch insert pattern** - add all records, single flush to get IDs, link FKs, commit (v1.7 FIX)
-- **BetPawa SPORTRADAR widget.id** - SR ID is in widget["id"], not widget["data"]["matchId"] (v1.7 FIX3)
+- **BetPawa SPORTRADAR widget.id** - SR ID is in widget["id"], an 8-digit numeric string (v1.7 FIX3)
+- **Competitor tournament from raw data** - Extract tournament name and country from competitor raw responses via `_get_or_create_competitor_tournament_from_raw()` (v1.7 FIX4)
 
 ### Key Decisions
 
@@ -142,6 +143,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Completed 42-01-FIX3.md (BetPawa SR ID extraction fix)
+Last session: 2026-02-02
+Stopped at: Completed 42-01-FIX4.md (BetPawa matching & competitor tournaments fix)
 Resume file: None
