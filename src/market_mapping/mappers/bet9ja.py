@@ -20,6 +20,15 @@ from market_mapping.types.normalized import MarketMapping, OutcomeMapping
 from market_mapping.utils import ParsedBet9jaKey, ParsedHandicap, parse_bet9ja_key
 
 
+# Bet9ja combined Home/Away O/U markets that need to be split into separate markets
+# These markets have outcomes for both Home and Away teams (OH, UH, OA, UA)
+# We split them into two separate markets mapped to Betpawa's separate markets
+BET9JA_HAOU_COMBINED_KEYS = frozenset([
+    "HAOU",  # Home/Away Over/Under - Full Time -> 5006 (Home) + 5003 (Away)
+    "HA1HOU",  # Home/Away Over/Under - First Half -> 5024 (Home) + 5021 (Away)
+    "HA2HOU",  # Home/Away Over/Under - Second Half -> 5027 (Home) + 5030 (Away)
+])
+
 # Bet9ja Over/Under market keys
 # Keys for markets that use Over/Under lines with a total parameter.
 # Format: S_{KEY}@{line}_{O|U}
@@ -355,6 +364,124 @@ def _map_handicap_market(
     )
 
 
+# HAOU split configuration: maps Bet9ja combined market keys to their split targets
+# Each entry: (home_betpawa_id, home_name, away_betpawa_id, away_name)
+HAOU_SPLIT_CONFIG = {
+    "HAOU": (
+        "5006", "Home Team Over/Under - Full Time",
+        "5003", "Away Team Over/Under - Full Time",
+    ),
+    "HA1HOU": (
+        "5024", "Home Team Over/Under - First Half",
+        "5021", "Away Team Over/Under - First Half",
+    ),
+    "HA2HOU": (
+        "5027", "Home Team Over/Under - Second Half",
+        "5030", "Away Team Over/Under - Second Half",
+    ),
+}
+
+
+def _map_haou_combined_market(grouped: GroupedBet9jaMarket) -> list[MappedMarket]:
+    """Map a combined Home/Away Over/Under market into two separate markets.
+
+    Bet9ja's HAOU market has 4 outcomes (OH, UH, OA, UA) combined.
+    We split into separate Home O/U and Away O/U markets for Betpawa.
+
+    Args:
+        grouped: Grouped Bet9ja market with outcomes for both home and away.
+
+    Returns:
+        List of 0-2 MappedMarkets (Home O/U and/or Away O/U).
+    """
+    config = HAOU_SPLIT_CONFIG.get(grouped.market_key)
+    if config is None:
+        return []
+
+    home_id, home_name, away_id, away_name = config
+
+    # Parse line from parameter
+    if grouped.param is None:
+        return []
+
+    try:
+        line = float(grouped.param)
+    except ValueError:
+        return []
+
+    results: list[MappedMarket] = []
+
+    # Check for Home outcomes (OH = Over Home, UH = Under Home)
+    home_outcomes: list[MappedOutcome] = []
+    if "OH" in grouped.outcomes:
+        try:
+            odds = float(grouped.outcomes["OH"])
+            home_outcomes.append(MappedOutcome(
+                betpawa_outcome_name="Over",
+                sportybet_outcome_desc=None,
+                odds=odds,
+                is_active=True,
+            ))
+        except (ValueError, TypeError):
+            pass
+    if "UH" in grouped.outcomes:
+        try:
+            odds = float(grouped.outcomes["UH"])
+            home_outcomes.append(MappedOutcome(
+                betpawa_outcome_name="Under",
+                sportybet_outcome_desc=None,
+                odds=odds,
+                is_active=True,
+            ))
+        except (ValueError, TypeError):
+            pass
+
+    if home_outcomes:
+        results.append(MappedMarket(
+            betpawa_market_id=home_id,
+            betpawa_market_name=home_name,
+            sportybet_market_id=None,
+            line=line,
+            outcomes=tuple(home_outcomes),
+        ))
+
+    # Check for Away outcomes (OA = Over Away, UA = Under Away)
+    away_outcomes: list[MappedOutcome] = []
+    if "OA" in grouped.outcomes:
+        try:
+            odds = float(grouped.outcomes["OA"])
+            away_outcomes.append(MappedOutcome(
+                betpawa_outcome_name="Over",
+                sportybet_outcome_desc=None,
+                odds=odds,
+                is_active=True,
+            ))
+        except (ValueError, TypeError):
+            pass
+    if "UA" in grouped.outcomes:
+        try:
+            odds = float(grouped.outcomes["UA"])
+            away_outcomes.append(MappedOutcome(
+                betpawa_outcome_name="Under",
+                sportybet_outcome_desc=None,
+                odds=odds,
+                is_active=True,
+            ))
+        except (ValueError, TypeError):
+            pass
+
+    if away_outcomes:
+        results.append(MappedMarket(
+            betpawa_market_id=away_id,
+            betpawa_market_name=away_name,
+            sportybet_market_id=None,
+            line=line,
+            outcomes=tuple(away_outcomes),
+        ))
+
+    return results
+
+
 def _map_bet9ja_market(
     grouped: GroupedBet9jaMarket,
     mapping: MarketMapping,
@@ -492,6 +619,12 @@ def map_bet9ja_odds_to_betpawa(
     results: list[MappedMarket] = []
 
     for grouped in grouped_markets:
+        # Special handling for combined HAOU markets - split into Home/Away O/U
+        if grouped.market_key in BET9JA_HAOU_COMBINED_KEYS:
+            split_markets = _map_haou_combined_market(grouped)
+            results.extend(split_markets)
+            continue
+
         # Build the lookup key (just the prefix)
         # find_by_bet9ja_key expects "S_1X2", not "S_1X2_1"
         lookup_key = f"S_{grouped.market_key}"

@@ -24,7 +24,9 @@ from market_mapping.types.errors import MappingError
 from market_mapping.utils import parse_bet9ja_key
 
 
-TARGET_MARKETS_BET9JA = ["HTFTOU", "TMGHO", "TMGAW", "HTFTCS", "HAOU"]
+# Note: HAOU is handled specially in map_bet9ja_odds_to_betpawa (splits into Home/Away O/U)
+# The individual mapper doesn't support it, so we skip it here
+TARGET_MARKETS_BET9JA = ["HTFTOU", "TMGHO", "TMGAW", "HTFTCS"]
 TARGET_MARKETS_SPORTYBET = ["551", "46"]
 
 
@@ -161,8 +163,76 @@ async def verify_sportybet_markets():
                     print(f"      Error: {err}")
 
 
+async def verify_haou_split():
+    """Verify HAOU market splitting (Home/Away O/U).
+
+    HAOU is handled specially by map_bet9ja_odds_to_betpawa which splits it
+    into separate Home O/U and Away O/U markets.
+    """
+    from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
+    from market_mapping.utils import parse_bet9ja_key
+
+    print("\n\n=== HAOU SPLIT VERIFICATION ===\n")
+
+    home_success = 0
+    away_success = 0
+    total_haou = 0
+
+    async with async_session_factory() as session:
+        query = (
+            select(CompetitorEvent)
+            .where(CompetitorEvent.source == CompetitorSource.BET9JA)
+            .options(selectinload(CompetitorEvent.odds_snapshots))
+            .limit(30)
+        )
+        result = await session.execute(query)
+        events = result.scalars().unique().all()
+
+        for event in events:
+            for snapshot in event.odds_snapshots:
+                if not snapshot.raw_response:
+                    continue
+
+                odds_data = snapshot.raw_response.get("O", {})
+
+                # Check if this snapshot has HAOU data
+                has_haou = any(
+                    k.startswith("S_HAOU@") for k in odds_data.keys()
+                )
+                if not has_haou:
+                    continue
+
+                total_haou += 1
+
+                # Run the batch mapper
+                mapped = map_bet9ja_odds_to_betpawa(odds_data)
+
+                # Check for Home O/U (5006) and Away O/U (5003) markets
+                for m in mapped:
+                    if m.betpawa_market_id == "5006":
+                        home_success += 1
+                    elif m.betpawa_market_id == "5003":
+                        away_success += 1
+
+    print("HAOU Split Results:\n")
+    if total_haou == 0:
+        print("  No HAOU data found in samples")
+    else:
+        home_rate = home_success / total_haou * 100 if total_haou > 0 else 0
+        away_rate = away_success / total_haou * 100 if total_haou > 0 else 0
+        print(f"  Total snapshots with HAOU: {total_haou}")
+        print(f"  Home O/U (5006) created: {home_success} ({home_rate:.1f}%)")
+        print(f"  Away O/U (5003) created: {away_success} ({away_rate:.1f}%)")
+
+        if home_rate > 90 and away_rate > 90:
+            print("\n  [PASS] HAOU split working correctly")
+        else:
+            print("\n  [WARN] HAOU split may have issues")
+
+
 async def main():
     await verify_bet9ja_markets()
+    await verify_haou_split()
     await verify_sportybet_markets()
     print("\n\n=== VERIFICATION COMPLETE ===")
 
