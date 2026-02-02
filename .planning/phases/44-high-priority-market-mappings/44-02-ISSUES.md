@@ -46,7 +46,20 @@ Bet9ja uses **inconsistent suffix patterns** for HAOU markets:
 
 **ROOT CAUSE:** Same as UAT-001 - reversed outcome suffixes in `_map_haou_combined_market()`
 
-### UAT-003: New 44-02 markets not visible in UI (inconclusive)
+### UAT-003: Duplicate market rows with single-bookmaker odds (NEW)
+
+**Discovered:** 2026-02-02
+**Phase/Plan:** 44-02 (discovered after HAOU fix)
+**Severity:** Major
+**Feature:** Market comparison display
+**Description:** After fixing HAOU mapping, some markets appear as multiple duplicate rows, each showing odds from only one bookmaker instead of being merged into a single row with all bookmakers.
+**Expected:** Each market should appear once with odds from all bookmakers side-by-side
+**Actual:** Same market appears multiple times, each row showing odds from different bookmaker
+**Example:** Home O/U Full Time 0.5 shows as 3 separate rows instead of 1 merged row
+**Likely cause:** Frontend market merging logic not recognizing these as the same market across bookmakers
+**Note:** This is a UI merging issue, not a mapping issue. The data is correct in the database.
+
+### UAT-004: New 44-02 markets not visible in UI (inconclusive)
 
 **Discovered:** 2026-02-02
 **Phase/Plan:** 44-02
