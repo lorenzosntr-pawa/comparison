@@ -1,0 +1,3072 @@
+{
+  "stats": {
+    "total_events_analyzed": 100,
+    "events_with_betpawa": 100,
+    "events_with_sportybet": 99,
+    "events_with_bet9ja": 99,
+    "events_with_all_platforms": 98,
+    "sportybet_total_markets": 17605,
+    "sportybet_mapped": 8323,
+    "sportybet_failed": 9282,
+    "bet9ja_total_markets": 15465,
+    "bet9ja_mapped": 5580,
+    "bet9ja_failed": 9885,
+    "betpawa_total_markets": 5039
+  },
+  "unmapped_markets": [
+    {
+      "platform": "sportybet",
+      "market_id": "60200",
+      "market_desc": "1X2 - 1UP",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60100",
+      "market_desc": "1X2 - 2UP",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60180",
+      "market_desc": "Over/Under - Early Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 220,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "8",
+      "market_desc": "1st Goal",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 48,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60000",
+      "market_desc": "GG/NG 2+",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 92,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60010",
+      "market_desc": "Any Team To Score 2 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60020",
+      "market_desc": "Any Team To Score 3 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60011",
+      "market_desc": "Home Team To Score 2 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60021",
+      "market_desc": "Home Team To Score 3 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60012",
+      "market_desc": "Away Team To Score 2 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60022",
+      "market_desc": "Away Team To Score 3 or More Goals in a Row",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60300",
+      "market_desc": "Any Team to lead by 1 Goal at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60301",
+      "market_desc": "Any Team to lead by 2 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60302",
+      "market_desc": "Any Team to lead by 3 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60303",
+      "market_desc": "Home Team to lead by 1 Goal at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60304",
+      "market_desc": "Home Team to lead by 2 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60305",
+      "market_desc": "Home Team to lead by 3 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60306",
+      "market_desc": "Away Team to lead by 1 Goal at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60307",
+      "market_desc": "Away Team to lead by 2 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "60308",
+      "market_desc": "Away Team to lead by 3 Goals at any time",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450001",
+      "market_desc": "Goal Bounds",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 94,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450002",
+      "market_desc": "Goal Bounds - Home",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 90,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450003",
+      "market_desc": "Goal Bounds - Away",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 90,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450004",
+      "market_desc": "Excluded Number of Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 94,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450005",
+      "market_desc": "Excluded Number of Goals - Home",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 90,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "450006",
+      "market_desc": "Excluded Number of Goals - Away",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 90,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "46",
+      "market_desc": "Half Time/Full Time Correct Score",
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 56,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "58",
+      "market_desc": "Both Halves Over 1.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "59",
+      "market_desc": "Both Halves Under 1.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "55",
+      "market_desc": "1st/2nd Half GG/NG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "62",
+      "market_desc": "1st Half - 1st Goal",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 47,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "810001",
+      "market_desc": "Goal Bounds - 1st Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "810002",
+      "market_desc": "Excluded Number of Goals - First Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 75,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "78",
+      "market_desc": "1st Half - 1X2 & GG/NG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "79",
+      "market_desc": "1st Half - 1X2 & Over/Under",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900022",
+      "market_desc": "Half-time Home Team To Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900021",
+      "market_desc": "Half-time Away Team to Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900036",
+      "market_desc": "Half-time Home Team to Win to Nil Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900037",
+      "market_desc": "Half-time Away Team to Win to Nil Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900032",
+      "market_desc": "Half-time Home Team Total Goals Odd or Even",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900031",
+      "market_desc": "Half-time Away Team Total Goals Odd or Even",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "84",
+      "market_desc": "2nd Half - 1st Goal",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 47,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900020",
+      "market_desc": "2nd Half Home Team to Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900019",
+      "market_desc": "2nd Half Away Team to Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900038",
+      "market_desc": "2nd Half Home Team to Win to Nil Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900029",
+      "market_desc": "2nd Half Home Team Total Goals Odd or Even",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 72,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900030",
+      "market_desc": "2nd Half Away Team Total Goals Odd or Even",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 73,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "12",
+      "market_desc": "Home No Bet",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "13",
+      "market_desc": "Away No Bet",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "25",
+      "market_desc": "Goal Range",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 34,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900015",
+      "market_desc": "Home Team To Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 61,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900014",
+      "market_desc": "Away Team To Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 61,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900027",
+      "market_desc": "Both Teams to Score in Both Halves Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 55,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900041",
+      "market_desc": "No Draw Both Teams To Score Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 61,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "101",
+      "market_desc": "When will the 1st goal be scored (10 min interval)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 39,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "100",
+      "market_desc": "When will the 1st goal be scored (15 min interval)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 39,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "37",
+      "market_desc": "1X2 & Over/Under",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 264,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "36",
+      "market_desc": "Over/Under & GG/NG",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "184",
+      "market_desc": "1st Goal & 1X2",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 41,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "818",
+      "market_desc": "Halftime/Fulltime & Over/Under",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 216,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "819",
+      "market_desc": "Halftime/Fulltime & 1st Half Over/Under",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 162,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "820",
+      "market_desc": "Halftime/Fulltime & Exact Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "547",
+      "market_desc": "Double Chance & Over/Under",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 264,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "540",
+      "market_desc": "Double Chance & 1st Half GG/NG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "541",
+      "market_desc": "Double Chance & 2nd Half GG/NG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900042",
+      "market_desc": "Half-time Double Chance & Total Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "544",
+      "market_desc": "2nd Half - 1X2 & Over/Under",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "543",
+      "market_desc": "2nd Half - 1X2 & GG/NG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900043",
+      "market_desc": "2nd Half Double Chance & Total Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 57,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "1179",
+      "market_desc": "1st Half Result or Match Result",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 56,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "854",
+      "market_desc": "Home Team or Over 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "855",
+      "market_desc": "Home Team or Under 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "856",
+      "market_desc": "Draw or Over 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "857",
+      "market_desc": "Draw or Under 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "858",
+      "market_desc": "Away or Over 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "859",
+      "market_desc": "Away or Under 2.5",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "860",
+      "market_desc": "Home Team or GG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "861",
+      "market_desc": "Draw or GG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "862",
+      "market_desc": "Away Team or GG",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "BTTS"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "863",
+      "market_desc": "Home Team or Any Clean Sheet",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "864",
+      "market_desc": "Draw or Any Clean Sheet",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "865",
+      "market_desc": "Away Team or Any Clean Sheet",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 66,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "551",
+      "market_desc": "Multiscores",
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 66,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X22TOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CHANCEMIXN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OUA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 956,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HTFTOU",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 248,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2SCOREHT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCGGNGHT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21ST15MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI4-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HTFTCS",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 54,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GOALSAWAY",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 95,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI3-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCH1X2FT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "TOTAL1T2T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "3COMBO1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 246,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI1-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STGHTH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 61,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STGOAL",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "S5MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2SCORE2T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "S20MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STGHTA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "LEASTX",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2HDCFT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCORET",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2OU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 348,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STGHT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 342,
+      "category": "Double Chance"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2HTOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HTFTOUHT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "TMGHO",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 99,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI1-3",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HAOU",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 50,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HA2HOU",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 17,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI3-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X22",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GGNG2PLUS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CHANCEMIXOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 190,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI1-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI2-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI2-3",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2HT1X2GGNG",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCHTFT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2HTGGNG",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GGNGOUN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GOALSHOME",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 95,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HTDCOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI3-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MCS3",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GGNGOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MGOAL1T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CHANCEMIXGGOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 95,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "NGOALS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "3CM",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 95,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MCS4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI1-3",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI2-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HTS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 92,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI1-2",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2TDCOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Double Chance"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "EXACTGOAL",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AWAY02T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MATCHOVERFLOW",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Over/Under"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AWAY0HT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI2-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI3-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21ST20MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOMENOBET",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCMULTI1-4",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI4-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CHANCEMIX",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 95,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "S30MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI2-3",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI1-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HA1HOU",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 21,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI2-5",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GNGFSH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "BTTS"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MGOAL2T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21ST5MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "TMGAW",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 99,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21ST30MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2MULTI1-2",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "LASTSCORE",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1SCORE2T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1SCOREHT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21ST60MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 62,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOME0HT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOME02T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AWAYNOBET",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 99,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AWAYSCORE",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 92,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900053",
+      "market_desc": "Correct Score",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900052",
+      "market_desc": "2nd Half Away Team to Win to Nil Yes/No",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 57,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "41",
+      "market_desc": "Correct Score [0:0]",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 25,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900069",
+      "market_desc": "1X2 from 1 to 5 minute",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 312,
+      "category": "Match Result"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "163",
+      "market_desc": "1st Corner",
+      "error_code": "UNSUPPORTED_PLATFORM",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "169",
+      "market_desc": "Corner Range",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "170",
+      "market_desc": "Home Corner Range",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "171",
+      "market_desc": "Away Corner Range",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "174",
+      "market_desc": "1st Half - 1st Corner",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "180",
+      "market_desc": "1st Half -Home Exact Corners",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "181",
+      "market_desc": "1st Half -Away Exact Corners",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "182",
+      "market_desc": "1st Half - Corner Range",
+      "error_code": "UNKNOWN_PARAM_MARKET",
+      "frequency": 12,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CORNERHTFT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "NCORN",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 24,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "C1HTOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 74,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CORN10",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "FCH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HNDCORNER",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CAH2",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 76,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "C2HTOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 45,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CAH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 52,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CAHH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 74,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1OG",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "TEAMCORNER1T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MULTIC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MULTICH1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OECH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2C2HT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "TEAMCORNER",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HALFCORNER",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 24,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OG",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STCORNER",
+      "market_desc": null,
+      "error_code": "UNSUPPORTED_PLATFORM",
+      "frequency": 24,
+      "category": "Corners"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CHH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CH2",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "38",
+      "market_desc": "1st Goalscorer",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 13,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "39",
+      "market_desc": "Last Goalscorer",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 13,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "40",
+      "market_desc": "Anytime Goalscorer",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 13,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "770",
+      "market_desc": "Player assists (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 158,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "775",
+      "market_desc": "Player goals (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 192,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "776",
+      "market_desc": "Player shots (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 192,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "777",
+      "market_desc": "Player shots on goal (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 192,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "778",
+      "market_desc": "Player passes (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 65,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "780",
+      "market_desc": "Player tackles (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 93,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "1191",
+      "market_desc": "Player to be carded (incl. overtime)",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 130,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800119",
+      "market_desc": "Player To Be Sent Off",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800231",
+      "market_desc": "Player shots on target outside box",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800233",
+      "market_desc": "Player left foot shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800234",
+      "market_desc": "Player right foot shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800285",
+      "market_desc": "Player 1st half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800261",
+      "market_desc": "Player 2nd half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800280",
+      "market_desc": "Player Offsides",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800291",
+      "market_desc": "Player Fouls",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800297",
+      "market_desc": "Player Saves",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800189",
+      "market_desc": "To Score From Outside the Box",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800190",
+      "market_desc": "To Score a Header",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800201",
+      "market_desc": "First to Score for their Team",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800191",
+      "market_desc": "Player to Score Free-Kick",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800236",
+      "market_desc": "Player to score with left foot",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800237",
+      "market_desc": "Player to score with right foot",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800238",
+      "market_desc": "Player to score in 1st half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800239",
+      "market_desc": "Player to score in 2nd half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800251",
+      "market_desc": "Player to score in both halves",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800290",
+      "market_desc": "To Score and Assist",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800249",
+      "market_desc": "To score in first 10 mins",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "137",
+      "market_desc": "1st Booking",
+      "error_code": "UNSUPPORTED_PLATFORM",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "138",
+      "market_desc": "Booking Points-Over/Under",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 15,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900312",
+      "market_desc": "Bookings Handicap",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 35,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "142",
+      "market_desc": "Exact Bookings",
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "143",
+      "market_desc": "Home Exact Bookings",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "144",
+      "market_desc": "Away Exact Bookings",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "150",
+      "market_desc": "1st Half - 1st Booking",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "151",
+      "market_desc": "1st Half - Total Booking Points",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 12,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "155",
+      "market_desc": "1st Half - Exact Bookings",
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "156",
+      "market_desc": "1st Half - Home Exact Bookings",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "157",
+      "market_desc": "1st Half - Away Exact Bookings",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "159",
+      "market_desc": "1st Half - Sending Off",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "160",
+      "market_desc": "1st Half - Home Sending Off",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "161",
+      "market_desc": "1st Half - Away Sending Off",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800057",
+      "market_desc": "Match Fouls",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800248",
+      "market_desc": "Match Shots",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800122",
+      "market_desc": "Match Shots On Target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800054",
+      "market_desc": "Match Shots Outside Box",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800247",
+      "market_desc": "Match 1st half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800052",
+      "market_desc": "Match 2nd half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800202",
+      "market_desc": "Match Offsides",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800203",
+      "market_desc": "Match Throw-Ins",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800204",
+      "market_desc": "Match Tackles",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800205",
+      "market_desc": "Match Goal Kicks",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800123",
+      "market_desc": "Match Penalty Scored",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800072",
+      "market_desc": "Team Fouls",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800160",
+      "market_desc": "Team Shots",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800161",
+      "market_desc": "Team Shots on Target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800245",
+      "market_desc": "Team 1st half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800287",
+      "market_desc": "Team 2nd half shots on target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800241",
+      "market_desc": "Team Throw-Ins",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800206",
+      "market_desc": "Team Tackles",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800242",
+      "market_desc": "Team Goal Kicks",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800262",
+      "market_desc": "Team Assists",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800299",
+      "market_desc": "Team Saves",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800060",
+      "market_desc": "Team Cards",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800061",
+      "market_desc": "Team Cards 1st Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800062",
+      "market_desc": "Team Cards 2nd Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800063",
+      "market_desc": "Match Cards",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800064",
+      "market_desc": "Match Cards 1st Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800065",
+      "market_desc": "Match Cards 2nd Half",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800117",
+      "market_desc": "Player To Be Booked",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 583,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800118",
+      "market_desc": "First Player Carded",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800289",
+      "market_desc": "To Score or Assist",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "800292",
+      "market_desc": "Player Total Accurate Passes",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830101",
+      "market_desc": "Most Player Goals",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Player Props"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830162",
+      "market_desc": "Most Shots on Target",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830230",
+      "market_desc": "Most Shots",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830281",
+      "market_desc": "Most Assists",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 13,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830289",
+      "market_desc": "Most Goals + Assists",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 16,
+      "category": "Goals"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830291",
+      "market_desc": "Most Fouls",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "830297",
+      "market_desc": "Most Saves",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 18,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OFFOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GOALTYPE",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HSBHOU45",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCOREA3R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AOUSA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "BOOKSAWAY",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HSBHOU35",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OUSAVES",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "BOOKSHOME",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "S15MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "STHOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 14,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "FCH1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "STAOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 14,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AOUS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 14,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GIT",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "BTLC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ECH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "PENSCOREMISS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "MULTIC1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Combo Markets"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OUSHOTS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 15,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUTA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUSA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1STBOOK",
+      "market_desc": null,
+      "error_code": "UNSUPPORTED_PLATFORM",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCORE3R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "S10MIN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ACS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Correct Score"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HMC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GPS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "GOA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUST",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 15,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "EXACTBOOK",
+      "market_desc": null,
+      "error_code": "NO_MATCHING_OUTCOMES",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "RTR",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1S",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21X2C1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "STOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 14,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OEBOOK",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUOFF",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "FOUH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 5,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AOUTA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "PEN",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ASBHOU45",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "AOUOFF",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OUTACKLES",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 9,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "REDCARD",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2C1X2C",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X21X2C",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "RRA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "C15M",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCOREH3R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOMES2R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ASBHOU35",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "LASTBOOK",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HSBHOU25",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCORE2R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "C30M",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "SCOREA2R",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Goals"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "FOU",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "CAH1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2HTOUCA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 5,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ASBHOU25",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "REDCARD1T",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 3,
+      "category": "Cards/Bookings"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ST",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 8,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2SHOTS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 8,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "RRH",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 6,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "FOUA",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 5,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2S",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "DCP",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Double Chance"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "1X2P",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Match Result"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2ST",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "LCRC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUST1",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2OUS",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HF",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HST",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "2OUST",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ACRC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HCRC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "BCRC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "BCYC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "ACYC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "OU25P",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "LCYC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HCYC",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 2,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "HOUF",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900054",
+      "market_desc": "1st Half - Correct Score",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "sportybet",
+      "market_id": "900055",
+      "market_desc": "2nd Half - Correct Score",
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Half-Based"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "12QUALIFY",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    },
+    {
+      "platform": "bet9ja",
+      "market_id": "WINTROPHY",
+      "market_desc": null,
+      "error_code": "UNKNOWN_MARKET",
+      "frequency": 1,
+      "category": "Uncategorized"
+    }
+  ],
+  "error_codes": {
+    "sportybet": {
+      "UNKNOWN_MARKET": 8305,
+      "NO_MATCHING_OUTCOMES": 128,
+      "UNKNOWN_PARAM_MARKET": 834,
+      "UNSUPPORTED_PLATFORM": 15
+    },
+    "bet9ja": {
+      "UNKNOWN_MARKET": 8553,
+      "NO_MATCHING_OUTCOMES": 615,
+      "UNKNOWN_PARAM_MARKET": 690,
+      "UNSUPPORTED_PLATFORM": 27
+    }
+  }
+}
