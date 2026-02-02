@@ -31,10 +31,49 @@ interface UnifiedMarket {
  * Build a unified list of markets from all bookmakers.
  * Uses Betpawa as the reference taxonomy.
  */
+/**
+ * Merge outcomes from multiple market records with the same key.
+ * Some bookmakers (like Betpawa) split outcomes across multiple records.
+ */
+function mergeMarketOutcomes(
+  existing: MarketOddsDetail,
+  incoming: MarketOddsDetail
+): MarketOddsDetail {
+  // Merge outcomes, avoiding duplicates by name
+  const existingNames = new Set(existing.outcomes.map((o) => o.name))
+  const mergedOutcomes = [
+    ...existing.outcomes,
+    ...incoming.outcomes.filter((o) => !existingNames.has(o.name)),
+  ]
+
+  // Recalculate margin with all outcomes
+  let margin = 0
+  try {
+    const totalImpliedProb = mergedOutcomes.reduce((sum, o) => {
+      if (o.odds > 0 && o.is_active) {
+        return sum + 1 / o.odds
+      }
+      return sum
+    }, 0)
+    if (totalImpliedProb > 0) {
+      margin = Math.round((totalImpliedProb - 1) * 100 * 100) / 100
+    }
+  } catch {
+    margin = existing.margin
+  }
+
+  return {
+    ...existing,
+    outcomes: mergedOutcomes,
+    margin,
+  }
+}
+
 function buildUnifiedMarkets(
   marketsByBookmaker: BookmakerMarketData[]
 ): UnifiedMarket[] {
   // Create a map of bookmaker slug -> markets by market key
+  // Markets with the same key have their outcomes merged
   const bookmakerMaps = new Map<string, Map<string, MarketOddsDetail>>()
 
   for (const bookmakerData of marketsByBookmaker) {
@@ -45,7 +84,14 @@ function buildUnifiedMarkets(
         market.line !== null
           ? `${market.betpawa_market_id}_${market.line}`
           : market.betpawa_market_id
-      marketMap.set(key, market)
+
+      // Merge outcomes if market already exists (same id+line)
+      const existing = marketMap.get(key)
+      if (existing) {
+        marketMap.set(key, mergeMarketOutcomes(existing, market))
+      } else {
+        marketMap.set(key, market)
+      }
     }
     bookmakerMaps.set(bookmakerData.bookmaker_slug, marketMap)
   }
