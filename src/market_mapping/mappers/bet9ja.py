@@ -55,6 +55,9 @@ BET9JA_OVER_UNDER_KEYS = frozenset([
     "OUBOOKAWAY",  # Away Team Bookings Over/Under - Full Time
     # HT/FT Combo O/U
     "HTFTOU",  # Half Time/Full Time and Over/Under
+    # Combo O/U markets (combined with other market types)
+    "1X2OU",  # 1X2 + Over/Under - Full Time (6 outcomes: 1O, 1U, XO, XU, 2O, 2U)
+    "DCOU",  # Double Chance + Over/Under - Full Time (6 outcomes: 1XO, 1XU, X2O, X2U, 12O, 12U)
 ])
 
 # Bet9ja Handicap market keys
