@@ -30,10 +30,22 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 43-01: Market Mapping Audit (100 events, 380 unmapped market types identified)
 
-#### Phase 44+: TBD Based on Audit Findings
+#### Phase 44: High-Priority Market Mappings
 
-**Goal**: Fix phases will be defined after audit reveals actual market mapping gaps
-**Depends on**: Phase 43 audit completion
+**Goal**: Fix HIGH priority market mapping issues identified in Phase 43 audit, organized by error type
+**Depends on**: Phase 43 (audit complete)
+**Research**: Unlikely (using audit findings)
+**Plans**: 0/3 complete
+
+Plans:
+- [ ] 44-01: NO_MATCHING_OUTCOMES fixes (outcome alignment for 6 markets, ~672 occurrences)
+- [ ] 44-02: UNKNOWN_MARKET fixes (new mappings for ~20 markets, ~1,800 occurrences)
+- [ ] 44-03: UNKNOWN_PARAM_MARKET fixes (combo market parameter handling, ~1,500 occurrences)
+
+#### Phase 45+: TBD Based on Phase 44 Results
+
+**Goal**: Additional mapping fixes if needed after Phase 44 completion
+**Depends on**: Phase 44
 **Research**: TBD
 **Plans**: TBD
 
@@ -195,3 +207,4 @@ Plans:
 | 42. Validation & Cleanup | v1.7 | 10/10 | Complete | 2026-02-02 |
 | **v1.7 SHIPPED** | | | **2026-02-02** | |
 | 43. Comprehensive Market Mapping Audit | v1.8 | 1/1 | Complete | 2026-02-02 |
+| 44. High-Priority Market Mappings | v1.8 | 0/3 | Ready | - |
