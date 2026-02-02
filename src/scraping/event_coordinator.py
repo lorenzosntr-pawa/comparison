@@ -1178,9 +1178,8 @@ class EventCoordinator:
 
             events_stored += 1
 
-        # Reconciliation pass: Link CompetitorEvents created before their BetPawa Event
+        # Reconciliation pass: Link CompetitorEvents and create EventBookmaker links
         # This handles ordering edge case where competitor processed before BetPawa in same batch
-        # (e.g., SportyBet event created first, then BetPawa event created later in same batch)
         for sr_id, event_id in event_id_map.items():
             # Update any CompetitorEvents for this SR ID that have NULL betpawa_event_id
             await db.execute(
@@ -1191,6 +1190,26 @@ class EventCoordinator:
                 )
                 .values(betpawa_event_id=event_id)
             )
+
+        # Create EventBookmaker links for competitors that have data for BetPawa events
+        # This ensures the Odds Comparison API can find competitor bookmakers
+        for (sr_id, source), comp_event_id in competitor_event_map.items():
+            bp_event_id = event_id_map.get(sr_id)
+            if bp_event_id is not None:
+                platform = "sportybet" if source == CompetitorSource.SPORTYBET.value else "bet9ja"
+                bookmaker_id = bookmaker_ids.get(platform)
+                if bookmaker_id is not None:
+                    # Get the CompetitorEvent to retrieve external_id
+                    comp_event_result = await db.execute(
+                        select(CompetitorEvent.external_id).where(CompetitorEvent.id == comp_event_id)
+                    )
+                    external_id = comp_event_result.scalar_one_or_none() or f"sr:{sr_id}"
+                    await self._ensure_event_bookmaker(
+                        db=db,
+                        event_id=bp_event_id,
+                        bookmaker_id=bookmaker_id,
+                        external_event_id=external_id,
+                    )
 
         # Bulk insert all records with optimized flush pattern
         # (Reduced from N flushes to 2: one for snapshots, one for markets)
