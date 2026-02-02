@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.models.bookmaker import Bookmaker
@@ -1178,6 +1178,20 @@ class EventCoordinator:
 
             events_stored += 1
 
+        # Reconciliation pass: Link CompetitorEvents created before their BetPawa Event
+        # This handles ordering edge case where competitor processed before BetPawa in same batch
+        # (e.g., SportyBet event created first, then BetPawa event created later in same batch)
+        for sr_id, event_id in event_id_map.items():
+            # Update any CompetitorEvents for this SR ID that have NULL betpawa_event_id
+            await db.execute(
+                update(CompetitorEvent)
+                .where(
+                    CompetitorEvent.sportradar_id == sr_id,
+                    CompetitorEvent.betpawa_event_id.is_(None)
+                )
+                .values(betpawa_event_id=event_id)
+            )
+
         # Bulk insert all records with optimized flush pattern
         # (Reduced from N flushes to 2: one for snapshots, one for markets)
 
@@ -1223,7 +1237,9 @@ class EventCoordinator:
         }
 
     async def _get_bookmaker_ids(self, db: AsyncSession) -> dict[str, int]:
-        """Get bookmaker IDs for all platforms.
+        """Get or create bookmaker IDs for all platforms.
+
+        Creates bookmakers on first run if they don't exist (like v1.6 did).
 
         Args:
             db: AsyncSession for database operations.
@@ -1231,9 +1247,44 @@ class EventCoordinator:
         Returns:
             Dict mapping platform slug to bookmaker ID.
         """
+        # Platform configuration for auto-creation
+        platform_config = {
+            "betpawa": {
+                "name": "BetPawa",
+                "base_url": "https://www.betpawa.ng",
+            },
+            "sportybet": {
+                "name": "SportyBet",
+                "base_url": "https://www.sportybet.com",
+            },
+            "bet9ja": {
+                "name": "Bet9ja",
+                "base_url": "https://sports.bet9ja.com",
+            },
+        }
+
         result = await db.execute(select(Bookmaker))
         bookmakers = result.scalars().all()
-        return {b.slug: b.id for b in bookmakers}
+        bookmaker_map = {b.slug: b.id for b in bookmakers}
+
+        # Create missing bookmakers (first run scenario)
+        for slug, config in platform_config.items():
+            if slug not in bookmaker_map:
+                logger.info(
+                    "Creating missing bookmaker",
+                    slug=slug,
+                    name=config["name"],
+                )
+                bookmaker = Bookmaker(
+                    name=config["name"],
+                    slug=slug,
+                    base_url=config["base_url"],
+                )
+                db.add(bookmaker)
+                await db.flush()  # Get ID without committing
+                bookmaker_map[slug] = bookmaker.id
+
+        return bookmaker_map
 
     async def _get_event_ids_by_sr_ids(
         self,
@@ -1401,14 +1452,19 @@ class EventCoordinator:
             CompetitorTournament ID.
         """
         if source == CompetitorSource.SPORTYBET:
-            # SportyBet has tournamentName and categoryName (country)
-            tournament_name = raw_data.get("tournamentName", "Unknown")
-            country_raw = raw_data.get("categoryName")  # This is the country/region
-            external_id = raw_data.get("tournamentId", "")
+            # SportyBet tournament/country is nested in sport.category structure
+            # Structure: sport.category.name = country, sport.category.tournament.name = tournament
+            sport_data = raw_data.get("sport", {})
+            category_data = sport_data.get("category", {})
+            tournament_data = category_data.get("tournament", {})
+
+            tournament_name = tournament_data.get("name", "Unknown")
+            country_raw = category_data.get("name")  # Country/region
+            external_id = tournament_data.get("id", "")  # SportRadar tournament ID
         else:  # BET9JA
-            # Bet9ja has GN (group name) and SGN (sport group name / country)
+            # Bet9ja has GN (group name) and SG (sport group / country)
             tournament_name = raw_data.get("GN", "Unknown")
-            country_raw = raw_data.get("SGN")  # Sport group name (often country)
+            country_raw = raw_data.get("SG")  # Sport group (country) - NOT "SGN"
             external_id = str(raw_data.get("GID", ""))  # Group ID
 
         if not external_id:
@@ -1623,6 +1679,13 @@ class EventCoordinator:
 
         name = f"{home_team} - {away_team}"
 
+        # Look up BetPawa event by sportradar_id for cross-platform linking
+        # (matches pattern from competitor_events.py:119)
+        bp_event_result = await db.execute(
+            select(Event.id).where(Event.sportradar_id == sr_id)
+        )
+        betpawa_event_id = bp_event_result.scalar_one_or_none()
+
         event = CompetitorEvent(
             source=source.value,
             tournament_id=tournament_id,
@@ -1632,6 +1695,7 @@ class EventCoordinator:
             home_team=home_team,
             away_team=away_team,
             kickoff=kickoff,
+            betpawa_event_id=betpawa_event_id,
         )
         db.add(event)
         await db.flush()
