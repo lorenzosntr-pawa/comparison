@@ -46,18 +46,25 @@ Bet9ja uses **inconsistent suffix patterns** for HAOU markets:
 
 **ROOT CAUSE:** Same as UAT-001 - reversed outcome suffixes in `_map_haou_combined_market()`
 
-### UAT-003: Duplicate market rows with single-bookmaker odds (NEW)
+### UAT-003: Duplicate market rows with single-bookmaker odds
 
 **Discovered:** 2026-02-02
 **Phase/Plan:** 44-02 (discovered after HAOU fix)
 **Severity:** Major
 **Feature:** Market comparison display
-**Description:** After fixing HAOU mapping, some markets appear as multiple duplicate rows, each showing odds from only one bookmaker instead of being merged into a single row with all bookmakers.
+**Description:** Half Time markets appeared as multiple duplicate rows, each showing odds from only one bookmaker.
 **Expected:** Each market should appear once with odds from all bookmakers side-by-side
-**Actual:** Same market appears multiple times, each row showing odds from different bookmaker
-**Example:** Home O/U Full Time 0.5 shows as 3 separate rows instead of 1 merged row
-**Likely cause:** Frontend market merging logic not recognizing these as the same market across bookmakers
-**Note:** This is a UI merging issue, not a mapping issue. The data is correct in the database.
+**Actual:** Same market (e.g., Home O/U First Half 0.5) appears twice - once with SportyBet, once with Bet9ja
+
+**ROOT CAUSE IDENTIFIED:**
+`HAOU_SPLIT_CONFIG` in `bet9ja.py` used hardcoded BetPawa IDs that didn't match `MarketMapping`:
+- HA1HOU: Used `5024`/`5021`, should be `4964`/`4961`
+- HA2HOU: Used `5027`/`5030`, should be `4982`/`4979`
+
+This caused SportyBet (using correct IDs) and Bet9ja (using wrong IDs) to appear as separate markets.
+
+**FIX:** Aligned HAOU_SPLIT_CONFIG IDs with MarketMapping canonical IDs.
+**Commit:** `99212d8`
 
 ### UAT-004: New 44-02 markets not visible in UI (inconclusive)
 
@@ -76,8 +83,15 @@ Bet9ja uses **inconsistent suffix patterns** for HAOU markets:
 
 **Resolved:** 2026-02-02
 **Fix:** Modified `_map_haou_combined_market()` to check for **both** suffix patterns (OH/UH/OA/UA and HO/HU/AO/AU) and use whichever is present
-**Commit:** `a8a783c`
+**Commit:** `41994cd`
 **Verification:** Unit tests pass (83/83), manual mapping test confirms HAOU, HA1HOU, HA2HOU all map correctly
+
+### UAT-003: Duplicate market rows with single-bookmaker odds
+
+**Resolved:** 2026-02-02
+**Fix:** Aligned HAOU_SPLIT_CONFIG IDs with MarketMapping canonical IDs
+**Commit:** `99212d8`
+**Verification:** Unit tests pass (83/83), mapping now returns correct IDs (4964/4961 for 1H, 4982/4979 for 2H)
 
 ---
 
