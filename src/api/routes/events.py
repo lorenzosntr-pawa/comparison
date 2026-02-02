@@ -534,44 +534,141 @@ def _build_bookmaker_market_data(
     )
 
 
+def _build_competitor_market_detail(market: CompetitorMarketOdds) -> MarketOddsDetail:
+    """Build detailed market odds from a CompetitorMarketOdds model.
+
+    Args:
+        market: CompetitorMarketOdds model with outcomes.
+
+    Returns:
+        MarketOddsDetail with calculated margin.
+    """
+    outcomes = []
+    if isinstance(market.outcomes, list):
+        for outcome in market.outcomes:
+            if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
+                outcomes.append(
+                    OutcomeDetail(
+                        name=outcome["name"],
+                        odds=outcome["odds"],
+                        is_active=outcome.get("is_active", True),
+                    )
+                )
+
+    margin = _calculate_margin(outcomes)
+
+    return MarketOddsDetail(
+        betpawa_market_id=market.betpawa_market_id,
+        betpawa_market_name=market.betpawa_market_name,
+        line=market.line,
+        outcomes=outcomes,
+        margin=margin,
+    )
+
+
+def _build_competitor_bookmaker_market_data(
+    bookmaker_slug: str,
+    bookmaker_name: str,
+    snapshot: CompetitorOddsSnapshot | None,
+) -> BookmakerMarketData:
+    """Build complete market data for a competitor bookmaker.
+
+    Args:
+        bookmaker_slug: The bookmaker slug (sportybet, bet9ja).
+        bookmaker_name: The bookmaker display name.
+        snapshot: Latest CompetitorOddsSnapshot for this bookmaker, or None.
+
+    Returns:
+        BookmakerMarketData with all markets (excluding goalscorer markets).
+    """
+    markets = []
+    snapshot_time = None
+
+    if snapshot:
+        snapshot_time = snapshot.captured_at
+        for market in snapshot.markets:
+            # Skip excluded markets (goalscorer, etc.)
+            if _is_excluded_market(market.betpawa_market_name):
+                continue
+            markets.append(_build_competitor_market_detail(market))
+
+    return BookmakerMarketData(
+        bookmaker_slug=bookmaker_slug,
+        bookmaker_name=bookmaker_name,
+        snapshot_time=snapshot_time,
+        markets=markets,
+    )
+
+
 def _build_event_detail_response(
     event: Event,
     snapshots_by_bookmaker: dict[int, OddsSnapshot] | None = None,
+    competitor_snapshots: dict[str, CompetitorOddsSnapshot] | None = None,
 ) -> EventDetailResponse:
     """Build full event detail response with all market data.
 
     Args:
         event: Event model with loaded relationships.
         snapshots_by_bookmaker: Dict mapping bookmaker_id to latest OddsSnapshot.
+        competitor_snapshots: Dict mapping source ('sportybet'/'bet9ja') to CompetitorOddsSnapshot.
 
     Returns:
         EventDetailResponse with inline odds and full market data.
     """
     snapshots_by_bookmaker = snapshots_by_bookmaker or {}
+    competitor_snapshots = competitor_snapshots or {}
 
     # Build basic bookmaker info with inline odds
     bookmakers = []
     markets_by_bookmaker = []
 
     for link in event.bookmaker_links:
-        snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
-        inline_odds = _build_inline_odds(snapshot)
+        # Check if this is a competitor bookmaker
+        if link.bookmaker.slug in ("sportybet", "bet9ja"):
+            # Use competitor snapshot
+            comp_snapshot = competitor_snapshots.get(link.bookmaker.slug)
+            inline_odds = _build_competitor_inline_odds(comp_snapshot)
+            has_odds = bool(comp_snapshot and comp_snapshot.markets)
 
-        bookmakers.append(
-            BookmakerOdds(
-                bookmaker_slug=link.bookmaker.slug,
-                bookmaker_name=link.bookmaker.name,
-                external_event_id=link.external_event_id,
-                event_url=link.event_url,
-                has_odds=bool(snapshot and snapshot.markets),
-                inline_odds=inline_odds,
+            bookmakers.append(
+                BookmakerOdds(
+                    bookmaker_slug=link.bookmaker.slug,
+                    bookmaker_name=link.bookmaker.name,
+                    external_event_id=link.external_event_id,
+                    event_url=link.event_url,
+                    has_odds=has_odds,
+                    inline_odds=inline_odds,
+                )
             )
-        )
 
-        # Build full market data for this bookmaker
-        markets_by_bookmaker.append(
-            _build_bookmaker_market_data(link, snapshot)
-        )
+            # Build full market data for this competitor bookmaker
+            markets_by_bookmaker.append(
+                _build_competitor_bookmaker_market_data(
+                    link.bookmaker.slug,
+                    link.bookmaker.name,
+                    comp_snapshot,
+                )
+            )
+        else:
+            # BetPawa - use regular snapshot
+            snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
+            inline_odds = _build_inline_odds(snapshot)
+
+            bookmakers.append(
+                BookmakerOdds(
+                    bookmaker_slug=link.bookmaker.slug,
+                    bookmaker_name=link.bookmaker.name,
+                    external_event_id=link.external_event_id,
+                    event_url=link.event_url,
+                    has_odds=bool(snapshot and snapshot.markets),
+                    inline_odds=inline_odds,
+                )
+            )
+
+            # Build full market data for this bookmaker
+            markets_by_bookmaker.append(
+                _build_bookmaker_market_data(link, snapshot)
+            )
 
     return EventDetailResponse(
         id=event.id,
@@ -742,10 +839,17 @@ async def get_event(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Load latest odds snapshots
+    # Load latest odds snapshots (BetPawa)
     snapshots_by_event = await _load_latest_snapshots_for_events(db, [event.id])
 
-    return _build_event_detail_response(event, snapshots_by_event.get(event.id))
+    # Load competitor snapshots (SportyBet, Bet9ja)
+    competitor_snapshots_by_event = await _load_competitor_snapshots_for_events(db, [event.id])
+
+    return _build_event_detail_response(
+        event,
+        snapshots_by_event.get(event.id),
+        competitor_snapshots_by_event.get(event.id),
+    )
 
 
 @router.get("", response_model=MatchedEventList)
