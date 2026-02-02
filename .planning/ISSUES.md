@@ -37,6 +37,10 @@ None.
 
 ---
 
+## Closed Bugs
+
+---
+
 ## Closed Enhancements
 
 ### ISS-001: SportyBet/Bet9ja scraping not implemented (RESOLVED)
@@ -55,7 +59,13 @@ None.
 
 ### BUG-002: Tournament/region missing for competitors (RESOLVED)
 **Discovered:** v1.7 UAT - 2026-02-02
-**Resolution:** Fixed 2026-02-02 - Added `_get_or_create_competitor_tournament_from_raw()` to extract proper tournament info from raw API responses:
-- SportyBet: extracts `tournamentName` and `categoryName` (country)
-- Bet9ja: extracts `GN` (group name) and `SGN` (sport group name/country)
-Competitor events now created with proper tournaments containing `country_raw` instead of using fallback "Discovered Events" tournaments.
+**Resolution:** Fixed 2026-02-02 (FIX5) - Corrected field extraction in `_get_or_create_competitor_tournament_from_raw()`:
+- SportyBet: tournament/country are nested in `sport.category.tournament.name` and `sport.category.name` (not top-level fields)
+- Bet9ja: country is in `SG` field (not `SGN`)
+Competitor events now created with proper tournaments containing `country_raw`.
+
+### BUG-003: Bookmakers table not seeded - BetPawa events not stored (RESOLVED)
+**Discovered:** v1.7 UAT - 2026-02-02
+**Root Cause:** v1.7 EventCoordinator's `_get_bookmaker_ids()` only fetched existing bookmakers. Unlike v1.6's `_get_bookmaker_id()` which created bookmakers on first run, the new code expected them to already exist.
+**Impact:** `bookmaker_ids.get("betpawa")` returned None, causing all BetPawa event storage to be skipped.
+**Resolution:** Fixed 2026-02-02 (FIX5) - Restored auto-create logic in `_get_bookmaker_ids()` to create missing bookmakers (betpawa, sportybet, bet9ja) on first run.

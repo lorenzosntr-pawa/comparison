@@ -231,6 +231,7 @@ def upgrade() -> None:
         "CREATE TABLE odds_snapshots_default PARTITION OF odds_snapshots DEFAULT"
     )
 
+
     # Optional: If pg_partman is available, configure it for automatic partition management
     # This is nice-to-have - partitions can also be created manually
     op.execute("""
@@ -252,6 +253,8 @@ def upgrade() -> None:
     """)
 
     # 9. Create market_odds table
+    # Note: No FK to odds_snapshots because partitioned tables can't have FKs
+    # referencing non-unique columns (id alone isn't unique, only id+captured_at is)
     op.create_table(
         "market_odds",
         sa.Column("id", sa.BigInteger(), nullable=False),
@@ -263,11 +266,6 @@ def upgrade() -> None:
         sa.Column("handicap_home", sa.Float(), nullable=True),
         sa.Column("handicap_away", sa.Float(), nullable=True),
         sa.Column("outcomes", sa.JSON(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["snapshot_id"],
-            ["odds_snapshots.id"],
-            name=op.f("fk_market_odds_snapshot_id_odds_snapshots"),
-        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_market_odds")),
     )
     op.create_index(

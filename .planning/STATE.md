@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 42 of 42 (Validation & Cleanup)
-Plan: 1 of 1 + FIX + FIX2 + FIX3 + FIX4 plans
-Status: FIX4 complete (v1.7 ready for testing)
-Last activity: 2026-02-02 — Completed 42-01-FIX4.md (BetPawa matching & competitor tournaments fix)
+Plan: 1 of 1 + FIX + FIX2 + FIX3 + FIX4 + FIX5 + FIX6 + FIX7 + FIX8 + FIX9 plans
+Status: FIX9 complete (Event detail page showing all bookmakers)
+Last activity: 2026-02-02 — Completed FIX9 (competitor odds in event detail page)
 
-Progress: ██████████ 100% (FIX4 complete)
+Progress: ██████████ 100% (All fixes complete)
 
 ## Milestones
 
@@ -104,6 +104,11 @@ Progress: ██████████ 100% (FIX4 complete)
 - **Single-flush batch insert pattern** - add all records, single flush to get IDs, link FKs, commit (v1.7 FIX)
 - **BetPawa SPORTRADAR widget.id** - SR ID is in widget["id"], an 8-digit numeric string (v1.7 FIX3)
 - **Competitor tournament from raw data** - Extract tournament name and country from competitor raw responses via `_get_or_create_competitor_tournament_from_raw()` (v1.7 FIX4)
+- **Bookmaker auto-creation** - `_get_bookmaker_ids()` creates missing bookmakers on first run (v1.7 FIX5)
+- **Competitor tournament field mapping** - SportyBet: `sport.category.tournament.name` + `sport.category.name`; Bet9ja: `GN` + `SG` (v1.7 FIX5)
+- **betpawa_event_id linking** - Look up BetPawa Event by SR ID when creating CompetitorEvent (v1.7 FIX6)
+- **Competitor odds API loading** - `_load_competitor_snapshots_for_events()` loads from CompetitorOddsSnapshot table (v1.7 FIX7)
+- **EventBookmaker reconciliation** - Post-batch pass creates EventBookmaker links for competitors with matching BetPawa events (v1.7 FIX8)
 
 ### Key Decisions
 
@@ -144,5 +149,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 42-01-FIX4.md (BetPawa matching & competitor tournaments fix)
+Stopped at: Completed FIX6-8 (API verified working via curl, all 3 bookmakers showing odds)
 Resume file: None
