@@ -1578,6 +1578,274 @@ MARKET_MAPPINGS: tuple[MarketMapping, ...] = (
             OutcomeMapping(canonical_id="12_no", betpawa_name="12 - No", sportybet_desc="Home or Away & No", bet9ja_suffix="12NG2T", position=5),
         ),
     ),
+
+    # =========================================================================
+    # NEW HIGH-PRIORITY MARKET MAPPINGS (Phase 44-02)
+    # Added: UNKNOWN_MARKET fixes for competitor-only markets
+    # =========================================================================
+
+    # === Draw No Bet Variants ===
+
+    MarketMapping(
+        canonical_id="home_no_bet_ft",
+        name="Home No Bet - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="12",
+        bet9ja_key="S_HOMENOBET",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix="Y", position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix="N", position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="away_no_bet_ft",
+        name="Away No Bet - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="13",
+        bet9ja_key="S_AWAYNOBET",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix="Y", position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix="N", position=1),
+        ),
+    ),
+
+    # === First Goal Market ===
+
+    MarketMapping(
+        canonical_id="first_goal_ft",
+        name="First Goal - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="8",
+        bet9ja_key="S_1STGOAL",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="home", betpawa_name=None, sportybet_desc="Home", bet9ja_suffix="H", position=0),
+            OutcomeMapping(canonical_id="none", betpawa_name=None, sportybet_desc="No Goal", bet9ja_suffix="N", position=1),
+            OutcomeMapping(canonical_id="away", betpawa_name=None, sportybet_desc="Away", bet9ja_suffix="A", position=2),
+        ),
+    ),
+
+    # === Last Goal (Bet9ja alternate key) ===
+    # Note: S_LASTSCORE is Bet9ja's alternate key for the same market as S_LASTGOAL
+    MarketMapping(
+        canonical_id="last_score_ft",
+        name="Last Score / Last Goal - Full Time (Bet9ja alternate)",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id=None,  # Sportybet uses ID 9 which maps to last_goal_ft
+        bet9ja_key="S_LASTSCORE",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="home", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="H", position=0),
+            OutcomeMapping(canonical_id="none", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="N", position=1),
+            OutcomeMapping(canonical_id="away", betpawa_name=None, sportybet_desc=None, bet9ja_suffix="A", position=2),
+        ),
+    ),
+
+    # === Time-Based 1X2 Markets ===
+
+    MarketMapping(
+        canonical_id="1x2_5min",
+        name="1X2 - First 5 Minutes",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="900069",
+        bet9ja_key="S_1X21ST5MIN",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="home", betpawa_name=None, sportybet_desc="Home", bet9ja_suffix="1", position=0),
+            OutcomeMapping(canonical_id="draw", betpawa_name=None, sportybet_desc="Draw", bet9ja_suffix="X", position=1),
+            OutcomeMapping(canonical_id="away", betpawa_name=None, sportybet_desc="Away", bet9ja_suffix="2", position=2),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="home_win_1plus_ft",
+        name="Home Team Win by 1+ Goals - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="60200",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="home_win_2plus_ft",
+        name="Home Team Win by 2+ Goals - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="60100",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === Result + Clean Sheet Combos ===
+
+    MarketMapping(
+        canonical_id="home_or_clean_sheet_ft",
+        name="Home Team or Any Clean Sheet - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="863",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="draw_or_clean_sheet_ft",
+        name="Draw or Any Clean Sheet - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="864",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="away_or_clean_sheet_ft",
+        name="Away Team or Any Clean Sheet - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="865",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === Team To Score Yes/No Markets ===
+
+    MarketMapping(
+        canonical_id="home_to_score_ft",
+        name="Home Team To Score Yes/No - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="900015",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="away_to_score_ft",
+        name="Away Team To Score Yes/No - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="900014",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === BTTS Variants ===
+
+    MarketMapping(
+        canonical_id="btts_2plus_ft",
+        name="Both Teams To Score 2+ Goals - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="60000",
+        bet9ja_key="S_GGNG2PLUS",
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix="Y", position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix="N", position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="btts_both_halves",
+        name="Both Teams To Score in Both Halves",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="900027",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="no_draw_btts_ft",
+        name="No Draw Both Teams To Score - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="900041",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === Result + Over/Under 2.5 Combos ===
+
+    MarketMapping(
+        canonical_id="home_or_over_25_ft",
+        name="Home Team or Over 2.5 - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="854",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="draw_or_over_25_ft",
+        name="Draw or Over 2.5 - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="856",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    MarketMapping(
+        canonical_id="away_or_over_25_ft",
+        name="Away or Over 2.5 - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="858",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === Result + GG Combos ===
+
+    MarketMapping(
+        canonical_id="home_or_btts_ft",
+        name="Home Team or GG - Full Time",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="860",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
+
+    # === Half-Based Over/Under ===
+
+    MarketMapping(
+        canonical_id="both_halves_over_15",
+        name="Both Halves Over 1.5 Goals",
+        betpawa_id=None,  # Not on BetPawa
+        sportybet_id="58",
+        bet9ja_key=None,
+        outcome_mapping=(
+            OutcomeMapping(canonical_id="yes", betpawa_name=None, sportybet_desc="Yes", bet9ja_suffix=None, position=0),
+            OutcomeMapping(canonical_id="no", betpawa_name=None, sportybet_desc="No", bet9ja_suffix=None, position=1),
+        ),
+    ),
 )
 
 
