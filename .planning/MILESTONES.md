@@ -1,5 +1,34 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.7 Scraping Architecture Overhaul (Shipped: 2026-02-02)
+
+**Delivered:** Redesigned scraping from sequential platform-by-platform execution to event-centric parallel architecture, reducing timing gaps from minutes to milliseconds for reliable cross-platform odds comparison.
+
+**Phases completed:** 36-42 (16 plans total: 7 original + 9 FIX plans)
+
+**Key accomplishments:**
+
+- Designed and implemented EventCoordinator with priority queue (kickoff urgency + coverage value)
+- Simultaneous multi-bookmaker scraping per event with semaphore-based rate limiting
+- Batch database storage with single-flush pattern for optimal performance
+- Configurable concurrency limits via Settings API (betpawa_concurrency, sportybet_concurrency, etc.)
+- On-demand single-event refresh endpoint POST /api/scrape/event/{sr_id}
+- Removed ~1,884 lines of legacy ScrapingOrchestrator code
+- Fixed 9 UAT bugs during validation (BetPawa discovery, SR ID extraction, competitor tournaments, EventBookmaker linking)
+
+**Stats:**
+
+- 55 files changed
+- +8,941 / -2,059 lines (net +6,882)
+- 7 phases, 16 plans, 51 commits
+- 4 days (2026-01-29 to 2026-02-02)
+
+**Git range:** `b93b6ff` → `c330646`
+
+**What's next:** Use `/gsd:new-milestone` to plan additional features (WebSocket real-time, historical trends, etc.).
+
+---
+
 ## v1.6 Event Matching Accuracy (Shipped: 2026-01-29)
 
 **Delivered:** Investigated and fixed event matching accuracy issues — audit confirmed 99.9% backend accuracy, fixed API-001 coverage inflation bug, and remediated 2 timing-affected events.

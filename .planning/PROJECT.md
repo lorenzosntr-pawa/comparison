@@ -8,19 +8,22 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.6 Event Matching Accuracy)
+## Current State (v1.7 Scraping Architecture Overhaul)
 
-**Shipped:** 2026-01-29
+**Shipped:** 2026-02-02
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~27,500 lines of code
+- ~28,458 lines of code
 
 **Capabilities:**
 - 108 market mappings from SportyBet and Bet9ja to Betpawa format
 - Cross-platform event matching via SportRadar IDs (99.9% accuracy confirmed)
-- Automated scraping with configurable intervals
+- **Event-centric parallel scraping** - all platforms scraped simultaneously per event
+- EventCoordinator with priority queue (kickoff urgency + coverage value)
+- Configurable concurrency limits via Settings API
+- On-demand single-event refresh POST /api/scrape/event/{sr_id}
 - Real-time progress streaming via SSE with per-platform event counts and timing
 - Dashboard with scheduler controls, platform health, and live coverage metrics
 - Match list and detail views with color-coded odds comparison
@@ -87,6 +90,11 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Correct scheduler interval display (ISS-003 fix) — v1.5
 - ✓ Event matching accuracy audit with SQL evidence — v1.6
 - ✓ Coverage statistics using DISTINCT SportRadar IDs (API-001 fix) — v1.6
+- ✓ Event-centric parallel scraping architecture (EventCoordinator) — v1.7
+- ✓ Priority queue with kickoff urgency and coverage value — v1.7
+- ✓ Configurable concurrency limits via Settings API — v1.7
+- ✓ On-demand single-event refresh endpoint — v1.7
+- ✓ Competitor odds in event detail page — v1.7
 
 ### Active
 
@@ -159,6 +167,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | SQL-based audit methodology | Comprehensive SQL diagnostics to verify data quality | ✓ Good — v1.6 found real issues |
 | DISTINCT SR ID for coverage | Count unique events, not duplicate rows across runs | ✓ Good — v1.6 fixed 92% inflation |
 | One-time SQL for timing fix | Data fix, not migration - edge case won't recur | ✓ Good — v1.6 clean remediation |
+| Event-centric parallel scraping | Scrape all platforms per event vs sequential by platform | ✓ Good — v1.7 timing gaps reduced to ms |
+| Priority queue composite key | (urgency_tier, kickoff, -coverage, not_has_betpawa) | ✓ Good — v1.7 optimal scrape ordering |
+| EventCoordinator factory method | from_settings() creates instances with configurable tuning | ✓ Good — v1.7 flexible initialization |
+| Single-flush batch insert | Add all records, single flush, link FKs, commit | ✓ Good — v1.7 100x fewer DB round trips |
+| BetPawa widget.id for SR ID | SR ID is in widget["id"], 8-digit numeric string | ✓ Good — v1.7 correct extraction |
+| Competitor tournament from raw | Extract tournament/country from competitor API responses | ✓ Good — v1.7 proper metadata |
 
 ---
-*Last updated: 2026-01-29 after v1.6 milestone*
+*Last updated: 2026-02-02 after v1.7 milestone*

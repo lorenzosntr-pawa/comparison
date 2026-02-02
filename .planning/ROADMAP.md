@@ -13,83 +13,22 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.4 Odds Comparison UX](milestones/v1.4-ROADMAP.md) — Phases 28-30 (shipped 2026-01-26)
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
-- ✅ **v1.7 Scraping Architecture Overhaul** — Phases 36-42 (shipped 2026-01-29)
-
-### ✅ v1.7 Scraping Architecture Overhaul (Shipped 2026-01-29)
-
-**Milestone Goal:** Redesign scraping to capture odds simultaneously across all bookmakers for reliable trader comparison
-
-#### Phase 36: Investigation & Architecture Design ✓
-
-**Goal**: Profile current bottlenecks, design new coordination layer
-**Depends on**: v1.6 complete
-**Research**: Unlikely (internal profiling and design)
-**Plans**: 1/1
-
-Plans:
-- [x] 36-01: Profile bottlenecks, investigate rate limits, design EventCoordinator — 2026-01-29
-
-#### Phase 37: Event Coordination Layer ✓
-
-**Goal**: New EventCoordinator with SR ID collection and priority queue
-**Depends on**: Phase 36
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1
-
-Plans:
-- [x] 37-01: Create EventCoordinator with discovery and priority queue — 2026-01-29
-
-#### Phase 38: SR ID Parallel Scraping ✓
-
-**Goal**: Simultaneous multi-bookmaker scraping with batch processing
-**Depends on**: Phase 37
-**Research**: Unlikely (established async patterns)
-**Plans**: 1/1
-
-Plans:
-- [x] 38-01: Extend EventTarget and implement parallel scraping — 2026-01-29
-
-#### Phase 39: Batch DB Storage ✓
-
-**Goal**: Bulk inserts, per-event status tracking table
-**Depends on**: Phase 38
-**Research**: Unlikely (SQLAlchemy bulk patterns)
-**Plans**: 1/1
-
-Plans:
-- [x] 39-01: EventScrapeStatus model, store_batch_results(), run_full_cycle() — 2026-01-29
-
-#### Phase 40: Concurrency Tuning & Metrics ✓
-
-**Goal**: Optimize semaphores, add performance tracking
-**Depends on**: Phase 39
-**Research**: Unlikely (internal optimization)
-**Plans**: 1/1
-
-Plans:
-- [x] 40-01: Configurable tuning settings, EventCoordinator integration, event metrics API — 2026-01-29
-
-#### Phase 41: On-Demand API ✓
-
-**Goal**: Single-event refresh endpoint POST /api/scrape/{sr_id}
-**Depends on**: Phase 40
-**Research**: Unlikely (existing FastAPI patterns)
-**Plans**: 1/1
-
-Plans:
-- [x] 41-01: POST /api/scrape/event/{sr_id} endpoint with parallel platform scraping — 2026-01-29
-
-#### Phase 42: Validation & Cleanup ✓
-
-**Goal**: Integrate EventCoordinator, remove legacy ScrapingOrchestrator
-**Depends on**: Phase 41
-**Research**: Unlikely (internal integration)
-**Plans**: 1/1
-
-Plans:
-- [x] 42-01: Update scheduler and API to use EventCoordinator, delete orchestrator.py — 2026-01-29
+- ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v1.7 Scraping Architecture Overhaul (Phases 36-42) — SHIPPED 2026-02-02</summary>
+
+- [x] Phase 36: Investigation & Architecture Design (1/1 plans) — 2026-01-29
+- [x] Phase 37: Event Coordination Layer (1/1 plans) — 2026-01-29
+- [x] Phase 38: SR ID Parallel Scraping (1/1 plans) — 2026-01-29
+- [x] Phase 39: Batch DB Storage (1/1 plans) — 2026-01-29
+- [x] Phase 40: Concurrency Tuning & Metrics (1/1 plans) — 2026-01-29
+- [x] Phase 41: On-Demand API (1/1 plans) — 2026-01-29
+- [x] Phase 42: Validation & Cleanup (1/1 + 9 FIX plans) — 2026-02-02
+
+</details>
 
 <details>
 <summary>✅ v1.5 Scraping Observability (Phases 31-33.1) — SHIPPED 2026-01-28</summary>
@@ -229,5 +168,5 @@ Plans:
 | 39. Batch DB Storage | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 40. Concurrency Tuning & Metrics | v1.7 | 1/1 | Complete | 2026-01-29 |
 | 41. On-Demand API | v1.7 | 1/1 | Complete | 2026-01-29 |
-| 42. Validation & Cleanup | v1.7 | 1/1 | Complete | 2026-01-29 |
-| **v1.7 SHIPPED** | | | **2026-01-29** | |
+| 42. Validation & Cleanup | v1.7 | 10/10 | Complete | 2026-02-02 |
+| **v1.7 SHIPPED** | | | **2026-02-02** | |
