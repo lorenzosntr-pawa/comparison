@@ -411,11 +411,16 @@ def _map_haou_combined_market(grouped: GroupedBet9jaMarket) -> list[MappedMarket
 
     results: list[MappedMarket] = []
 
-    # Check for Home outcomes (OH = Over Home, UH = Under Home)
+    # Check for Home outcomes
+    # Bet9ja uses inconsistent suffixes:
+    # - Full Time (HAOU): OH = Over Home, UH = Under Home
+    # - Half Time (HA1HOU, HA2HOU): HO = Home Over, HU = Home Under
+    # We check for both patterns and use whichever is present
     home_outcomes: list[MappedOutcome] = []
-    if "OH" in grouped.outcomes:
+    home_over_key = "HO" if "HO" in grouped.outcomes else "OH" if "OH" in grouped.outcomes else None
+    if home_over_key:
         try:
-            odds = float(grouped.outcomes["OH"])
+            odds = float(grouped.outcomes[home_over_key])
             home_outcomes.append(MappedOutcome(
                 betpawa_outcome_name="Over",
                 sportybet_outcome_desc=None,
@@ -424,9 +429,10 @@ def _map_haou_combined_market(grouped: GroupedBet9jaMarket) -> list[MappedMarket
             ))
         except (ValueError, TypeError):
             pass
-    if "UH" in grouped.outcomes:
+    home_under_key = "HU" if "HU" in grouped.outcomes else "UH" if "UH" in grouped.outcomes else None
+    if home_under_key:
         try:
-            odds = float(grouped.outcomes["UH"])
+            odds = float(grouped.outcomes[home_under_key])
             home_outcomes.append(MappedOutcome(
                 betpawa_outcome_name="Under",
                 sportybet_outcome_desc=None,
@@ -445,11 +451,15 @@ def _map_haou_combined_market(grouped: GroupedBet9jaMarket) -> list[MappedMarket
             outcomes=tuple(home_outcomes),
         ))
 
-    # Check for Away outcomes (OA = Over Away, UA = Under Away)
+    # Check for Away outcomes
+    # Same inconsistency as Home outcomes:
+    # - Full Time (HAOU): OA = Over Away, UA = Under Away
+    # - Half Time (HA1HOU, HA2HOU): AO = Away Over, AU = Away Under
     away_outcomes: list[MappedOutcome] = []
-    if "OA" in grouped.outcomes:
+    away_over_key = "AO" if "AO" in grouped.outcomes else "OA" if "OA" in grouped.outcomes else None
+    if away_over_key:
         try:
-            odds = float(grouped.outcomes["OA"])
+            odds = float(grouped.outcomes[away_over_key])
             away_outcomes.append(MappedOutcome(
                 betpawa_outcome_name="Over",
                 sportybet_outcome_desc=None,
@@ -458,9 +468,10 @@ def _map_haou_combined_market(grouped: GroupedBet9jaMarket) -> list[MappedMarket
             ))
         except (ValueError, TypeError):
             pass
-    if "UA" in grouped.outcomes:
+    away_under_key = "AU" if "AU" in grouped.outcomes else "UA" if "UA" in grouped.outcomes else None
+    if away_under_key:
         try:
-            odds = float(grouped.outcomes["UA"])
+            odds = float(grouped.outcomes[away_under_key])
             away_outcomes.append(MappedOutcome(
                 betpawa_outcome_name="Under",
                 sportybet_outcome_desc=None,
