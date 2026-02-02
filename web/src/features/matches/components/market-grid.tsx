@@ -96,11 +96,6 @@ function buildUnifiedMarkets(
     bookmakerMaps.set(bookmakerData.bookmaker_slug, marketMap)
   }
 
-  // Build unified market list - use Betpawa markets as reference
-  const betpawaData = marketsByBookmaker.find(
-    (b) => b.bookmaker_slug === 'betpawa'
-  )
-
   // Collect all unique market keys across all bookmakers
   const allMarketKeys = new Set<string>()
   for (const [, marketMap] of bookmakerMaps) {
@@ -112,13 +107,10 @@ function buildUnifiedMarkets(
   const unifiedMarkets: UnifiedMarket[] = []
 
   // First add Betpawa markets (they define the reference)
-  if (betpawaData) {
-    for (const market of betpawaData.markets) {
-      const key =
-        market.line !== null
-          ? `${market.betpawa_market_id}_${market.line}`
-          : market.betpawa_market_id
-
+  // Use the deduplicated map instead of raw markets to avoid duplicate rows
+  const betpawaMap = bookmakerMaps.get('betpawa')
+  if (betpawaMap) {
+    for (const [key, market] of betpawaMap) {
       const bookmakerMarkets = new Map<string, MarketOddsDetail | null>()
       for (const slug of BOOKMAKER_ORDER) {
         const bMap = bookmakerMaps.get(slug)
