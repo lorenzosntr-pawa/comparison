@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 44 of ? (High-Priority Market Mappings)
-Plan: 1 of 3 complete + 1 FIX plan
+Plan: 1 of 3 complete + 2 FIX plans
 Status: In progress
-Last activity: 2026-02-02 — Completed 44-01-FIX.md (UAT issues fix)
+Last activity: 2026-02-02 — Completed 44-01-FIX2.md (duplicate rows fix)
 
 Progress: ████░░░░░░ 40% (Phase 44)
 
@@ -37,7 +37,7 @@ Progress: ████░░░░░░ 40% (Phase 44)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 102 (91 original + 10 FIX plans + 1 audit)
+- Total plans completed: 103 (91 original + 11 FIX plans + 1 audit)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -119,6 +119,7 @@ Progress: ████░░░░░░ 40% (Phase 44)
 - **EventBookmaker reconciliation** - Post-batch pass creates EventBookmaker links for competitors with matching BetPawa events (v1.7 FIX8)
 - **Merge split market outcomes** - Frontend merges outcomes when same market appears multiple times (different outcome subsets) (v1.8 FIX)
 - **Combined market splitting** - Bet9ja HAOU splits into separate Home O/U (5006) and Away O/U (5003) markets (v1.8 FIX)
+- **Iterate deduplicated maps** - UI buildUnifiedMarkets must iterate bookmakerMaps (deduplicated) not raw API data (v1.8 FIX2)
 
 ### Key Decisions
 
@@ -160,6 +161,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Phase 44-01-FIX completed
+Stopped at: Phase 44-01-FIX2 completed
 Resume file: None
-Next action: Verify fixes in UI, then continue with Phase 44-02
+Next action: Verify duplicate row fix in UI, then continue with Phase 44-02
