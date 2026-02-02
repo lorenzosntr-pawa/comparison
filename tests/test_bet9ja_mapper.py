@@ -285,3 +285,70 @@ class TestOutcomeMapping:
 
         for outcome in result.outcomes:
             assert outcome.sportybet_outcome_desc is None
+
+
+class TestComboMarketMapping:
+    """Tests for combo markets with O/U line parameter."""
+
+    def test_1x2_over_under_combo(self):
+        """Test mapping 1X2OU combo market with line parameter."""
+        result = map_bet9ja_market_to_betpawa(
+            market_key="1X2OU",
+            param="2.5",
+            outcomes={
+                "1O": "3.50",
+                "1U": "2.80",
+                "XO": "5.00",
+                "XU": "4.20",
+                "2O": "4.50",
+                "2U": "3.80",
+            },
+        )
+
+        assert result.betpawa_market_name == "1X2 and Over/Under - Full Time"
+        assert result.line == 2.5
+        assert len(result.outcomes) == 6
+
+    def test_double_chance_over_under_combo(self):
+        """Test mapping DCOU combo market with line parameter."""
+        result = map_bet9ja_market_to_betpawa(
+            market_key="DCOU",
+            param="2.5",
+            outcomes={
+                "1XO": "1.90",
+                "1XU": "1.70",
+                "X2O": "2.20",
+                "X2U": "1.95",
+                "12O": "1.60",
+                "12U": "1.50",
+            },
+        )
+
+        assert result.betpawa_market_name == "Double Chance and Over/Under - Full Time"
+        assert result.line == 2.5
+        assert len(result.outcomes) == 6
+
+    def test_combo_market_various_lines(self):
+        """Test combo markets with various line values."""
+        for line in ["1.5", "2.5", "3.5"]:
+            result = map_bet9ja_market_to_betpawa(
+                market_key="1X2OU",
+                param=line,
+                outcomes={"1O": "2.00", "1U": "3.00"},
+            )
+            assert result.line == float(line)
+
+    def test_combo_market_partial_outcomes(self):
+        """Test combo market with partial outcome data maps successfully."""
+        # Only some outcomes present - should still work
+        result = map_bet9ja_market_to_betpawa(
+            market_key="1X2OU",
+            param="2.5",
+            outcomes={
+                "1O": "3.50",
+                "1U": "2.80",
+            },
+        )
+
+        assert result.line == 2.5
+        assert len(result.outcomes) == 2

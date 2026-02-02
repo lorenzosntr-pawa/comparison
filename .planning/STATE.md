@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 44 of ? (High-Priority Market Mappings)
-Plan: 2 of 3 complete + 2 FIX plans
-Status: In progress
-Last activity: 2026-02-02 — Completed 44-02-PLAN.md (UNKNOWN_MARKET fixes)
+Plan: 3 of 3 complete + 2 FIX plans
+Status: Complete
+Last activity: 2026-02-02 — Completed 44-03-PLAN.md (UNKNOWN_PARAM_MARKET fixes)
 
-Progress: ██████░░░░ 60% (Phase 44)
+Progress: ██████████ 100% (Phase 44)
 
 ### Phase 43-01 Results
 - SportyBet: 47.3% mapping success (8,323/17,605 markets)
@@ -37,7 +37,7 @@ Progress: ██████░░░░ 60% (Phase 44)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 103 (91 original + 11 FIX plans + 1 audit)
+- Total plans completed: 104 (91 original + 11 FIX plans + 1 audit + 1 param fix)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -120,6 +120,7 @@ Progress: ██████░░░░ 60% (Phase 44)
 - **Merge split market outcomes** - Frontend merges outcomes when same market appears multiple times (different outcome subsets) (v1.8 FIX)
 - **Combined market splitting** - Bet9ja HAOU splits into separate Home O/U (5006) and Away O/U (5003) markets (v1.8 FIX)
 - **Iterate deduplicated maps** - UI buildUnifiedMarkets must iterate bookmakerMaps (deduplicated) not raw API data (v1.8 FIX2)
+- **Combo market O/U routing** - Markets like 1X2OU, DCOU must be in BET9JA_OVER_UNDER_KEYS and OVER_UNDER_MARKET_IDS to use O/U handler with line parameter (v1.8 44-03)
 
 ### Key Decisions
 
@@ -161,6 +162,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Phase 44-02 completed
+Stopped at: Phase 44-03 completed (all Phase 44 plans done)
 Resume file: None
-Next action: Continue with Phase 44-03 (UNKNOWN_PARAM_MARKET fixes)
+Next action: Review Phase 44 results, plan next audit-driven phase if needed

@@ -307,3 +307,113 @@ class TestOutcomeMapping:
 
         home = next(o for o in result.outcomes if o.betpawa_outcome_name == "1")
         assert home.sportybet_outcome_desc == "Home"
+
+
+class TestComboMarketMapping:
+    """Tests for combo markets with O/U line parameter."""
+
+    def test_1x2_over_under_combo(self):
+        """Test mapping 1X2 & Over/Under combo market."""
+        market = make_market(
+            id="37",
+            desc="1X2 & Over/Under",
+            outcomes=[
+                make_outcome("1", "Home & Over", "3.50"),
+                make_outcome("2", "Home & Under", "2.80"),
+                make_outcome("3", "Draw & Over", "5.00"),
+                make_outcome("4", "Draw & Under", "4.20"),
+                make_outcome("5", "Away & Over", "4.50"),
+                make_outcome("6", "Away & Under", "3.80"),
+            ],
+            specifier="total=2.5",
+        )
+
+        result = map_sportybet_to_betpawa(market)
+
+        assert result.betpawa_market_name == "1X2 and Over/Under - Full Time"
+        assert result.line == 2.5
+        assert len(result.outcomes) == 6
+
+    def test_double_chance_over_under_combo(self):
+        """Test mapping Double Chance & Over/Under combo market."""
+        market = make_market(
+            id="547",
+            desc="Double Chance & Over/Under",
+            outcomes=[
+                make_outcome("1", "Home or Draw & Over", "1.90"),
+                make_outcome("2", "Home or Draw & Under", "1.70"),
+                make_outcome("3", "Draw or Away & Over", "2.20"),
+                make_outcome("4", "Draw or Away & Under", "1.95"),
+                make_outcome("5", "Home or Away & Over", "1.60"),
+                make_outcome("6", "Home or Away & Under", "1.50"),
+            ],
+            specifier="total=2.5",
+        )
+
+        result = map_sportybet_to_betpawa(market)
+
+        assert result.betpawa_market_name == "Double Chance and Over/Under - Full Time"
+        assert result.line == 2.5
+        assert len(result.outcomes) == 6
+
+    def test_over_under_btts_combo(self):
+        """Test mapping Over/Under & GG/NG combo market."""
+        market = make_market(
+            id="36",
+            desc="Over/Under & GG/NG",
+            outcomes=[
+                make_outcome("1", "Over & GG", "2.10"),
+                make_outcome("2", "Over & NG", "3.20"),
+                make_outcome("3", "Under & GG", "3.50"),
+                make_outcome("4", "Under & NG", "2.80"),
+            ],
+            specifier="total=2.5",
+        )
+
+        result = map_sportybet_to_betpawa(market)
+
+        assert result.betpawa_market_name == "Over/Under and Both Teams To Score - Full Time"
+        assert result.line == 2.5
+        assert len(result.outcomes) == 4
+
+    def test_htft_over_under_combo(self):
+        """Test mapping Halftime/Fulltime & Over/Under combo market.
+
+        Note: This market has betpawa_name=None for outcomes in the mapping,
+        so it raises NO_MATCHING_OUTCOMES. The key fix is that it does NOT
+        raise UNKNOWN_PARAM_MARKET - the param handling works correctly.
+        """
+        market = make_market(
+            id="818",
+            desc="Halftime/Fulltime & Over/Under",
+            outcomes=[
+                make_outcome("1", "1/1 & Over", "4.50"),
+                make_outcome("2", "1/1 & Under", "5.00"),
+                make_outcome("3", "1/X & Over", "8.00"),
+                make_outcome("4", "1/X & Under", "10.00"),
+            ],
+            specifier="total=2.5",
+        )
+
+        # Market is found and param is handled, but outcomes have no betpawa_name
+        with pytest.raises(MappingError) as exc_info:
+            map_sportybet_to_betpawa(market)
+
+        # NOT UNKNOWN_PARAM_MARKET - that was the bug we fixed
+        assert exc_info.value.code == MappingErrorCode.NO_MATCHING_OUTCOMES
+
+    def test_combo_market_various_lines(self):
+        """Test combo markets with various line values."""
+        for line_value in ["1.5", "2.5", "3.5"]:
+            market = make_market(
+                id="37",
+                desc="1X2 & Over/Under",
+                outcomes=[
+                    make_outcome("1", "Home & Over", "2.00"),
+                    make_outcome("2", "Home & Under", "3.00"),
+                ],
+                specifier=f"total={line_value}",
+            )
+
+            result = map_sportybet_to_betpawa(market)
+            assert result.line == float(line_value)
