@@ -25,8 +25,8 @@ from market_mapping.utils import ParsedBet9jaKey, ParsedHandicap, parse_bet9ja_k
 # We split them into two separate markets mapped to Betpawa's separate markets
 BET9JA_HAOU_COMBINED_KEYS = frozenset([
     "HAOU",  # Home/Away Over/Under - Full Time -> 5006 (Home) + 5003 (Away)
-    "HA1HOU",  # Home/Away Over/Under - First Half -> 5024 (Home) + 5021 (Away)
-    "HA2HOU",  # Home/Away Over/Under - Second Half -> 5027 (Home) + 5030 (Away)
+    "HA1HOU",  # Home/Away Over/Under - First Half -> 4964 (Home) + 4961 (Away)
+    "HA2HOU",  # Home/Away Over/Under - Second Half -> 4982 (Home) + 4979 (Away)
 ])
 
 # Bet9ja Over/Under market keys
@@ -372,12 +372,14 @@ HAOU_SPLIT_CONFIG = {
         "5003", "Away Team Over/Under - Full Time",
     ),
     "HA1HOU": (
-        "5024", "Home Team Over/Under - First Half",
-        "5021", "Away Team Over/Under - First Half",
+        # Must match MarketMapping canonical IDs (4964/4961 not 5024/5021)
+        "4964", "Home Team Over/Under - First Half",
+        "4961", "Away Team Over/Under - First Half",
     ),
     "HA2HOU": (
-        "5027", "Home Team Over/Under - Second Half",
-        "5030", "Away Team Over/Under - Second Half",
+        # Must match MarketMapping canonical IDs (4982/4979 not 5027/5030)
+        "4982", "Home Team Over/Under - Second Half",
+        "4979", "Away Team Over/Under - Second Half",
     ),
 }
 
