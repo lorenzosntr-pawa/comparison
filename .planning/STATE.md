@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 44 of ? (High-Priority Market Mappings)
-Plan: 1 of 3 complete
+Plan: 1 of 3 complete + 1 FIX plan
 Status: In progress
-Last activity: 2026-02-02 — Completed 44-01-PLAN.md (NO_MATCHING_OUTCOMES fixes)
+Last activity: 2026-02-02 — Completed 44-01-FIX.md (UAT issues fix)
 
-Progress: ███░░░░░░░ 33% (Phase 44)
+Progress: ████░░░░░░ 40% (Phase 44)
 
 ### Phase 43-01 Results
 - SportyBet: 47.3% mapping success (8,323/17,605 markets)
@@ -37,7 +37,7 @@ Progress: ███░░░░░░░ 33% (Phase 44)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 101 (91 original + 9 FIX plans + 1 audit)
+- Total plans completed: 102 (91 original + 10 FIX plans + 1 audit)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -117,6 +117,8 @@ Progress: ███░░░░░░░ 33% (Phase 44)
 - **betpawa_event_id linking** - Look up BetPawa Event by SR ID when creating CompetitorEvent (v1.7 FIX6)
 - **Competitor odds API loading** - `_load_competitor_snapshots_for_events()` loads from CompetitorOddsSnapshot table (v1.7 FIX7)
 - **EventBookmaker reconciliation** - Post-batch pass creates EventBookmaker links for competitors with matching BetPawa events (v1.7 FIX8)
+- **Merge split market outcomes** - Frontend merges outcomes when same market appears multiple times (different outcome subsets) (v1.8 FIX)
+- **Combined market splitting** - Bet9ja HAOU splits into separate Home O/U (5006) and Away O/U (5003) markets (v1.8 FIX)
 
 ### Key Decisions
 
@@ -158,6 +160,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Phase 44 planning completed
+Stopped at: Phase 44-01-FIX completed
 Resume file: None
-Next action: Execute Phase 44-01 (NO_MATCHING_OUTCOMES fixes)
+Next action: Verify fixes in UI, then continue with Phase 44-02
