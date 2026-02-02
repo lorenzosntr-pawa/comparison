@@ -35,11 +35,11 @@ Plans:
 **Goal**: Fix HIGH priority market mapping issues identified in Phase 43 audit, organized by error type
 **Depends on**: Phase 43 (audit complete)
 **Research**: Unlikely (using audit findings)
-**Plans**: 1/3 complete
+**Plans**: 2/3 complete
 
 Plans:
 - [x] 44-01: NO_MATCHING_OUTCOMES fixes (TMGHO/TMGAW 100% success, HAOU improved classification)
-- [ ] 44-02: UNKNOWN_MARKET fixes (new mappings for ~20 markets, ~1,800 occurrences)
+- [x] 44-02: UNKNOWN_MARKET fixes (20 new mappings, ~1,800 occurrences)
 - [ ] 44-03: UNKNOWN_PARAM_MARKET fixes (combo market parameter handling, ~1,500 occurrences)
 
 #### Phase 45+: TBD Based on Phase 44 Results
@@ -207,4 +207,4 @@ Plans:
 | 42. Validation & Cleanup | v1.7 | 10/10 | Complete | 2026-02-02 |
 | **v1.7 SHIPPED** | | | **2026-02-02** | |
 | 43. Comprehensive Market Mapping Audit | v1.8 | 1/1 | Complete | 2026-02-02 |
-| 44. High-Priority Market Mappings | v1.8 | 1/3 | In Progress | - |
+| 44. High-Priority Market Mappings | v1.8 | 2/3 | In Progress | - |
