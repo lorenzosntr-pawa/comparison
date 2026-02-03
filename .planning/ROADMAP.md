@@ -52,22 +52,15 @@ Plans:
 Plans:
 - [x] 45-01: Market Mapping Improvement Audit (SportyBet: 47.3%→52.2%, Bet9ja: 36.1%→40.5%, UNKNOWN_PARAM_MARKET eliminated)
 
-#### Phase 46: Handicap Market Mapping Fix
+#### Phase 46: Handicap Market Mapping Fix ✅
 
 **Goal**: Fix handicap markets (3-Way and Asian) so competitor odds display correctly — currently showing "-" despite data existing
 **Depends on**: Phase 45 (complete)
 **Research**: Not needed — root cause identified (line field not populated for competitor handicaps)
-**Plans**: TBD (0/?)
+**Plans**: 1/1 complete
 
-**Root cause:** BetPawa stores handicap value in `line` field, competitors store in `handicap_home` with `line=null`. Frontend matches using `${market_id}_${line}`, so they don't match.
-
-**Fix:** Populate competitor `line` from `handicap_home` at storage time.
-
-**Markets covered:**
-- 3-Way Handicap (Full Time, First Half, Second Half)
-- Asian Handicap (Full Time, First Half, Second Half)
-
-**Out of scope:** OUA, CHANCEMIX, other non-handicap gaps (defer to Phase 47)
+Plans:
+- [x] 46-01: Handicap Market Line Fix (line field populated from handicap_home for 3-Way and Asian Handicap markets)
 
 ---
 
@@ -229,3 +222,4 @@ Plans:
 | 43. Comprehensive Market Mapping Audit | v1.8 | 1/1 | Complete | 2026-02-02 |
 | 44. High-Priority Market Mappings | v1.8 | 3/3 | Complete | 2026-02-02 |
 | 45. Market Mapping Improvement Audit | v1.8 | 1/1 | Complete | 2026-02-03 |
+| 46. Handicap Market Mapping Fix | v1.8 | 1/1 | Complete | 2026-02-03 |

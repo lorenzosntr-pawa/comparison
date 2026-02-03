@@ -9,21 +9,18 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 
 ## Current Position
 
-Phase: 45 of 45 (Market Mapping Improvement Audit)
+Phase: 46 of 46 (Handicap Market Mapping Fix)
 Plan: 1 of 1 (complete)
 Status: Complete
-Last activity: 2026-02-03 — Completed Phase 45 audit
+Last activity: 2026-02-03 — Completed 46-01-PLAN.md (handicap line fix)
 
-Progress: ██████████ 100% (Phase 45)
-**Next:** Create Phase 46 — Remaining Market Mapping Gaps (OUA, CHANCEMIX*, NO_MATCHING_OUTCOMES fixes)
+Progress: ██████████ 100% (Phase 46)
+**Next:** Evaluate remaining market mapping gaps (OUA, CHANCEMIX, other non-handicap issues) for Phase 47
 
-### Phase 45-01 Results (vs Phase 43 baseline)
-- SportyBet: 47.3% → 52.2% mapping success (+4.9%)
-- Bet9ja: 36.1% → 40.5% mapping success (+4.4%)
-- UNKNOWN_PARAM_MARKET eliminated (97.7-100% reduction)
-- TMGHO/TMGAW, 1X2OU, DCOU, combo markets all fixed
-- 383 unique unmapped market types remain (mostly UNSUPPORTED_PLATFORM or player props)
-- Phase 46 recommended for remaining HIGH priority gaps
+### Phase 46-01 Results
+- Handicap markets (3-Way and Asian) now display competitor odds correctly
+- Fixed `line` field population from `handicap_home` in event_coordinator.py
+- Markets fixed: 4724, 4716, 4720 (3-Way), 3774, 3747, 3756 (Asian)
 
 ## Milestones
 
@@ -40,7 +37,7 @@ Progress: ██████████ 100% (Phase 45)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 104 (91 original + 11 FIX plans + 1 audit + 1 param fix)
+- Total plans completed: 105 (91 original + 11 FIX plans + 2 audits + 1 handicap fix)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -124,6 +121,7 @@ Progress: ██████████ 100% (Phase 45)
 - **Combined market splitting** - Bet9ja HAOU splits into separate Home O/U (5006) and Away O/U (5003) markets (v1.8 FIX)
 - **Iterate deduplicated maps** - UI buildUnifiedMarkets must iterate bookmakerMaps (deduplicated) not raw API data (v1.8 FIX2)
 - **Combo market O/U routing** - Markets like 1X2OU, DCOU must be in BET9JA_OVER_UNDER_KEYS and OVER_UNDER_MARKET_IDS to use O/U handler with line parameter (v1.8 44-03)
+- **Handicap line field fallback** - Competitor handicap markets use `line = mapped.line ?? mapped.handicap.home` for frontend matching (v1.8 46-01)
 
 ### Key Decisions
 
@@ -162,10 +160,11 @@ None.
 - All milestones archived to .planning/milestones/
 - v1.8 Market Matching Accuracy created 2026-02-02: audit-driven approach with Phase 43 audit, then TBD fix phases
 - Phase 45 added 2026-02-03: Market Mapping Improvement Audit (analyze Phase 44 improvements, discover next steps)
+- Phase 46 added 2026-02-03: Handicap Market Mapping Fix (line field population for 3-Way and Asian Handicap)
 
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 45 complete
+Stopped at: Phase 46 complete
 Resume file: N/A
-Next action: `/gsd:discuss-phase 46` or `/gsd:plan-phase 46` for remaining market mapping gaps
+Next action: Evaluate remaining market gaps (OUA, CHANCEMIX) for Phase 47
