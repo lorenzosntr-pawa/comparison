@@ -19,22 +19,35 @@ interface OutcomeDisplay {
 }
 
 /**
+ * Normalize outcome name for cross-bookmaker matching.
+ * Different bookmakers use different separators:
+ * - Betpawa: "1X - Under", "12 - Over"
+ * - SportyBet/Bet9ja: "1X & Under", "12 & Over"
+ */
+function normalizeOutcomeName(name: string): string {
+  return name
+    .replace(/ - /g, ' & ')  // Betpawa uses " - ", others use " & "
+    .replace(/\s+/g, ' ')    // Normalize whitespace
+    .trim()
+}
+
+/**
  * Build a unified list of outcomes across all bookmakers for comparison.
  * Uses Betpawa outcomes as reference, falling back to first available.
  */
 function getUnifiedOutcomes(
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
 ): string[] {
-  // Prefer Betpawa's outcome names as reference
+  // Prefer Betpawa's outcome names as reference (only if has outcomes)
   const betpawaMarket = bookmakerMarkets.get('betpawa')
-  if (betpawaMarket) {
+  if (betpawaMarket && betpawaMarket.outcomes.length > 0) {
     return betpawaMarket.outcomes.map((o) => o.name)
   }
 
-  // Fall back to first available bookmaker
+  // Fall back to first available bookmaker with outcomes
   for (const slug of BOOKMAKER_ORDER) {
     const market = bookmakerMarkets.get(slug)
-    if (market) {
+    if (market && market.outcomes.length > 0) {
       return market.outcomes.map((o) => o.name)
     }
   }
@@ -44,6 +57,7 @@ function getUnifiedOutcomes(
 
 /**
  * Get outcome data for a specific bookmaker and outcome name.
+ * Uses normalized names for matching to handle cross-bookmaker differences.
  */
 function getOutcomeForBookmaker(
   market: MarketOddsDetail | null,
@@ -53,7 +67,13 @@ function getOutcomeForBookmaker(
     return { name: outcomeName, odds: null, isActive: false }
   }
 
-  const outcome = market.outcomes.find((o) => o.name === outcomeName)
+  // Normalize the target name for matching
+  const normalizedTarget = normalizeOutcomeName(outcomeName)
+
+  // Find outcome by normalized name match
+  const outcome = market.outcomes.find(
+    (o) => normalizeOutcomeName(o.name) === normalizedTarget
+  )
   if (!outcome) {
     return { name: outcomeName, odds: null, isActive: false }
   }
@@ -67,17 +87,21 @@ function getOutcomeForBookmaker(
 
 /**
  * Determine best/worst odds for an outcome across bookmakers.
+ * Uses normalized names for matching to handle cross-bookmaker differences.
  */
 function getOddsComparison(
   bookmakerMarkets: Map<string, MarketOddsDetail | null>,
   outcomeName: string
 ): { best: number | null; worst: number | null } {
   const odds: number[] = []
+  const normalizedTarget = normalizeOutcomeName(outcomeName)
 
   for (const slug of BOOKMAKER_ORDER) {
     const market = bookmakerMarkets.get(slug)
     if (market) {
-      const outcome = market.outcomes.find((o) => o.name === outcomeName)
+      const outcome = market.outcomes.find(
+        (o) => normalizeOutcomeName(o.name) === normalizedTarget
+      )
       if (outcome && outcome.is_active && outcome.odds > 0) {
         odds.push(outcome.odds)
       }
@@ -180,8 +204,8 @@ export function MarketRow({
                   </div>
                 )
               })}
-              {/* Margin display */}
-              {margin !== undefined && (
+              {/* Margin display - only show if outcomes exist */}
+              {margin !== undefined && outcomeNames.length > 0 && (
                 <div className="mt-1">
                   <MarginIndicator
                     margin={margin}

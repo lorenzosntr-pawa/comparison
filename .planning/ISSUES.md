@@ -39,6 +39,10 @@ None.
 
 ## Closed Bugs
 
+### BUG-004: Combo markets show margins but no odds (RESOLVED)
+**Discovered:** Phase 46 UAT - 2026-02-03
+**Resolution:** Fixed 2026-02-03 (Phase 47-01) - `getUnifiedOutcomes()` now checks `outcomes.length > 0` before using reference bookmaker; margin only displays when `outcomeNames.length > 0`.
+
 ---
 
 ## Closed Enhancements

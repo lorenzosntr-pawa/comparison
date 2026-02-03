@@ -62,6 +62,16 @@ Plans:
 Plans:
 - [x] 46-01: Handicap Market Line Fix (line field populated from handicap_home for 3-Way and Asian Handicap markets)
 
+#### Phase 47: Combo Market Display Fix ✅
+
+**Goal**: Fix frontend bug where combo markets (1X2OU, DCOU, etc.) show margins but no odds - caused by getUnifiedOutcomes() not checking outcomes.length
+**Depends on**: Phase 46 (complete)
+**Research**: Not needed — root cause identified (BUG-004)
+**Plans**: 1/1 complete
+
+Plans:
+- [x] 47-01: Combo Market Margin/Odds Display Fix (outcomes.length check, margin gating, outcome name normalization for " - " vs " & ")
+
 ---
 
 ## Completed Milestones
@@ -223,3 +233,4 @@ Plans:
 | 44. High-Priority Market Mappings | v1.8 | 3/3 | Complete | 2026-02-02 |
 | 45. Market Mapping Improvement Audit | v1.8 | 1/1 | Complete | 2026-02-03 |
 | 46. Handicap Market Mapping Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
+| 47. Combo Market Display Fix | v1.8 | 1/1 | Complete | 2026-02-03 |

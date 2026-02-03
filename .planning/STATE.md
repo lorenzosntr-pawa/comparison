@@ -9,13 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 
 ## Current Position
 
-Phase: 46 of 46 (Handicap Market Mapping Fix)
+Phase: 47 of 47 (Combo Market Display Fix)
 Plan: 1 of 1 (complete)
 Status: Complete
-Last activity: 2026-02-03 — Completed 46-01-PLAN.md (handicap line fix)
+Last activity: 2026-02-03 — Completed 47-01-PLAN.md (BUG-004 fix)
 
-Progress: ██████████ 100% (Phase 46)
-**Next:** Evaluate remaining market mapping gaps (OUA, CHANCEMIX, other non-handicap issues) for Phase 47
+Progress: ██████████ 100% (Phase 47)
+**Next:** Evaluate remaining market mapping gaps (OUA, CHANCEMIX, other non-handicap issues) for Phase 48
+
+### Phase 47-01 Results
+- Fixed BUG-004: combo markets (1X2OU, DCOU, etc.) now display outcomes correctly
+- `getUnifiedOutcomes()` now checks `outcomes.length > 0` before using reference bookmaker
+- Margin only displays when `outcomeNames.length > 0`
+- Added `normalizeOutcomeName()` to handle cross-bookmaker outcome name differences (Betpawa "1X - Under" ↔ SportyBet/Bet9ja "1X & Under")
 
 ### Phase 46-01 Results
 - Handicap markets (3-Way and Asian) now display competitor odds correctly
@@ -37,7 +43,7 @@ Progress: ██████████ 100% (Phase 46)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 105 (91 original + 11 FIX plans + 2 audits + 1 handicap fix)
+- Total plans completed: 106 (91 original + 11 FIX plans + 2 audits + 1 handicap fix + 1 combo market fix)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -122,6 +128,8 @@ Progress: ██████████ 100% (Phase 46)
 - **Iterate deduplicated maps** - UI buildUnifiedMarkets must iterate bookmakerMaps (deduplicated) not raw API data (v1.8 FIX2)
 - **Combo market O/U routing** - Markets like 1X2OU, DCOU must be in BET9JA_OVER_UNDER_KEYS and OVER_UNDER_MARKET_IDS to use O/U handler with line parameter (v1.8 44-03)
 - **Handicap line field fallback** - Competitor handicap markets use `line = mapped.line ?? mapped.handicap.home` for frontend matching (v1.8 46-01)
+- **Outcome presence check for fallback** - `getUnifiedOutcomes()` must check `outcomes.length > 0`, not just market existence (v1.8 47-01)
+- **Outcome name normalization** - `normalizeOutcomeName()` converts " - " to " & " for cross-bookmaker matching (Betpawa uses dash, others use ampersand) (v1.8 47-01)
 
 ### Key Decisions
 
@@ -161,10 +169,11 @@ None.
 - v1.8 Market Matching Accuracy created 2026-02-02: audit-driven approach with Phase 43 audit, then TBD fix phases
 - Phase 45 added 2026-02-03: Market Mapping Improvement Audit (analyze Phase 44 improvements, discover next steps)
 - Phase 46 added 2026-02-03: Handicap Market Mapping Fix (line field population for 3-Way and Asian Handicap)
+- Phase 47 added 2026-02-03: Combo Market Display Fix (BUG-004 - getUnifiedOutcomes checks outcomes.length)
 
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 46 complete
+Stopped at: Phase 47 complete
 Resume file: N/A
-Next action: Evaluate remaining market gaps (OUA, CHANCEMIX) for Phase 47
+Next action: Evaluate remaining market gaps (OUA, CHANCEMIX) for Phase 48
