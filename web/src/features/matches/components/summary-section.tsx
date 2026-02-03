@@ -11,6 +11,21 @@ const KEY_MARKETS = {
   '29': 'Both Teams to Score',
 }
 
+// Bookmaker display names and order
+const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja'] as const
+const BOOKMAKER_DISPLAY_NAMES: Record<string, string> = {
+  betpawa: 'Betpawa',
+  sportybet: 'SportyBet',
+  bet9ja: 'Bet9ja',
+}
+
+interface MarketCoverage {
+  slug: string
+  name: string
+  count: number
+  percentage: number
+}
+
 interface SummarySectionProps {
   marketsByBookmaker: BookmakerMarketData[]
 }
@@ -20,6 +35,32 @@ interface CompetitiveStats {
   totalOutcomes: number
   percentage: number
   avgMarginDiff: number
+}
+
+/**
+ * Calculate market coverage per bookmaker.
+ * Returns array of coverage data with Betpawa as the reference (100%).
+ */
+function calculateMarketCoverage(
+  marketsByBookmaker: BookmakerMarketData[]
+): MarketCoverage[] {
+  const betpawaData = marketsByBookmaker.find(
+    (b) => b.bookmaker_slug === 'betpawa'
+  )
+  const betpawaCount = betpawaData?.markets.length ?? 0
+
+  return BOOKMAKER_ORDER.map((slug) => {
+    const bookmaker = marketsByBookmaker.find((b) => b.bookmaker_slug === slug)
+    const count = bookmaker?.markets.length ?? 0
+    const percentage = betpawaCount > 0 ? (count / betpawaCount) * 100 : 0
+
+    return {
+      slug,
+      name: BOOKMAKER_DISPLAY_NAMES[slug] ?? slug,
+      count,
+      percentage: slug === 'betpawa' ? 100 : percentage,
+    }
+  })
 }
 
 /**
@@ -152,6 +193,11 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
     [marketsByBookmaker]
   )
 
+  const marketCoverage = useMemo(
+    () => calculateMarketCoverage(marketsByBookmaker),
+    [marketsByBookmaker]
+  )
+
   // Determine competitive position color
   let positionColor = 'text-yellow-600 dark:text-yellow-400'
   let positionBg = 'bg-yellow-100 dark:bg-yellow-900/30'
@@ -177,7 +223,45 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
         <CardTitle className="text-lg">Quick Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Market Coverage */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">Market Coverage</h4>
+            <div className="space-y-2">
+              {marketCoverage.map((coverage) => {
+                const isBetpawa = coverage.slug === 'betpawa'
+                return (
+                  <div key={coverage.slug} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={isBetpawa ? 'font-medium' : ''}>
+                        {coverage.name}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {coverage.count} markets
+                        {!isBetpawa && ` (${coverage.percentage.toFixed(0)}%)`}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all',
+                          isBetpawa
+                            ? 'bg-primary'
+                            : coverage.percentage >= 80
+                              ? 'bg-green-500'
+                              : coverage.percentage >= 50
+                                ? 'bg-yellow-500'
+                                : 'bg-red-500'
+                        )}
+                        style={{ width: `${Math.min(coverage.percentage, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Competitive Position */}
           <div>
             <h4 className="text-sm font-medium mb-2">Competitive Position</h4>
