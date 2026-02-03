@@ -15,6 +15,63 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
 - ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
+- 🚧 **v1.9 Event Details UX** — Phases 48-52 (in progress)
+
+## Current Milestone
+
+### 🚧 v1.9 Event Details UX (In Progress)
+
+**Milestone Goal:** Transform event details page into a powerful market exploration tool with filtering, grouping, and actionable summary metrics.
+
+#### Phase 48: Event Summary Redesign
+
+**Goal**: Replace current summary with useful metrics - market counts per bookmaker, mapping success rate, best odds indicators
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal patterns, client-side calculations)
+**Plans**: TBD
+
+Plans:
+- [ ] 48-01: TBD (run /gsd:plan-phase 48 to break down)
+
+#### Phase 49: Market Grouping System
+
+**Goal**: Organize markets using Betpawa's group categories (Main, Goals, Corners, etc.) with collapsible/expandable sections
+**Depends on**: Phase 48
+**Research**: Unlikely (uses existing Betpawa groups structure)
+**Plans**: TBD
+
+Plans:
+- [ ] 49-01: TBD
+
+#### Phase 50: Market Filtering
+
+**Goal**: Filter markets by bookmaker, competitor selector to choose comparison target, text search to find markets by name
+**Depends on**: Phase 49
+**Research**: Unlikely (client-side filtering, standard React patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 50-01: TBD
+
+#### Phase 51: Navigation UX
+
+**Goal**: Sticky header/filters that stay visible while scrolling, quick jump navigation to specific market groups
+**Depends on**: Phase 50
+**Research**: Unlikely (standard UI patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 51-01: TBD
+
+#### Phase 52: Polish & Integration
+
+**Goal**: Ensure all features work together smoothly, edge cases handled, UX polish
+**Depends on**: Phase 51
+**Research**: Unlikely (internal work)
+**Plans**: TBD
+
+Plans:
+- [ ] 52-01: TBD
 
 ## Completed Milestones
 
@@ -188,3 +245,8 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 46. Handicap Market Mapping Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
 | 47. Combo Market Display Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
 | **v1.8 SHIPPED** | | | **2026-02-03** | |
+| 48. Event Summary Redesign | v1.9 | 0/? | Not started | - |
+| 49. Market Grouping System | v1.9 | 0/? | Not started | - |
+| 50. Market Filtering | v1.9 | 0/? | Not started | - |
+| 51. Navigation UX | v1.9 | 0/? | Not started | - |
+| 52. Polish & Integration | v1.9 | 0/? | Not started | - |
