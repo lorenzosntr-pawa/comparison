@@ -26,6 +26,12 @@ interface MarketCoverage {
   percentage: number
 }
 
+interface MappingStats {
+  sportybet: number
+  bet9ja: number
+  total: number
+}
+
 interface SummarySectionProps {
   marketsByBookmaker: BookmakerMarketData[]
 }
@@ -61,6 +67,26 @@ function calculateMarketCoverage(
       percentage: slug === 'betpawa' ? 100 : percentage,
     }
   })
+}
+
+/**
+ * Calculate mapping stats for competitor markets.
+ * Shows how many competitor markets are matched to Betpawa taxonomy.
+ */
+function calculateMappingStats(
+  marketsByBookmaker: BookmakerMarketData[]
+): MappingStats {
+  const sportybet = marketsByBookmaker.find((b) => b.bookmaker_slug === 'sportybet')
+  const bet9ja = marketsByBookmaker.find((b) => b.bookmaker_slug === 'bet9ja')
+
+  const sportyCount = sportybet?.markets.length ?? 0
+  const bet9jaCount = bet9ja?.markets.length ?? 0
+
+  return {
+    sportybet: sportyCount,
+    bet9ja: bet9jaCount,
+    total: sportyCount + bet9jaCount,
+  }
 }
 
 /**
@@ -198,6 +224,11 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
     [marketsByBookmaker]
   )
 
+  const mappingStats = useMemo(
+    () => calculateMappingStats(marketsByBookmaker),
+    [marketsByBookmaker]
+  )
+
   // Determine competitive position color
   let positionColor = 'text-yellow-600 dark:text-yellow-400'
   let positionBg = 'bg-yellow-100 dark:bg-yellow-900/30'
@@ -223,7 +254,7 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
         <CardTitle className="text-lg">Quick Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Market Coverage */}
           <div>
             <h4 className="text-sm font-medium mb-2">Market Coverage</h4>
@@ -259,6 +290,29 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
                   </div>
                 )
               })}
+            </div>
+          </div>
+
+          {/* Mapping Quality */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">Mapping Quality</h4>
+            <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {mappingStats.total}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                matched markets
+              </div>
+            </div>
+            <div className="mt-2 space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">SportyBet</span>
+                <span>{mappingStats.sportybet} markets</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Bet9ja</span>
+                <span>{mappingStats.bet9ja} markets</span>
+              </div>
             </div>
           </div>
 
