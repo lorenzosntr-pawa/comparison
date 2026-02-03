@@ -1872,7 +1872,7 @@ class EventCoordinator:
                 market_odds = CompetitorMarketOdds(
                     betpawa_market_id=mapped.betpawa_market_id,
                     betpawa_market_name=mapped.betpawa_market_name,
-                    line=mapped.line,
+                    line=mapped.line if mapped.line is not None else (mapped.handicap.home if mapped.handicap else None),
                     handicap_type=mapped.handicap.type if mapped.handicap else None,
                     handicap_home=mapped.handicap.home if mapped.handicap else None,
                     handicap_away=mapped.handicap.away if mapped.handicap else None,
@@ -1922,7 +1922,7 @@ class EventCoordinator:
                 market_odds = CompetitorMarketOdds(
                     betpawa_market_id=mapped.betpawa_market_id,
                     betpawa_market_name=mapped.betpawa_market_name,
-                    line=mapped.line,
+                    line=mapped.line if mapped.line is not None else (mapped.handicap.home if mapped.handicap else None),
                     handicap_type=mapped.handicap.type if mapped.handicap else None,
                     handicap_home=mapped.handicap.home if mapped.handicap else None,
                     handicap_away=mapped.handicap.away if mapped.handicap else None,
