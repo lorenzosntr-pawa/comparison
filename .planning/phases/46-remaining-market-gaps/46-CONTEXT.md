@@ -1,64 +1,70 @@
 # Phase 46: Remaining Market Mapping Gaps - Context
 
 **Gathered:** 2026-02-03
-**Status:** Ready for research
+**Status:** Ready for planning
 
 <vision>
 ## How This Should Work
 
-Investigate before committing to mappings. The phase starts with comprehensive research to understand what these unknown market types actually are:
+Handicap markets (3-Way Handicap and 2-Way/Asian Handicap) should show odds from all three bookmakers when viewing match details. Currently BetPawa shows odds but SportyBet and Bet9ja columns show "-" despite having the data.
 
-1. **API sample analysis** — Fetch raw API responses for unknown market types and decode their structure
-2. **Cross-platform comparison** — Check if these markets exist on multiple platforms under different names
-3. **Existing code review** — Understand why current mapping logic fails for these specific markets
+The root cause is a mismatch in how handicap values are stored:
+- **BetPawa** extracts `formattedHandicap` from the API and stores it in the `line` field (e.g., `line = -1`)
+- **Competitors** store handicap values in separate fields (`handicap_home = -1`) but leave `line = None`
 
-Only after investigation do we decide what to map. The goal is informed decisions, not blind mapping attempts.
+Frontend matching uses `${market_id}_${line}` as the key, so BetPawa's `4724_-1` doesn't match competitor's `4724_null`.
+
+Fix: Populate competitor market `line` field with `handicap_home` value at storage time so matching works.
 
 </vision>
 
 <essential>
 ## What Must Be Nailed
 
-- **Mapping success rate gains** — Push SportyBet past 55% and Bet9ja past 50%
-- **Understanding the gaps** — Know exactly what each unknown market type is, even if we don't map all of them
-- **Prioritized action list** — Clear determination of which markets to map vs skip vs defer, based on investigation findings
-
-All three outcomes matter equally — we need the gains, the understanding, and the prioritization.
+- **Line population fix** — Competitor handicap markets must have `line` populated from `handicap_home` so frontend matching works
+- **Both handicap types** — Fix applies to both 3-Way (European) and 2-Way (Asian) handicaps across all periods (Full Time, First Half, Second Half)
+- **Full handicap audit** — Verify all handicap market IDs are correctly mapped and check actual data for any other handicap-related issues
 
 </essential>
 
 <boundaries>
 ## What's Out of Scope
 
-- **Player props** — Skip player-specific markets (goal scorers, cards, etc.)
-- **UNSUPPORTED_PLATFORM markets** — Don't try to map markets that BetPawa doesn't support
-- **Multi/combo bet builders** — Skip bet builder and accumulator-only markets
-
-Focus only on markets that can actually be mapped to BetPawa equivalents.
+- **OUA markets** — Defer to future phase
+- **CHANCEMIX markets** — Defer to future phase
+- **Other non-handicap gaps** — Focus purely on handicap markets (3-Way, 2-Way/Asian)
+- **Player props** — Skip player-specific markets
+- **UNSUPPORTED_PLATFORM markets** — Don't try to map markets BetPawa doesn't support
 
 </boundaries>
 
 <specifics>
 ## Specific Ideas
 
-- **Mix of SQL and live API** — Use stored data (SQL queries) for occurrence counts and patterns; use live API sampling for understanding actual market structures
-- **Similar methodology to Phase 43/45** — SQL-based audit approach has worked well for discovery
+**Handicap market types to cover:**
+- 3-Way Handicap Full Time (BetPawa 4724, SportyBet 14, Bet9ja S_1X2HND)
+- 3-Way Handicap First Half (BetPawa 4716, SportyBet 65, Bet9ja S_1X2HNDHT)
+- 3-Way Handicap Second Half (BetPawa 4720, SportyBet 87, Bet9ja S_1X2HND2TN)
+- Asian Handicap Full Time (BetPawa 3774, SportyBet 16, Bet9ja S_AH)
+- Asian Handicap First Half (BetPawa 3747, SportyBet 66, Bet9ja S_AH1T)
+- Asian Handicap Second Half (BetPawa 3756, SportyBet 88, Bet9ja S_AH2T)
 
-**Priority targets from Phase 45 audit:**
-1. OUA (bet9ja) - 1,928 occurrences
-2. CHANCEMIXOU/CHANCEMIX/CHANCEMIXN (bet9ja) - ~740 combined
-3. 60180 (sportybet) - 464 occurrences - Early Goals O/U
-4. NO_MATCHING_OUTCOMES fixes (818, HTFTOU, 551)
-5. CAH/CAHH/CAH2 (bet9ja) - ~300 combined - Asian handicap variants
+**Technical approach:**
+- Modify competitor market storage to set `line = handicap_home` when `handicap` object is present
+- Applies to both SportyBet and Bet9ja parsing in event_coordinator.py and competitor_events.py
+- No frontend changes needed — matching will work once data is correct
 
 </specifics>
 
 <notes>
 ## Additional Context
 
-Building on Phase 45's success (+4.9% SportyBet, +4.4% Bet9ja). Current rates are 52.2% SportyBet and 40.5% Bet9ja — targets are 55%+ and 50%+ respectively.
+The mapping logic already correctly handles handicap specifiers:
+- SportyBet: `hcp=0:1` (European) → `handicap_home = -1, away = 1`
+- SportyBet: `hcp=-0.5` (Asian) → `handicap_home = -0.5, away = 0.5`
+- Bet9ja: Param-based (e.g., `@-1`) → parsed correctly
 
-383 unique unmapped market types remain, but most are UNSUPPORTED_PLATFORM or player props which are explicitly out of scope.
+The issue is purely in how the `line` field is populated for competitor markets — BetPawa uses it for matching, competitors don't.
 
 </notes>
 

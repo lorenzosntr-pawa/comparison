@@ -52,21 +52,22 @@ Plans:
 Plans:
 - [x] 45-01: Market Mapping Improvement Audit (SportyBet: 47.3%→52.2%, Bet9ja: 36.1%→40.5%, UNKNOWN_PARAM_MARKET eliminated)
 
-#### Phase 46: Remaining Market Mapping Gaps (Recommended)
+#### Phase 46: Handicap Market Mapping Fix
 
-**Goal**: Fix remaining HIGH priority UNKNOWN_MARKET gaps to reach 50%+ Bet9ja and 55%+ SportyBet success rates
+**Goal**: Fix handicap markets (3-Way and Asian) so competitor odds display correctly — currently showing "-" despite data existing
 **Depends on**: Phase 45 (complete)
-**Research**: May need to investigate OUA, CHANCEMIX* market structures
+**Research**: Not needed — root cause identified (line field not populated for competitor handicaps)
 **Plans**: TBD (0/?)
 
-**Priority targets from Phase 45 audit:**
-1. OUA (bet9ja) - 1,928 occurrences - investigate market meaning
-2. CHANCEMIXOU/CHANCEMIX/CHANCEMIXN (bet9ja) - ~740 combined
-3. 60180 (sportybet) - 464 occurrences - Early Goals O/U
-4. NO_MATCHING_OUTCOMES fixes (818, HTFTOU, 551) - outcome structure analysis
-5. CAH/CAHH/CAH2 (bet9ja) - ~300 combined - Asian handicap variants
+**Root cause:** BetPawa stores handicap value in `line` field, competitors store in `handicap_home` with `line=null`. Frontend matches using `${market_id}_${line}`, so they don't match.
 
-**Skip:** Player props, multi/combo bet builders, UNSUPPORTED_PLATFORM markets
+**Fix:** Populate competitor `line` from `handicap_home` at storage time.
+
+**Markets covered:**
+- 3-Way Handicap (Full Time, First Half, Second Half)
+- Asian Handicap (Full Time, First Half, Second Half)
+
+**Out of scope:** OUA, CHANCEMIX, other non-handicap gaps (defer to Phase 47)
 
 ---
 
