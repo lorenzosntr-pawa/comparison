@@ -43,14 +43,6 @@ interface CategoryStats {
   percentage: number
 }
 
-interface CompetitiveStatsExtended {
-  bestOddsCount: number
-  totalOutcomes: number
-  percentage: number
-  avgMarginDiff: number
-  byCategory: CategoryStats[]
-}
-
 /**
  * Determine market category based on betpawa_market_name keywords
  */

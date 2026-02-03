@@ -223,7 +223,7 @@ export function RecentRuns() {
   const autoRescrapeTriggered = useRef(false)
   useEffect(() => {
     if (
-      data?.runs?.[0]?.status === 'connection_failed' &&
+      (data?.runs?.[0]?.status as string) === 'connection_failed' &&
       !autoRescrapeTriggered.current &&
       !isStreaming
     ) {
