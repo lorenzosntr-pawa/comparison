@@ -42,20 +42,10 @@ Plans:
 - [x] 44-02: UNKNOWN_MARKET fixes (20 new mappings, ~1,800 occurrences)
 - [x] 44-03: UNKNOWN_PARAM_MARKET fixes (combo market parameter handling, ~1,500 occurrences)
 
-#### Phase 45: Handicap Mapping
+#### Phase 45+: TBD Based on Audit Findings
 
-**Goal**: Fix handicap market mapping for both SportyBet and Bet9ja - add missing handicap mappings (HNDCORNER, CAH*, 900312) and verify spread values are correctly extracted
-**Depends on**: Phase 44 (high-priority mappings complete)
-**Research**: Use Phase 43 audit data + compare API response vs raw data structures
-**Plans**: 0/1
-
-Plans:
-- [ ] 45-01: Research + add handicap mappings + verify spread values
-
-#### Phase 46+: TBD Based on Phase 45 Results
-
-**Goal**: Additional mapping fixes if needed after Phase 45 completion
-**Depends on**: Phase 45
+**Goal**: Additional mapping fixes if needed based on Phase 43 audit findings
+**Depends on**: Phase 44
 **Research**: TBD
 **Plans**: TBD
 
@@ -218,4 +208,3 @@ Plans:
 | **v1.7 SHIPPED** | | | **2026-02-02** | |
 | 43. Comprehensive Market Mapping Audit | v1.8 | 1/1 | Complete | 2026-02-02 |
 | 44. High-Priority Market Mappings | v1.8 | 3/3 | Complete | 2026-02-02 |
-| 45. Handicap Mapping | v1.8 | 0/0 | Not Started | - |
