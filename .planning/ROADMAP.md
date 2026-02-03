@@ -42,22 +42,31 @@ Plans:
 - [x] 44-02: UNKNOWN_MARKET fixes (20 new mappings, ~1,800 occurrences)
 - [x] 44-03: UNKNOWN_PARAM_MARKET fixes (combo market parameter handling, ~1,500 occurrences)
 
-#### Phase 45: Market Mapping Improvement Audit
+#### Phase 45: Market Mapping Improvement Audit ✅
 
 **Goal**: Analyze improvements from Phase 44 fixes (TMGHO/TMGAW, HAOU, 20 new mappings, combo market params) and discover next steps for further market mapping improvements
 **Depends on**: Phase 44 (complete)
 **Research**: Unlikely (internal audit using existing data)
-**Plans**: 0/1
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 45-01: Market Mapping Improvement Audit (re-run audit, compare to Phase 43, identify next steps)
+- [x] 45-01: Market Mapping Improvement Audit (SportyBet: 47.3%→52.2%, Bet9ja: 36.1%→40.5%, UNKNOWN_PARAM_MARKET eliminated)
 
-#### Phase 46+: TBD Based on Phase 45 Findings
+#### Phase 46: Remaining Market Mapping Gaps (Recommended)
 
-**Goal**: Additional mapping fixes if needed based on Phase 45 audit findings
-**Depends on**: Phase 45
-**Research**: TBD
-**Plans**: TBD
+**Goal**: Fix remaining HIGH priority UNKNOWN_MARKET gaps to reach 50%+ Bet9ja and 55%+ SportyBet success rates
+**Depends on**: Phase 45 (complete)
+**Research**: May need to investigate OUA, CHANCEMIX* market structures
+**Plans**: TBD (0/?)
+
+**Priority targets from Phase 45 audit:**
+1. OUA (bet9ja) - 1,928 occurrences - investigate market meaning
+2. CHANCEMIXOU/CHANCEMIX/CHANCEMIXN (bet9ja) - ~740 combined
+3. 60180 (sportybet) - 464 occurrences - Early Goals O/U
+4. NO_MATCHING_OUTCOMES fixes (818, HTFTOU, 551) - outcome structure analysis
+5. CAH/CAHH/CAH2 (bet9ja) - ~300 combined - Asian handicap variants
+
+**Skip:** Player props, multi/combo bet builders, UNSUPPORTED_PLATFORM markets
 
 ---
 
@@ -218,3 +227,4 @@ Plans:
 | **v1.7 SHIPPED** | | | **2026-02-02** | |
 | 43. Comprehensive Market Mapping Audit | v1.8 | 1/1 | Complete | 2026-02-02 |
 | 44. High-Priority Market Mappings | v1.8 | 3/3 | Complete | 2026-02-02 |
+| 45. Market Mapping Improvement Audit | v1.8 | 1/1 | Complete | 2026-02-03 |
