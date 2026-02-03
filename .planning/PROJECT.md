@@ -8,17 +8,17 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.7 Scraping Architecture Overhaul)
+## Current State (v1.8 Market Matching Accuracy)
 
-**Shipped:** 2026-02-02
+**Shipped:** 2026-02-03
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~28,458 lines of code
+- ~30,647 lines of code
 
 **Capabilities:**
-- 108 market mappings from SportyBet and Bet9ja to Betpawa format
+- 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
 - Cross-platform event matching via SportRadar IDs (99.9% accuracy confirmed)
 - **Event-centric parallel scraping** - all platforms scraped simultaneously per event
 - EventCoordinator with priority queue (kickoff urgency + coverage value)
@@ -95,6 +95,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Configurable concurrency limits via Settings API — v1.7
 - ✓ On-demand single-event refresh endpoint — v1.7
 - ✓ Competitor odds in event detail page — v1.7
+- ✓ Comprehensive market mapping audit with categorized gap analysis — v1.8
+- ✓ 20 new market mappings covering ~1,800 occurrences — v1.8
+- ✓ Combo market parameter handling (1X2OU, DCOU, etc.) — v1.8
+- ✓ Handicap market line field fix for competitor odds display — v1.8
+- ✓ Cross-bookmaker outcome name normalization — v1.8
+- ✓ Mapping success rates: SportyBet 52.2%, Bet9ja 40.5% — v1.8
 
 ### Active
 
@@ -173,6 +179,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Single-flush batch insert | Add all records, single flush, link FKs, commit | ✓ Good — v1.7 100x fewer DB round trips |
 | BetPawa widget.id for SR ID | SR ID is in widget["id"], 8-digit numeric string | ✓ Good — v1.7 correct extraction |
 | Competitor tournament from raw | Extract tournament/country from competitor API responses | ✓ Good — v1.7 proper metadata |
+| Audit-driven market mapping | Comprehensive audit before targeted fixes | ✓ Good — v1.8 identified 380 unmapped types |
+| Fix handicap line at storage | Populate line from handicap.home in event_coordinator | ✓ Good — v1.8 minimal code change |
+| Normalize outcome names at match time | Keep raw data intact, fix display layer | ✓ Good — v1.8 preserves debugging ability |
+| Combo market O/U routing | Add combo keys to O/U parameter handling sets | ✓ Good — v1.8 eliminated UNKNOWN_PARAM_MARKET |
 
 ---
-*Last updated: 2026-02-02 after v1.7 milestone*
+*Last updated: 2026-02-03 after v1.8 milestone*

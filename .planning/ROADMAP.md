@@ -14,67 +14,20 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.5 Scraping Observability](milestones/v1.5-ROADMAP.md) — Phases 31-33.1 (shipped 2026-01-28)
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
 - ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
-- 🚧 **v1.8 Market Matching Accuracy** — Phases 43+ (in progress)
-
-### 🚧 v1.8 Market Matching Accuracy (In Progress)
-
-**Milestone Goal:** Systematically discover and fix ALL market mapping issues through comprehensive data audit, then targeted fixes based on actual findings.
-
-#### Phase 43: Comprehensive Market Mapping Audit ✅
-
-**Goal**: Analyze 50+ events across various tournaments, compare raw API data from all 3 bookmakers vs stored data, categorize all unmapped/wrong market mappings
-**Depends on**: Phase 42 (v1.7 complete)
-**Research**: Unlikely (internal investigation using existing APIs)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 43-01: Market Mapping Audit (100 events, 380 unmapped market types identified)
-
-#### Phase 44: High-Priority Market Mappings
-
-**Goal**: Fix HIGH priority market mapping issues identified in Phase 43 audit, organized by error type
-**Depends on**: Phase 43 (audit complete)
-**Research**: Unlikely (using audit findings)
-**Plans**: 3/3 complete
-
-Plans:
-- [x] 44-01: NO_MATCHING_OUTCOMES fixes (TMGHO/TMGAW 100% success, HAOU improved classification)
-- [x] 44-02: UNKNOWN_MARKET fixes (20 new mappings, ~1,800 occurrences)
-- [x] 44-03: UNKNOWN_PARAM_MARKET fixes (combo market parameter handling, ~1,500 occurrences)
-
-#### Phase 45: Market Mapping Improvement Audit ✅
-
-**Goal**: Analyze improvements from Phase 44 fixes (TMGHO/TMGAW, HAOU, 20 new mappings, combo market params) and discover next steps for further market mapping improvements
-**Depends on**: Phase 44 (complete)
-**Research**: Unlikely (internal audit using existing data)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 45-01: Market Mapping Improvement Audit (SportyBet: 47.3%→52.2%, Bet9ja: 36.1%→40.5%, UNKNOWN_PARAM_MARKET eliminated)
-
-#### Phase 46: Handicap Market Mapping Fix ✅
-
-**Goal**: Fix handicap markets (3-Way and Asian) so competitor odds display correctly — currently showing "-" despite data existing
-**Depends on**: Phase 45 (complete)
-**Research**: Not needed — root cause identified (line field not populated for competitor handicaps)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 46-01: Handicap Market Line Fix (line field populated from handicap_home for 3-Way and Asian Handicap markets)
-
-#### Phase 47: Combo Market Display Fix ✅
-
-**Goal**: Fix frontend bug where combo markets (1X2OU, DCOU, etc.) show margins but no odds - caused by getUnifiedOutcomes() not checking outcomes.length
-**Depends on**: Phase 46 (complete)
-**Research**: Not needed — root cause identified (BUG-004)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 47-01: Combo Market Margin/Odds Display Fix (outcomes.length check, margin gating, outcome name normalization for " - " vs " & ")
-
----
+- ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v1.8 Market Matching Accuracy (Phases 43-47) — SHIPPED 2026-02-03</summary>
+
+- [x] Phase 43: Comprehensive Market Mapping Audit (1/1 plans) — 2026-02-02
+- [x] Phase 44: High-Priority Market Mappings (3/3 + 2 FIX plans) — 2026-02-02
+- [x] Phase 45: Market Mapping Improvement Audit (1/1 plans) — 2026-02-03
+- [x] Phase 46: Handicap Market Mapping Fix (1/1 plans) — 2026-02-03
+- [x] Phase 47: Combo Market Display Fix (1/1 plans) — 2026-02-03
+
+</details>
 
 <details>
 <summary>✅ v1.7 Scraping Architecture Overhaul (Phases 36-42) — SHIPPED 2026-02-02</summary>
@@ -234,3 +187,4 @@ Plans:
 | 45. Market Mapping Improvement Audit | v1.8 | 1/1 | Complete | 2026-02-03 |
 | 46. Handicap Market Mapping Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
 | 47. Combo Market Display Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
+| **v1.8 SHIPPED** | | | **2026-02-03** | |
