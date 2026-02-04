@@ -199,6 +199,22 @@ function getAvailableGroups(markets: UnifiedMarket[]): string[] {
 }
 
 /**
+ * Get bookmaker order based on selected competitor.
+ * When a competitor is selected, places them second after Betpawa.
+ */
+function getBookmakerOrder(selectedCompetitor: string | null): string[] {
+  if (!selectedCompetitor) {
+    return BOOKMAKER_ORDER
+  }
+
+  // Betpawa always first, selected competitor second, rest follow
+  const others = BOOKMAKER_ORDER.filter(
+    (slug) => slug !== 'betpawa' && slug !== selectedCompetitor
+  )
+  return ['betpawa', selectedCompetitor, ...others]
+}
+
+/**
  * Fuzzy match function using subsequence matching.
  * Checks if all characters in query appear in target in order.
  * Example: "o25" matches "Over 2.5 Goals" because o-2-5 appear in order.
@@ -315,6 +331,11 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
     return markets
   }, [unifiedMarkets, activeTab, searchQuery])
 
+  const bookmakerOrder = useMemo(
+    () => getBookmakerOrder(selectedCompetitor),
+    [selectedCompetitor]
+  )
+
   if (unifiedMarkets.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -345,7 +366,7 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
             <tr className="border-b bg-muted/50">
               <th className="py-3 px-4 text-left font-semibold">Market</th>
               <th className="py-3 px-2 text-center font-semibold">Selection</th>
-              {BOOKMAKER_ORDER.map((slug) => (
+              {bookmakerOrder.map((slug) => (
                 <th key={slug} className="py-3 px-2 text-center font-semibold">
                   {BOOKMAKER_NAMES[slug]}
                 </th>
@@ -359,6 +380,7 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
                 marketName={market.name}
                 line={market.line}
                 bookmakerMarkets={market.bookmakerMarkets}
+                bookmakerOrder={bookmakerOrder}
               />
             ))}
           </tbody>

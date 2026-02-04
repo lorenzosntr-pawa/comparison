@@ -10,6 +10,7 @@ interface MarketRowProps {
   marketName: string
   line: number | null
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
+  bookmakerOrder?: string[]
 }
 
 interface OutcomeDisplay {
@@ -122,6 +123,7 @@ export function MarketRow({
   marketName,
   line,
   bookmakerMarkets,
+  bookmakerOrder = BOOKMAKER_ORDER,
 }: MarketRowProps) {
   const outcomeNames = getUnifiedOutcomes(bookmakerMarkets)
 
@@ -167,7 +169,7 @@ export function MarketRow({
       </td>
 
       {/* Bookmaker columns */}
-      {BOOKMAKER_ORDER.map((slug) => {
+      {bookmakerOrder.map((slug) => {
         const market = bookmakerMarkets.get(slug) ?? null
         const margin = market?.margin
 
