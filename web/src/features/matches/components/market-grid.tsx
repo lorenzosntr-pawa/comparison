@@ -417,9 +417,15 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
             </table>
           </div>
 
-          {filteredMarkets.length === 0 && activeTab !== 'all' && (
+          {filteredMarkets.length === 0 && (
             <div className="text-center py-4 text-muted-foreground text-sm">
-              No markets in this category.
+              {searchQuery && activeTab !== 'all'
+                ? `No markets matching "${searchQuery}" in ${TAB_NAMES[activeTab] ?? activeTab}`
+                : searchQuery
+                  ? `No markets matching "${searchQuery}"`
+                  : activeTab !== 'all'
+                    ? `No markets in ${TAB_NAMES[activeTab] ?? activeTab}`
+                    : 'No markets available'}
             </div>
           )}
         </CardContent>
