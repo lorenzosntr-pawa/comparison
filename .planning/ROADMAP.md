@@ -58,10 +58,11 @@ Plans:
 **Goal**: Sticky header/filters that stay visible while scrolling, quick jump navigation to specific market groups
 **Depends on**: Phase 50
 **Research**: Unlikely (standard UI patterns)
-**Plans**: 1/1
+**Plans**: 2/2
 
 Plans:
 - [x] 51-01: Sticky navigation and scroll-to-top button
+- [x] 51-01-FIX: Fix scroll container targeting (5 UAT issues resolved)
 
 #### Phase 52: Polish & Integration
 
@@ -248,5 +249,5 @@ Plans:
 | 48. Event Summary Redesign | v1.9 | 1/1 | Complete | 2026-02-03 |
 | 49. Market Grouping System | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 50. Market Filtering | v1.9 | 1/1 | Complete | 2026-02-04 |
-| 51. Navigation UX | v1.9 | 1/1 | Complete | 2026-02-04 |
+| 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 0/? | Not started | - |

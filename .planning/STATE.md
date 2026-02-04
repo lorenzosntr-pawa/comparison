@@ -10,11 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 51 of 52 (Navigation UX)
-Plan: 01 complete
-Status: Phase 51 complete
-Last activity: 2026-02-04 — Phase 51-01 complete
+Plan: 01-FIX complete
+Status: Phase 51 complete (including FIX)
+Last activity: 2026-02-04 — Phase 51-01-FIX complete
 
 Progress: ████████░░ 80% (v1.9: 4/5 phases)
+
+### Phase 51-01-FIX Results
+- Fixed root cause: scroll listener targeting wrong element (outer SidebarInset instead of inner scrollable main)
+- Added `data-scroll-container` attribute to correct main element for unique targeting
+- Updated all querySelector('main') calls to use [data-scroll-container]
+- Repositioned scroll-to-top button (bottom-20) to avoid API icon overlap
+- All 5 UAT issues resolved (UAT-001 through UAT-005)
 
 ### Phase 51-01 Results
 - Sticky navigation header that remains visible when scrolling markets
@@ -199,6 +206,7 @@ Progress: ████████░░ 80% (v1.9: 4/5 phases)
 - **Dynamic column reordering** - Selected competitor moves adjacent to Betpawa (always first), others follow (v1.9 50-01)
 - **Scroll container-aware fixed positioning** - Listen to main element scroll (not window), use fixed positioning with dynamic bounds when CSS sticky doesn't work with overflow containers (v1.9 51-01)
 - **Placeholder div for fixed headers** - Reserve space with placeholder when header becomes fixed to prevent layout shift (v1.9 51-01)
+- **data-scroll-container attribute** - Use this data attribute to target the app's scrollable container from any component, avoiding ambiguity with nested main elements (v1.9 51-01-FIX)
 
 ### Key Decisions
 
@@ -242,6 +250,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 51-01 complete
+Stopped at: Phase 51-01-FIX complete
 Resume file: None
-Next action: Plan Phase 52 (Polish & Integration) or verify Phase 51
+Next action: Plan Phase 52 (Polish & Integration)
