@@ -10,6 +10,13 @@
 
 ## Resolved Issues
 
+### UAT-006: Betpawa market count still includes markets without odds
+**Resolved:** 2026-02-04 - Fixed in 48-01-FIX2.md
+**Commit:** 0fce350
+**Fix:** Added `buildDeduplicatedMarkets()` helper to merge split market records before counting. Summary section now uses same deduplication logic as market-grid.tsx.
+
+---
+
 ### UAT-001: Betpawa market count too high in Market Coverage card
 **Resolved:** 2026-02-04 - Fixed in 48-01-FIX.md
 **Commit:** 423bfec
@@ -48,4 +55,5 @@
 *Phase: 48-event-summary-redesign*
 *Plan: 01*
 *Tested: 2026-02-04*
-*All issues resolved: 2026-02-04*
+*Re-verified: 2026-02-04 (1 new issue found)*
+*UAT-006 resolved: 2026-02-04*

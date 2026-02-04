@@ -10,11 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 48 of 52 (Event Summary Redesign)
-Plan: 01 + FIX complete
+Plan: 01 + FIX + FIX2 complete
 Status: Phase 48 complete
-Last activity: 2026-02-04 — Phase 48-01-FIX complete
+Last activity: 2026-02-04 — Phase 48-01-FIX2 complete
 
 Progress: ██░░░░░░░░ 20% (v1.9: 1/5 phases)
+
+### Phase 48-01-FIX2 Results
+- Applied market deduplication logic to summary-section.tsx
+- Added `mergeMarketOutcomes()` helper (copied from market-grid.tsx)
+- Added `buildDeduplicatedMarkets()` for consistent counting
+- All summary cards now use deduplicated markets
+- UAT-006 resolved
 
 ### Phase 48-01-FIX Results
 - Fixed Betpawa market count to only count markets with actual odds
@@ -55,7 +62,7 @@ Progress: ██░░░░░░░░ 20% (v1.9: 1/5 phases)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 115 (91 original + 11 FIX plans + 9 v1.8 plans + 4 additional)
+- Total plans completed: 116 (91 original + 12 FIX plans + 9 v1.8 plans + 4 additional)
 - Average duration: 6 min
 - Total execution time: ~10 hours
 
@@ -195,6 +202,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 48-01-FIX complete
+Stopped at: Phase 48-01-FIX2 complete
 Resume file: None
-Next action: Plan Phase 49 (Market Grouping System)
+Next action: Re-verify Phase 48 or Plan Phase 49 (Market Grouping System)
