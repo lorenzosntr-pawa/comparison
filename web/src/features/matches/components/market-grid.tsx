@@ -297,8 +297,9 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
 
   // Track scroll position for sticky header and scroll-to-top button
   // Note: The app layout uses overflow-auto on <main>, so we listen to that element
+  // Use data-scroll-container attribute to target the correct (inner) main element
   useEffect(() => {
-    const scrollContainer = document.querySelector('main')
+    const scrollContainer = document.querySelector('[data-scroll-container]')
     if (!scrollContainer || !headerRef.current) return
 
     const handleScroll = () => {
@@ -318,7 +319,7 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   }, [])
 
   const scrollToTop = () => {
-    const scrollContainer = document.querySelector('main')
+    const scrollContainer = document.querySelector('[data-scroll-container]')
     scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -380,7 +381,7 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
 
   // Get scroll container rect for fixed positioning
   const getScrollContainerRect = () => {
-    const scrollContainer = document.querySelector('main')
+    const scrollContainer = document.querySelector('[data-scroll-container]')
     return scrollContainer?.getBoundingClientRect()
   }
 
@@ -466,7 +467,7 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-6 right-6 shadow-lg transition-opacity duration-200"
+          className="fixed bottom-20 right-6 shadow-lg transition-opacity duration-200"
           onClick={scrollToTop}
           aria-label="Scroll to top"
         >
