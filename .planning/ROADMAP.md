@@ -43,15 +43,15 @@ Plans:
 Plans:
 - [x] 49-01: Tabbed market view with category grouping
 
-#### Phase 50: Market Filtering
+#### Phase 50: Market Filtering (COMPLETE)
 
 **Goal**: Filter markets by bookmaker, competitor selector to choose comparison target, text search to find markets by name
 **Depends on**: Phase 49
 **Research**: Unlikely (client-side filtering, standard React patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 50-01: TBD
+- [x] 50-01: Market filter bar with fuzzy search and competitor selector
 
 #### Phase 51: Navigation UX
 
@@ -247,6 +247,6 @@ Plans:
 | **v1.8 SHIPPED** | | | **2026-02-03** | |
 | 48. Event Summary Redesign | v1.9 | 1/1 | Complete | 2026-02-03 |
 | 49. Market Grouping System | v1.9 | 1/1 | Complete | 2026-02-04 |
-| 50. Market Filtering | v1.9 | 0/? | Not started | - |
+| 50. Market Filtering | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 51. Navigation UX | v1.9 | 0/? | Not started | - |
 | 52. Polish & Integration | v1.9 | 0/? | Not started | - |

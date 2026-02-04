@@ -9,12 +9,18 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 
 ## Current Position
 
-Phase: 49 of 52 (Market Grouping System)
-Plan: 01 complete (+ 2 FIX plans)
-Status: Phase 49 complete
-Last activity: 2026-02-04 — Phase 49-01-FIX2 complete
+Phase: 50 of 52 (Market Filtering)
+Plan: 01 complete
+Status: Phase 50-01 complete
+Last activity: 2026-02-04 — Phase 50-01 complete
 
-Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
+Progress: ██████░░░░ 60% (v1.9: 3/5 phases)
+
+### Phase 50-01 Results
+- Added MarketFilterBar component with search input and competitor dropdown
+- Implemented fuzzy subsequence matching for market search
+- Dynamic column reordering places selected competitor adjacent to Betpawa
+- Search, competitor filter, and tab filtering work together
 
 ### Phase 49-01-FIX2 Results
 - Fixed UAT-002: Markets now appear in ALL their category tabs (not just primary)
@@ -183,6 +189,8 @@ Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
 - **Tabbed filtering with useMemo** - React useMemo for filtered markets and available groups to avoid unnecessary recalculation (v1.9 49-01)
 - **Multi-group array storage** - Store all non-"all" tabs as JSON array so markets appear in multiple category tabs (v1.9 49-01-FIX2)
 - **Dynamic unknown group handling** - Unknown groups inserted alphabetically before 'other' in tab order (v1.9 49-01-FIX2)
+- **Fuzzy subsequence matching** - Query chars must appear in target in order for intuitive partial matching (e.g., "o25" matches "Over 2.5 Goals") (v1.9 50-01)
+- **Dynamic column reordering** - Selected competitor moves adjacent to Betpawa (always first), others follow (v1.9 50-01)
 
 ### Key Decisions
 
@@ -226,6 +234,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 49-01-FIX2 complete
+Stopped at: Phase 50-01 complete
 Resume file: None
-Next action: Re-verify Phase 49 with /gsd:verify-work 49, then Plan Phase 50
+Next action: Plan Phase 51 (Navigation UX) or verify Phase 50
