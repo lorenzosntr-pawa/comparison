@@ -18,7 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex-1" />
           <ModeToggle />
         </header>
-        <main className="flex-1 overflow-auto p-4">
+        <main data-scroll-container className="flex-1 overflow-auto p-4">
           {children}
         </main>
       </SidebarInset>
