@@ -390,19 +390,19 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {mappingStats.total}
               </div>
-              <div className="text-sm text-muted-foreground">
-                matched markets
+              <div className="text-xs text-muted-foreground">
+                matched competitor markets
               </div>
             </div>
-            <div className="mt-2 space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">SportyBet</span>
-                <span>{mappingStats.sportybet} markets</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Bet9ja</span>
-                <span>{mappingStats.bet9ja} markets</span>
-              </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Badge variant="secondary" className="text-sm font-normal">
+                <span className="text-muted-foreground mr-1">SportyBet:</span>
+                <span className="font-medium">{mappingStats.sportybet}</span>
+              </Badge>
+              <Badge variant="secondary" className="text-sm font-normal">
+                <span className="text-muted-foreground mr-1">Bet9ja:</span>
+                <span className="font-medium">{mappingStats.bet9ja}</span>
+              </Badge>
             </div>
           </div>
 
@@ -425,8 +425,8 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
               </span>
             </div>
             {/* Category Breakdown */}
-            <div className="mt-3 pt-2 border-t text-xs">
-              <div className="flex flex-wrap gap-x-3 gap-y-1">
+            <div className="mt-3 pt-2 border-t">
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 {stats.byCategory
                   .filter((cat) => cat.totalOutcomes > 0)
                   .map((cat) => {
@@ -437,12 +437,12 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
                           ? 'text-red-600 dark:text-red-400'
                           : 'text-yellow-600 dark:text-yellow-400'
                     return (
-                      <span key={cat.category}>
-                        <span className="text-muted-foreground">{cat.label}: </span>
-                        <span className={catColor}>
-                          {cat.bestOddsCount}/{cat.totalOutcomes} ({cat.percentage.toFixed(0)}%)
+                      <div key={cat.category} className="flex justify-between">
+                        <span className="text-muted-foreground">{cat.label}</span>
+                        <span className={cn('font-medium', catColor)}>
+                          {cat.percentage.toFixed(0)}%
                         </span>
-                      </span>
+                      </div>
                     )
                   })}
               </div>
