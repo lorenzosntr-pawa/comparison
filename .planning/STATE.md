@@ -16,11 +16,17 @@ Last activity: 2026-02-04 — Phase 49-01 complete
 
 Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
 
+### Phase 49-01-FIX Results
+- Fixed UAT-001: Missing market category tabs
+- Updated TAB_ORDER to include all BetPawa groups: popular, combos, specials
+- Replaced 'main' with 'popular' to match BetPawa's actual taxonomy
+- All market categories now visible as tabs
+
 ### Phase 49-01 Results
 - Added `market_group` column to MarketOdds and CompetitorMarketOdds
 - Extract market group from BetPawa tabs array during scraping
 - Created tabbed navigation component with pill-style buttons
-- Filter markets by category (Main, Goals, Handicaps, Halves, Corners, Cards, Other)
+- Filter markets by category (Popular, Goals, Handicaps, Combos, Halves, Corners, Cards, Specials, Other)
 - Show market count badges in each tab
 - Hide empty category tabs automatically
 
@@ -212,6 +218,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 49-01 complete
+Stopped at: Phase 49-01-FIX complete
 Resume file: None
-Next action: Plan Phase 50 (Market Sorting within Groups)
+Next action: Re-verify Phase 49 with /gsd:verify-work, then Plan Phase 50
