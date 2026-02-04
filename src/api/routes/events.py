@@ -484,6 +484,7 @@ def _build_market_detail(market: MarketOdds) -> MarketOddsDetail:
         line=market.line,
         outcomes=outcomes,
         margin=margin,
+        market_group=market.market_group,
     )
 
 
@@ -563,6 +564,7 @@ def _build_competitor_market_detail(market: CompetitorMarketOdds) -> MarketOddsD
         line=market.line,
         outcomes=outcomes,
         margin=margin,
+        market_group=market.market_group,
     )
 
 

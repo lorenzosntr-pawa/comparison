@@ -149,6 +149,7 @@ class CompetitorMarketOdds(Base):
     handicap_home: Mapped[float | None] = mapped_column(nullable=True)
     handicap_away: Mapped[float | None] = mapped_column(nullable=True)
     outcomes: Mapped[dict] = mapped_column(JSON)
+    market_group: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Relationships
     snapshot: Mapped["CompetitorOddsSnapshot"] = relationship(back_populates="markets")

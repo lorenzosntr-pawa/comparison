@@ -113,6 +113,7 @@ class MarketOddsDetail(BaseModel):
     line: float | None = None
     outcomes: list[OutcomeDetail]
     margin: float | None = None  # Calculated: (sum(1/odds) - 1) * 100
+    market_group: str | None = None  # Betpawa market tab (main, goals, etc.)
 
 
 class BookmakerMarketData(BaseModel):
