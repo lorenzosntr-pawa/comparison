@@ -11,16 +11,18 @@ const BOOKMAKER_NAMES: Record<string, string> = {
   bet9ja: 'Bet9ja',
 }
 
-// Tab display order and names
-const TAB_ORDER = ['all', 'main', 'goals', 'handicaps', 'halves', 'corners', 'cards', 'other']
+// Tab display order and names - includes all BetPawa market group categories
+const TAB_ORDER = ['all', 'popular', 'goals', 'handicaps', 'combos', 'halves', 'corners', 'cards', 'specials', 'other']
 const TAB_NAMES: Record<string, string> = {
   all: 'All',
-  main: 'Main',
+  popular: 'Popular',
   goals: 'Goals',
   handicaps: 'Handicaps',
+  combos: 'Combos',
   halves: 'Halves',
   corners: 'Corners',
   cards: 'Cards',
+  specials: 'Specials',
   other: 'Other',
 }
 
