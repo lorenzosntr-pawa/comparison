@@ -64,15 +64,15 @@ Plans:
 - [x] 51-01: Sticky navigation and scroll-to-top button
 - [x] 51-01-FIX: Fix scroll container targeting (5 UAT issues resolved)
 
-#### Phase 52: Polish & Integration
+#### Phase 52: Polish & Integration (COMPLETE)
 
 **Goal**: Ensure all features work together smoothly, edge cases handled, UX polish
 **Depends on**: Phase 51
 **Research**: Unlikely (internal work)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 52-01: TBD
+- [x] 52-01: Extract shared utilities, align summary categories with tabs, improve empty states
 
 ## Completed Milestones
 
@@ -250,4 +250,4 @@ Plans:
 | 49. Market Grouping System | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 50. Market Filtering | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
-| 52. Polish & Integration | v1.9 | 0/? | Not started | - |
+| 52. Polish & Integration | v1.9 | 1/1 | Complete | 2026-02-04 |

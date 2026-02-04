@@ -9,12 +9,20 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 
 ## Current Position
 
-Phase: 51 of 52 (Navigation UX)
-Plan: 01-FIX complete
-Status: Phase 51 complete (including FIX)
-Last activity: 2026-02-04 — Phase 51-01-FIX complete
+Phase: 52 of 52 (Polish & Integration)
+Plan: 01 complete
+Status: v1.9 milestone complete
+Last activity: 2026-02-04 — Phase 52-01 complete
 
-Progress: ████████░░ 80% (v1.9: 4/5 phases)
+Progress: ██████████ 100% (v1.9: 5/5 phases)
+
+### Phase 52-01 Results
+- Created shared market utilities in lib/market-utils.ts (mergeMarketOutcomes, buildDeduplicatedMarkets, marketHasOdds)
+- Eliminated ~80 lines of duplicated code between market-grid and summary-section
+- Summary categories now use actual market_groups from data (not keyword heuristics)
+- Category names match tab names: Popular, Goals, Handicaps, Combos, Halves, Corners, Cards, Specials, Other
+- Added context-aware empty state messages based on active filters
+- Added clear button (X) to search input when query is not empty
 
 ### Phase 51-01-FIX Results
 - Fixed root cause: scroll listener targeting wrong element (outer SidebarInset instead of inner scrollable main)
@@ -250,6 +258,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 51-01-FIX complete
+Stopped at: Phase 52-01 complete (v1.9 milestone complete)
 Resume file: None
-Next action: Plan Phase 52 (Polish & Integration)
+Next action: Run /gsd:complete-milestone to archive v1.9
