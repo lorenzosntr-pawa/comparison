@@ -53,15 +53,15 @@ Plans:
 Plans:
 - [x] 50-01: Market filter bar with fuzzy search and competitor selector
 
-#### Phase 51: Navigation UX
+#### Phase 51: Navigation UX (COMPLETE)
 
 **Goal**: Sticky header/filters that stay visible while scrolling, quick jump navigation to specific market groups
 **Depends on**: Phase 50
 **Research**: Unlikely (standard UI patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 51-01: TBD
+- [x] 51-01: Sticky navigation and scroll-to-top button
 
 #### Phase 52: Polish & Integration
 
@@ -248,5 +248,5 @@ Plans:
 | 48. Event Summary Redesign | v1.9 | 1/1 | Complete | 2026-02-03 |
 | 49. Market Grouping System | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 50. Market Filtering | v1.9 | 1/1 | Complete | 2026-02-04 |
-| 51. Navigation UX | v1.9 | 0/? | Not started | - |
+| 51. Navigation UX | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 0/? | Not started | - |

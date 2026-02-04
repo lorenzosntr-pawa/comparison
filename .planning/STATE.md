@@ -9,12 +9,18 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 
 ## Current Position
 
-Phase: 50 of 52 (Market Filtering)
+Phase: 51 of 52 (Navigation UX)
 Plan: 01 complete
-Status: Phase 50-01 complete
-Last activity: 2026-02-04 — Phase 50-01 complete
+Status: Phase 51 complete
+Last activity: 2026-02-04 — Phase 51-01 complete
 
-Progress: ██████░░░░ 60% (v1.9: 3/5 phases)
+Progress: ████████░░ 80% (v1.9: 4/5 phases)
+
+### Phase 51-01 Results
+- Sticky navigation header that remains visible when scrolling markets
+- Scroll-to-top floating button appears after scrolling 400px
+- Fixed positioning with scroll container-aware bounds (not CSS sticky)
+- Placeholder div pattern prevents layout shift when header becomes fixed
 
 ### Phase 50-01 Results
 - Added MarketFilterBar component with search input and competitor dropdown
@@ -191,6 +197,8 @@ Progress: ██████░░░░ 60% (v1.9: 3/5 phases)
 - **Dynamic unknown group handling** - Unknown groups inserted alphabetically before 'other' in tab order (v1.9 49-01-FIX2)
 - **Fuzzy subsequence matching** - Query chars must appear in target in order for intuitive partial matching (e.g., "o25" matches "Over 2.5 Goals") (v1.9 50-01)
 - **Dynamic column reordering** - Selected competitor moves adjacent to Betpawa (always first), others follow (v1.9 50-01)
+- **Scroll container-aware fixed positioning** - Listen to main element scroll (not window), use fixed positioning with dynamic bounds when CSS sticky doesn't work with overflow containers (v1.9 51-01)
+- **Placeholder div for fixed headers** - Reserve space with placeholder when header becomes fixed to prevent layout shift (v1.9 51-01)
 
 ### Key Decisions
 
@@ -234,6 +242,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 50-01 complete
+Stopped at: Phase 51-01 complete
 Resume file: None
-Next action: Plan Phase 51 (Navigation UX) or verify Phase 50
+Next action: Plan Phase 52 (Polish & Integration) or verify Phase 51
