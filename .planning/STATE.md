@@ -10,11 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 49 of 52 (Market Grouping System)
-Plan: 01 complete
+Plan: 01 complete (+ 2 FIX plans)
 Status: Phase 49 complete
-Last activity: 2026-02-04 — Phase 49-01 complete
+Last activity: 2026-02-04 — Phase 49-01-FIX2 complete
 
 Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
+
+### Phase 49-01-FIX2 Results
+- Fixed UAT-002: Markets now appear in ALL their category tabs (not just primary)
+- Fixed UAT-003: Unknown market groups handled dynamically
+- Changed `market_group` (string) to `market_groups` (JSON array)
+- Frontend filtering uses array membership check
 
 ### Phase 49-01-FIX Results
 - Fixed UAT-001: Missing market category tabs
@@ -175,6 +181,8 @@ Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
 - **Outcome name normalization** - `normalizeOutcomeName()` converts " - " to " & " for cross-bookmaker matching (Betpawa uses dash, others use ampersand) (v1.8 47-01)
 - **Market group extraction from tabs** - BetPawa tabs array contains market categories; extract first non-"all" tab as market_group (v1.9 49-01)
 - **Tabbed filtering with useMemo** - React useMemo for filtered markets and available groups to avoid unnecessary recalculation (v1.9 49-01)
+- **Multi-group array storage** - Store all non-"all" tabs as JSON array so markets appear in multiple category tabs (v1.9 49-01-FIX2)
+- **Dynamic unknown group handling** - Unknown groups inserted alphabetically before 'other' in tab order (v1.9 49-01-FIX2)
 
 ### Key Decisions
 
@@ -218,6 +226,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 49-01-FIX complete
+Stopped at: Phase 49-01-FIX2 complete
 Resume file: None
-Next action: Re-verify Phase 49 with /gsd:verify-work, then Plan Phase 50
+Next action: Re-verify Phase 49 with /gsd:verify-work 49, then Plan Phase 50
