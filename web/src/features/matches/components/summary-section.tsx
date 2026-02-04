@@ -4,13 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 
-// Key market IDs (Betpawa taxonomy)
-const KEY_MARKETS = {
-  '1': '1X2',
-  '18': 'Over/Under 2.5',
-  '29': 'Both Teams to Score',
-}
-
 // Bookmaker display names and order
 const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja'] as const
 const BOOKMAKER_DISPLAY_NAMES: Record<string, string> = {
@@ -274,38 +267,9 @@ function calculateCompetitiveStats(
   return { bestOddsCount, totalOutcomes, percentage, avgMarginDiff, byCategory }
 }
 
-/**
- * Get key market data for quick summary display.
- */
-function getKeyMarkets(
-  marketsByBookmaker: BookmakerMarketData[]
-): Map<string, Map<string, MarketOddsDetail | null>> {
-  const result = new Map<string, Map<string, MarketOddsDetail | null>>()
-
-  for (const marketId of Object.keys(KEY_MARKETS)) {
-    const bookmakerOdds = new Map<string, MarketOddsDetail | null>()
-
-    for (const bookmakerData of marketsByBookmaker) {
-      const market = bookmakerData.markets.find(
-        (m) => m.betpawa_market_id === marketId
-      )
-      bookmakerOdds.set(bookmakerData.bookmaker_slug, market ?? null)
-    }
-
-    result.set(marketId, bookmakerOdds)
-  }
-
-  return result
-}
-
 export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
   const stats = useMemo(
     () => calculateCompetitiveStats(marketsByBookmaker),
-    [marketsByBookmaker]
-  )
-
-  const keyMarkets = useMemo(
-    () => getKeyMarkets(marketsByBookmaker),
     [marketsByBookmaker]
   )
 
@@ -344,7 +308,7 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
         <CardTitle className="text-lg">Quick Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Market Coverage */}
           <div>
             <h4 className="text-sm font-medium mb-2">Market Coverage</h4>
@@ -446,49 +410,6 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
                     )
                   })}
               </div>
-            </div>
-          </div>
-
-          {/* Key Markets */}
-          <div>
-            <h4 className="text-sm font-medium mb-2">Key Markets</h4>
-            <div className="space-y-2">
-              {Object.entries(KEY_MARKETS).map(([marketId, marketName]) => {
-                const bookmakerOdds = keyMarkets.get(marketId)
-                const betpawaMarket = bookmakerOdds?.get('betpawa')
-
-                if (!betpawaMarket) {
-                  return (
-                    <div
-                      key={marketId}
-                      className="flex items-center justify-between py-1 text-sm"
-                    >
-                      <span className="text-muted-foreground">{marketName}</span>
-                      <span className="text-muted-foreground">-</span>
-                    </div>
-                  )
-                }
-
-                return (
-                  <div
-                    key={marketId}
-                    className="flex items-center justify-between py-1 text-sm"
-                  >
-                    <span>{marketName}</span>
-                    <div className="flex gap-2">
-                      {betpawaMarket.outcomes.slice(0, 3).map((outcome) => (
-                        <Badge
-                          key={outcome.name}
-                          variant="outline"
-                          className="font-mono"
-                        >
-                          {outcome.name}: {outcome.odds.toFixed(2)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
             </div>
           </div>
         </div>
