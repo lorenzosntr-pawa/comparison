@@ -26,46 +26,28 @@ interface MappingStats {
   total: number
 }
 
-// Market categories based on betpawa_market_name keywords
-type MarketCategory = 'main' | 'goals' | 'handicaps' | 'other'
+// Tab names matching market-grid.tsx for consistent display
+const TAB_NAMES: Record<string, string> = {
+  popular: 'Popular',
+  goals: 'Goals',
+  handicaps: 'Handicaps',
+  combos: 'Combos',
+  halves: 'Halves',
+  corners: 'Corners',
+  cards: 'Cards',
+  specials: 'Specials',
+  other: 'Other',
+}
+
+// Display order for category breakdown (subset of full tab order)
+const CATEGORY_DISPLAY_ORDER = ['popular', 'goals', 'handicaps', 'combos', 'halves', 'corners', 'cards', 'specials', 'other']
 
 interface CategoryStats {
-  category: MarketCategory
+  category: string
   label: string
   bestOddsCount: number
   totalOutcomes: number
   percentage: number
-}
-
-/**
- * Determine market category based on betpawa_market_name keywords
- */
-function getMarketCategory(marketName: string): MarketCategory {
-  const name = marketName.toLowerCase()
-
-  // Main markets
-  if (name.includes('1x2') || name.includes('double chance') || name.includes('draw no bet')) {
-    return 'main'
-  }
-
-  // Goals markets
-  if (name.includes('over') || name.includes('under') || name.includes('goals') || name.includes('score')) {
-    return 'goals'
-  }
-
-  // Handicap markets
-  if (name.includes('handicap')) {
-    return 'handicaps'
-  }
-
-  return 'other'
-}
-
-const CATEGORY_LABELS: Record<MarketCategory, string> = {
-  main: 'Main',
-  goals: 'Goals',
-  handicaps: 'Handicaps',
-  other: 'Other',
 }
 
 interface SummarySectionProps {
@@ -140,20 +122,14 @@ function calculateMappingStats(
 /**
  * Calculate competitive stats for Betpawa vs competitors.
  * Uses pre-deduplicated market maps for accurate counting.
+ * Categories are based on actual market_groups from data (not keyword heuristics).
  */
 function calculateCompetitiveStats(
   bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>
 ): CompetitiveStats {
-  const emptyByCategory: CategoryStats[] = [
-    { category: 'main', label: CATEGORY_LABELS.main, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
-    { category: 'goals', label: CATEGORY_LABELS.goals, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
-    { category: 'handicaps', label: CATEGORY_LABELS.handicaps, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
-    { category: 'other', label: CATEGORY_LABELS.other, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
-  ]
-
   const betpawaMarketMap = bookmakerMaps.get('betpawa')
   if (!betpawaMarketMap || betpawaMarketMap.size === 0) {
-    return { bestOddsCount: 0, totalOutcomes: 0, percentage: 0, avgMarginDiff: 0, byCategory: emptyByCategory }
+    return { bestOddsCount: 0, totalOutcomes: 0, percentage: 0, avgMarginDiff: 0, byCategory: [] }
   }
 
   let bestOddsCount = 0
@@ -161,17 +137,13 @@ function calculateCompetitiveStats(
   let marginDiffSum = 0
   let marginComparisons = 0
 
-  // Track stats by category
-  const categoryStats: Record<MarketCategory, { best: number; total: number }> = {
-    main: { best: 0, total: 0 },
-    goals: { best: 0, total: 0 },
-    handicaps: { best: 0, total: 0 },
-    other: { best: 0, total: 0 },
-  }
+  // Track stats by actual market_groups from data
+  const categoryStats = new Map<string, { best: number; total: number }>()
 
   // Iterate through Betpawa's deduplicated markets
   for (const [key, betpawaMarket] of betpawaMarketMap) {
-    const category = getMarketCategory(betpawaMarket.betpawa_market_name)
+    // Get market groups from data, default to 'other' if not present
+    const marketGroups = betpawaMarket.market_groups ?? ['other']
 
     // Compare margins
     let competitorMarginSum = 0
@@ -195,7 +167,13 @@ function calculateCompetitiveStats(
       if (!betpawaOutcome.is_active) continue
 
       totalOutcomes++
-      categoryStats[category].total++
+
+      // Add to each category the market belongs to
+      for (const group of marketGroups) {
+        const stats = categoryStats.get(group) ?? { best: 0, total: 0 }
+        stats.total++
+        categoryStats.set(group, stats)
+      }
 
       // Find best odds across all bookmakers
       let bestOdds = betpawaOutcome.odds
@@ -221,7 +199,13 @@ function calculateCompetitiveStats(
 
       if (betpawaHasBest) {
         bestOddsCount++
-        categoryStats[category].best++
+        // Add best count to each category the market belongs to
+        for (const group of marketGroups) {
+          const stats = categoryStats.get(group)
+          if (stats) {
+            stats.best++
+          }
+        }
       }
     }
   }
@@ -231,16 +215,35 @@ function calculateCompetitiveStats(
   const avgMarginDiff =
     marginComparisons > 0 ? marginDiffSum / marginComparisons : 0
 
-  // Build category breakdown
-  const byCategory: CategoryStats[] = (['main', 'goals', 'handicaps', 'other'] as const).map((cat) => ({
-    category: cat,
-    label: CATEGORY_LABELS[cat],
-    bestOddsCount: categoryStats[cat].best,
-    totalOutcomes: categoryStats[cat].total,
-    percentage: categoryStats[cat].total > 0
-      ? (categoryStats[cat].best / categoryStats[cat].total) * 100
-      : 0,
-  }))
+  // Build category breakdown using display order, only including groups with outcomes
+  const byCategory: CategoryStats[] = CATEGORY_DISPLAY_ORDER
+    .filter((cat) => categoryStats.has(cat))
+    .map((cat) => {
+      const stats = categoryStats.get(cat)!
+      return {
+        category: cat,
+        label: TAB_NAMES[cat] ?? cat,
+        bestOddsCount: stats.best,
+        totalOutcomes: stats.total,
+        percentage: stats.total > 0 ? (stats.best / stats.total) * 100 : 0,
+      }
+    })
+
+  // Add any unknown groups not in the display order
+  const unknownGroups = [...categoryStats.keys()]
+    .filter((cat) => !CATEGORY_DISPLAY_ORDER.includes(cat))
+    .sort()
+
+  for (const cat of unknownGroups) {
+    const stats = categoryStats.get(cat)!
+    byCategory.push({
+      category: cat,
+      label: TAB_NAMES[cat] ?? cat,
+      bestOddsCount: stats.best,
+      totalOutcomes: stats.total,
+      percentage: stats.total > 0 ? (stats.best / stats.total) * 100 : 0,
+    })
+  }
 
   return { bestOddsCount, totalOutcomes, percentage, avgMarginDiff, byCategory }
 }
