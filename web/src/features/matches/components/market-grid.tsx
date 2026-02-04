@@ -6,6 +6,7 @@ import { MarketFilterBar } from './market-filter-bar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { mergeMarketOutcomes } from '../lib/market-utils'
 
 // Bookmaker slugs in display order
 const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja']
@@ -46,44 +47,6 @@ interface UnifiedMarket {
  * Build a unified list of markets from all bookmakers.
  * Uses Betpawa as the reference taxonomy.
  */
-/**
- * Merge outcomes from multiple market records with the same key.
- * Some bookmakers (like Betpawa) split outcomes across multiple records.
- */
-function mergeMarketOutcomes(
-  existing: MarketOddsDetail,
-  incoming: MarketOddsDetail
-): MarketOddsDetail {
-  // Merge outcomes, avoiding duplicates by name
-  const existingNames = new Set(existing.outcomes.map((o) => o.name))
-  const mergedOutcomes = [
-    ...existing.outcomes,
-    ...incoming.outcomes.filter((o) => !existingNames.has(o.name)),
-  ]
-
-  // Recalculate margin with all outcomes
-  let margin = 0
-  try {
-    const totalImpliedProb = mergedOutcomes.reduce((sum, o) => {
-      if (o.odds > 0 && o.is_active) {
-        return sum + 1 / o.odds
-      }
-      return sum
-    }, 0)
-    if (totalImpliedProb > 0) {
-      margin = Math.round((totalImpliedProb - 1) * 100 * 100) / 100
-    }
-  } catch {
-    margin = existing.margin
-  }
-
-  return {
-    ...existing,
-    outcomes: mergedOutcomes,
-    margin,
-  }
-}
-
 function buildUnifiedMarkets(
   marketsByBookmaker: BookmakerMarketData[]
 ): UnifiedMarket[] {
