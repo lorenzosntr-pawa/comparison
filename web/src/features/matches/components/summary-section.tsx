@@ -87,8 +87,21 @@ interface CompetitiveStats {
 }
 
 /**
+ * Check if a market has actual odds available.
+ * A market has odds if it has at least one active outcome with odds > 0.
+ */
+function marketHasOdds(market: MarketOddsDetail): boolean {
+  return (
+    market.outcomes &&
+    market.outcomes.length > 0 &&
+    market.outcomes.some((o) => o.is_active && o.odds > 0)
+  )
+}
+
+/**
  * Calculate market coverage per bookmaker.
  * Returns array of coverage data with Betpawa as the reference (100%).
+ * Only counts markets that have actual odds available.
  */
 function calculateMarketCoverage(
   marketsByBookmaker: BookmakerMarketData[]
@@ -96,11 +109,15 @@ function calculateMarketCoverage(
   const betpawaData = marketsByBookmaker.find(
     (b) => b.bookmaker_slug === 'betpawa'
   )
-  const betpawaCount = betpawaData?.markets.length ?? 0
+  // Only count markets with actual odds
+  const betpawaMarketsWithOdds = betpawaData?.markets.filter(marketHasOdds) ?? []
+  const betpawaCount = betpawaMarketsWithOdds.length
 
   return BOOKMAKER_ORDER.map((slug) => {
     const bookmaker = marketsByBookmaker.find((b) => b.bookmaker_slug === slug)
-    const count = bookmaker?.markets.length ?? 0
+    // Only count markets with actual odds
+    const marketsWithOdds = bookmaker?.markets.filter(marketHasOdds) ?? []
+    const count = marketsWithOdds.length
     const percentage = betpawaCount > 0 ? (count / betpawaCount) * 100 : 0
 
     return {
