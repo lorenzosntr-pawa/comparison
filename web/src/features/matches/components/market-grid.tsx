@@ -198,6 +198,28 @@ function getAvailableGroups(markets: UnifiedMarket[]): string[] {
   return knownTabs
 }
 
+/**
+ * Fuzzy match function using subsequence matching.
+ * Checks if all characters in query appear in target in order.
+ * Example: "o25" matches "Over 2.5 Goals" because o-2-5 appear in order.
+ */
+function fuzzyMatch(query: string, target: string): boolean {
+  if (!query) return true
+
+  // Normalize both strings: lowercase and remove spaces
+  const normalizedQuery = query.toLowerCase().replace(/\s/g, '')
+  const normalizedTarget = target.toLowerCase().replace(/\s/g, '')
+
+  let queryIndex = 0
+  for (let i = 0; i < normalizedTarget.length && queryIndex < normalizedQuery.length; i++) {
+    if (normalizedTarget[i] === normalizedQuery[queryIndex]) {
+      queryIndex++
+    }
+  }
+
+  return queryIndex === normalizedQuery.length
+}
+
 interface MarketTabsProps {
   availableGroups: string[]
   activeTab: string
@@ -272,9 +294,26 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   }, [unifiedMarkets])
 
   const filteredMarkets = useMemo(() => {
-    if (activeTab === 'all') return unifiedMarkets
-    return unifiedMarkets.filter((m) => m.marketGroups.includes(activeTab))
-  }, [unifiedMarkets, activeTab])
+    let markets = unifiedMarkets
+
+    // Apply tab filter
+    if (activeTab !== 'all') {
+      markets = markets.filter((m) => m.marketGroups.includes(activeTab))
+    }
+
+    // Apply fuzzy search filter
+    if (searchQuery) {
+      markets = markets.filter((m) => {
+        // Build searchable text from name and line
+        const searchTarget = m.line !== null
+          ? `${m.name} ${m.line}`
+          : m.name
+        return fuzzyMatch(searchQuery, searchTarget)
+      })
+    }
+
+    return markets
+  }, [unifiedMarkets, activeTab, searchQuery])
 
   if (unifiedMarkets.length === 0) {
     return (
