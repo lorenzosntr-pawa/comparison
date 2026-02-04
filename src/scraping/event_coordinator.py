@@ -1795,11 +1795,13 @@ class EventCoordinator:
             if not market_id:
                 continue
 
-            # Extract market_group from tabs array
-            # Tabs are like ["all", "main"], ["all", "goals"], etc.
-            # Use first non-"all" tab, or "other" as fallback
+            # Extract market_groups from tabs array
+            # Tabs are like ["all", "popular"], ["all", "popular", "goals"], etc.
+            # Store all non-"all" tabs so markets appear in multiple category tabs
             tabs = market_type.get("tabs", [])
-            market_group = next((t for t in tabs if t != "all"), tabs[0] if tabs else "other")
+            market_groups = [t for t in tabs if t != "all"]
+            if not market_groups:
+                market_groups = ["other"]
 
             for row in market_data.get("row", []):
                 prices = row.get("prices", [])
@@ -1840,7 +1842,7 @@ class EventCoordinator:
                     betpawa_market_name=market_type.get("displayName", ""),
                     line=line_value,
                     outcomes=outcomes,
-                    market_group=market_group,
+                    market_groups=market_groups,
                 )
                 market_odds_list.append(market_odds)
 
