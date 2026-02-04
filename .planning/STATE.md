@@ -9,12 +9,20 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 
 ## Current Position
 
-Phase: 48 of 52 (Event Summary Redesign)
-Plan: 01 + FIX + FIX2 complete
-Status: Phase 48 complete
-Last activity: 2026-02-04 — Phase 48-01-FIX2 complete
+Phase: 49 of 52 (Market Grouping System)
+Plan: 01 complete
+Status: Phase 49 complete
+Last activity: 2026-02-04 — Phase 49-01 complete
 
-Progress: ██░░░░░░░░ 20% (v1.9: 1/5 phases)
+Progress: ████░░░░░░ 40% (v1.9: 2/5 phases)
+
+### Phase 49-01 Results
+- Added `market_group` column to MarketOdds and CompetitorMarketOdds
+- Extract market group from BetPawa tabs array during scraping
+- Created tabbed navigation component with pill-style buttons
+- Filter markets by category (Main, Goals, Handicaps, Halves, Corners, Cards, Other)
+- Show market count badges in each tab
+- Hide empty category tabs automatically
 
 ### Phase 48-01-FIX2 Results
 - Applied market deduplication logic to summary-section.tsx
@@ -159,6 +167,8 @@ Progress: ██░░░░░░░░ 20% (v1.9: 1/5 phases)
 - **Handicap line field fallback** - Competitor handicap markets use `line = mapped.line ?? mapped.handicap.home` for frontend matching (v1.8 46-01)
 - **Outcome presence check for fallback** - `getUnifiedOutcomes()` must check `outcomes.length > 0`, not just market existence (v1.8 47-01)
 - **Outcome name normalization** - `normalizeOutcomeName()` converts " - " to " & " for cross-bookmaker matching (Betpawa uses dash, others use ampersand) (v1.8 47-01)
+- **Market group extraction from tabs** - BetPawa tabs array contains market categories; extract first non-"all" tab as market_group (v1.9 49-01)
+- **Tabbed filtering with useMemo** - React useMemo for filtered markets and available groups to avoid unnecessary recalculation (v1.9 49-01)
 
 ### Key Decisions
 
@@ -202,6 +212,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 48-01-FIX2 complete
+Stopped at: Phase 49-01 complete
 Resume file: None
-Next action: Re-verify Phase 48 or Plan Phase 49 (Market Grouping System)
+Next action: Plan Phase 50 (Market Sorting within Groups)

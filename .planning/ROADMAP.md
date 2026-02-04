@@ -33,15 +33,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 48-01: Redesign summary section with Market Coverage, Mapping Quality, and categorized Best Odds
 
-#### Phase 49: Market Grouping System
+#### Phase 49: Market Grouping System (COMPLETE)
 
-**Goal**: Organize markets using Betpawa's group categories (Main, Goals, Corners, etc.) with collapsible/expandable sections
+**Goal**: Organize markets using Betpawa's group categories (Main, Goals, Corners, etc.) with tabbed navigation
 **Depends on**: Phase 48
 **Research**: Unlikely (uses existing Betpawa groups structure)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 49-01: TBD
+- [x] 49-01: Tabbed market view with category grouping
 
 #### Phase 50: Market Filtering
 
@@ -246,7 +246,7 @@ Plans:
 | 47. Combo Market Display Fix | v1.8 | 1/1 | Complete | 2026-02-03 |
 | **v1.8 SHIPPED** | | | **2026-02-03** | |
 | 48. Event Summary Redesign | v1.9 | 1/1 | Complete | 2026-02-03 |
-| 49. Market Grouping System | v1.9 | 0/? | Not started | - |
+| 49. Market Grouping System | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 50. Market Filtering | v1.9 | 0/? | Not started | - |
 | 51. Navigation UX | v1.9 | 0/? | Not started | - |
 | 52. Polish & Integration | v1.9 | 0/? | Not started | - |
