@@ -1,7 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { ArrowUp } from 'lucide-react'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 import { MarketRow } from './market-row'
 import { MarketFilterBar } from './market-filter-bar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 // Bookmaker slugs in display order
@@ -287,6 +290,37 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   const [activeTab, setActiveTab] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const [isHeaderStuck, setIsHeaderStuck] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const placeholderRef = useRef<HTMLDivElement>(null)
+
+  // Track scroll position for sticky header and scroll-to-top button
+  // Note: The app layout uses overflow-auto on <main>, so we listen to that element
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main')
+    if (!scrollContainer || !headerRef.current) return
+
+    const handleScroll = () => {
+      setShowScrollTop(scrollContainer.scrollTop > 400)
+
+      // Check if header should be stuck (fixed at top of scroll container)
+      if (headerRef.current && placeholderRef.current) {
+        const placeholderRect = placeholderRef.current.getBoundingClientRect()
+        const scrollContainerRect = scrollContainer.getBoundingClientRect()
+        // Header should stick when placeholder scrolls above scroll container top
+        const shouldStick = placeholderRect.top < scrollContainerRect.top
+        setIsHeaderStuck(shouldStick)
+      }
+    }
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    const scrollContainer = document.querySelector('main')
+    scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const unifiedMarkets = useMemo(
     () => buildUnifiedMarkets(marketsByBookmaker),
@@ -344,53 +378,100 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
     )
   }
 
+  // Get scroll container rect for fixed positioning
+  const getScrollContainerRect = () => {
+    const scrollContainer = document.querySelector('main')
+    return scrollContainer?.getBoundingClientRect()
+  }
+
   return (
     <div>
-      <MarketTabs
-        availableGroups={availableGroups}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        marketCounts={marketCounts}
-      />
-
-      <MarketFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCompetitor={selectedCompetitor}
-        onCompetitorChange={setSelectedCompetitor}
-      />
-
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="py-3 px-4 text-left font-semibold">Market</th>
-              <th className="py-3 px-2 text-center font-semibold">Selection</th>
-              {bookmakerOrder.map((slug) => (
-                <th key={slug} className="py-3 px-2 text-center font-semibold">
-                  {BOOKMAKER_NAMES[slug]}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredMarkets.map((market, index) => (
-              <MarketRow
-                key={`${market.id}_${market.line ?? 'null'}_${index}`}
-                marketName={market.name}
-                line={market.line}
-                bookmakerMarkets={market.bookmakerMarkets}
-                bookmakerOrder={bookmakerOrder}
-              />
-            ))}
-          </tbody>
-        </table>
+      {/* Placeholder to reserve space when header is fixed */}
+      <div ref={placeholderRef}>
+        {isHeaderStuck && headerRef.current && (
+          <div style={{ height: headerRef.current.offsetHeight }} />
+        )}
       </div>
 
-      {filteredMarkets.length === 0 && activeTab !== 'all' && (
-        <div className="text-center py-4 text-muted-foreground text-sm">
-          No markets in this category.
-        </div>
+      {/* Navigation header - becomes fixed when scrolled past */}
+      <div
+        ref={headerRef}
+        className={cn(
+          'bg-background pt-2 pb-3 border-b border-border z-20',
+          isHeaderStuck ? 'fixed shadow-md' : ''
+        )}
+        style={isHeaderStuck ? {
+          top: getScrollContainerRect()?.top ?? 0,
+          left: getScrollContainerRect()?.left ?? 0,
+          right: `calc(100% - ${(getScrollContainerRect()?.right ?? 0)}px)`,
+          width: getScrollContainerRect()?.width ?? 'auto',
+        } : undefined}
+      >
+        <h2 className="text-2xl font-semibold tracking-tight mb-3">All Markets</h2>
+        <MarketTabs
+          availableGroups={availableGroups}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          marketCounts={marketCounts}
+        />
+
+        <MarketFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCompetitor={selectedCompetitor}
+          onCompetitorChange={setSelectedCompetitor}
+        />
+      </div>
+
+      {/* Table inside Card for visual consistency */}
+      <Card className={isHeaderStuck ? 'mt-4' : 'mt-4'}>
+        <CardContent className="pt-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="py-3 px-4 text-left font-semibold">Market</th>
+                  <th className="py-3 px-2 text-center font-semibold">Selection</th>
+                  {bookmakerOrder.map((slug) => (
+                    <th key={slug} className="py-3 px-2 text-center font-semibold">
+                      {BOOKMAKER_NAMES[slug]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMarkets.map((market, index) => (
+                  <MarketRow
+                    key={`${market.id}_${market.line ?? 'null'}_${index}`}
+                    marketName={market.name}
+                    line={market.line}
+                    bookmakerMarkets={market.bookmakerMarkets}
+                    bookmakerOrder={bookmakerOrder}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredMarkets.length === 0 && activeTab !== 'all' && (
+            <div className="text-center py-4 text-muted-foreground text-sm">
+              No markets in this category.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Scroll-to-top button - appears when scrolled down */}
+      {showScrollTop && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed bottom-6 right-6 shadow-lg transition-opacity duration-200"
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </Button>
       )}
     </div>
   )

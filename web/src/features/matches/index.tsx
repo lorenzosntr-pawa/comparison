@@ -248,14 +248,7 @@ export function MatchDetail() {
 
       <SummarySection marketsByBookmaker={event.markets_by_bookmaker} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Markets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MarketGrid marketsByBookmaker={event.markets_by_bookmaker} />
-        </CardContent>
-      </Card>
+      <MarketGrid marketsByBookmaker={event.markets_by_bookmaker} />
     </div>
   )
 }
