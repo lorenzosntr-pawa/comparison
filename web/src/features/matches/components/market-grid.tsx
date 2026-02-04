@@ -1,5 +1,7 @@
+import { useState, useMemo } from 'react'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 import { MarketRow } from './market-row'
+import { cn } from '@/lib/utils'
 
 // Bookmaker slugs in display order
 const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja']
@@ -9,12 +11,18 @@ const BOOKMAKER_NAMES: Record<string, string> = {
   bet9ja: 'Bet9ja',
 }
 
-// Market groups for visual organization (for future use)
-// const MARKET_GROUPS: Record<string, string[]> = {
-//   Main: ['1X2', 'Double Chance', 'Draw No Bet'],
-//   Goals: ['Over/Under', 'Both Teams to Score', 'Total Goals', 'Team Goals'],
-//   Handicaps: ['Asian Handicap', 'European Handicap', 'Handicap'],
-// }
+// Tab display order and names
+const TAB_ORDER = ['all', 'main', 'goals', 'handicaps', 'halves', 'corners', 'cards', 'other']
+const TAB_NAMES: Record<string, string> = {
+  all: 'All',
+  main: 'Main',
+  goals: 'Goals',
+  handicaps: 'Handicaps',
+  halves: 'Halves',
+  corners: 'Corners',
+  cards: 'Cards',
+  other: 'Other',
+}
 
 interface MarketGridProps {
   marketsByBookmaker: BookmakerMarketData[]
@@ -24,6 +32,7 @@ interface UnifiedMarket {
   id: string
   name: string
   line: number | null
+  marketGroup: string
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
 }
 
@@ -121,6 +130,7 @@ function buildUnifiedMarkets(
         id: market.betpawa_market_id,
         name: market.betpawa_market_name,
         line: market.line,
+        marketGroup: market.market_group ?? 'other',
         bookmakerMarkets,
       })
       allMarketKeys.delete(key)
@@ -148,6 +158,7 @@ function buildUnifiedMarkets(
         id: referenceMarket.betpawa_market_id,
         name: referenceMarket.betpawa_market_name,
         line: referenceMarket.line,
+        marketGroup: referenceMarket.market_group ?? 'other',
         bookmakerMarkets,
       })
     }
@@ -156,8 +167,87 @@ function buildUnifiedMarkets(
   return unifiedMarkets
 }
 
+/**
+ * Get unique market groups from unified markets and return them in display order.
+ * Groups with no markets are excluded.
+ */
+function getAvailableGroups(markets: UnifiedMarket[]): string[] {
+  const presentGroups = new Set(markets.map((m) => m.marketGroup))
+  return TAB_ORDER.filter((tab) => tab === 'all' || presentGroups.has(tab))
+}
+
+interface MarketTabsProps {
+  availableGroups: string[]
+  activeTab: string
+  onTabChange: (tab: string) => void
+  marketCounts: Map<string, number>
+}
+
+function MarketTabs({
+  availableGroups,
+  activeTab,
+  onTabChange,
+  marketCounts,
+}: MarketTabsProps) {
+  return (
+    <div className="flex flex-wrap gap-1 mb-4 border-b pb-2">
+      {availableGroups.map((group) => {
+        const count = group === 'all'
+          ? Array.from(marketCounts.values()).reduce((a, b) => a + b, 0)
+          : marketCounts.get(group) ?? 0
+        const isActive = activeTab === group
+
+        return (
+          <button
+            key={group}
+            onClick={() => onTabChange(group)}
+            className={cn(
+              'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {TAB_NAMES[group] ?? group}
+            <span className={cn(
+              'ml-1.5 text-xs',
+              isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'
+            )}>
+              ({count})
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
-  const unifiedMarkets = buildUnifiedMarkets(marketsByBookmaker)
+  const [activeTab, setActiveTab] = useState('all')
+
+  const unifiedMarkets = useMemo(
+    () => buildUnifiedMarkets(marketsByBookmaker),
+    [marketsByBookmaker]
+  )
+
+  const availableGroups = useMemo(
+    () => getAvailableGroups(unifiedMarkets),
+    [unifiedMarkets]
+  )
+
+  const marketCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const market of unifiedMarkets) {
+      counts.set(market.marketGroup, (counts.get(market.marketGroup) ?? 0) + 1)
+    }
+    return counts
+  }, [unifiedMarkets])
+
+  const filteredMarkets = useMemo(() => {
+    if (activeTab === 'all') return unifiedMarkets
+    return unifiedMarkets.filter((m) => m.marketGroup === activeTab)
+  }, [unifiedMarkets, activeTab])
 
   if (unifiedMarkets.length === 0) {
     return (
@@ -168,30 +258,45 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            <th className="py-3 px-4 text-left font-semibold">Market</th>
-            <th className="py-3 px-2 text-center font-semibold">Selection</th>
-            {BOOKMAKER_ORDER.map((slug) => (
-              <th key={slug} className="py-3 px-2 text-center font-semibold">
-                {BOOKMAKER_NAMES[slug]}
-              </th>
+    <div>
+      <MarketTabs
+        availableGroups={availableGroups}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        marketCounts={marketCounts}
+      />
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b bg-muted/50">
+              <th className="py-3 px-4 text-left font-semibold">Market</th>
+              <th className="py-3 px-2 text-center font-semibold">Selection</th>
+              {BOOKMAKER_ORDER.map((slug) => (
+                <th key={slug} className="py-3 px-2 text-center font-semibold">
+                  {BOOKMAKER_NAMES[slug]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMarkets.map((market, index) => (
+              <MarketRow
+                key={`${market.id}_${market.line ?? 'null'}_${index}`}
+                marketName={market.name}
+                line={market.line}
+                bookmakerMarkets={market.bookmakerMarkets}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {unifiedMarkets.map((market, index) => (
-            <MarketRow
-              key={`${market.id}_${market.line ?? 'null'}_${index}`}
-              marketName={market.name}
-              line={market.line}
-              bookmakerMarkets={market.bookmakerMarkets}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
+
+      {filteredMarkets.length === 0 && activeTab !== 'all' && (
+        <div className="text-center py-4 text-muted-foreground text-sm">
+          No markets in this category.
+        </div>
+      )}
     </div>
   )
 }
