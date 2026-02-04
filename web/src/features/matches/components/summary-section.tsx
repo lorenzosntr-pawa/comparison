@@ -92,25 +92,106 @@ function marketHasOdds(market: MarketOddsDetail): boolean {
 }
 
 /**
+ * Merge outcomes from multiple market records with the same key.
+ * Some bookmakers (like Betpawa) split outcomes across multiple records.
+ * Copied from market-grid.tsx to ensure consistent deduplication.
+ */
+function mergeMarketOutcomes(
+  existing: MarketOddsDetail,
+  incoming: MarketOddsDetail
+): MarketOddsDetail {
+  // Merge outcomes, avoiding duplicates by name
+  const existingNames = new Set(existing.outcomes.map((o) => o.name))
+  const mergedOutcomes = [
+    ...existing.outcomes,
+    ...incoming.outcomes.filter((o) => !existingNames.has(o.name)),
+  ]
+
+  // Recalculate margin with all outcomes
+  let margin = 0
+  try {
+    const totalImpliedProb = mergedOutcomes.reduce((sum, o) => {
+      if (o.odds > 0 && o.is_active) {
+        return sum + 1 / o.odds
+      }
+      return sum
+    }, 0)
+    if (totalImpliedProb > 0) {
+      margin = Math.round((totalImpliedProb - 1) * 100 * 100) / 100
+    }
+  } catch {
+    margin = existing.margin
+  }
+
+  return {
+    ...existing,
+    outcomes: mergedOutcomes,
+    margin,
+  }
+}
+
+/**
+ * Build deduplicated market maps for all bookmakers.
+ * Markets with the same ID+line are merged (outcomes combined).
+ * This matches the behavior in market-grid.tsx.
+ */
+function buildDeduplicatedMarkets(
+  marketsByBookmaker: BookmakerMarketData[]
+): Map<string, Map<string, MarketOddsDetail>> {
+  const bookmakerMaps = new Map<string, Map<string, MarketOddsDetail>>()
+
+  for (const bookmakerData of marketsByBookmaker) {
+    const marketMap = new Map<string, MarketOddsDetail>()
+    for (const market of bookmakerData.markets) {
+      // Create a unique key for each market (id + line)
+      const key =
+        market.line !== null
+          ? `${market.betpawa_market_id}_${market.line}`
+          : market.betpawa_market_id
+
+      // Merge outcomes if market already exists (same id+line)
+      const existing = marketMap.get(key)
+      if (existing) {
+        marketMap.set(key, mergeMarketOutcomes(existing, market))
+      } else {
+        marketMap.set(key, market)
+      }
+    }
+    bookmakerMaps.set(bookmakerData.bookmaker_slug, marketMap)
+  }
+
+  return bookmakerMaps
+}
+
+/**
  * Calculate market coverage per bookmaker.
  * Returns array of coverage data with Betpawa as the reference (100%).
- * Only counts markets that have actual odds available.
+ * Only counts DEDUPLICATED markets that have actual odds available.
  */
 function calculateMarketCoverage(
-  marketsByBookmaker: BookmakerMarketData[]
+  bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>
 ): MarketCoverage[] {
-  const betpawaData = marketsByBookmaker.find(
-    (b) => b.bookmaker_slug === 'betpawa'
-  )
-  // Only count markets with actual odds
-  const betpawaMarketsWithOdds = betpawaData?.markets.filter(marketHasOdds) ?? []
-  const betpawaCount = betpawaMarketsWithOdds.length
+  // Count deduplicated Betpawa markets with odds
+  const betpawaMap = bookmakerMaps.get('betpawa')
+  let betpawaCount = 0
+  if (betpawaMap) {
+    for (const market of betpawaMap.values()) {
+      if (marketHasOdds(market)) {
+        betpawaCount++
+      }
+    }
+  }
 
   return BOOKMAKER_ORDER.map((slug) => {
-    const bookmaker = marketsByBookmaker.find((b) => b.bookmaker_slug === slug)
-    // Only count markets with actual odds
-    const marketsWithOdds = bookmaker?.markets.filter(marketHasOdds) ?? []
-    const count = marketsWithOdds.length
+    const marketMap = bookmakerMaps.get(slug)
+    let count = 0
+    if (marketMap) {
+      for (const market of marketMap.values()) {
+        if (marketHasOdds(market)) {
+          count++
+        }
+      }
+    }
     const percentage = betpawaCount > 0 ? (count / betpawaCount) * 100 : 0
 
     return {
@@ -124,16 +205,13 @@ function calculateMarketCoverage(
 
 /**
  * Calculate mapping stats for competitor markets.
- * Shows how many competitor markets are matched to Betpawa taxonomy.
+ * Shows how many DEDUPLICATED competitor markets are matched to Betpawa taxonomy.
  */
 function calculateMappingStats(
-  marketsByBookmaker: BookmakerMarketData[]
+  bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>
 ): MappingStats {
-  const sportybet = marketsByBookmaker.find((b) => b.bookmaker_slug === 'sportybet')
-  const bet9ja = marketsByBookmaker.find((b) => b.bookmaker_slug === 'bet9ja')
-
-  const sportyCount = sportybet?.markets.length ?? 0
-  const bet9jaCount = bet9ja?.markets.length ?? 0
+  const sportyCount = bookmakerMaps.get('sportybet')?.size ?? 0
+  const bet9jaCount = bookmakerMaps.get('bet9ja')?.size ?? 0
 
   return {
     sportybet: sportyCount,
@@ -144,14 +222,11 @@ function calculateMappingStats(
 
 /**
  * Calculate competitive stats for Betpawa vs competitors.
+ * Uses pre-deduplicated market maps for accurate counting.
  */
 function calculateCompetitiveStats(
-  marketsByBookmaker: BookmakerMarketData[]
+  bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>
 ): CompetitiveStats {
-  const betpawaData = marketsByBookmaker.find(
-    (b) => b.bookmaker_slug === 'betpawa'
-  )
-
   const emptyByCategory: CategoryStats[] = [
     { category: 'main', label: CATEGORY_LABELS.main, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
     { category: 'goals', label: CATEGORY_LABELS.goals, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
@@ -159,7 +234,8 @@ function calculateCompetitiveStats(
     { category: 'other', label: CATEGORY_LABELS.other, bestOddsCount: 0, totalOutcomes: 0, percentage: 0 },
   ]
 
-  if (!betpawaData) {
+  const betpawaMarketMap = bookmakerMaps.get('betpawa')
+  if (!betpawaMarketMap || betpawaMarketMap.size === 0) {
     return { bestOddsCount: 0, totalOutcomes: 0, percentage: 0, avgMarginDiff: 0, byCategory: emptyByCategory }
   }
 
@@ -176,22 +252,7 @@ function calculateCompetitiveStats(
     other: { best: 0, total: 0 },
   }
 
-  // Build market maps for quick lookup
-  const marketMaps = new Map<string, Map<string, MarketOddsDetail>>()
-  for (const bookmakerData of marketsByBookmaker) {
-    const marketMap = new Map<string, MarketOddsDetail>()
-    for (const market of bookmakerData.markets) {
-      const key =
-        market.line !== null
-          ? `${market.betpawa_market_id}_${market.line}`
-          : market.betpawa_market_id
-      marketMap.set(key, market)
-    }
-    marketMaps.set(bookmakerData.bookmaker_slug, marketMap)
-  }
-
-  // Iterate through Betpawa's markets
-  const betpawaMarketMap = marketMaps.get('betpawa')!
+  // Iterate through Betpawa's deduplicated markets
   for (const [key, betpawaMarket] of betpawaMarketMap) {
     const category = getMarketCategory(betpawaMarket.betpawa_market_name)
 
@@ -199,7 +260,7 @@ function calculateCompetitiveStats(
     let competitorMarginSum = 0
     let competitorCount = 0
     for (const slug of ['sportybet', 'bet9ja']) {
-      const competitorMap = marketMaps.get(slug)
+      const competitorMap = bookmakerMaps.get(slug)
       const competitorMarket = competitorMap?.get(key)
       if (competitorMarket) {
         competitorMarginSum += competitorMarket.margin
@@ -224,7 +285,7 @@ function calculateCompetitiveStats(
       let betpawaHasBest = true
 
       for (const slug of ['sportybet', 'bet9ja']) {
-        const competitorMap = marketMaps.get(slug)
+        const competitorMap = bookmakerMaps.get(slug)
         const competitorMarket = competitorMap?.get(key)
         if (competitorMarket) {
           const competitorOutcome = competitorMarket.outcomes.find(
@@ -268,19 +329,26 @@ function calculateCompetitiveStats(
 }
 
 export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
-  const stats = useMemo(
-    () => calculateCompetitiveStats(marketsByBookmaker),
+  // Build deduplicated market maps once for all calculations
+  // This ensures consistent counts across all summary cards
+  const bookmakerMaps = useMemo(
+    () => buildDeduplicatedMarkets(marketsByBookmaker),
     [marketsByBookmaker]
+  )
+
+  const stats = useMemo(
+    () => calculateCompetitiveStats(bookmakerMaps),
+    [bookmakerMaps]
   )
 
   const marketCoverage = useMemo(
-    () => calculateMarketCoverage(marketsByBookmaker),
-    [marketsByBookmaker]
+    () => calculateMarketCoverage(bookmakerMaps),
+    [bookmakerMaps]
   )
 
   const mappingStats = useMemo(
-    () => calculateMappingStats(marketsByBookmaker),
-    [marketsByBookmaker]
+    () => calculateMappingStats(bookmakerMaps),
+    [bookmakerMaps]
   )
 
   // Determine competitive position color
