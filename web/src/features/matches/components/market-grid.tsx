@@ -34,7 +34,7 @@ interface UnifiedMarket {
   id: string
   name: string
   line: number | null
-  marketGroup: string
+  marketGroups: string[]
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
 }
 
@@ -132,7 +132,7 @@ function buildUnifiedMarkets(
         id: market.betpawa_market_id,
         name: market.betpawa_market_name,
         line: market.line,
-        marketGroup: market.market_group ?? 'other',
+        marketGroups: market.market_groups ?? ['other'],
         bookmakerMarkets,
       })
       allMarketKeys.delete(key)
@@ -160,7 +160,7 @@ function buildUnifiedMarkets(
         id: referenceMarket.betpawa_market_id,
         name: referenceMarket.betpawa_market_name,
         line: referenceMarket.line,
-        marketGroup: referenceMarket.market_group ?? 'other',
+        marketGroups: referenceMarket.market_groups ?? ['other'],
         bookmakerMarkets,
       })
     }
@@ -171,11 +171,30 @@ function buildUnifiedMarkets(
 
 /**
  * Get unique market groups from unified markets and return them in display order.
- * Groups with no markets are excluded.
+ * Groups with no markets are excluded. Unknown groups appear before 'other'.
  */
 function getAvailableGroups(markets: UnifiedMarket[]): string[] {
-  const presentGroups = new Set(markets.map((m) => m.marketGroup))
-  return TAB_ORDER.filter((tab) => tab === 'all' || presentGroups.has(tab))
+  const presentGroups = new Set<string>()
+  markets.forEach((m) => m.marketGroups.forEach((g) => presentGroups.add(g)))
+
+  // Include known tabs in order
+  const knownTabs = TAB_ORDER.filter(
+    (tab) => tab === 'all' || presentGroups.has(tab)
+  )
+
+  // Add any unknown groups alphabetically before 'other'
+  const unknownTabs = [...presentGroups]
+    .filter((g) => !TAB_ORDER.includes(g))
+    .sort()
+
+  const otherIndex = knownTabs.indexOf('other')
+  if (otherIndex >= 0) {
+    knownTabs.splice(otherIndex, 0, ...unknownTabs)
+  } else {
+    knownTabs.push(...unknownTabs)
+  }
+
+  return knownTabs
 }
 
 interface MarketTabsProps {
@@ -241,14 +260,17 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   const marketCounts = useMemo(() => {
     const counts = new Map<string, number>()
     for (const market of unifiedMarkets) {
-      counts.set(market.marketGroup, (counts.get(market.marketGroup) ?? 0) + 1)
+      // Count market in each of its groups
+      for (const group of market.marketGroups) {
+        counts.set(group, (counts.get(group) ?? 0) + 1)
+      }
     }
     return counts
   }, [unifiedMarkets])
 
   const filteredMarkets = useMemo(() => {
     if (activeTab === 'all') return unifiedMarkets
-    return unifiedMarkets.filter((m) => m.marketGroup === activeTab)
+    return unifiedMarkets.filter((m) => m.marketGroups.includes(activeTab))
   }, [unifiedMarkets, activeTab])
 
   if (unifiedMarkets.length === 0) {

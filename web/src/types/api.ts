@@ -125,7 +125,7 @@ export interface MarketOddsDetail {
   line: number | null
   outcomes: MarketOutcome[]
   margin: number
-  market_group: string | null
+  market_groups: string[] | null
 }
 
 export interface BookmakerMarketData {
