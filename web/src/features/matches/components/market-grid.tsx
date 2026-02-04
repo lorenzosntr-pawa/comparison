@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 import { MarketRow } from './market-row'
+import { MarketFilterBar } from './market-filter-bar'
 import { cn } from '@/lib/utils'
 
 // Bookmaker slugs in display order
@@ -246,6 +247,8 @@ function MarketTabs({
 
 export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
   const [activeTab, setActiveTab] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null)
 
   const unifiedMarkets = useMemo(
     () => buildUnifiedMarkets(marketsByBookmaker),
@@ -288,6 +291,13 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         marketCounts={marketCounts}
+      />
+
+      <MarketFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCompetitor={selectedCompetitor}
+        onCompetitorChange={setSelectedCompetitor}
       />
 
       <div className="overflow-x-auto">
