@@ -150,7 +150,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Plans**: 1 plan
 
 Plans:
-- [ ] 53-01: Pipeline timing instrumentation + benchmark baseline report
+- [x] 53-01: Pipeline timing instrumentation + benchmark baseline report
 
 #### Phase 54: In-Memory Cache Layer
 
@@ -282,7 +282,7 @@ Plans:
 | 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 1/1 | Complete | 2026-02-04 |
 | **v1.9 SHIPPED** | | | **2026-02-05** | |
-| 53. Investigation & Benchmarking | v2.0 | 0/1 | Not started | - |
+| 53. Investigation & Benchmarking | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 54. In-Memory Cache Layer | v2.0 | 0/? | Not started | - |
 | 55. Async Write Pipeline + Incremental Upserts | v2.0 | 0/? | Not started | - |
 | 56. Concurrency Tuning | v2.0 | 0/? | Not started | - |
