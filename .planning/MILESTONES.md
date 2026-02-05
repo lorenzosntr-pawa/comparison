@@ -1,5 +1,62 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v1.9 Event Details UX (Shipped: 2026-02-05)
+
+**Delivered:** Transformed event details page into a powerful market exploration tool with category tabs, fuzzy search, competitor comparison mode, sticky navigation, and actionable summary metrics.
+
+**Phases completed:** 48-52 (10 plans total: 5 original + 5 FIX plans)
+
+**Key accomplishments:**
+
+- Redesigned event summary with Market Coverage, Mapping Quality, and Competitive Position cards with category breakdowns
+- Tabbed market navigation organized by BetPawa categories (Popular, Goals, Handicaps, Corners, Cards, Specials, Combos, Halves, Other) with multi-group support
+- Fuzzy market search with subsequence matching and competitor selector with dynamic column reordering
+- Sticky navigation header with scroll-to-top button for long market lists
+- Shared market utilities (`lib/market-utils.ts`) eliminating ~80 lines of code duplication
+- Context-aware empty state messages explaining which filters cause zero results
+
+**Stats:**
+
+- 40 files changed
+- +3,599 / -205 lines (net +3,394)
+- 5 phases, 10 plans, 38 commits
+- 2 days (2026-02-03 to 2026-02-04)
+- ~31,116 total LOC
+
+**Git range:** `fdec213` → `1c6547d`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.0 features.
+
+---
+
+## v1.8 Market Matching Accuracy (Shipped: 2026-02-03)
+
+**Delivered:** Comprehensive market mapping audit and targeted fixes — 20 new mappings covering ~1,800 occurrences, combo market parameter handling, handicap line fix, and outcome name normalization.
+
+**Phases completed:** 43-47 (9 plans total: 7 original + 2 FIX plans)
+
+**Key accomplishments:**
+
+- Comprehensive audit identifying 380 unmapped market types across platforms
+- 20 new market mappings covering high-priority gaps (~1,800 occurrences)
+- Combo market parameter handling (1X2OU, DCOU, etc.)
+- Handicap market line field fix for competitor odds display
+- Cross-bookmaker outcome name normalization
+- Mapping success rates improved: SportyBet 47.3%→52.2%, Bet9ja 36.1%→40.5%
+
+**Stats:**
+
+- 28 files changed
+- +13,290 / -57 lines (net +13,233)
+- 5 phases, 9 plans
+- 2 days (2026-02-02 to 2026-02-03)
+
+**Git range:** `feat(43-01)` → `feat(47-01)`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan next milestone.
+
+---
+
 ## v1.7 Scraping Architecture Overhaul (Shipped: 2026-02-02)
 
 **Delivered:** Redesigned scraping from sequential platform-by-platform execution to event-centric parallel architecture, reducing timing gaps from minutes to milliseconds for reliable cross-platform odds comparison.

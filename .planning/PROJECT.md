@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.8 Market Matching Accuracy)
+## Current State (v1.9 Event Details UX)
 
-**Shipped:** 2026-02-03
+**Shipped:** 2026-02-05
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~30,647 lines of code
+- ~31,116 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -46,6 +46,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Connection loss detection with CONNECTION_FAILED status and auto-rescrape
 - Per-platform progress events with real counts and elapsed time
 - Accurate coverage statistics with DISTINCT SportRadar ID counting
+- **Event detail summary cards** - Market Coverage, Mapping Quality, Competitive Position with category breakdowns
+- **Tabbed market navigation** - BetPawa categories (Popular, Goals, Handicaps, Corners, Cards, Specials, Combos, Halves, Other)
+- **Market groups as JSON arrays** - markets appear in all their category tabs
+- **Fuzzy market search** - subsequence matching (e.g., "o25" matches "Over 2.5 Goals")
+- **Competitor comparison mode** - dynamic column reordering with selected competitor adjacent to Betpawa
+- **Sticky navigation header** - fixed positioning with scroll-to-top button for long market lists
+- **Shared market utilities** - deduplicated code in lib/market-utils.ts
+- **Context-aware empty states** - messages explaining which filters cause zero results
 
 ## Requirements
 
@@ -101,6 +109,13 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Handicap market line field fix for competitor odds display — v1.8
 - ✓ Cross-bookmaker outcome name normalization — v1.8
 - ✓ Mapping success rates: SportyBet 52.2%, Bet9ja 40.5% — v1.8
+- ✓ Event detail summary cards (Market Coverage, Mapping Quality, Competitive Position) — v1.9
+- ✓ Tabbed market navigation by BetPawa categories with multi-group support — v1.9
+- ✓ Fuzzy market search with subsequence matching — v1.9
+- ✓ Competitor comparison mode with dynamic column reordering — v1.9
+- ✓ Sticky navigation header with scroll-to-top button — v1.9
+- ✓ Shared market utilities eliminating code duplication — v1.9
+- ✓ Context-aware empty state messages — v1.9
 
 ### Active
 
@@ -183,6 +198,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Fix handicap line at storage | Populate line from handicap.home in event_coordinator | ✓ Good — v1.8 minimal code change |
 | Normalize outcome names at match time | Keep raw data intact, fix display layer | ✓ Good — v1.8 preserves debugging ability |
 | Combo market O/U routing | Add combo keys to O/U parameter handling sets | ✓ Good — v1.8 eliminated UNKNOWN_PARAM_MARKET |
+| Market group from BetPawa tabs | Extract non-"all" tabs as market categories | ✓ Good — v1.9 accurate grouping |
+| Multi-group JSON array | Store all tabs per market for multi-category membership | ✓ Good — v1.9 markets appear in all relevant tabs |
+| Fuzzy subsequence matching | Query chars must appear in target in order | ✓ Good — v1.9 intuitive partial matching |
+| Dynamic column reordering | Selected competitor moves adjacent to Betpawa | ✓ Good — v1.9 focused comparison |
+| Fixed positioning over CSS sticky | App uses overflow-auto on main, breaking CSS sticky | ✓ Good — v1.9 works with overflow containers |
+| data-scroll-container attribute | Target correct scroll element in nested main elements | ✓ Good — v1.9 reusable pattern |
+| Shared market utilities module | Extract duplicated logic to lib/market-utils.ts | ✓ Good — v1.9 eliminated ~80 lines duplication |
+| Categories from data not heuristics | Use actual market_groups from API, not keyword matching | ✓ Good — v1.9 perfect alignment with tabs |
 
 ---
-*Last updated: 2026-02-03 after v1.8 milestone*
+*Last updated: 2026-02-05 after v1.9 milestone*

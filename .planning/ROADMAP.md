@@ -15,66 +15,20 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.6 Event Matching Accuracy](milestones/v1.6-ROADMAP.md) — Phases 34-35 (shipped 2026-01-29)
 - ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
-- 🚧 **v1.9 Event Details UX** — Phases 48-52 (in progress)
-
-## Current Milestone
-
-### 🚧 v1.9 Event Details UX (In Progress)
-
-**Milestone Goal:** Transform event details page into a powerful market exploration tool with filtering, grouping, and actionable summary metrics.
-
-#### Phase 48: Event Summary Redesign (COMPLETE)
-
-**Goal**: Replace current summary with useful metrics - market counts per bookmaker, mapping success rate, best odds indicators
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal patterns, client-side calculations)
-**Plans**: 1/1
-
-Plans:
-- [x] 48-01: Redesign summary section with Market Coverage, Mapping Quality, and categorized Best Odds
-
-#### Phase 49: Market Grouping System (COMPLETE)
-
-**Goal**: Organize markets using Betpawa's group categories (Main, Goals, Corners, etc.) with tabbed navigation
-**Depends on**: Phase 48
-**Research**: Unlikely (uses existing Betpawa groups structure)
-**Plans**: 1/1
-
-Plans:
-- [x] 49-01: Tabbed market view with category grouping
-
-#### Phase 50: Market Filtering (COMPLETE)
-
-**Goal**: Filter markets by bookmaker, competitor selector to choose comparison target, text search to find markets by name
-**Depends on**: Phase 49
-**Research**: Unlikely (client-side filtering, standard React patterns)
-**Plans**: 1/1
-
-Plans:
-- [x] 50-01: Market filter bar with fuzzy search and competitor selector
-
-#### Phase 51: Navigation UX (COMPLETE)
-
-**Goal**: Sticky header/filters that stay visible while scrolling, quick jump navigation to specific market groups
-**Depends on**: Phase 50
-**Research**: Unlikely (standard UI patterns)
-**Plans**: 2/2
-
-Plans:
-- [x] 51-01: Sticky navigation and scroll-to-top button
-- [x] 51-01-FIX: Fix scroll container targeting (5 UAT issues resolved)
-
-#### Phase 52: Polish & Integration (COMPLETE)
-
-**Goal**: Ensure all features work together smoothly, edge cases handled, UX polish
-**Depends on**: Phase 51
-**Research**: Unlikely (internal work)
-**Plans**: 1/1
-
-Plans:
-- [x] 52-01: Extract shared utilities, align summary categories with tabs, improve empty states
+- ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v1.9 Event Details UX (Phases 48-52) — SHIPPED 2026-02-05</summary>
+
+- [x] Phase 48: Event Summary Redesign (1/1 + 2 FIX plans) — 2026-02-03
+- [x] Phase 49: Market Grouping System (1/1 + 2 FIX plans) — 2026-02-04
+- [x] Phase 50: Market Filtering (1/1 plans) — 2026-02-04
+- [x] Phase 51: Navigation UX (1/1 + 1 FIX plan) — 2026-02-04
+- [x] Phase 52: Polish & Integration (1/1 plans) — 2026-02-04
+
+</details>
 
 <details>
 <summary>✅ v1.8 Market Matching Accuracy (Phases 43-47) — SHIPPED 2026-02-03</summary>
@@ -251,3 +205,4 @@ Plans:
 | 50. Market Filtering | v1.9 | 1/1 | Complete | 2026-02-04 |
 | 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 1/1 | Complete | 2026-02-04 |
+| **v1.9 SHIPPED** | | | **2026-02-05** | |
