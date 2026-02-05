@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 55 of 59 (Async Write Pipeline + Incremental Upserts)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-05 — Completed 55-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed 55-03-PLAN.md
 
-Progress: █████░░░░░ 47%
+Progress: █████░░░░░ 50%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: █████░░░░░ 47%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 132 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 6 v2.0)
+- Total plans completed: 133 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -140,6 +140,9 @@ Progress: █████░░░░░ 47%
 - **Classify batch changes pattern** - separate changed (INSERT) vs unchanged (UPDATE last_confirmed_at) snapshots using cache comparison (v2.0)
 - **Frozen dataclass DTOs for write queue** - plain data objects decouple scraping from DB persistence, no ORM dependency across async boundaries (v2.0)
 - **Isolated session per write batch** - handler opens own session from session_factory, never shares with scraping (v2.0)
+- **Dual-path store_batch_results** - async write queue path for scheduled scraping, sync fallback for on-demand (v2.0)
+- **Cache-before-persist** - update cache immediately for all data, persist changed data asynchronously via write queue (v2.0)
+- **snapshot_to_cached_from_data()** - DTO-to-cache conversion parallel to ORM-based helper, uses snapshot_id=0 for unsaved (v2.0)
 
 ### Key Decisions
 
@@ -171,6 +174,9 @@ Progress: █████░░░░░ 47%
 - Bounded asyncio.Queue (maxsize=50) for write backpressure — blocks scraping if writes fall behind (v2.0 Phase 55)
 - 3 retry attempts with exponential backoff (1s, 2s, 4s) — drop batch on final failure to avoid infinite loops (v2.0 Phase 55)
 - IntegrityError skips batch, OperationalError retries — different error classes get appropriate handling (v2.0 Phase 55)
+- Dual-path persistence: async when write_queue present, sync when None — backward compat for on-demand scrape (v2.0 Phase 55)
+- Cache updated for ALL data before enqueue — API always serves freshest odds regardless of write queue latency (v2.0 Phase 55)
+- Write queue lifecycle: created after cache warmup, stopped before scheduler shutdown (v2.0 Phase 55)
 
 ### Blockers/Concerns
 
@@ -196,6 +202,6 @@ Progress: █████░░░░░ 47%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 55-02-PLAN.md
+Stopped at: Completed 55-03-PLAN.md — Phase 55 complete
 Resume file: None
-Next action: Execute 55-03-PLAN.md
+Next action: Plan Phase 56 (Concurrency Tuning)
