@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 54 of 59 (In-Memory Cache Layer)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-05 — Completed 54-01-PLAN.md
+Last activity: 2026-02-05 — Completed 54-02-PLAN.md
 
-Progress: ██░░░░░░░░ 29%
+Progress: ███░░░░░░░ 33%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: ██░░░░░░░░ 29%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 128 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 2 v2.0)
+- Total plans completed: 129 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 3 v2.0)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -133,6 +133,8 @@ Progress: ██░░░░░░░░ 29%
 - **Benchmark script pattern** - real scrape cycle + API latency + memory profiling for repeatable measurements (v2.0)
 - **Frozen dataclass cache entries** - immutable, hashable, no ORM session dependency for in-memory caching (v2.0)
 - **Cache warmup in app lifespan** - async DB load with perf_counter timing at startup (v2.0)
+- **Cache population from ORM models** - extract data from flushed models post-commit, convert via snapshot_to_cached_from_models (v2.0)
+- **Piggyback eviction on scrape schedule** - no separate background task, evict expired events after each scrape cycle (v2.0)
 
 ### Key Decisions
 
@@ -154,6 +156,9 @@ Progress: ██░░░░░░░░ 29%
 - Event list API p50=903ms justifies cache layer (v2.0 baseline)
 - Frozen dataclasses for cache entries — avoids detached ORM instance issues (v2.0 Phase 54)
 - Duck-type compatible CachedSnapshot — no adapter layer for existing _build_inline_odds() (v2.0 Phase 54)
+- snapshot_to_cached_from_models() for in-memory ORM objects — avoids re-querying DB after commit (v2.0 Phase 54)
+- Eviction 2-hour grace period — keeps recently started matches visible for users (v2.0 Phase 54)
+- Piggyback eviction on scrape schedule — no separate task, runs once per cycle (v2.0 Phase 54)
 
 ### Blockers/Concerns
 
@@ -179,6 +184,6 @@ Progress: ██░░░░░░░░ 29%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 54-01-PLAN.md (1 of 3 plans in Phase 54)
+Stopped at: Completed 54-02-PLAN.md (2 of 3 plans in Phase 54)
 Resume file: None
-Next action: Execute 54-02-PLAN.md (scrape pipeline cache population + eviction)
+Next action: Execute 54-03-PLAN.md (API cache integration & latency verification)
