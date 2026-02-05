@@ -1,13 +1,17 @@
 """Events API endpoints for querying matched and unmatched events."""
 
-from datetime import datetime, timezone
-from typing import Literal
+from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime, timezone
+from typing import Any, Literal
+
+import structlog
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.caching.odds_cache import OddsCache
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
 from src.db.models.competitor import (
@@ -34,6 +38,8 @@ from src.matching.schemas import (
     UnmatchedEvent,
 )
 
+logger = structlog.get_logger(__name__)
+
 router = APIRouter(prefix="/events", tags=["events"])
 
 # Key market IDs for inline odds (Betpawa taxonomy)
@@ -42,6 +48,71 @@ INLINE_MARKET_IDS = ["3743", "5000", "3795", "4693"]
 
 # Market names to exclude from detail view (goalscorer markets - not focus for now)
 EXCLUDED_MARKET_PATTERNS = ["goalscorer", "scorer"]
+
+
+# ---------------------------------------------------------------------------
+# Cache helpers
+# ---------------------------------------------------------------------------
+
+
+def get_odds_cache(request: Request) -> OddsCache | None:
+    """Get OddsCache from app state, or None if not initialized."""
+    return getattr(request.app.state, "odds_cache", None)
+
+
+async def _load_snapshots_cached(
+    event_ids: list[int],
+    cache: OddsCache | None,
+    db: AsyncSession,
+) -> tuple[dict[int, dict[int, Any]], dict[int, dict[str, Any]]]:
+    """Load snapshots from cache first, falling back to DB for misses.
+
+    Returns:
+        Tuple of (betpawa_snapshots_by_event, competitor_snapshots_by_event)
+    """
+    if cache is None:
+        # No cache available -- full DB path
+        betpawa = await _load_latest_snapshots_for_events(db, event_ids)
+        competitor = await _load_competitor_snapshots_for_events(db, event_ids)
+        logger.debug(
+            "snapshot_loading",
+            total_requested=len(event_ids),
+            cache_hits=0,
+            cache_misses=len(event_ids),
+            source="db_only",
+        )
+        return betpawa, competitor
+
+    # Try cache first
+    betpawa = cache.get_betpawa_snapshots(event_ids)
+    competitor = cache.get_competitor_snapshots(event_ids)
+
+    # Check for cache misses
+    cached_bp_ids = set(betpawa.keys())
+    cached_comp_ids = set(competitor.keys())
+    all_cached = cached_bp_ids | cached_comp_ids
+
+    # Events with NO cache data at all need DB fallback
+    # (An event might legitimately have no competitor data, so only consider
+    # events missing from BOTH caches as potential misses)
+    miss_ids = [eid for eid in event_ids if eid not in all_cached]
+
+    if miss_ids:
+        # DB fallback for misses
+        db_betpawa = await _load_latest_snapshots_for_events(db, miss_ids)
+        db_competitor = await _load_competitor_snapshots_for_events(db, miss_ids)
+        betpawa.update(db_betpawa)
+        competitor.update(db_competitor)
+
+    logger.debug(
+        "snapshot_loading",
+        total_requested=len(event_ids),
+        cache_hits=len(all_cached),
+        cache_misses=len(miss_ids),
+        source="cache" if not miss_ids else "mixed",
+    )
+
+    return betpawa, competitor
 
 
 def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
@@ -820,6 +891,7 @@ async def list_tournaments(
 @router.get("/{event_id}", response_model=EventDetailResponse)
 async def get_event(
     event_id: int,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> EventDetailResponse:
     """Get a single event by ID with full market odds for comparison.
@@ -841,11 +913,11 @@ async def get_event(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Load latest odds snapshots (BetPawa)
-    snapshots_by_event = await _load_latest_snapshots_for_events(db, [event.id])
-
-    # Load competitor snapshots (SportyBet, Bet9ja)
-    competitor_snapshots_by_event = await _load_competitor_snapshots_for_events(db, [event.id])
+    # Load snapshots via cache-first strategy
+    cache = get_odds_cache(request)
+    snapshots_by_event, competitor_snapshots_by_event = await _load_snapshots_cached(
+        [event.id], cache, db
+    )
 
     return _build_event_detail_response(
         event,
@@ -856,6 +928,7 @@ async def get_event(
 
 @router.get("", response_model=MatchedEventList)
 async def list_events(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     availability: Literal["betpawa", "competitor"] = Query(
         default="betpawa",
@@ -1095,8 +1168,10 @@ async def list_events(
     events = result.scalars().unique().all()
 
     event_ids = [event.id for event in events]
-    snapshots_by_event = await _load_latest_snapshots_for_events(db, event_ids)
-    competitor_snapshots_by_event = await _load_competitor_snapshots_for_events(db, event_ids)
+    cache = get_odds_cache(request)
+    snapshots_by_event, competitor_snapshots_by_event = await _load_snapshots_cached(
+        event_ids, cache, db
+    )
 
     matched_events = [
         _build_matched_event(
