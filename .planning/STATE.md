@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Planning next milestone
+**Current focus:** v2.0 Real-Time Scraping Pipeline
 
 ## Current Position
 
-Phase: 52 of 52 (all phases complete)
+Phase: 53 of 59 (Investigation & Benchmarking)
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-02-05 — v1.9 milestone complete
+Last activity: 2026-02-05 — Milestone v2.0 created
 
-Progress: ██████████ 100% (v1.9 shipped)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -28,6 +28,7 @@ Progress: ██████████ 100% (v1.9 shipped)
 - **v1.7 Scraping Architecture Overhaul** — SHIPPED 2026-02-02 (7 phases, 16 plans)
 - **v1.8 Market Matching Accuracy** — SHIPPED 2026-02-03 (5 phases, 9 plans)
 - **v1.9 Event Details UX** — SHIPPED 2026-02-05 (5 phases, 10 plans)
+- **v2.0 Real-Time Scraping Pipeline** — IN PROGRESS (7 phases, Phase 53-59)
 
 ## Performance Metrics
 
@@ -147,7 +148,9 @@ Progress: ██████████ 100% (v1.9 shipped)
 
 ### Blockers/Concerns
 
-None.
+- Memory usage for cache must stay reasonable (<100MB for active events)
+- WebSocket must run alongside SSE initially — no breaking changes during migration
+- Keep current fixed scrape interval schedule (no change to refresh timing)
 
 ### Roadmap Evolution
 
@@ -162,10 +165,11 @@ None.
 - v1.8 Market Matching Accuracy shipped 2026-02-03 with 5 phases
 - v1.9 Event Details UX shipped 2026-02-05 with 5 phases
 - All milestones archived to .planning/milestones/
+- Milestone v2.0 created: Real-Time Scraping Pipeline, 7 phases (Phase 53-59)
 
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: v1.9 milestone archived
+Stopped at: Milestone v2.0 initialization
 Resume file: None
-Next action: Run /gsd:discuss-milestone to plan next milestone
+Next action: Run /gsd:plan-phase 53 to plan first phase

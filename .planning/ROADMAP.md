@@ -16,6 +16,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
 - ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
+- 🚧 **v2.0 Real-Time Scraping Pipeline** — Phases 53-59 (in progress)
 
 ## Completed Milestones
 
@@ -137,6 +138,81 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v2.0 Real-Time Scraping Pipeline (In Progress)
+
+**Milestone Goal:** Eliminate DB storage bottleneck, add in-memory caching, and deliver real-time odds updates via WebSocket for the fastest possible competitive comparison.
+
+#### Phase 53: Investigation & Benchmarking
+
+**Goal**: Measure current bottlenecks (scrape time vs DB write time vs API response time), establish baseline metrics
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal profiling)
+**Plans**: TBD
+
+Plans:
+- [ ] 53-01: TBD (run /gsd:plan-phase 53 to break down)
+
+#### Phase 54: In-Memory Cache Layer
+
+**Goal**: Implement always-on cache for latest odds, modify API to serve from cache, scope to active/upcoming events
+**Depends on**: Phase 53
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 54-01: TBD
+
+#### Phase 55: Async Write Pipeline + Incremental Upserts
+
+**Goal**: Decouple scraping from storage via write queue, only persist changed odds, retry with backoff
+**Depends on**: Phase 54
+**Research**: Unlikely (internal patterns, asyncio queues)
+**Plans**: TBD
+
+Plans:
+- [ ] 55-01: TBD
+
+#### Phase 56: Concurrency Tuning
+
+**Goal**: Increase parallelism limits, optimize per-event scraping now that storage isn't blocking
+**Depends on**: Phase 55
+**Research**: Unlikely (internal tuning)
+**Plans**: TBD
+
+Plans:
+- [ ] 56-01: TBD
+
+#### Phase 57: WebSocket Infrastructure
+
+**Goal**: WebSocket server setup, connection management, event broadcasting system
+**Depends on**: Phase 56
+**Research**: Likely (new technology integration for this project)
+**Research topics**: FastAPI WebSocket support, connection lifecycle management, broadcasting patterns, reconnection strategies
+**Plans**: TBD
+
+Plans:
+- [ ] 57-01: TBD
+
+#### Phase 58: WebSocket UI Migration
+
+**Goal**: Migrate dashboard pages from SSE polling to WebSocket, run alongside SSE initially
+**Depends on**: Phase 57
+**Research**: Unlikely (internal patterns once infrastructure decided)
+**Plans**: TBD
+
+Plans:
+- [ ] 58-01: TBD
+
+#### Phase 59: SSE Removal & Cleanup
+
+**Goal**: Remove SSE infrastructure after WebSocket is stable, final validation
+**Depends on**: Phase 58
+**Research**: Unlikely (internal cleanup)
+**Plans**: TBD
+
+Plans:
+- [ ] 59-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -206,3 +282,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 1/1 | Complete | 2026-02-04 |
 | **v1.9 SHIPPED** | | | **2026-02-05** | |
+| 53. Investigation & Benchmarking | v2.0 | 0/? | Not started | - |
+| 54. In-Memory Cache Layer | v2.0 | 0/? | Not started | - |
+| 55. Async Write Pipeline + Incremental Upserts | v2.0 | 0/? | Not started | - |
+| 56. Concurrency Tuning | v2.0 | 0/? | Not started | - |
+| 57. WebSocket Infrastructure | v2.0 | 0/? | Not started | - |
+| 58. WebSocket UI Migration | v2.0 | 0/? | Not started | - |
+| 59. SSE Removal & Cleanup | v2.0 | 0/? | Not started | - |
