@@ -1,8 +1,8 @@
 """Benchmark script for the scraping pipeline.
 
-Runs a real scrape cycle, collects all progress events with timing data,
-measures API response latency and memory usage, then produces a structured
-markdown report at .planning/phases/53-investigation-benchmarking/BENCHMARK-BASELINE.md.
+Runs a real scrape cycle with async write queue and change detection,
+collects all progress events with timing data, measures API response
+latency and memory usage, then produces a structured markdown report.
 
 Usage:
     python scripts/benchmark_pipeline.py
@@ -26,11 +26,14 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import httpx
 from sqlalchemy import select
 
+from src.caching.odds_cache import OddsCache
+from src.caching.warmup import warm_cache_from_db
 from src.db.engine import async_session_factory
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.event_coordinator import EventCoordinator
+from src.storage import AsyncWriteQueue
 
 
 # ---------------------------------------------------------------------------
@@ -63,98 +66,126 @@ def pct(part: float, total: float) -> str:
 
 
 # ---------------------------------------------------------------------------
-# 1. Run a real scrape cycle
+# 1. Run a real scrape cycle (with cache + write queue)
 # ---------------------------------------------------------------------------
 
-async def run_scrape_cycle() -> tuple[list[dict], int]:
-    """Run a full EventCoordinator scrape cycle and collect all progress events.
+async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
+    """Run a full EventCoordinator scrape cycle with async write queue.
 
     Returns:
-        Tuple of (progress_events list, scrape_run_id).
+        Tuple of (progress_events list, scrape_run_id, write_queue_stats).
     """
     progress_events: list[dict] = []
+    write_queue_stats: dict = {}
 
-    async with async_session_factory() as db:
-        # Get settings
-        result = await db.execute(select(Settings).where(Settings.id == 1))
-        settings = result.scalar_one_or_none()
+    # Create OddsCache and warm from DB
+    odds_cache = OddsCache()
+    async with async_session_factory() as warmup_db:
+        warmup_stats = await warm_cache_from_db(odds_cache, warmup_db)
+    print(f"  Cache warmed: {warmup_stats}")
 
-        # Create ScrapeRun
-        scrape_run = ScrapeRun(
-            status=ScrapeStatus.RUNNING,
-            trigger="benchmark",
-        )
-        db.add(scrape_run)
-        await db.commit()
-        await db.refresh(scrape_run)
-        scrape_run_id = scrape_run.id
+    # Create and start write queue
+    write_queue = AsyncWriteQueue(session_factory=async_session_factory, maxsize=50)
+    await write_queue.start()
 
-        # Create HTTP clients
-        async with httpx.AsyncClient(
-            base_url="https://www.sportybet.com",
-            headers={
-                "accept": "*/*",
-                "accept-language": "en",
-                "clientid": "web",
-                "operid": "2",
-                "platform": "web",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            },
-            timeout=30.0,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
-        ) as sportybet_http:
+    try:
+        async with async_session_factory() as db:
+            # Get settings
+            result = await db.execute(select(Settings).where(Settings.id == 1))
+            settings = result.scalar_one_or_none()
+
+            # Create ScrapeRun
+            scrape_run = ScrapeRun(
+                status=ScrapeStatus.RUNNING,
+                trigger="benchmark",
+            )
+            db.add(scrape_run)
+            await db.commit()
+            await db.refresh(scrape_run)
+            scrape_run_id = scrape_run.id
+
+            # Create HTTP clients
             async with httpx.AsyncClient(
-                base_url="https://www.betpawa.ng",
+                base_url="https://www.sportybet.com",
                 headers={
                     "accept": "*/*",
-                    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-                    "devicetype": "web",
+                    "accept-language": "en",
+                    "clientid": "web",
+                    "operid": "2",
+                    "platform": "web",
                     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "x-pawa-brand": "betpawa-nigeria",
                 },
                 timeout=30.0,
                 limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
-            ) as betpawa_http:
+            ) as sportybet_http:
                 async with httpx.AsyncClient(
-                    base_url="https://sports.bet9ja.com",
+                    base_url="https://www.betpawa.ng",
                     headers={
-                        "accept": "application/json, text/plain, */*",
+                        "accept": "*/*",
                         "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+                        "devicetype": "web",
                         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                        "x-pawa-brand": "betpawa-nigeria",
                     },
                     timeout=30.0,
                     limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
-                ) as bet9ja_http:
+                ) as betpawa_http:
+                    async with httpx.AsyncClient(
+                        base_url="https://sports.bet9ja.com",
+                        headers={
+                            "accept": "application/json, text/plain, */*",
+                            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+                            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                        },
+                        timeout=30.0,
+                        limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
+                    ) as bet9ja_http:
 
-                    sportybet = SportyBetClient(sportybet_http)
-                    betpawa = BetPawaClient(betpawa_http)
-                    bet9ja = Bet9jaClient(bet9ja_http)
+                        sportybet = SportyBetClient(sportybet_http)
+                        betpawa = BetPawaClient(betpawa_http)
+                        bet9ja = Bet9jaClient(bet9ja_http)
 
-                    if settings:
-                        coordinator = EventCoordinator.from_settings(
-                            betpawa_client=betpawa,
-                            sportybet_client=sportybet,
-                            bet9ja_client=bet9ja,
-                            settings=settings,
-                        )
-                    else:
-                        coordinator = EventCoordinator(
-                            betpawa_client=betpawa,
-                            sportybet_client=sportybet,
-                            bet9ja_client=bet9ja,
-                        )
+                        if settings:
+                            coordinator = EventCoordinator.from_settings(
+                                betpawa_client=betpawa,
+                                sportybet_client=sportybet,
+                                bet9ja_client=bet9ja,
+                                settings=settings,
+                                odds_cache=odds_cache,
+                                write_queue=write_queue,
+                            )
+                        else:
+                            coordinator = EventCoordinator(
+                                betpawa_client=betpawa,
+                                sportybet_client=sportybet,
+                                bet9ja_client=bet9ja,
+                                odds_cache=odds_cache,
+                                write_queue=write_queue,
+                            )
 
-                    async for event in coordinator.run_full_cycle(
-                        db=db, scrape_run_id=scrape_run_id
-                    ):
-                        progress_events.append(event)
+                        async for event in coordinator.run_full_cycle(
+                            db=db, scrape_run_id=scrape_run_id
+                        ):
+                            progress_events.append(event)
 
-        # Update scrape run status
-        scrape_run.status = ScrapeStatus.COMPLETED
-        scrape_run.completed_at = datetime.utcnow()
-        await db.commit()
+            # Capture queue stats before draining
+            write_queue_stats = write_queue.stats()
+            print(f"  Write queue stats (pre-drain): {write_queue_stats}")
 
-    return progress_events, scrape_run_id
+            # Update scrape run status
+            scrape_run.status = ScrapeStatus.COMPLETED
+            scrape_run.completed_at = datetime.utcnow()
+            await db.commit()
+
+    finally:
+        # Stop write queue (drains remaining items)
+        drain_start = time.perf_counter()
+        await write_queue.stop()
+        drain_ms = int((time.perf_counter() - drain_start) * 1000)
+        write_queue_stats["drain_ms"] = drain_ms
+        print(f"  Write queue drained in {drain_ms}ms")
+
+    return progress_events, scrape_run_id, write_queue_stats
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +294,7 @@ def analyze_and_report(
     memory_delta_mb: float,
     rss_mb: float | None,
     total_wall_ms: int,
+    write_queue_stats: dict | None = None,
 ) -> str:
     """Analyze collected progress events and generate markdown report.
 
@@ -311,6 +343,18 @@ def analyze_and_report(
     avg_commit = statistics.mean(storage_commit) if storage_commit else 0
     avg_storage_total = avg_lookups + avg_processing + avg_flush + avg_commit
 
+    # Async write pipeline metrics (Phase 55)
+    change_detection_times = [ev.get("change_detection_ms", 0) for ev in batch_events]
+    queue_enqueue_times = [ev.get("queue_enqueue_ms", 0) for ev in batch_events]
+    cache_update_times = [ev.get("cache_update_ms", 0) for ev in batch_events]
+
+    avg_change_detection = statistics.mean(change_detection_times) if change_detection_times else 0
+    avg_queue_enqueue = statistics.mean(queue_enqueue_times) if queue_enqueue_times else 0
+    avg_cache_update = statistics.mean(cache_update_times) if cache_update_times else 0
+
+    # Check if async write mode is active (change_detection_ms > 0 in any batch)
+    async_write_active = any(ev.get("change_detection_ms", 0) > 0 for ev in batch_events)
+
     # ---- Extract per-event scraping data ----
     event_scraped = [ev for ev in progress_events if ev.get("event_type") == "EVENT_SCRAPED"]
     event_timings = [ev.get("timing_ms", 0) for ev in event_scraped]
@@ -347,6 +391,7 @@ def analyze_and_report(
     cycle_total_ms = cycle_event.get("total_timing_ms", 0) if cycle_event else total_wall_ms
     events_scraped_count = cycle_event.get("events_scraped", 0) if cycle_event else 0
     events_failed_count = cycle_event.get("events_failed", 0) if cycle_event else 0
+    total_snapshots = cycle_event.get("total_snapshots", 0) if cycle_event else 0
 
     # ---- Compute time breakdown for bottleneck analysis ----
     total_scrape_time = sum(batch_scrape_times)
@@ -365,7 +410,12 @@ def analyze_and_report(
         "Flush": avg_flush,
         "Commit": avg_commit,
     }
-    dominant_storage_subphase = max(storage_subphases, key=storage_subphases.get) if avg_storage_total > 0 else "N/A"
+    if async_write_active:
+        storage_subphases["Change Detection"] = avg_change_detection
+        storage_subphases["Queue Enqueue"] = avg_queue_enqueue
+        storage_subphases["Cache Update"] = avg_cache_update
+
+    dominant_storage_subphase = max(storage_subphases, key=storage_subphases.get) if avg_storage_total > 0 or async_write_active else "N/A"
 
     # Bottleneck recommendation
     if pipeline_total > 0:
@@ -375,23 +425,23 @@ def analyze_and_report(
 
         if store_frac > 0.5:
             bottleneck = "Storage"
-            recommendation = "Phase 55 (Async Write Pipeline) is highest priority - storage dominates pipeline time"
+            recommendation = "Storage still dominates - investigate write handler performance"
         elif scrape_frac > 0.5:
             bottleneck = "Scraping"
             recommendation = "Phase 56 (Concurrency Tuning) is highest priority - scraping dominates pipeline time"
         elif disc_frac > 0.5:
             bottleneck = "Discovery"
-            recommendation = "Phase 56 (Concurrency Tuning) should optimize discovery - discovery dominates pipeline time"
+            recommendation = "Phase 56 (Concurrency Tuning) should optimize discovery"
         else:
             bottleneck = "Mixed"
-            recommendation = "No single dominant bottleneck. Phase 54 (Cache Layer) can reduce API latency; Phase 55 (Async Write Pipeline) can decouple storage"
+            recommendation = "No single dominant bottleneck - well balanced pipeline"
     else:
         bottleneck = "Unknown"
         recommendation = "No measurements available"
 
     # ---- Build report ----
     lines = [
-        "# Benchmark Baseline Report",
+        "# Pipeline Benchmark Report (Phase 55: Async Write Pipeline)",
         "",
         f"**Date:** {now_str}",
         f"**Events discovered:** {total_events_discovered}",
@@ -399,6 +449,7 @@ def analyze_and_report(
         f"**Events failed:** {events_failed_count}",
         f"**Batches processed:** {batch_count}",
         f"**Total pipeline time:** {cycle_total_ms}ms ({cycle_total_ms / 1000:.1f}s)",
+        f"**Async write queue:** {'Active' if async_write_active else 'Inactive (sync fallback)'}",
         "",
         "## Discovery Phase",
         "",
@@ -427,6 +478,16 @@ def analyze_and_report(
         f"| Processing | {fmt_ms(avg_processing)} | {pct(avg_processing, avg_storage_total)} |",
         f"| Flush | {fmt_ms(avg_flush)} | {pct(avg_flush, avg_storage_total)} |",
         f"| Commit | {fmt_ms(avg_commit)} | {pct(avg_commit, avg_storage_total)} |",
+    ]
+
+    if async_write_active:
+        lines.extend([
+            f"| Change Detection | {fmt_ms(avg_change_detection)} | new |",
+            f"| Queue Enqueue | {fmt_ms(avg_queue_enqueue)} | new |",
+            f"| Cache Update | {fmt_ms(avg_cache_update)} | new |",
+        ])
+
+    lines.extend([
         "",
         "## Per-Event Scraping",
         "",
@@ -441,7 +502,7 @@ def analyze_and_report(
         "",
         "| Platform | Avg (ms) | P50 (ms) | P95 (ms) |",
         "|----------|----------|----------|----------|",
-    ]
+    ])
 
     for platform in ["betpawa", "sportybet", "bet9ja"]:
         timings = platform_timing_lists.get(platform, [])
@@ -452,6 +513,34 @@ def analyze_and_report(
             lines.append(f"| {platform.capitalize()} | {fmt_ms(pavg)} | {fmt_ms(pp50)} | {fmt_ms(pp95)} |")
         else:
             lines.append(f"| {platform.capitalize()} | N/A | N/A | N/A |")
+
+    # Phase 55 specific section
+    if async_write_active:
+        # Baseline values from Phase 53 benchmark
+        baseline_store_ms = 21298
+        baseline_total_snapshots = total_snapshots  # Approximation; baseline wrote all
+
+        store_reduction = ((baseline_store_ms - avg_batch_store) / baseline_store_ms * 100) if baseline_store_ms > 0 else 0
+
+        drain_ms = write_queue_stats.get("drain_ms", 0) if write_queue_stats else 0
+
+        lines.extend([
+            "",
+            "## Async Write Pipeline (Phase 55)",
+            "",
+            "| Metric | Baseline (Phase 53) | After Phase 55 | Change |",
+            "|--------|---------------------|----------------|--------|",
+            f"| Storage blocking time (avg/batch) | 21298ms | {fmt_ms(avg_batch_store)}ms | {store_reduction:+.1f}% |",
+            f"| Snapshots created per cycle | ~3900 | {total_snapshots} | async+change-detect |",
+            f"| Write queue drain time | N/A | {drain_ms}ms | new |",
+            f"| Avg change detection (ms/batch) | N/A | {fmt_ms(avg_change_detection)}ms | new |",
+            f"| Avg queue enqueue (ms/batch) | N/A | {fmt_ms(avg_queue_enqueue)}ms | new |",
+            f"| Avg cache update (ms/batch) | N/A | {fmt_ms(avg_cache_update)}ms | new |",
+            "",
+            "**Key improvement:** Storage no longer blocks the scraping pipeline. The coordinator",
+            "updates the cache immediately and enqueues changed data for background DB writes.",
+            "Unchanged snapshots get a `last_confirmed_at` timestamp update instead of full INSERT.",
+        ])
 
     lines.extend([
         "",
@@ -514,7 +603,7 @@ def analyze_and_report(
 async def main() -> None:
     """Run benchmark and produce report."""
     print("=" * 60)
-    print("  Pipeline Benchmark")
+    print("  Pipeline Benchmark (Phase 55: Async Write Pipeline)")
     print("=" * 60)
     print()
 
@@ -524,13 +613,14 @@ async def main() -> None:
     rss_before = get_rss_mb()
 
     # 1. Run scrape cycle
-    print("[1/3] Running scrape cycle...")
+    print("[1/3] Running scrape cycle (with async write queue)...")
     wall_start = time.perf_counter()
 
     try:
-        progress_events, scrape_run_id = await run_scrape_cycle()
+        progress_events, scrape_run_id, wq_stats = await run_scrape_cycle()
     except Exception as e:
         print(f"  ERROR: Scrape cycle failed: {e}")
+        import traceback
         traceback.print_exc()
         return
 
@@ -575,10 +665,11 @@ async def main() -> None:
         memory_delta_mb=memory_delta_mb,
         rss_mb=rss_mb,
         total_wall_ms=wall_ms,
+        write_queue_stats=wq_stats,
     )
 
-    # Write report
-    report_path = PROJECT_ROOT / ".planning" / "phases" / "53-investigation-benchmarking" / "BENCHMARK-BASELINE.md"
+    # Write report to Phase 55 directory
+    report_path = PROJECT_ROOT / ".planning" / "phases" / "55-async-write-pipeline" / "BENCHMARK-PHASE55.md"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report, encoding="utf-8")
 
@@ -593,11 +684,26 @@ async def main() -> None:
         print(f"  Events failed: {cycle_event.get('events_failed', 0)}")
         print(f"  Total time: {cycle_event.get('total_timing_ms', 0)}ms")
         print(f"  Batches: {cycle_event.get('batch_count', 0)}")
+        print(f"  Total snapshots: {cycle_event.get('total_snapshots', 0)}")
+
+    # Print Phase 55 specific metrics
+    batch_events = [ev for ev in progress_events if ev.get("event_type") == "BATCH_COMPLETE"]
+    if batch_events:
+        cd_times = [ev.get("change_detection_ms", 0) for ev in batch_events]
+        eq_times = [ev.get("queue_enqueue_ms", 0) for ev in batch_events]
+        store_times = [ev.get("batch_store_ms", 0) for ev in batch_events]
+
+        if any(cd_times):
+            print()
+            print("Phase 55 Metrics:")
+            print(f"  Avg change detection: {statistics.mean(cd_times):.0f}ms/batch")
+            print(f"  Avg queue enqueue: {statistics.mean(eq_times):.0f}ms/batch")
+            print(f"  Avg storage (coordinator): {statistics.mean(store_times):.0f}ms/batch")
+            print(f"  Write queue drain: {wq_stats.get('drain_ms', 0)}ms")
 
     print()
     print("Done!")
 
 
 if __name__ == "__main__":
-    import traceback
     asyncio.run(main())
