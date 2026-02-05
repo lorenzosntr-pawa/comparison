@@ -103,6 +103,8 @@ async def trigger_scrape(
         sportybet_client=sportybet,
         bet9ja_client=bet9ja,
         settings=settings,
+        odds_cache=getattr(request.app.state, "odds_cache", None),
+        write_queue=getattr(request.app.state, "write_queue", None),
     )
 
     # Run cycle and collect results
@@ -174,6 +176,8 @@ async def stream_scrape(
     sportybet_http = request.app.state.sportybet_client
     betpawa_http = request.app.state.betpawa_client
     bet9ja_http = request.app.state.bet9ja_client
+    odds_cache = getattr(request.app.state, "odds_cache", None)
+    write_queue = getattr(request.app.state, "write_queue", None)
 
     async def run_scrape_background():
         """Background task that runs independent of SSE connection.
@@ -202,6 +206,8 @@ async def stream_scrape(
                 sportybet_client=sportybet,
                 bet9ja_client=bet9ja,
                 settings=settings,
+                odds_cache=odds_cache,
+                write_queue=write_queue,
             )
 
             try:
@@ -631,6 +637,8 @@ async def retry_scrape_run(
         sportybet_client=sportybet,
         bet9ja_client=bet9ja,
         settings=settings,
+        odds_cache=getattr(request.app.state, "odds_cache", None),
+        write_queue=getattr(request.app.state, "write_queue", None),
     )
 
     # Run full cycle (event-centric covers all platforms)
