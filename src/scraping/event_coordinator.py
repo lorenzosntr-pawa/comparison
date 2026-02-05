@@ -59,6 +59,7 @@ DEFAULT_PLATFORM_CONCURRENCY = {
 }
 DEFAULT_BET9JA_DELAY_MS = 25  # 25ms delay after each Bet9ja request
 DEFAULT_BATCH_SIZE = 50
+DEFAULT_MAX_CONCURRENT_EVENTS = 10  # Phase 56: concurrent events per batch
 
 
 class EventCoordinator:
@@ -87,6 +88,7 @@ class EventCoordinator:
         bet9ja_delay_ms: int = DEFAULT_BET9JA_DELAY_MS,
         odds_cache: OddsCache | None = None,
         write_queue: AsyncWriteQueue | None = None,
+        max_concurrent_events: int = DEFAULT_MAX_CONCURRENT_EVENTS,
     ) -> None:
         """Initialize the EventCoordinator.
 
@@ -102,6 +104,8 @@ class EventCoordinator:
             write_queue: Optional AsyncWriteQueue for background DB writes.
                 When provided, snapshot persistence is decoupled from scraping.
                 When None, falls back to synchronous flush+commit.
+            max_concurrent_events: Max events scraped in parallel per batch (default 10).
+                With 3 platforms each, 10 events means up to 30 concurrent HTTP requests.
         """
         self._clients: dict[str, BetPawaClient | SportyBetClient | Bet9jaClient] = {
             "betpawa": betpawa_client,
@@ -113,6 +117,7 @@ class EventCoordinator:
         self._bet9ja_delay_ms = bet9ja_delay_ms
         self._odds_cache: OddsCache | None = odds_cache
         self._write_queue: AsyncWriteQueue | None = write_queue
+        self._max_concurrent_events = max_concurrent_events
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
         self._last_discovery_timings: dict[str, int] = {}
@@ -154,6 +159,9 @@ class EventCoordinator:
             bet9ja_delay_ms=settings.bet9ja_delay_ms,
             odds_cache=odds_cache,
             write_queue=write_queue,
+            max_concurrent_events=getattr(
+                settings, "max_concurrent_events", DEFAULT_MAX_CONCURRENT_EVENTS
+            ),
         )
 
     # =========================================================================
@@ -926,18 +934,19 @@ class EventCoordinator:
     async def scrape_batch(
         self,
         batch: ScrapeBatch,
-    ) -> AsyncGenerator[dict, None]:
-        """Scrape all events in batch, yielding progress for each.
+    ) -> list[dict]:
+        """Scrape all events in batch concurrently, returning progress list.
 
-        Processes events sequentially in priority order. For each event,
-        scrapes all platforms in parallel, updates event status and results,
-        and yields progress events for SSE streaming.
+        Processes events concurrently up to max_concurrent_events limit.
+        For each event, scrapes all platforms in parallel (using per-platform
+        semaphores to throttle load), updates event status and results,
+        and collects progress events for SSE streaming.
 
         Args:
             batch: ScrapeBatch containing events to scrape.
 
-        Yields:
-            Progress dicts with event_type, sr_id, and platform results.
+        Returns:
+            List of progress dicts with event_type, sr_id, and platform results.
         """
         # Create semaphores for all platforms (reuse across batch)
         semaphores = {
@@ -945,57 +954,88 @@ class EventCoordinator:
             for platform, limit in self._platform_concurrency.items()
         }
 
+        # Event-level concurrency semaphore (Phase 56)
+        event_semaphore = asyncio.Semaphore(self._max_concurrent_events)
+
         logger.debug(
             "Starting batch scrape",
             batch_id=batch["batch_id"],
             event_count=len(batch["events"]),
+            max_concurrent_events=self._max_concurrent_events,
         )
 
-        for event in batch["events"]:
-            # Mark event as in progress
-            event.status = ScrapeStatus.IN_PROGRESS
+        async def _scrape_single_event(event: EventTarget) -> list[dict]:
+            """Scrape a single event with concurrency control.
 
-            # Yield "scraping started" progress event
-            yield {
-                "event_type": "EVENT_SCRAPING",
-                "sr_id": event.sr_id,
-                "platforms_pending": list(event.platforms),
-            }
+            Acquires the event semaphore, scrapes all platforms for this event,
+            and returns progress dicts (start + complete).
+            """
+            progress: list[dict] = []
 
-            # Scrape all platforms in parallel
-            result = await self._scrape_event_all_platforms(event, semaphores)
+            async with event_semaphore:
+                # Mark event as in progress
+                event.status = ScrapeStatus.IN_PROGRESS
 
-            # Update event with results
-            event.results = result["data"]
-            event.errors = result["errors"]
+                # Collect "scraping started" progress event
+                progress.append({
+                    "event_type": "EVENT_SCRAPING",
+                    "sr_id": event.sr_id,
+                    "platforms_pending": list(event.platforms),
+                })
 
-            # Determine final status
-            if result["errors"]:
-                # Some platforms failed
-                if result["data"]:
-                    # Partial success - at least some data
-                    event.status = ScrapeStatus.COMPLETED
+                # Scrape all platforms in parallel (per-platform semaphores throttle load)
+                result = await self._scrape_event_all_platforms(event, semaphores)
+
+                # Update event with results
+                event.results = result["data"]
+                event.errors = result["errors"]
+
+                # Determine final status
+                if result["errors"]:
+                    if result["data"]:
+                        event.status = ScrapeStatus.COMPLETED
+                    else:
+                        event.status = ScrapeStatus.FAILED
                 else:
-                    # Complete failure - no data at all
-                    event.status = ScrapeStatus.FAILED
-            else:
-                # All platforms succeeded
-                event.status = ScrapeStatus.COMPLETED
+                    event.status = ScrapeStatus.COMPLETED
 
-            # Yield "scraping complete" progress event
-            yield {
-                "event_type": "EVENT_SCRAPED",
-                "sr_id": event.sr_id,
-                "platforms_scraped": list(result["data"].keys()),
-                "platforms_failed": list(result["errors"].keys()),
-                "timing_ms": result["timing_ms"],
-                "platform_timings": result.get("platform_timings", {}),
-            }
+                # Collect "scraping complete" progress event
+                progress.append({
+                    "event_type": "EVENT_SCRAPED",
+                    "sr_id": event.sr_id,
+                    "platforms_scraped": list(result["data"].keys()),
+                    "platforms_failed": list(result["errors"].keys()),
+                    "timing_ms": result["timing_ms"],
+                    "platform_timings": result.get("platform_timings", {}),
+                })
+
+            return progress
+
+        # Fire off all events concurrently (semaphore limits actual parallelism)
+        results = await asyncio.gather(
+            *[_scrape_single_event(event) for event in batch["events"]],
+            return_exceptions=True,
+        )
+
+        # Flatten results into a single list of progress dicts
+        all_progress: list[dict] = []
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error(
+                    "Event scrape task failed",
+                    batch_id=batch["batch_id"],
+                    error=str(result),
+                )
+                continue
+            all_progress.extend(result)
 
         logger.debug(
             "Batch scrape complete",
             batch_id=batch["batch_id"],
+            concurrent_limit=self._max_concurrent_events,
         )
+
+        return all_progress
 
     # =========================================================================
     # STORAGE: Phase 4 - Store scraped results in database
@@ -2469,8 +2509,9 @@ class EventCoordinator:
                 "event_count": len(batch["events"]),
             }
 
-            # Scrape and yield per-event progress
-            async for progress in self.scrape_batch(batch):
+            # Scrape batch concurrently and yield per-event progress
+            progress_events = await self.scrape_batch(batch)
+            for progress in progress_events:
                 yield progress
 
             batch_scrape_ms = int((time.perf_counter() - batch_start) * 1000)

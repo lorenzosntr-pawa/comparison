@@ -34,6 +34,9 @@ class Settings(Base):
     bet9ja_delay_ms: Mapped[int] = mapped_column(default=25)
     batch_size: Mapped[int] = mapped_column(default=50)
 
+    # Intra-batch event concurrency (Phase 56)
+    max_concurrent_events: Mapped[int] = mapped_column(default=10)
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None] = mapped_column(
         onupdate=func.now(), nullable=True
