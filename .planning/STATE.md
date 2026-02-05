@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 56 of 59 (Concurrency Tuning)
+Phase: 57 of 59 (WebSocket Infrastructure)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 56-01-PLAN.md
+Status: Plan 57-01 complete
+Last activity: 2026-02-05 — Completed 57-01-PLAN.md
 
-Progress: ██████░░░░ 62%
+Progress: ███████░░░ 71%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: ██████░░░░ 62%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 136 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX + 1 v2.0 Phase 56)
+- Total plans completed: 137 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX + 1 v2.0 Phase 56 + 1 v2.0 Phase 57)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -146,6 +146,9 @@ Progress: ██████░░░░ 62%
 - **Event-level semaphore for intra-batch concurrency** - asyncio.Semaphore(max_concurrent_events) limits parallel events within each batch (v2.0)
 - **scrape_batch() returns list instead of AsyncGenerator** - collect concurrent results then yield progress, cleaner than parallel async generators (v2.0)
 - **gather(return_exceptions=True) over TaskGroup** - partial failure tolerance, no cascading cancellation (v2.0)
+- **ConnectionManager with dual-dict topic tracking** - ws->topics and topic->ws reverse index for O(1) lookups (v2.0)
+- **Snapshot iteration for WebSocket broadcast** - copy subscriber set before iteration, clean dead connections after (v2.0)
+- **WebSocket try/except/finally lifecycle** - always disconnect in finally block, catch WebSocketDisconnect separately (v2.0)
 
 ### Key Decisions
 
@@ -184,6 +187,8 @@ Progress: ██████░░░░ 62%
 - HTTP pool increased to 200/100 — headroom for concurrent events with retries (v2.0 Phase 56)
 - Batch scrape time reduced 67.1% (35s→11.5s), total pipeline 65.2% faster (24.4min→8.5min) (v2.0 Phase 56)
 - Concurrency parameters exposed via settings API — all 6 fields writable via PATCH /api/settings (v2.0 Phase 56)
+- ConnectionManager on app.state.ws_manager — topic-based pub/sub for real-time WebSocket broadcasting (v2.0 Phase 57)
+- WebSocket endpoint at /api/ws — runs alongside SSE, no breaking changes (v2.0 Phase 57)
 
 ### Blockers/Concerns
 
@@ -210,6 +215,6 @@ Progress: ██████░░░░ 62%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 56-01-PLAN.md — Phase 56 complete (concurrent event scraping, 67% batch time reduction)
+Stopped at: Completed 57-01-PLAN.md — Phase 57 complete (WebSocket connection manager and endpoint)
 Resume file: None
-Next action: Plan Phase 57 (WebSocket Infrastructure)
+Next action: Plan Phase 58 (WebSocket UI Migration)
