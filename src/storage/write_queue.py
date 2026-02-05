@@ -181,7 +181,6 @@ class AsyncWriteQueue:
                     "write_batch_processed",
                     batch_index=batch.batch_index,
                     attempt=attempt,
-                    write_ms=round(elapsed_ms, 1),
                     **stats,
                 )
                 return
