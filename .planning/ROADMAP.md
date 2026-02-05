@@ -147,10 +147,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Measure current bottlenecks (scrape time vs DB write time vs API response time), establish baseline metrics
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal profiling)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 53-01: TBD (run /gsd:plan-phase 53 to break down)
+- [ ] 53-01: Pipeline timing instrumentation + benchmark baseline report
 
 #### Phase 54: In-Memory Cache Layer
 
@@ -282,7 +282,7 @@ Plans:
 | 51. Navigation UX | v1.9 | 2/2 | Complete | 2026-02-04 |
 | 52. Polish & Integration | v1.9 | 1/1 | Complete | 2026-02-04 |
 | **v1.9 SHIPPED** | | | **2026-02-05** | |
-| 53. Investigation & Benchmarking | v2.0 | 0/? | Not started | - |
+| 53. Investigation & Benchmarking | v2.0 | 0/1 | Not started | - |
 | 54. In-Memory Cache Layer | v2.0 | 0/? | Not started | - |
 | 55. Async Write Pipeline + Incremental Upserts | v2.0 | 0/? | Not started | - |
 | 56. Concurrency Tuning | v2.0 | 0/? | Not started | - |
