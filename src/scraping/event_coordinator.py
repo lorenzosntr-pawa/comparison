@@ -1675,6 +1675,17 @@ class EventCoordinator:
                 "cache_update_ms": cache_update_ms,
             }
 
+            logger.info(
+                "sync_path.storage_timing",
+                storage_lookups_ms=storage_lookups_ms,
+                storage_processing_ms=storage_processing_ms,
+                storage_flush_ms=storage_flush_ms,
+                storage_commit_ms=storage_commit_ms,
+                cache_update_ms=cache_update_ms,
+                bp_snapshots=len(betpawa_snapshots),
+                comp_snapshots=len(competitor_snapshots),
+            )
+
         logger.info(
             "Batch storage complete",
             batch_id=batch["batch_id"],
