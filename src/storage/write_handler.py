@@ -78,7 +78,7 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
     inserted_comp = 0
     updated_bp = 0
     updated_comp = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     async with session_factory() as db:
         try:
