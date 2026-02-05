@@ -30,6 +30,57 @@ logger = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 
+def snapshot_to_cached_from_data(
+    snapshot_id: int,
+    event_id: int,
+    bookmaker_id: int,
+    captured_at: datetime,
+    markets: tuple,
+) -> CachedSnapshot:
+    """Convert write-data DTO market tuples to a CachedSnapshot.
+
+    Similar to ``snapshot_to_cached_from_models`` but accepts frozen-dataclass
+    ``MarketWriteData`` objects (from ``src.storage.write_queue``) instead of
+    ORM model instances.  Used by the EventCoordinator to update the cache
+    immediately after scraping — before the write queue persists to DB.
+
+    Parameters
+    ----------
+    snapshot_id:
+        Row ID (0 for changed snapshots whose real ID is not yet assigned).
+    event_id:
+        The betpawa event_id.
+    bookmaker_id:
+        The bookmaker_id (0 for competitor snapshots).
+    captured_at:
+        Timestamp for when the snapshot was captured.
+    markets:
+        Tuple of ``MarketWriteData`` frozen dataclasses.
+    """
+    cached_markets: list[CachedMarket] = []
+    for m in markets:
+        cached_markets.append(
+            CachedMarket(
+                betpawa_market_id=m.betpawa_market_id,
+                betpawa_market_name=m.betpawa_market_name,
+                line=m.line,
+                handicap_type=m.handicap_type,
+                handicap_home=m.handicap_home,
+                handicap_away=m.handicap_away,
+                outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
+                market_groups=m.market_groups,
+            )
+        )
+
+    return CachedSnapshot(
+        snapshot_id=snapshot_id,
+        event_id=event_id,
+        bookmaker_id=bookmaker_id,
+        captured_at=captured_at,
+        markets=tuple(cached_markets),
+    )
+
+
 def snapshot_to_cached_from_models(
     snapshot_id: int,
     event_id: int,

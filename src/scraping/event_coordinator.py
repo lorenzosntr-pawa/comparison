@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from src.scraping.clients.bet9ja import Bet9jaClient
     from src.scraping.clients.betpawa import BetPawaClient
     from src.scraping.clients.sportybet import SportyBetClient
+    from src.storage.write_queue import AsyncWriteQueue
 
 logger = structlog.get_logger(__name__)
 
@@ -85,6 +86,7 @@ class EventCoordinator:
         platform_concurrency: dict[str, int] | None = None,
         bet9ja_delay_ms: int = DEFAULT_BET9JA_DELAY_MS,
         odds_cache: OddsCache | None = None,
+        write_queue: AsyncWriteQueue | None = None,
     ) -> None:
         """Initialize the EventCoordinator.
 
@@ -97,6 +99,9 @@ class EventCoordinator:
                 Defaults to {betpawa: 50, sportybet: 50, bet9ja: 15}.
             bet9ja_delay_ms: Delay in ms after each Bet9ja request (default 25).
             odds_cache: Optional in-memory OddsCache to populate after storage.
+            write_queue: Optional AsyncWriteQueue for background DB writes.
+                When provided, snapshot persistence is decoupled from scraping.
+                When None, falls back to synchronous flush+commit.
         """
         self._clients: dict[str, BetPawaClient | SportyBetClient | Bet9jaClient] = {
             "betpawa": betpawa_client,
@@ -107,6 +112,7 @@ class EventCoordinator:
         self._platform_concurrency = platform_concurrency or DEFAULT_PLATFORM_CONCURRENCY.copy()
         self._bet9ja_delay_ms = bet9ja_delay_ms
         self._odds_cache: OddsCache | None = odds_cache
+        self._write_queue: AsyncWriteQueue | None = write_queue
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
         self._last_discovery_timings: dict[str, int] = {}
@@ -120,6 +126,7 @@ class EventCoordinator:
         bet9ja_client: Bet9jaClient,
         settings: Settings,
         odds_cache: OddsCache | None = None,
+        write_queue: AsyncWriteQueue | None = None,
     ) -> EventCoordinator:
         """Create EventCoordinator with tuning parameters from Settings model.
 
@@ -129,6 +136,7 @@ class EventCoordinator:
             bet9ja_client: Bet9ja API client.
             settings: Settings model with tuning parameters.
             odds_cache: Optional in-memory OddsCache to populate after storage.
+            write_queue: Optional AsyncWriteQueue for background DB writes.
 
         Returns:
             Configured EventCoordinator instance.
@@ -145,6 +153,7 @@ class EventCoordinator:
             },
             bet9ja_delay_ms=settings.bet9ja_delay_ms,
             odds_cache=odds_cache,
+            write_queue=write_queue,
         )
 
     # =========================================================================
@@ -1054,8 +1063,12 @@ class EventCoordinator:
         # Collect all records for bulk operations
         storage_processing_start = time.perf_counter()
         status_records: list[EventScrapeStatus] = []
-        betpawa_snapshots: list[tuple[OddsSnapshot, list[MarketOdds]]] = []
-        competitor_snapshots: list[tuple[CompetitorOddsSnapshot, list[CompetitorMarketOdds]]] = []
+
+        # Collect parsed market data alongside metadata for both paths (sync and async)
+        # Each entry: (event_id, bookmaker_id, raw_data, parsed_markets_orm)
+        bp_parsed: list[tuple[int, int, dict | None, list[MarketOdds]]] = []
+        # Each entry: (competitor_event_id, sr_id, source_value, raw_data, parsed_markets_orm)
+        comp_parsed: list[tuple[int, str, str, dict | None, list[CompetitorMarketOdds]]] = []
 
         # Process each event in batch
         for event in batch["events"]:
@@ -1129,17 +1142,9 @@ class EventCoordinator:
                             # Update map for any subsequent lookups
                             event_id_map[event.sr_id] = event_id
 
-                        # Create snapshot
-                        snapshot = OddsSnapshot(
-                            event_id=event_id,
-                            bookmaker_id=bookmaker_id,
-                            scrape_run_id=scrape_run_id,
-                            raw_response=raw_data,
-                        )
-
                         # Parse markets
                         markets = self._parse_betpawa_markets(raw_data)
-                        betpawa_snapshots.append((snapshot, markets))
+                        bp_parsed.append((event_id, bookmaker_id, raw_data, markets))
                         snapshots_created += 1
 
                     else:
@@ -1194,20 +1199,13 @@ class EventCoordinator:
                                     external_event_id=platform_id,
                                 )
 
-                        # Create competitor snapshot
-                        snapshot = CompetitorOddsSnapshot(
-                            competitor_event_id=competitor_event_id,
-                            scrape_run_id=scrape_run_id,
-                            raw_response=raw_data,
-                        )
-
                         # Parse markets based on platform
                         if platform == "sportybet":
                             markets = self._parse_sportybet_markets(raw_data)
                         else:  # bet9ja
                             markets = self._parse_bet9ja_markets(raw_data)
 
-                        competitor_snapshots.append((snapshot, markets))
+                        comp_parsed.append((competitor_event_id, event.sr_id, source.value, raw_data, markets))
                         snapshots_created += 1
 
                 except Exception as e:
@@ -1256,83 +1254,177 @@ class EventCoordinator:
 
         storage_processing_ms = int((time.perf_counter() - storage_processing_start) * 1000)
 
-        # Bulk insert all records with optimized flush pattern
-        # (Reduced from N flushes to 2: one for snapshots, one for markets)
-
         # Insert EventScrapeStatus records (no FK dependencies)
         for status_record in status_records:
             db.add(status_record)
 
-        # Add all snapshots first (both BetPawa and competitor)
-        for snapshot, _markets in betpawa_snapshots:
-            db.add(snapshot)
-        for snapshot, _markets in competitor_snapshots:
-            db.add(snapshot)
+        # -----------------------------------------------------------------
+        # Branch: async write queue vs synchronous fallback
+        # -----------------------------------------------------------------
+        if self._write_queue is not None and self._odds_cache is not None:
+            # ============================================================
+            # ASYNC PATH: build DTOs, change detection, cache, enqueue
+            # ============================================================
+            from src.caching.change_detection import classify_batch_changes
+            from src.caching.warmup import snapshot_to_cached_from_data
+            from src.storage.write_queue import (
+                CompetitorSnapshotWriteData,
+                MarketWriteData,
+                SnapshotWriteData,
+                WriteBatch,
+            )
 
-        # Single flush to get all snapshot IDs at once
-        storage_flush_start = time.perf_counter()
-        await db.flush()
-        storage_flush_ms = int((time.perf_counter() - storage_flush_start) * 1000)
+            # 1. Build SnapshotWriteData DTOs from parsed results
+            bp_write_data: list[SnapshotWriteData] = []
+            # Track mapping: index in bp_write_data -> (event_id, bookmaker_id)
+            bp_meta: list[tuple[int, int]] = []
 
-        # Now add all markets with their snapshot IDs (IDs populated after flush)
-        for snapshot, markets in betpawa_snapshots:
-            for market in markets:
-                market.snapshot_id = snapshot.id
-                db.add(market)
+            for event_id, bookmaker_id, raw_data, orm_markets in bp_parsed:
+                market_dtos = tuple(
+                    MarketWriteData(
+                        betpawa_market_id=m.betpawa_market_id,
+                        betpawa_market_name=m.betpawa_market_name,
+                        line=m.line,
+                        handicap_type=getattr(m, "handicap_type", None),
+                        handicap_home=getattr(m, "handicap_home", None),
+                        handicap_away=getattr(m, "handicap_away", None),
+                        outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
+                        market_groups=getattr(m, "market_groups", None),
+                    )
+                    for m in orm_markets
+                )
+                swd = SnapshotWriteData(
+                    event_id=event_id,
+                    bookmaker_id=bookmaker_id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=raw_data,
+                    markets=market_dtos,
+                )
+                bp_write_data.append(swd)
+                bp_meta.append((event_id, bookmaker_id))
 
-        for snapshot, markets in competitor_snapshots:
-            for market in markets:
-                market.snapshot_id = snapshot.id
-                db.add(market)
+            comp_write_data: list[CompetitorSnapshotWriteData] = []
+            # Track mapping: index in comp_write_data -> (sr_id, source_value, competitor_event_id)
+            comp_meta: list[tuple[str, str, int]] = []
 
-        # Commit all changes
-        storage_commit_start = time.perf_counter()
-        await db.commit()
-        storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
+            for competitor_event_id, sr_id, source_value, raw_data, orm_markets in comp_parsed:
+                market_dtos = tuple(
+                    MarketWriteData(
+                        betpawa_market_id=m.betpawa_market_id,
+                        betpawa_market_name=m.betpawa_market_name,
+                        line=m.line,
+                        handicap_type=getattr(m, "handicap_type", None),
+                        handicap_home=getattr(m, "handicap_home", None),
+                        handicap_away=getattr(m, "handicap_away", None),
+                        outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
+                        market_groups=getattr(m, "market_groups", None),
+                    )
+                    for m in orm_markets
+                )
+                cswd = CompetitorSnapshotWriteData(
+                    competitor_event_id=competitor_event_id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=raw_data,
+                    markets=market_dtos,
+                )
+                comp_write_data.append(cswd)
+                comp_meta.append((sr_id, source_value, competitor_event_id))
 
-        # Update in-memory cache with freshly stored snapshots
-        cache_update_ms = 0
-        if self._odds_cache is not None:
+            # 2. Run change detection
+            change_detection_start = time.perf_counter()
+
+            # Build tuples for classify_batch_changes:
+            # betpawa: (event_id, bookmaker_id, markets_data_as_dicts)
+            bp_for_cd: list[tuple[int, int, list]] = []
+            for swd in bp_write_data:
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "line": m.line,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                    }
+                    for m in swd.markets
+                ]
+                bp_for_cd.append((swd.event_id, swd.bookmaker_id, markets_as_dicts))
+
+            # competitor: (event_id, source, markets_data_as_dicts)
+            # Note: classify_batch_changes uses betpawa event_id for cache lookup
+            comp_for_cd: list[tuple[int, str, list]] = []
+            for idx, cswd in enumerate(comp_write_data):
+                sr_id_val, source_value, _comp_eid = comp_meta[idx]
+                betpawa_eid = event_id_map.get(sr_id_val, 0)
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "line": m.line,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                    }
+                    for m in cswd.markets
+                ]
+                comp_for_cd.append((betpawa_eid, source_value, markets_as_dicts))
+
+            changed_bp, changed_comp, unchanged_bp_ids, unchanged_comp_ids = classify_batch_changes(
+                self._odds_cache, bp_for_cd, comp_for_cd
+            )
+
+            change_detection_ms = int((time.perf_counter() - change_detection_start) * 1000)
+
+            logger.info(
+                "change_detection.results",
+                changed_bp=len(changed_bp),
+                unchanged_bp=len(unchanged_bp_ids),
+                changed_comp=len(changed_comp),
+                unchanged_comp=len(unchanged_comp_ids),
+            )
+
+            # Build sets of changed keys for filtering DTOs to enqueue
+            changed_bp_keys: set[tuple[int, int]] = {
+                (eid, bk_id) for eid, bk_id, _mkt in changed_bp
+            }
+            changed_comp_keys: set[tuple[int, str]] = set()
+            for betpawa_eid, source_val, _mkt in changed_comp:
+                changed_comp_keys.add((betpawa_eid, source_val))
+
+            # 3. Update cache immediately for ALL data (changed + unchanged)
             cache_update_start = time.perf_counter()
             cache_updated = 0
+            now_naive = datetime.now(timezone.utc).replace(tzinfo=None)
 
             # Build kickoff lookup from batch events: sr_id -> kickoff (naive UTC)
             kickoff_by_sr: dict[str, datetime] = {}
             for evt in batch["events"]:
                 ko = evt.kickoff
-                # Ensure naive UTC for cache storage consistency
                 if ko.tzinfo is not None:
                     ko = ko.replace(tzinfo=None)
                 kickoff_by_sr[evt.sr_id] = ko
 
-            # Build reverse map: event_id -> sr_id for BetPawa lookups
-            # (event_id_map is sr_id -> event_id)
+            # Reverse map: event_id -> sr_id
             eid_to_sr: dict[int, str] = {v: k for k, v in event_id_map.items()}
 
-            # Build reverse map: competitor_event_id -> (sr_id, source_value)
-            comp_eid_to_sr: dict[int, tuple[str, str]] = {
-                v: k for k, v in competitor_event_map.items()
-            }
-
-            from src.caching.warmup import snapshot_to_cached_from_models
-
-            # Populate cache from BetPawa snapshots
-            for snapshot, markets in betpawa_snapshots:
+            for idx, swd in enumerate(bp_write_data):
                 try:
-                    sr_id = eid_to_sr.get(snapshot.event_id)
-                    kickoff = kickoff_by_sr.get(sr_id) if sr_id else None
-                    # captured_at may be None if server_default not yet loaded
-                    captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
-                    cached = snapshot_to_cached_from_models(
-                        snapshot_id=snapshot.id,
-                        event_id=snapshot.event_id,
-                        bookmaker_id=snapshot.bookmaker_id,
-                        captured_at=captured_at,
-                        markets=markets,
+                    sr_id_val = eid_to_sr.get(swd.event_id)
+                    kickoff = kickoff_by_sr.get(sr_id_val) if sr_id_val else None
+                    is_changed = (swd.event_id, swd.bookmaker_id) in changed_bp_keys
+
+                    # For unchanged snapshots, preserve existing snapshot_id from cache
+                    if is_changed:
+                        snap_id = 0  # Real ID assigned later by write handler
+                    else:
+                        existing = self._odds_cache.get_betpawa_snapshot(swd.event_id)
+                        cached_snap = existing.get(swd.bookmaker_id) if existing else None
+                        snap_id = cached_snap.snapshot_id if cached_snap else 0
+
+                    cached = snapshot_to_cached_from_data(
+                        snapshot_id=snap_id,
+                        event_id=swd.event_id,
+                        bookmaker_id=swd.bookmaker_id,
+                        captured_at=now_naive,
+                        markets=swd.markets,
                     )
                     self._odds_cache.put_betpawa_snapshot(
-                        event_id=snapshot.event_id,
-                        bookmaker_id=snapshot.bookmaker_id,
+                        event_id=swd.event_id,
+                        bookmaker_id=swd.bookmaker_id,
                         snapshot=cached,
                         kickoff=kickoff,
                     )
@@ -1340,31 +1432,35 @@ class EventCoordinator:
                 except Exception as e:
                     logger.debug(
                         "Cache update failed for BetPawa snapshot",
-                        event_id=snapshot.event_id,
+                        event_id=swd.event_id,
                         error=str(e),
                     )
 
-            # Populate cache from competitor snapshots
-            for snapshot, markets in competitor_snapshots:
+            for idx, cswd in enumerate(comp_write_data):
                 try:
-                    comp_key = comp_eid_to_sr.get(snapshot.competitor_event_id)
-                    if not comp_key:
+                    sr_id_val, source_value, _comp_eid = comp_meta[idx]
+                    betpawa_eid = event_id_map.get(sr_id_val)
+                    if not betpawa_eid:
                         continue
-                    sr_id, source_value = comp_key
-                    betpawa_event_id = event_id_map.get(sr_id)
-                    if not betpawa_event_id:
-                        continue
-                    kickoff = kickoff_by_sr.get(sr_id)
-                    captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
-                    cached = snapshot_to_cached_from_models(
-                        snapshot_id=snapshot.id,
-                        event_id=betpawa_event_id,
+                    kickoff = kickoff_by_sr.get(sr_id_val)
+                    is_changed = (betpawa_eid, source_value) in changed_comp_keys
+
+                    if is_changed:
+                        snap_id = 0
+                    else:
+                        existing = self._odds_cache.get_competitor_snapshot(betpawa_eid)
+                        cached_snap = existing.get(source_value) if existing else None
+                        snap_id = cached_snap.snapshot_id if cached_snap else 0
+
+                    cached = snapshot_to_cached_from_data(
+                        snapshot_id=snap_id,
+                        event_id=betpawa_eid,
                         bookmaker_id=0,
-                        captured_at=captured_at,
-                        markets=markets,
+                        captured_at=now_naive,
+                        markets=cswd.markets,
                     )
                     self._odds_cache.put_competitor_snapshot(
-                        event_id=betpawa_event_id,
+                        event_id=betpawa_eid,
                         source=source_value,
                         snapshot=cached,
                         kickoff=kickoff,
@@ -1373,7 +1469,7 @@ class EventCoordinator:
                 except Exception as e:
                     logger.debug(
                         "Cache update failed for competitor snapshot",
-                        competitor_event_id=snapshot.competitor_event_id,
+                        competitor_event_id=cswd.competitor_event_id,
                         error=str(e),
                     )
 
@@ -1384,14 +1480,200 @@ class EventCoordinator:
                 duration_ms=cache_update_ms,
             )
 
-        # Store timing breakdown for progress events
-        self._last_storage_timings = {
-            "storage_lookups_ms": storage_lookups_ms,
-            "storage_processing_ms": storage_processing_ms,
-            "storage_flush_ms": storage_flush_ms,
-            "storage_commit_ms": storage_commit_ms,
-            "cache_update_ms": cache_update_ms,
-        }
+            # 4. Commit coordinator session (events, competitors, reconciliation, status — no snapshots)
+            storage_commit_start = time.perf_counter()
+            await db.commit()
+            storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
+
+            # 5. Enqueue write batch (only changed data + unchanged IDs)
+            queue_enqueue_start = time.perf_counter()
+
+            # Filter DTOs to only include changed snapshots
+            changed_bp_dtos = tuple(
+                swd for swd in bp_write_data
+                if (swd.event_id, swd.bookmaker_id) in changed_bp_keys
+            )
+            changed_comp_dtos = tuple(
+                cswd for idx, cswd in enumerate(comp_write_data)
+                if (event_id_map.get(comp_meta[idx][0], 0), comp_meta[idx][1]) in changed_comp_keys
+            )
+
+            write_batch = WriteBatch(
+                changed_betpawa=changed_bp_dtos,
+                changed_competitor=changed_comp_dtos,
+                unchanged_betpawa_ids=tuple(unchanged_bp_ids),
+                unchanged_competitor_ids=tuple(unchanged_comp_ids),
+                scrape_run_id=scrape_run_id,
+                batch_index=0,  # Will be set by caller if needed
+            )
+            await self._write_queue.enqueue(write_batch)
+
+            queue_enqueue_ms = int((time.perf_counter() - queue_enqueue_start) * 1000)
+
+            # Store timing breakdown for progress events
+            self._last_storage_timings = {
+                "storage_lookups_ms": storage_lookups_ms,
+                "storage_processing_ms": storage_processing_ms,
+                "storage_flush_ms": 0,  # No sync flush in async path
+                "storage_commit_ms": storage_commit_ms,
+                "cache_update_ms": cache_update_ms,
+                "change_detection_ms": change_detection_ms,
+                "queue_enqueue_ms": queue_enqueue_ms,
+            }
+
+        else:
+            # ============================================================
+            # SYNC FALLBACK: original bulk insert (when write_queue is None)
+            # ============================================================
+            betpawa_snapshots: list[tuple[OddsSnapshot, list[MarketOdds]]] = []
+            competitor_snapshots: list[tuple[CompetitorOddsSnapshot, list[CompetitorMarketOdds]]] = []
+
+            for event_id, bookmaker_id, raw_data, orm_markets in bp_parsed:
+                snapshot = OddsSnapshot(
+                    event_id=event_id,
+                    bookmaker_id=bookmaker_id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=raw_data,
+                )
+                betpawa_snapshots.append((snapshot, orm_markets))
+
+            for competitor_event_id, sr_id, source_value, raw_data, orm_markets in comp_parsed:
+                snapshot = CompetitorOddsSnapshot(
+                    competitor_event_id=competitor_event_id,
+                    scrape_run_id=scrape_run_id,
+                    raw_response=raw_data,
+                )
+                competitor_snapshots.append((snapshot, orm_markets))
+
+            # Add all snapshots first (both BetPawa and competitor)
+            for snapshot, _markets in betpawa_snapshots:
+                db.add(snapshot)
+            for snapshot, _markets in competitor_snapshots:
+                db.add(snapshot)
+
+            # Single flush to get all snapshot IDs at once
+            storage_flush_start = time.perf_counter()
+            await db.flush()
+            storage_flush_ms = int((time.perf_counter() - storage_flush_start) * 1000)
+
+            # Now add all markets with their snapshot IDs (IDs populated after flush)
+            for snapshot, markets in betpawa_snapshots:
+                for market in markets:
+                    market.snapshot_id = snapshot.id
+                    db.add(market)
+
+            for snapshot, markets in competitor_snapshots:
+                for market in markets:
+                    market.snapshot_id = snapshot.id
+                    db.add(market)
+
+            # Commit all changes
+            storage_commit_start = time.perf_counter()
+            await db.commit()
+            storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
+
+            # Update in-memory cache with freshly stored snapshots
+            cache_update_ms = 0
+            if self._odds_cache is not None:
+                cache_update_start = time.perf_counter()
+                cache_updated = 0
+
+                # Build kickoff lookup from batch events: sr_id -> kickoff (naive UTC)
+                kickoff_by_sr: dict[str, datetime] = {}
+                for evt in batch["events"]:
+                    ko = evt.kickoff
+                    # Ensure naive UTC for cache storage consistency
+                    if ko.tzinfo is not None:
+                        ko = ko.replace(tzinfo=None)
+                    kickoff_by_sr[evt.sr_id] = ko
+
+                # Build reverse map: event_id -> sr_id for BetPawa lookups
+                # (event_id_map is sr_id -> event_id)
+                eid_to_sr: dict[int, str] = {v: k for k, v in event_id_map.items()}
+
+                # Build reverse map: competitor_event_id -> (sr_id, source_value)
+                comp_eid_to_sr: dict[int, tuple[str, str]] = {
+                    v: k for k, v in competitor_event_map.items()
+                }
+
+                from src.caching.warmup import snapshot_to_cached_from_models
+
+                # Populate cache from BetPawa snapshots
+                for snapshot, markets in betpawa_snapshots:
+                    try:
+                        sr_id = eid_to_sr.get(snapshot.event_id)
+                        kickoff = kickoff_by_sr.get(sr_id) if sr_id else None
+                        # captured_at may be None if server_default not yet loaded
+                        captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
+                        cached = snapshot_to_cached_from_models(
+                            snapshot_id=snapshot.id,
+                            event_id=snapshot.event_id,
+                            bookmaker_id=snapshot.bookmaker_id,
+                            captured_at=captured_at,
+                            markets=markets,
+                        )
+                        self._odds_cache.put_betpawa_snapshot(
+                            event_id=snapshot.event_id,
+                            bookmaker_id=snapshot.bookmaker_id,
+                            snapshot=cached,
+                            kickoff=kickoff,
+                        )
+                        cache_updated += 1
+                    except Exception as e:
+                        logger.debug(
+                            "Cache update failed for BetPawa snapshot",
+                            event_id=snapshot.event_id,
+                            error=str(e),
+                        )
+
+                # Populate cache from competitor snapshots
+                for snapshot, markets in competitor_snapshots:
+                    try:
+                        comp_key = comp_eid_to_sr.get(snapshot.competitor_event_id)
+                        if not comp_key:
+                            continue
+                        sr_id, source_value = comp_key
+                        betpawa_event_id = event_id_map.get(sr_id)
+                        if not betpawa_event_id:
+                            continue
+                        kickoff = kickoff_by_sr.get(sr_id)
+                        captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
+                        cached = snapshot_to_cached_from_models(
+                            snapshot_id=snapshot.id,
+                            event_id=betpawa_event_id,
+                            bookmaker_id=0,
+                            captured_at=captured_at,
+                            markets=markets,
+                        )
+                        self._odds_cache.put_competitor_snapshot(
+                            event_id=betpawa_event_id,
+                            source=source_value,
+                            snapshot=cached,
+                            kickoff=kickoff,
+                        )
+                        cache_updated += 1
+                    except Exception as e:
+                        logger.debug(
+                            "Cache update failed for competitor snapshot",
+                            competitor_event_id=snapshot.competitor_event_id,
+                            error=str(e),
+                        )
+
+                cache_update_ms = int((time.perf_counter() - cache_update_start) * 1000)
+                logger.debug(
+                    "Cache updated",
+                    snapshots=cache_updated,
+                    duration_ms=cache_update_ms,
+                )
+
+            # Store timing breakdown for progress events
+            self._last_storage_timings = {
+                "storage_lookups_ms": storage_lookups_ms,
+                "storage_processing_ms": storage_processing_ms,
+                "storage_flush_ms": storage_flush_ms,
+                "storage_commit_ms": storage_commit_ms,
+                "cache_update_ms": cache_update_ms,
+            }
 
         logger.info(
             "Batch storage complete",
