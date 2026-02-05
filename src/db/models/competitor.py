@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Index, JSON, String, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Index, JSON, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.base import Base
@@ -118,6 +118,7 @@ class CompetitorOddsSnapshot(Base):
         ForeignKey("scrape_runs.id"), nullable=True
     )
     raw_response: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    last_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Relationships
     competitor_event: Mapped["CompetitorEvent"] = relationship(
