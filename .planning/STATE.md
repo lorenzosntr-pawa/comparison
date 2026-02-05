@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 55.1 of 59 (Fix Phase 55 Bugs — INSERTED)
+Phase: 56 of 59 (Concurrency Tuning)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-05 — Completed 55.1-01-PLAN.md
+Last activity: 2026-02-05 — Completed 56-01-PLAN.md
 
-Progress: █████░░░░░ 50%
+Progress: ██████░░░░ 62%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: █████░░░░░ 50%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 135 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX)
+- Total plans completed: 136 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX + 1 v2.0 Phase 56)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -143,6 +143,9 @@ Progress: █████░░░░░ 50%
 - **Dual-path store_batch_results** - async write queue path for scheduled scraping, sync fallback for on-demand (v2.0)
 - **Cache-before-persist** - update cache immediately for all data, persist changed data asynchronously via write queue (v2.0)
 - **snapshot_to_cached_from_data()** - DTO-to-cache conversion parallel to ORM-based helper, uses snapshot_id=0 for unsaved (v2.0)
+- **Event-level semaphore for intra-batch concurrency** - asyncio.Semaphore(max_concurrent_events) limits parallel events within each batch (v2.0)
+- **scrape_batch() returns list instead of AsyncGenerator** - collect concurrent results then yield progress, cleaner than parallel async generators (v2.0)
+- **gather(return_exceptions=True) over TaskGroup** - partial failure tolerance, no cascading cancellation (v2.0)
 
 ### Key Decisions
 
@@ -177,6 +180,10 @@ Progress: █████░░░░░ 50%
 - Dual-path persistence: async when write_queue present, sync when None — backward compat for on-demand scrape (v2.0 Phase 55)
 - Cache updated for ALL data before enqueue — API always serves freshest odds regardless of write queue latency (v2.0 Phase 55)
 - Write queue lifecycle: created after cache warmup, stopped before scheduler shutdown (v2.0 Phase 55)
+- Default max_concurrent_events=10 — 10 events × 3 platforms = 30 concurrent HTTP requests, within pool limit (v2.0 Phase 56)
+- HTTP pool increased to 200/100 — headroom for concurrent events with retries (v2.0 Phase 56)
+- Batch scrape time reduced 67.1% (35s→11.5s), total pipeline 65.2% faster (24.4min→8.5min) (v2.0 Phase 56)
+- Concurrency parameters exposed via settings API — all 6 fields writable via PATCH /api/settings (v2.0 Phase 56)
 
 ### Blockers/Concerns
 
@@ -203,6 +210,6 @@ Progress: █████░░░░░ 50%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 55.1-01-PLAN.md — Phase 55.1 complete (BUG-005/006/007 fixed)
+Stopped at: Completed 56-01-PLAN.md — Phase 56 complete (concurrent event scraping, 67% batch time reduction)
 Resume file: None
-Next action: Plan Phase 56 (Concurrency Tuning)
+Next action: Plan Phase 57 (WebSocket Infrastructure)
