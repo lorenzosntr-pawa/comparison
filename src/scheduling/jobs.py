@@ -118,13 +118,14 @@ async def scrape_all_platforms() -> None:
                 f"bet9ja new={discovery_results['bet9ja']['new']}"
             )
 
-            # Create EventCoordinator from settings (with optional cache)
+            # Create EventCoordinator from settings (with optional cache and write queue)
             coordinator = EventCoordinator.from_settings(
                 betpawa_client=betpawa_client,
                 sportybet_client=sportybet_client,
                 bet9ja_client=bet9ja_client,
                 settings=settings,
                 odds_cache=getattr(_app_state, "odds_cache", None),
+                write_queue=getattr(_app_state, "write_queue", None),
             )
 
             # Execute scrape with progress streaming
@@ -212,6 +213,17 @@ async def scrape_all_platforms() -> None:
                         f"Cache eviction: {evicted} events removed, "
                         f"stats={odds_cache.stats()}"
                     )
+
+            # Log write queue stats after scrape cycle
+            write_queue = getattr(_app_state, "write_queue", None)
+            if write_queue:
+                stats = write_queue.stats()
+                logger.info(
+                    f"Write queue post-scrape: "
+                    f"queue_size={stats['queue_size']}, "
+                    f"queue_maxsize={stats['queue_maxsize']}, "
+                    f"running={stats['running']}"
+                )
 
         except Exception as e:
             logger.exception(f"ScrapeRun {scrape_run_id} failed: {e}")

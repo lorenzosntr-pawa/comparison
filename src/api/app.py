@@ -18,6 +18,7 @@ from src.api.routes.settings import router as settings_router
 from src.caching.odds_cache import OddsCache
 from src.caching.warmup import warm_cache_from_db
 from src.db.engine import async_session_factory
+from src.storage import AsyncWriteQueue
 from src.scheduling.jobs import set_app_state
 from src.scheduling.scheduler import (
     configure_scheduler,
@@ -135,7 +136,25 @@ async def lifespan(app: FastAPI):
                     **warmup_stats,
                 )
 
+                # --- Async write queue ---
+                t0 = perf_counter()
+                write_queue = AsyncWriteQueue(
+                    session_factory=async_session_factory,
+                    maxsize=50,
+                )
+                await write_queue.start()
+                app.state.write_queue = write_queue
+                wq_ms = (perf_counter() - t0) * 1000
+                log.info(
+                    "write_queue_started",
+                    startup_ms=round(wq_ms, 1),
+                )
+
                 yield
+
+                # --- Shutdown ---
+                # Stop write queue first (drains remaining items)
+                await write_queue.stop()
 
                 # Shutdown scheduler gracefully
                 shutdown_scheduler()
