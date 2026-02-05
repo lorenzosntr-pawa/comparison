@@ -184,7 +184,11 @@ class OddsCache:
     # -- Stats -------------------------------------------------------------
 
     def stats(self) -> dict:
-        """Return summary statistics about the cache contents."""
+        """Return summary statistics about the cache contents.
+
+        Includes an estimated memory usage based on ~200 bytes per cached
+        market (frozen dataclass with outcome dicts).
+        """
         betpawa_events = len(self._betpawa_snapshots)
         competitor_events = len(self._competitor_snapshots)
 
@@ -199,9 +203,20 @@ class OddsCache:
                 total_snapshots += 1
                 total_markets += len(snap.markets)
 
+        # Rough memory estimate: ~200 bytes per CachedMarket (frozen dataclass
+        # with outcome list, string fields, optional floats) plus ~100 bytes
+        # overhead per snapshot and ~50 bytes per dict entry.
+        estimated_bytes = (
+            total_markets * 200
+            + total_snapshots * 100
+            + (betpawa_events + competitor_events) * 50
+        )
+        estimated_memory_mb = round(estimated_bytes / (1024 * 1024), 2)
+
         return {
             "betpawa_events": betpawa_events,
             "competitor_events": competitor_events,
             "total_snapshots": total_snapshots,
             "total_markets": total_markets,
+            "estimated_memory_mb": estimated_memory_mb,
         }

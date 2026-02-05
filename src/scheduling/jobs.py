@@ -1,7 +1,7 @@
 """Scheduled job functions for periodic scraping and cleanup."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -201,6 +201,17 @@ async def scrape_all_platforms() -> None:
                 f"Completed ScrapeRun {scrape_run_id}: "
                 f"status={scrape_run.status.value}, events={total_events}"
             )
+
+            # Evict expired events from cache (2 hours past kickoff grace period)
+            odds_cache = getattr(_app_state, "odds_cache", None)
+            if odds_cache:
+                cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)
+                evicted = odds_cache.evict_expired(cutoff)
+                if evicted > 0:
+                    logger.info(
+                        f"Cache eviction: {evicted} events removed, "
+                        f"stats={odds_cache.stats()}"
+                    )
 
         except Exception as e:
             logger.exception(f"ScrapeRun {scrape_run_id} failed: {e}")
