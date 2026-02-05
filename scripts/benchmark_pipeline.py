@@ -1,8 +1,9 @@
 """Benchmark script for the scraping pipeline.
 
-Runs a real scrape cycle with async write queue and change detection,
-collects all progress events with timing data, measures API response
-latency and memory usage, then produces a structured markdown report.
+Runs a real scrape cycle with async write queue, change detection, and
+intra-batch concurrent event scraping (Phase 56). Collects all progress
+events with timing data, measures API response latency and memory usage,
+then produces a structured markdown report comparing against Phase 53 baseline.
 
 Usage:
     python scripts/benchmark_pipeline.py
@@ -69,14 +70,15 @@ def pct(part: float, total: float) -> str:
 # 1. Run a real scrape cycle (with cache + write queue)
 # ---------------------------------------------------------------------------
 
-async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
+async def run_scrape_cycle() -> tuple[list[dict], int, dict, dict]:
     """Run a full EventCoordinator scrape cycle with async write queue.
 
     Returns:
-        Tuple of (progress_events list, scrape_run_id, write_queue_stats).
+        Tuple of (progress_events list, scrape_run_id, write_queue_stats, concurrency_settings).
     """
     progress_events: list[dict] = []
     write_queue_stats: dict = {}
+    concurrency_settings: dict = {}
 
     # Create OddsCache and warm from DB
     odds_cache = OddsCache()
@@ -93,6 +95,18 @@ async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
             # Get settings
             result = await db.execute(select(Settings).where(Settings.id == 1))
             settings = result.scalar_one_or_none()
+
+            # Capture concurrency settings for report
+            if settings:
+                concurrency_settings.update({
+                    "max_concurrent_events": getattr(settings, "max_concurrent_events", 10),
+                    "batch_size": settings.batch_size,
+                    "betpawa_concurrency": settings.betpawa_concurrency,
+                    "sportybet_concurrency": settings.sportybet_concurrency,
+                    "bet9ja_concurrency": settings.bet9ja_concurrency,
+                    "bet9ja_delay_ms": settings.bet9ja_delay_ms,
+                })
+                print(f"  Concurrency settings: max_concurrent_events={concurrency_settings['max_concurrent_events']}, batch_size={concurrency_settings['batch_size']}")
 
             # Create ScrapeRun
             scrape_run = ScrapeRun(
@@ -116,7 +130,7 @@ async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
                     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 },
                 timeout=30.0,
-                limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
+                limits=httpx.Limits(max_connections=200, max_keepalive_connections=100),
             ) as sportybet_http:
                 async with httpx.AsyncClient(
                     base_url="https://www.betpawa.ng",
@@ -128,7 +142,7 @@ async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
                         "x-pawa-brand": "betpawa-nigeria",
                     },
                     timeout=30.0,
-                    limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
+                    limits=httpx.Limits(max_connections=200, max_keepalive_connections=100),
                 ) as betpawa_http:
                     async with httpx.AsyncClient(
                         base_url="https://sports.bet9ja.com",
@@ -138,7 +152,7 @@ async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
                             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                         },
                         timeout=30.0,
-                        limits=httpx.Limits(max_connections=100, max_keepalive_connections=50),
+                        limits=httpx.Limits(max_connections=200, max_keepalive_connections=100),
                     ) as bet9ja_http:
 
                         sportybet = SportyBetClient(sportybet_http)
@@ -185,7 +199,7 @@ async def run_scrape_cycle() -> tuple[list[dict], int, dict]:
         write_queue_stats["drain_ms"] = drain_ms
         print(f"  Write queue drained in {drain_ms}ms")
 
-    return progress_events, scrape_run_id, write_queue_stats
+    return progress_events, scrape_run_id, write_queue_stats, concurrency_settings
 
 
 # ---------------------------------------------------------------------------
@@ -295,6 +309,7 @@ def analyze_and_report(
     rss_mb: float | None,
     total_wall_ms: int,
     write_queue_stats: dict | None = None,
+    concurrency_settings: dict | None = None,
 ) -> str:
     """Analyze collected progress events and generate markdown report.
 
@@ -428,10 +443,10 @@ def analyze_and_report(
             recommendation = "Storage still dominates - investigate write handler performance"
         elif scrape_frac > 0.5:
             bottleneck = "Scraping"
-            recommendation = "Phase 56 (Concurrency Tuning) is highest priority - scraping dominates pipeline time"
+            recommendation = "Scraping still dominates - consider increasing max_concurrent_events or platform concurrency"
         elif disc_frac > 0.5:
             bottleneck = "Discovery"
-            recommendation = "Phase 56 (Concurrency Tuning) should optimize discovery"
+            recommendation = "Discovery dominates - consider caching tournament lists or parallel competition fetches"
         else:
             bottleneck = "Mixed"
             recommendation = "No single dominant bottleneck - well balanced pipeline"
@@ -439,9 +454,25 @@ def analyze_and_report(
         bottleneck = "Unknown"
         recommendation = "No measurements available"
 
+    # ---- Concurrency settings ----
+    max_concurrent_events = (concurrency_settings or {}).get("max_concurrent_events", 10)
+    batch_size_setting = (concurrency_settings or {}).get("batch_size", 50)
+    bp_concurrency = (concurrency_settings or {}).get("betpawa_concurrency", 50)
+    sb_concurrency = (concurrency_settings or {}).get("sportybet_concurrency", 50)
+    b9j_concurrency = (concurrency_settings or {}).get("bet9ja_concurrency", 15)
+
+    # ---- Throughput metrics ----
+    events_per_second = (events_scraped_count / (cycle_total_ms / 1000)) if cycle_total_ms > 0 else 0
+
+    # ---- Batch scrape time distribution ----
+    batch_scrape_min = min(batch_scrape_times) if batch_scrape_times else 0
+    batch_scrape_max = max(batch_scrape_times) if batch_scrape_times else 0
+    batch_scrape_p50 = percentile(batch_scrape_times, 50) if batch_scrape_times else 0
+    batch_scrape_p95 = percentile(batch_scrape_times, 95) if batch_scrape_times else 0
+
     # ---- Build report ----
     lines = [
-        "# Pipeline Benchmark Report (Phase 55: Async Write Pipeline)",
+        "# Pipeline Benchmark Report (Phase 56: Concurrency Tuning)",
         "",
         f"**Date:** {now_str}",
         f"**Events discovered:** {total_events_discovered}",
@@ -449,7 +480,20 @@ def analyze_and_report(
         f"**Events failed:** {events_failed_count}",
         f"**Batches processed:** {batch_count}",
         f"**Total pipeline time:** {cycle_total_ms}ms ({cycle_total_ms / 1000:.1f}s)",
+        f"**Effective throughput:** {events_per_second:.1f} events/second",
         f"**Async write queue:** {'Active' if async_write_active else 'Inactive (sync fallback)'}",
+        "",
+        "## Concurrency Configuration",
+        "",
+        "| Parameter | Value |",
+        "|-----------|-------|",
+        f"| max_concurrent_events | {max_concurrent_events} |",
+        f"| batch_size | {batch_size_setting} |",
+        f"| betpawa_concurrency | {bp_concurrency} |",
+        f"| sportybet_concurrency | {sb_concurrency} |",
+        f"| bet9ja_concurrency | {b9j_concurrency} |",
+        f"| HTTP max_connections | 200 |",
+        f"| HTTP max_keepalive | 100 |",
         "",
         "## Discovery Phase",
         "",
@@ -469,6 +513,16 @@ def analyze_and_report(
         f"| Avg batch storage time (ms) | {fmt_ms(avg_batch_store)} |",
         f"| Storage % of total batch time | {storage_pct} |",
         f"| Scrape % of total batch time | {scrape_pct} |",
+        "",
+        "### Batch Scrape Time Distribution",
+        "",
+        "| Metric | Value (ms) |",
+        "|--------|------------|",
+        f"| Min | {fmt_ms(batch_scrape_min)} |",
+        f"| Avg | {fmt_ms(avg_batch_scrape)} |",
+        f"| P50 | {fmt_ms(batch_scrape_p50)} |",
+        f"| P95 | {fmt_ms(batch_scrape_p95)} |",
+        f"| Max | {fmt_ms(batch_scrape_max)} |",
         "",
         "### Storage Breakdown (avg per batch)",
         "",
@@ -542,6 +596,43 @@ def analyze_and_report(
             "Unchanged snapshots get a `last_confirmed_at` timestamp update instead of full INSERT.",
         ])
 
+    # Phase 56 concurrency comparison section
+    # Baseline values from Phase 53 benchmark
+    baseline_batch_scrape_ms = 34911  # avg batch scrape time from Phase 53
+    baseline_pipeline_ms = 1461515  # total pipeline time from Phase 53
+    baseline_events = 1291
+    baseline_events_per_sec = baseline_events / (baseline_pipeline_ms / 1000) if baseline_pipeline_ms > 0 else 0
+
+    batch_scrape_improvement = (
+        ((baseline_batch_scrape_ms - avg_batch_scrape) / baseline_batch_scrape_ms * 100)
+        if baseline_batch_scrape_ms > 0 else 0
+    )
+    pipeline_improvement = (
+        ((baseline_pipeline_ms - cycle_total_ms) / baseline_pipeline_ms * 100)
+        if baseline_pipeline_ms > 0 else 0
+    )
+    throughput_improvement = (
+        ((events_per_second - baseline_events_per_sec) / baseline_events_per_sec * 100)
+        if baseline_events_per_sec > 0 else 0
+    )
+
+    lines.extend([
+        "",
+        "## Concurrency Tuning (Phase 56)",
+        "",
+        "| Metric | Baseline (Phase 53) | After Phase 56 | Change |",
+        "|--------|---------------------|----------------|--------|",
+        f"| Avg batch scrape time | {fmt_ms(baseline_batch_scrape_ms)}ms | {fmt_ms(avg_batch_scrape)}ms | {batch_scrape_improvement:+.1f}% |",
+        f"| Total pipeline time | {fmt_ms(baseline_pipeline_ms)}ms ({baseline_pipeline_ms/1000:.0f}s) | {fmt_ms(cycle_total_ms)}ms ({cycle_total_ms/1000:.0f}s) | {pipeline_improvement:+.1f}% |",
+        f"| Throughput (events/sec) | {baseline_events_per_sec:.1f} | {events_per_second:.1f} | {throughput_improvement:+.1f}% |",
+        f"| max_concurrent_events | 1 (sequential) | {max_concurrent_events} | new |",
+        f"| HTTP max_connections | 100 | 200 | +100% |",
+        "",
+        "**Key improvement:** Events within each batch are now scraped concurrently",
+        f"(up to {max_concurrent_events} at a time) instead of sequentially. Per-platform",
+        "semaphores throttle load to prevent rate limiting while maximizing throughput.",
+    ])
+
     lines.extend([
         "",
         "## API Response Latency",
@@ -585,11 +676,11 @@ def analyze_and_report(
         "",
         "### Phase Impact Mapping",
         "",
-        "| v2.0 Phase | Addresses | Current Cost |",
-        "|------------|-----------|-------------|",
+        "| v2.0 Phase | Addresses | Status |",
+        "|------------|-----------|--------|",
         f"| Phase 54: Cache Layer | API response latency | {'Measured' if api_latency else 'Not measured (server down)'} |",
         f"| Phase 55: Async Write Pipeline | Storage bottleneck | {fmt_ms(total_store_time)}ms total |",
-        f"| Phase 56: Concurrency Tuning | Scraping throughput | {fmt_ms(total_scrape_time)}ms total |",
+        f"| Phase 56: Concurrency Tuning | Scraping throughput | {fmt_ms(total_scrape_time)}ms total ({batch_scrape_improvement:+.1f}% vs baseline) |",
         "",
     ])
 
@@ -603,7 +694,7 @@ def analyze_and_report(
 async def main() -> None:
     """Run benchmark and produce report."""
     print("=" * 60)
-    print("  Pipeline Benchmark (Phase 55: Async Write Pipeline)")
+    print("  Pipeline Benchmark (Phase 56: Concurrency Tuning)")
     print("=" * 60)
     print()
 
@@ -617,7 +708,7 @@ async def main() -> None:
     wall_start = time.perf_counter()
 
     try:
-        progress_events, scrape_run_id, wq_stats = await run_scrape_cycle()
+        progress_events, scrape_run_id, wq_stats, concurrency_cfg = await run_scrape_cycle()
     except Exception as e:
         print(f"  ERROR: Scrape cycle failed: {e}")
         import traceback
@@ -666,10 +757,11 @@ async def main() -> None:
         rss_mb=rss_mb,
         total_wall_ms=wall_ms,
         write_queue_stats=wq_stats,
+        concurrency_settings=concurrency_cfg,
     )
 
-    # Write report to Phase 55 directory
-    report_path = PROJECT_ROOT / ".planning" / "phases" / "55-async-write-pipeline" / "BENCHMARK-PHASE55.md"
+    # Write report to Phase 56 directory
+    report_path = PROJECT_ROOT / ".planning" / "phases" / "56-concurrency-tuning" / "BENCHMARK-PHASE56.md"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report, encoding="utf-8")
 
@@ -686,20 +778,33 @@ async def main() -> None:
         print(f"  Batches: {cycle_event.get('batch_count', 0)}")
         print(f"  Total snapshots: {cycle_event.get('total_snapshots', 0)}")
 
-    # Print Phase 55 specific metrics
+    # Print Phase 56 concurrency metrics
     batch_events = [ev for ev in progress_events if ev.get("event_type") == "BATCH_COMPLETE"]
     if batch_events:
-        cd_times = [ev.get("change_detection_ms", 0) for ev in batch_events]
-        eq_times = [ev.get("queue_enqueue_ms", 0) for ev in batch_events]
+        scrape_times = [ev.get("batch_scrape_ms", 0) for ev in batch_events]
         store_times = [ev.get("batch_store_ms", 0) for ev in batch_events]
 
-        if any(cd_times):
-            print()
-            print("Phase 55 Metrics:")
-            print(f"  Avg change detection: {statistics.mean(cd_times):.0f}ms/batch")
-            print(f"  Avg queue enqueue: {statistics.mean(eq_times):.0f}ms/batch")
-            print(f"  Avg storage (coordinator): {statistics.mean(store_times):.0f}ms/batch")
-            print(f"  Write queue drain: {wq_stats.get('drain_ms', 0)}ms")
+        print()
+        print("Phase 56 Concurrency Metrics:")
+        max_ce = concurrency_cfg.get("max_concurrent_events", 10) if concurrency_cfg else 10
+        print(f"  max_concurrent_events: {max_ce}")
+        print(f"  Avg batch scrape: {statistics.mean(scrape_times):.0f}ms/batch")
+        print(f"  Avg batch store: {statistics.mean(store_times):.0f}ms/batch")
+
+        # Baseline comparison
+        baseline_scrape = 34911
+        if scrape_times:
+            improvement = ((baseline_scrape - statistics.mean(scrape_times)) / baseline_scrape * 100)
+            print(f"  Batch scrape improvement vs Phase 53: {improvement:+.1f}%")
+
+        cycle = next((ev for ev in progress_events if ev.get("event_type") == "CYCLE_COMPLETE"), None)
+        if cycle:
+            total_ms = cycle.get("total_timing_ms", 0)
+            scraped = cycle.get("events_scraped", 0)
+            if total_ms > 0:
+                print(f"  Effective throughput: {scraped / (total_ms / 1000):.1f} events/sec")
+
+        print(f"  Write queue drain: {wq_stats.get('drain_ms', 0)}ms")
 
     print()
     print("Done!")
