@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 53 of 59 (Investigation & Benchmarking)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 53-01-PLAN.md
+Phase: 54 of 59 (In-Memory Cache Layer)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-05 — Completed 54-01-PLAN.md
 
-Progress: █░░░░░░░░░ 14%
+Progress: ██░░░░░░░░ 29%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: █░░░░░░░░░ 14%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 127 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 1 v2.0)
+- Total plans completed: 128 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 2 v2.0)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -131,6 +131,8 @@ Progress: █░░░░░░░░░ 14%
 - **Shared market utilities** - deduplicated code in lib/market-utils.ts (v1.9)
 - **perf_counter timing on progress events** - additive timing fields on existing dict events, backward-compatible (v2.0)
 - **Benchmark script pattern** - real scrape cycle + API latency + memory profiling for repeatable measurements (v2.0)
+- **Frozen dataclass cache entries** - immutable, hashable, no ORM session dependency for in-memory caching (v2.0)
+- **Cache warmup in app lifespan** - async DB load with perf_counter timing at startup (v2.0)
 
 ### Key Decisions
 
@@ -150,6 +152,8 @@ Progress: █░░░░░░░░░ 14%
 - Scraping is dominant bottleneck at 61.3% of pipeline — Phase 56 highest priority (v2.0 baseline)
 - Storage secondary at 37.4% — Processing and Commit sub-phases dominate (v2.0 baseline)
 - Event list API p50=903ms justifies cache layer (v2.0 baseline)
+- Frozen dataclasses for cache entries — avoids detached ORM instance issues (v2.0 Phase 54)
+- Duck-type compatible CachedSnapshot — no adapter layer for existing _build_inline_odds() (v2.0 Phase 54)
 
 ### Blockers/Concerns
 
@@ -175,6 +179,6 @@ Progress: █░░░░░░░░░ 14%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 53-01-PLAN.md (Phase 53 complete)
+Stopped at: Completed 54-01-PLAN.md (1 of 3 plans in Phase 54)
 Resume file: None
-Next action: Run /gsd:plan-phase 54 to plan In-Memory Cache Layer
+Next action: Execute 54-02-PLAN.md (scrape pipeline cache population + eviction)
