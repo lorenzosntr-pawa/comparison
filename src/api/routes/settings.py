@@ -91,6 +91,25 @@ async def update_settings(
     if update.cleanup_frequency_hours is not None:
         settings.cleanup_frequency_hours = update.cleanup_frequency_hours
 
+    # Scraping concurrency tuning parameters (Phase 40 + Phase 56)
+    if update.betpawa_concurrency is not None:
+        settings.betpawa_concurrency = update.betpawa_concurrency
+
+    if update.sportybet_concurrency is not None:
+        settings.sportybet_concurrency = update.sportybet_concurrency
+
+    if update.bet9ja_concurrency is not None:
+        settings.bet9ja_concurrency = update.bet9ja_concurrency
+
+    if update.bet9ja_delay_ms is not None:
+        settings.bet9ja_delay_ms = update.bet9ja_delay_ms
+
+    if update.batch_size is not None:
+        settings.batch_size = update.batch_size
+
+    if update.max_concurrent_events is not None:
+        settings.max_concurrent_events = update.max_concurrent_events
+
     await db.commit()
     await db.refresh(settings)
 

@@ -33,12 +33,13 @@ from src.scraping.logging import configure_logging
 # Default timeout for all HTTP clients (seconds)
 DEFAULT_TIMEOUT = 30.0
 
-# Connection pool limits for concurrent scraping
+# Connection pool limits for concurrent scraping (Phase 56: increased for intra-batch concurrency)
 # max_connections: total connections across all hosts
 # max_keepalive_connections: connections to keep alive for reuse
+# With 10 concurrent events x 3 platforms x ~3 connections + retries = ~90 peak, 200 max gives headroom
 CONNECTION_LIMITS = httpx.Limits(
-    max_connections=100,
-    max_keepalive_connections=50,
+    max_connections=200,
+    max_keepalive_connections=100,
 )
 
 

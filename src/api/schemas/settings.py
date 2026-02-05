@@ -28,6 +28,9 @@ class SettingsResponse(BaseModel):
     bet9ja_delay_ms: int
     batch_size: int
 
+    # Intra-batch event concurrency (Phase 56)
+    max_concurrent_events: int
+
     updated_at: datetime | None
 
 
@@ -70,4 +73,9 @@ class SettingsUpdate(BaseModel):
     )
     batch_size: int | None = Field(
         default=None, ge=10, le=200, description="Events per batch (10-200)"
+    )
+
+    # Intra-batch event concurrency (Phase 56)
+    max_concurrent_events: int | None = Field(
+        default=None, ge=1, le=50, description="Max concurrent events per batch (1-50)"
     )
