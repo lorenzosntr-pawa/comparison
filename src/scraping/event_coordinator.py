@@ -105,6 +105,8 @@ class EventCoordinator:
         self._bet9ja_delay_ms = bet9ja_delay_ms
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
+        self._last_discovery_timings: dict[str, int] = {}
+        self._last_storage_timings: dict[str, int] = {}
 
     @classmethod
     def from_settings(
@@ -153,13 +155,24 @@ class EventCoordinator:
         """
         logger.info("Starting parallel event discovery")
 
-        # Run discovery in parallel
+        # Timed discovery wrappers for per-platform timing
+        platform_timings_ms: dict[str, int] = {}
+
+        async def _timed_discover(name: str, coro):
+            t0 = time.perf_counter()
+            result = await coro
+            platform_timings_ms[name] = int((time.perf_counter() - t0) * 1000)
+            return result
+
+        # Run discovery in parallel with per-platform timing
+        discovery_wall_start = time.perf_counter()
         results = await asyncio.gather(
-            self._discover_betpawa(),
-            self._discover_sportybet(),
-            self._discover_bet9ja(),
+            _timed_discover("betpawa", self._discover_betpawa()),
+            _timed_discover("sportybet", self._discover_sportybet()),
+            _timed_discover("bet9ja", self._discover_bet9ja()),
             return_exceptions=True,
         )
+        discovery_total_ms = int((time.perf_counter() - discovery_wall_start) * 1000)
 
         # Merge into unified event map
         platforms = ["betpawa", "sportybet", "bet9ja"]
@@ -199,12 +212,21 @@ class EventCoordinator:
                         status=ScrapeStatus.PENDING,
                     )
 
+        # Store discovery timing for progress events
+        self._last_discovery_timings = {
+            "betpawa_discovery_ms": platform_timings_ms.get("betpawa", 0),
+            "sportybet_discovery_ms": platform_timings_ms.get("sportybet", 0),
+            "bet9ja_discovery_ms": platform_timings_ms.get("bet9ja", 0),
+            "discovery_total_ms": discovery_total_ms,
+        }
+
         logger.info(
             "Event discovery complete",
             betpawa=discovery_counts.get("betpawa", 0),
             sportybet=discovery_counts.get("sportybet", 0),
             bet9ja=discovery_counts.get("bet9ja", 0),
             merged=len(self._event_map),
+            **self._last_discovery_timings,
         )
 
         return self._event_map
@@ -826,6 +848,8 @@ class EventCoordinator:
         data: dict[str, dict] = {}
         errors: dict[str, str] = {}
 
+        platform_timings: dict[str, int] = {}
+
         async def scrape_platform(platform: str) -> tuple[str, dict | None, str | None]:
             """Scrape a single platform for this event."""
             # Check if we have the platform ID
@@ -835,6 +859,7 @@ class EventCoordinator:
 
             try:
                 async with semaphores[platform]:
+                    platform_start = time.perf_counter()
                     client = self._clients[platform]
                     result = await client.fetch_event(platform_id)
 
@@ -842,6 +867,9 @@ class EventCoordinator:
                     if platform == "bet9ja":
                         await asyncio.sleep(self._bet9ja_delay_ms / 1000)
 
+                    platform_timings[platform] = int(
+                        (time.perf_counter() - platform_start) * 1000
+                    )
                     return (platform, result, None)
             except Exception as e:
                 logger.debug(
@@ -876,6 +904,7 @@ class EventCoordinator:
             "data": data,
             "errors": errors,
             "timing_ms": elapsed_ms,
+            "platform_timings": platform_timings,
         }
 
     async def scrape_batch(
@@ -944,6 +973,7 @@ class EventCoordinator:
                 "platforms_scraped": list(result["data"].keys()),
                 "platforms_failed": list(result["errors"].keys()),
                 "timing_ms": result["timing_ms"],
+                "platform_timings": result.get("platform_timings", {}),
             }
 
         logger.debug(
@@ -987,6 +1017,9 @@ class EventCoordinator:
         snapshots_created = 0
         errors = 0
 
+        # Storage sub-phase timing
+        storage_lookups_start = time.perf_counter()
+
         # Pre-fetch bookmaker IDs
         bookmaker_ids = await self._get_bookmaker_ids(db)
 
@@ -1009,7 +1042,10 @@ class EventCoordinator:
             ),
         }
 
+        storage_lookups_ms = int((time.perf_counter() - storage_lookups_start) * 1000)
+
         # Collect all records for bulk operations
+        storage_processing_start = time.perf_counter()
         status_records: list[EventScrapeStatus] = []
         betpawa_snapshots: list[tuple[OddsSnapshot, list[MarketOdds]]] = []
         competitor_snapshots: list[tuple[CompetitorOddsSnapshot, list[CompetitorMarketOdds]]] = []
@@ -1211,6 +1247,8 @@ class EventCoordinator:
                         external_event_id=external_id,
                     )
 
+        storage_processing_ms = int((time.perf_counter() - storage_processing_start) * 1000)
+
         # Bulk insert all records with optimized flush pattern
         # (Reduced from N flushes to 2: one for snapshots, one for markets)
 
@@ -1225,7 +1263,9 @@ class EventCoordinator:
             db.add(snapshot)
 
         # Single flush to get all snapshot IDs at once
+        storage_flush_start = time.perf_counter()
         await db.flush()
+        storage_flush_ms = int((time.perf_counter() - storage_flush_start) * 1000)
 
         # Now add all markets with their snapshot IDs (IDs populated after flush)
         for snapshot, markets in betpawa_snapshots:
@@ -1239,7 +1279,17 @@ class EventCoordinator:
                 db.add(market)
 
         # Commit all changes
+        storage_commit_start = time.perf_counter()
         await db.commit()
+        storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
+
+        # Store timing breakdown for progress events
+        self._last_storage_timings = {
+            "storage_lookups_ms": storage_lookups_ms,
+            "storage_processing_ms": storage_processing_ms,
+            "storage_flush_ms": storage_flush_ms,
+            "storage_commit_ms": storage_commit_ms,
+        }
 
         logger.info(
             "Batch storage complete",
@@ -1991,6 +2041,7 @@ class EventCoordinator:
             "event_type": "DISCOVERY_COMPLETE",
             "discovery_counts": discovery_counts,
             "total_events": len(self._event_map),
+            **self._last_discovery_timings,
         }
 
         # Phase 3: Build queue
@@ -2050,6 +2101,7 @@ class EventCoordinator:
                 "errors": store_result["errors"],
                 "batch_scrape_ms": batch_scrape_ms,
                 "batch_store_ms": store_ms,
+                **self._last_storage_timings,
             }
 
             batch_index += 1
