@@ -30,6 +30,56 @@ logger = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 
+def snapshot_to_cached_from_models(
+    snapshot_id: int,
+    event_id: int,
+    bookmaker_id: int,
+    captured_at: datetime,
+    markets: list,
+) -> CachedSnapshot:
+    """Convert in-memory ORM model data to a CachedSnapshot.
+
+    Works with ORM model objects that have been flushed (IDs assigned) but
+    not necessarily committed.  Accepts the market list directly so it works
+    with both ``MarketOdds`` and ``CompetitorMarketOdds`` instances.
+
+    Parameters
+    ----------
+    snapshot_id:
+        The snapshot row ID (populated after flush).
+    event_id:
+        The betpawa event_id to store on the cached snapshot.
+    bookmaker_id:
+        The bookmaker_id (0 for competitor snapshots).
+    captured_at:
+        When the snapshot was captured.
+    markets:
+        List of MarketOdds or CompetitorMarketOdds ORM objects.
+    """
+    cached_markets: list[CachedMarket] = []
+    for m in markets:
+        cached_markets.append(
+            CachedMarket(
+                betpawa_market_id=m.betpawa_market_id,
+                betpawa_market_name=m.betpawa_market_name,
+                line=m.line,
+                handicap_type=getattr(m, "handicap_type", None),
+                handicap_home=getattr(m, "handicap_home", None),
+                handicap_away=getattr(m, "handicap_away", None),
+                outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
+                market_groups=getattr(m, "market_groups", None),
+            )
+        )
+
+    return CachedSnapshot(
+        snapshot_id=snapshot_id,
+        event_id=event_id,
+        bookmaker_id=bookmaker_id,
+        captured_at=captured_at,
+        markets=tuple(cached_markets),
+    )
+
+
 def snapshot_to_cached(
     snapshot: OddsSnapshot | CompetitorOddsSnapshot,
     *,
