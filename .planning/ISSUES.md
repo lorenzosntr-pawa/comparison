@@ -4,40 +4,52 @@
 
 ### ISS-002: Comprehensive market mapping needed
 **Discovered:** Phase 7 UAT - 2026-01-21
+**Updated:** 2026-02-05 (issue review)
 **Type:** Enhancement
-**Effort:** Large (dedicated phase)
+**Effort:** Medium (diminishing returns)
 
 **Description:**
-Current market mapping library handles basic markets (1X2, O/U, BTTS, Handicaps) but many SportyBet and Bet9ja markets fail to map to Betpawa taxonomy. Console shows many "Could not map market" warnings.
+Market mapping library covers core markets but many exotic/niche market types remain unmapped across SportyBet and Bet9ja.
 
 **Impact:**
-- Missing markets in event detail view
-- Incomplete odds comparison for exotic markets
-- Limits analysis capabilities
+- Missing markets in event detail view for exotic market types
+- Incomplete odds comparison for niche markets
+- Limits analysis for corners, cards, player props
 
-**Current state:**
-- ~108 basic market mappings exist in `market_mapping/`
-- Many market types still unmapped (Corners, Cards, Player Props, etc.)
-- Mapping logic may need refinement for edge cases
+**Current state (post-v1.8):**
+- 129 market mappings exist in `market_mapping/mappings/market_ids.py`
+- SportyBet mapping success: 52.2% (up from 47.3%)
+- Bet9ja mapping success: 40.5% (up from 36.1%)
+- v1.8 added 20 new mappings, combo market parameter handling, handicap line fix, outcome normalization
+- ~380 unmapped market types identified (Phase 45 audit), many are platform-specific with no BetPawa equivalent
 
-**Required work:**
-1. Audit all market types from each platform
-2. Document Betpawa canonical market taxonomy
-3. Expand mapping rules for missing market categories
-4. Add unit tests for each mapped market type
-5. Handle parameter variations (different line values, etc.)
+**Remaining work (if pursued):**
+1. Corner range markets (169, 182) — UNKNOWN_PARAM_MARKET errors
+2. HT/FT combo markets — moderate frequency
+3. Player prop markets — low priority (BetPawa may not offer equivalents)
+4. Remaining combo variants (818, 551) — outcome structure mismatches
 
-**Resolution:** Create dedicated phase for comprehensive market mapping improvement.
+**Resolution:** Diminishing returns — most high-impact mappings addressed in v1.8. Remaining gaps are niche markets. Revisit if business need arises.
 
 ---
 
 ## Open Bugs
 
-None.
-
 ---
 
 ## Closed Bugs
+
+### BUG-007: On-demand scrapes bypass cache and async write pipeline (RESOLVED)
+**Discovered:** Phase 55 issue review - 2026-02-05
+**Resolution:** Fixed 2026-02-05 (Phase 55.1-01) - Added `odds_cache` and `write_queue` params from `request.app.state` to all 3 `EventCoordinator.from_settings()` calls in `src/api/routes/scrape.py`.
+
+### BUG-006: Stale detection fails — timezone mismatch (RESOLVED)
+**Discovered:** Phase 55 re-verification - 2026-02-05
+**Resolution:** Fixed 2026-02-05 (Phase 55.1-01) - Applied `.replace(tzinfo=None)` pattern to `last_activity` and `started_at` in `mark_run_stale()`.
+
+### BUG-005: Async write handler crashes on every batch — duplicate `write_ms` keyword (RESOLVED)
+**Discovered:** Phase 55 re-verification - 2026-02-05
+**Resolution:** Fixed 2026-02-05 (Phase 55.1-01) - Removed duplicate `write_ms` explicit kwarg from success log in `_process_with_retry()`. `**stats` already provides it.
 
 ### BUG-004: Combo markets show margins but no odds (RESOLVED)
 **Discovered:** Phase 46 UAT - 2026-02-03

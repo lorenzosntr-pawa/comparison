@@ -177,10 +177,20 @@ Plans:
 - [x] 55-03: pipeline integration & verification
 - [x] 55-03-FIX: timezone fix + performance investigation
 
+#### Phase 55.1: Fix Phase 55 Bugs (INSERTED)
+
+**Goal**: Fix 3 bugs discovered during Phase 55 re-verification: BUG-005 write_ms duplicate keyword (blocker), BUG-006 stale detection timezone mismatch, BUG-007 on-demand scrapes bypass cache/write queue
+**Depends on**: Phase 55
+**Research**: Unlikely (known fixes)
+**Plans**: 1 plan
+
+Plans:
+- [x] 55.1-01: Fix BUG-005/006/007 (write_ms duplicate, timezone mismatch, cache bypass)
+
 #### Phase 56: Concurrency Tuning
 
 **Goal**: Increase parallelism limits, optimize per-event scraping now that storage isn't blocking
-**Depends on**: Phase 55
+**Depends on**: Phase 55.1
 **Research**: Unlikely (internal tuning)
 **Plans**: TBD
 
@@ -290,6 +300,7 @@ Plans:
 | 53. Investigation & Benchmarking | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 54. In-Memory Cache Layer | v2.0 | 3/3 | Complete | 2026-02-05 |
 | 55. Async Write Pipeline + Incremental Upserts | v2.0 | 4/4 | Complete | 2026-02-05 |
+| 55.1 Fix Phase 55 Bugs (INSERTED) | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 56. Concurrency Tuning | v2.0 | 0/? | Not started | - |
 | 57. WebSocket Infrastructure | v2.0 | 0/? | Not started | - |
 | 58. WebSocket UI Migration | v2.0 | 0/? | Not started | - |

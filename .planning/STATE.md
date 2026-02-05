@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 55 of 59 (Async Write Pipeline + Incremental Upserts)
-Plan: 3 of 3 + 1 FIX in current phase
-Status: Phase complete (FIX plan applied)
-Last activity: 2026-02-05 — Completed 55-03-FIX.md
+Phase: 55.1 of 59 (Fix Phase 55 Bugs — INSERTED)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed 55.1-01-PLAN.md
 
 Progress: █████░░░░░ 50%
 
@@ -33,7 +33,7 @@ Progress: █████░░░░░ 50%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 134 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX)
+- Total plans completed: 135 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -198,10 +198,11 @@ Progress: █████░░░░░ 50%
 - v1.9 Event Details UX shipped 2026-02-05 with 5 phases
 - All milestones archived to .planning/milestones/
 - Milestone v2.0 created: Real-Time Scraping Pipeline, 7 phases (Phase 53-59)
+- Phase 55.1 inserted after Phase 55: Fix Phase 55 Bugs — BUG-005 write_ms duplicate keyword (blocker), BUG-006 stale detection timezone, BUG-007 on-demand cache bypass (URGENT)
 
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 55-03-FIX.md — Phase 55 FIX plan applied
+Stopped at: Completed 55.1-01-PLAN.md — Phase 55.1 complete (BUG-005/006/007 fixed)
 Resume file: None
-Next action: Re-verify Phase 55, then plan Phase 56 (Concurrency Tuning)
+Next action: Plan Phase 56 (Concurrency Tuning)
