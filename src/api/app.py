@@ -1,9 +1,11 @@
 """FastAPI application factory with async lifespan handler."""
 
 from contextlib import asynccontextmanager
+from time import perf_counter
 from typing import TypedDict
 
 import httpx
+import structlog
 from fastapi import FastAPI
 
 from src.api.routes.cleanup import router as cleanup_router
@@ -13,6 +15,9 @@ from src.api.routes.palimpsest import router as palimpsest_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.scrape import router as scrape_router
 from src.api.routes.settings import router as settings_router
+from src.caching.odds_cache import OddsCache
+from src.caching.warmup import warm_cache_from_db
+from src.db.engine import async_session_factory
 from src.scheduling.jobs import set_app_state
 from src.scheduling.scheduler import (
     configure_scheduler,
@@ -114,6 +119,21 @@ async def lifespan(app: FastAPI):
 
                 # Sync scheduler interval from stored settings
                 await sync_settings_on_startup()
+
+                # --- In-memory odds cache warmup ---
+                log = structlog.get_logger("src.api.app")
+                odds_cache = OddsCache()
+                app.state.odds_cache = odds_cache
+
+                t0 = perf_counter()
+                async with async_session_factory() as db:
+                    warmup_stats = await warm_cache_from_db(odds_cache, db)
+                warmup_ms = (perf_counter() - t0) * 1000
+                log.info(
+                    "cache.warmup.done",
+                    warmup_ms=round(warmup_ms, 1),
+                    **warmup_stats,
+                )
 
                 yield
 
