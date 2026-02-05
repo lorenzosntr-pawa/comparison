@@ -95,6 +95,9 @@ async def mark_run_stale(
 
     now = datetime.utcnow()
 
+    if last_activity is not None and last_activity.tzinfo is not None:
+        last_activity = last_activity.replace(tzinfo=None)
+
     if message is None:
         if last_activity:
             stale_duration = now - last_activity
@@ -105,7 +108,10 @@ async def mark_run_stale(
                 f"last platform: {run.current_platform or 'unknown'}"
             )
         else:
-            stale_duration = now - run.started_at
+            started_at = run.started_at
+            if started_at.tzinfo is not None:
+                started_at = started_at.replace(tzinfo=None)
+            stale_duration = now - started_at
             minutes_stale = int(stale_duration.total_seconds() / 60)
             message = (
                 f"Run stuck in RUNNING for {minutes_stale}min with no phase activity. "
