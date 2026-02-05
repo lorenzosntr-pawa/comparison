@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 55 of 59 (Async Write Pipeline + Incremental Upserts)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-05 — Completed 55-01-PLAN.md
+Last activity: 2026-02-05 — Completed 55-02-PLAN.md
 
-Progress: ████░░░░░░ 45%
+Progress: █████░░░░░ 47%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: ████░░░░░░ 45%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 131 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 5 v2.0)
+- Total plans completed: 132 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 6 v2.0)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -138,6 +138,8 @@ Progress: ████░░░░░░ 45%
 - **Cache-first API pattern** - check OddsCache first, fall back to DB for misses, log hit/miss stats (v2.0)
 - **Change detection via normalized outcome tuples** - sort outcomes by name, compare as tuples for order-independent equality (v2.0)
 - **Classify batch changes pattern** - separate changed (INSERT) vs unchanged (UPDATE last_confirmed_at) snapshots using cache comparison (v2.0)
+- **Frozen dataclass DTOs for write queue** - plain data objects decouple scraping from DB persistence, no ORM dependency across async boundaries (v2.0)
+- **Isolated session per write batch** - handler opens own session from session_factory, never shares with scraping (v2.0)
 
 ### Key Decisions
 
@@ -166,6 +168,9 @@ Progress: ████░░░░░░ 45%
 - GET /api/events p50 reduced from 903ms to 24ms (97.3% improvement) with cache layer (v2.0 Phase 54)
 - Nullable last_confirmed_at column — no backfill needed, only new pipeline writes set it (v2.0 Phase 55)
 - Normalized outcome comparison — sort by name for order-independent market equality (v2.0 Phase 55)
+- Bounded asyncio.Queue (maxsize=50) for write backpressure — blocks scraping if writes fall behind (v2.0 Phase 55)
+- 3 retry attempts with exponential backoff (1s, 2s, 4s) — drop batch on final failure to avoid infinite loops (v2.0 Phase 55)
+- IntegrityError skips batch, OperationalError retries — different error classes get appropriate handling (v2.0 Phase 55)
 
 ### Blockers/Concerns
 
@@ -191,6 +196,6 @@ Progress: ████░░░░░░ 45%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 55-01-PLAN.md
+Stopped at: Completed 55-02-PLAN.md
 Resume file: None
-Next action: Execute 55-02-PLAN.md
+Next action: Execute 55-03-PLAN.md
