@@ -157,10 +157,12 @@ Plans:
 **Goal**: Implement always-on cache for latest odds, modify API to serve from cache, scope to active/upcoming events
 **Depends on**: Phase 53
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 54-01: TBD
+- [ ] 54-01: Cache module & data structures + startup warmup
+- [ ] 54-02: Scrape pipeline cache population + eviction
+- [ ] 54-03: API cache integration & latency verification
 
 #### Phase 55: Async Write Pipeline + Incremental Upserts
 
