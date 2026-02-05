@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 54 of 59 (In-Memory Cache Layer)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 54-03-PLAN.md
+Phase: 55 of 59 (Async Write Pipeline + Incremental Upserts)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-05 — Completed 55-01-PLAN.md
 
-Progress: ███░░░░░░░ 29%
+Progress: ████░░░░░░ 45%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: ███░░░░░░░ 29%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 130 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 4 v2.0)
+- Total plans completed: 131 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 5 v2.0)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -136,6 +136,8 @@ Progress: ███░░░░░░░ 29%
 - **Cache population from ORM models** - extract data from flushed models post-commit, convert via snapshot_to_cached_from_models (v2.0)
 - **Piggyback eviction on scrape schedule** - no separate background task, evict expired events after each scrape cycle (v2.0)
 - **Cache-first API pattern** - check OddsCache first, fall back to DB for misses, log hit/miss stats (v2.0)
+- **Change detection via normalized outcome tuples** - sort outcomes by name, compare as tuples for order-independent equality (v2.0)
+- **Classify batch changes pattern** - separate changed (INSERT) vs unchanged (UPDATE last_confirmed_at) snapshots using cache comparison (v2.0)
 
 ### Key Decisions
 
@@ -162,6 +164,8 @@ Progress: ███░░░░░░░ 29%
 - Piggyback eviction on scrape schedule — no separate task, runs once per cycle (v2.0 Phase 54)
 - Cache-first with DB fallback via _load_snapshots_cached() — getattr for safe cache access (v2.0 Phase 54)
 - GET /api/events p50 reduced from 903ms to 24ms (97.3% improvement) with cache layer (v2.0 Phase 54)
+- Nullable last_confirmed_at column — no backfill needed, only new pipeline writes set it (v2.0 Phase 55)
+- Normalized outcome comparison — sort by name for order-independent market equality (v2.0 Phase 55)
 
 ### Blockers/Concerns
 
@@ -187,6 +191,6 @@ Progress: ███░░░░░░░ 29%
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 54-03-PLAN.md — Phase 54 complete
+Stopped at: Completed 55-01-PLAN.md
 Resume file: None
-Next action: Plan Phase 55 (Async Write Pipeline + Incremental Upserts)
+Next action: Execute 55-02-PLAN.md
