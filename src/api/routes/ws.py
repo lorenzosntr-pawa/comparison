@@ -5,21 +5,16 @@ with topic-based subscriptions, ping/pong, and dynamic subscribe/unsubscribe.
 """
 
 import json
-from datetime import datetime, timezone
 
 import structlog
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from src.api.websocket import ConnectionManager
+from src.api.websocket import ConnectionManager, connection_ack_message, pong_message
+from src.api.websocket.messages import _utcnow_iso
 
 log = structlog.get_logger("src.api.routes.ws")
 
 router = APIRouter(tags=["websocket"])
-
-
-def _utcnow_iso() -> str:
-    """Return current UTC time as ISO 8601 string."""
-    return datetime.now(timezone.utc).isoformat()
 
 
 @router.websocket("/ws")
@@ -55,13 +50,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         subscribed = manager._connections.get(websocket, set())
 
         # Send connection acknowledgment
-        await websocket.send_json(
-            {
-                "type": "connection_ack",
-                "topics": sorted(subscribed),
-                "timestamp": _utcnow_iso(),
-            }
-        )
+        await websocket.send_json(connection_ack_message(sorted(subscribed)))
 
         # Receive loop
         while True:
@@ -74,12 +63,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             msg_type = data.get("type")
 
             if msg_type == "ping":
-                await websocket.send_json(
-                    {
-                        "type": "pong",
-                        "timestamp": _utcnow_iso(),
-                    }
-                )
+                await websocket.send_json(pong_message())
 
             elif msg_type == "subscribe":
                 new_topics = data.get("topics", [])
