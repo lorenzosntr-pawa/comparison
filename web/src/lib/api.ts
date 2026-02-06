@@ -13,6 +13,8 @@ import type {
   CleanupPreview,
   CleanupResult,
   CleanupHistoryResponse,
+  OddsHistoryResponse,
+  MarginHistoryResponse,
 } from '@/types/api'
 
 const API_BASE = '/api'
@@ -193,4 +195,37 @@ export const api = {
 
   getCleanupHistory: (limit = 10) =>
     fetchJson<CleanupHistoryResponse>(`/cleanup/history?limit=${limit}`),
+
+  // History
+  getOddsHistory: (params: {
+    eventId: number
+    marketId: string
+    bookmakerSlug: string
+    fromTime?: string
+    toTime?: string
+  }) => {
+    const searchParams = new URLSearchParams()
+    searchParams.set('bookmaker_slug', params.bookmakerSlug)
+    if (params.fromTime) searchParams.set('from_time', params.fromTime)
+    if (params.toTime) searchParams.set('to_time', params.toTime)
+    return fetchJson<OddsHistoryResponse>(
+      `/events/${params.eventId}/markets/${encodeURIComponent(params.marketId)}/history?${searchParams}`
+    )
+  },
+
+  getMarginHistory: (params: {
+    eventId: number
+    marketId: string
+    bookmakerSlug: string
+    fromTime?: string
+    toTime?: string
+  }) => {
+    const searchParams = new URLSearchParams()
+    searchParams.set('bookmaker_slug', params.bookmakerSlug)
+    if (params.fromTime) searchParams.set('from_time', params.fromTime)
+    if (params.toTime) searchParams.set('to_time', params.toTime)
+    return fetchJson<MarginHistoryResponse>(
+      `/events/${params.eventId}/markets/${encodeURIComponent(params.marketId)}/margin-history?${searchParams}`
+    )
+  },
 }

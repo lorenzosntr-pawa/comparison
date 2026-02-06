@@ -271,3 +271,36 @@ export interface CleanupHistoryResponse {
   runs: CleanupRun[]
   total: number
 }
+
+// Historical data types for odds/margin visualization
+
+export interface OddsHistoryPoint {
+  captured_at: string
+  outcomes: OutcomeOdds[]
+  margin: number | null
+}
+
+export interface OddsHistoryResponse {
+  event_id: number
+  bookmaker_slug: string
+  bookmaker_name: string
+  market_id: string
+  market_name: string
+  line: number | null
+  history: OddsHistoryPoint[]
+}
+
+export interface MarginHistoryPoint {
+  captured_at: string
+  margin: number | null
+}
+
+export interface MarginHistoryResponse {
+  event_id: number
+  bookmaker_slug: string
+  bookmaker_name: string
+  market_id: string
+  market_name: string
+  line: number | null
+  history: MarginHistoryPoint[]
+}
