@@ -1,6 +1,7 @@
 """Scrape API endpoints for triggering and monitoring scrape operations."""
 
 import asyncio
+import contextlib
 import json
 import time
 from datetime import datetime
@@ -38,6 +39,7 @@ from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
+from src.api.websocket.bridge import bridge_scrape_to_websocket
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.event_coordinator import EventCoordinator
@@ -178,17 +180,26 @@ async def stream_scrape(
     bet9ja_http = request.app.state.bet9ja_client
     odds_cache = getattr(request.app.state, "odds_cache", None)
     write_queue = getattr(request.app.state, "write_queue", None)
+    ws_manager = getattr(request.app.state, "ws_manager", None)
 
     async def run_scrape_background():
         """Background task that runs independent of SSE connection.
 
         Uses its own DB session to avoid CancelledError when client disconnects.
         Broadcasts progress via progress_registry for SSE subscribers.
+        Also bridges progress to WebSocket clients when connected.
         """
         # Track metrics for final update
         total_events = 0
         failed_count = 0
         final_status = ScrapeStatus.COMPLETED
+
+        # Start WebSocket bridge if clients are connected
+        bridge_task: asyncio.Task | None = None
+        if ws_manager is not None and ws_manager.active_count > 0:
+            bridge_task = asyncio.create_task(
+                bridge_scrape_to_websocket(broadcaster, ws_manager)
+            )
 
         async with async_session_factory() as bg_db:
             # Build clients with captured HTTP clients
@@ -298,6 +309,12 @@ async def stream_scrape(
                 # Signal completion and clean up
                 await broadcaster.close()
                 progress_registry.remove_broadcaster(scrape_run_id)
+
+                # Cancel WebSocket bridge task if still running
+                if bridge_task is not None and not bridge_task.done():
+                    bridge_task.cancel()
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await bridge_task
 
     # Start background task (fire-and-forget, survives SSE disconnect)
     asyncio.create_task(run_scrape_background())
