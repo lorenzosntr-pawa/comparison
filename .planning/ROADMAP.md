@@ -178,10 +178,11 @@ Plans:
 **Goal**: Create API endpoints for querying outcome, margin, and market history
 **Depends on**: Phase 60
 **Research**: Unlikely (FastAPI patterns established)
-**Plans**: 1/1 complete
+**Plans**: 2/2 complete
 
 Plans:
 - [x] 62-01: Pydantic schemas + composite index migration
+- [x] 62-02: History router with snapshot, odds, and margin endpoints
 
 #### Phase 63: Freshness Timestamps
 
@@ -324,7 +325,7 @@ Plans:
 | **v2.0 SHIPPED** | | | **2026-02-06** | |
 | 60. Investigation & Schema Design | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 61. Historical Snapshot Retention | v2.1 | - | Skipped | 2026-02-06 |
-| 62. Historical Data API | v2.1 | 1/1 | Complete | 2026-02-06 |
+| 62. Historical Data API | v2.1 | 2/2 | Complete | 2026-02-06 |
 | 63. Freshness Timestamps | v2.1 | 0/? | Not started | - |
 | 64. Chart Library Integration | v2.1 | 0/? | Not started | - |
 | 65. History Dialog Component | v2.1 | 0/? | Not started | - |
