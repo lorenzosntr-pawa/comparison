@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 57 of 59 (WebSocket Infrastructure)
-Plan: 1 of 1 in current phase
-Status: Plan 57-01 complete
-Last activity: 2026-02-05 — Completed 57-01-PLAN.md
+Plan: 2 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-06 — Completed 57-02-PLAN.md
 
-Progress: ███████░░░ 71%
+Progress: ███████░░░ 72%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: ███████░░░ 71%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 137 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX + 1 v2.0 Phase 56 + 1 v2.0 Phase 57)
+- Total plans completed: 138 (91 original + 12 FIX plans + 9 v1.8 plans + 10 v1.9 plans + 4 additional + 7 v2.0 + 1 v2.0 FIX + 1 v2.0 55.1 FIX + 1 v2.0 Phase 56 + 2 v2.0 Phase 57)
 - Average duration: 6 min
 - Total execution time: ~11 hours
 
@@ -149,6 +149,8 @@ Progress: ███████░░░ 71%
 - **ConnectionManager with dual-dict topic tracking** - ws->topics and topic->ws reverse index for O(1) lookups (v2.0)
 - **Snapshot iteration for WebSocket broadcast** - copy subscriber set before iteration, clean dead connections after (v2.0)
 - **WebSocket try/except/finally lifecycle** - always disconnect in finally block, catch WebSocketDisconnect separately (v2.0)
+- **WebSocket message envelope pattern** - all messages have {type, timestamp, data} shape for consistent parsing (v2.0)
+- **ProgressBroadcaster-to-WebSocket bridge** - async bridge task subscribes to broadcaster, forwards to ws_manager.broadcast (v2.0)
 
 ### Key Decisions
 
@@ -189,6 +191,8 @@ Progress: ███████░░░ 71%
 - Concurrency parameters exposed via settings API — all 6 fields writable via PATCH /api/settings (v2.0 Phase 56)
 - ConnectionManager on app.state.ws_manager — topic-based pub/sub for real-time WebSocket broadcasting (v2.0 Phase 57)
 - WebSocket endpoint at /api/ws — runs alongside SSE, no breaking changes (v2.0 Phase 57)
+- Dict builders over Pydantic models for WebSocket messages — faster serialization on hot path (v2.0 Phase 57)
+- Bridge task gated on ws_manager.active_count — avoid creating task when no clients connected (v2.0 Phase 57)
 
 ### Blockers/Concerns
 
@@ -214,7 +218,7 @@ Progress: ███████░░░ 71%
 
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: Completed 57-01-PLAN.md — Phase 57 complete (WebSocket connection manager and endpoint)
+Last session: 2026-02-06
+Stopped at: Completed 57-02-PLAN.md — WebSocket message protocol and scrape progress bridge
 Resume file: None
-Next action: Plan Phase 58 (WebSocket UI Migration)
+Next action: Execute 57-03-PLAN.md (Odds change notifications via WebSocket)

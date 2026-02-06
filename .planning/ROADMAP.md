@@ -203,10 +203,12 @@ Plans:
 **Depends on**: Phase 56
 **Research**: Likely (new technology integration for this project)
 **Research topics**: FastAPI WebSocket support, connection lifecycle management, broadcasting patterns, reconnection strategies
-**Plans**: 1 plan
+**Plans**: 3 plans
 
 Plans:
 - [x] 57-01: WebSocket connection manager and endpoint
+- [x] 57-02: WebSocket message protocol and scrape progress bridge
+- [ ] 57-03: Odds change notifications via WebSocket
 
 #### Phase 58: WebSocket UI Migration
 
@@ -302,6 +304,6 @@ Plans:
 | 55. Async Write Pipeline + Incremental Upserts | v2.0 | 4/4 | Complete | 2026-02-05 |
 | 55.1 Fix Phase 55 Bugs (INSERTED) | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 56. Concurrency Tuning | v2.0 | 1/1 | Complete | 2026-02-05 |
-| 57. WebSocket Infrastructure | v2.0 | 1/1 | Complete | 2026-02-05 |
+| 57. WebSocket Infrastructure | v2.0 | 2/3 | In progress | - |
 | 58. WebSocket UI Migration | v2.0 | 0/? | Not started | - |
 | 59. SSE Removal & Cleanup | v2.0 | 0/? | Not started | - |
