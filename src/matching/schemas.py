@@ -133,3 +133,65 @@ class EventDetailResponse(MatchedEvent):
     """
 
     markets_by_bookmaker: list[BookmakerMarketData] = []
+
+
+# Historical data schemas for odds/margin visualization
+
+
+class HistoricalSnapshot(BaseModel):
+    """Snapshot metadata for list view."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    captured_at: datetime
+    bookmaker_slug: str
+    bookmaker_name: str
+    market_count: int
+
+
+class SnapshotHistoryResponse(BaseModel):
+    """Response for snapshot list endpoint."""
+
+    event_id: int
+    snapshots: list[HistoricalSnapshot]
+    total: int
+
+
+class OddsHistoryPoint(BaseModel):
+    """Single point in odds time series."""
+
+    captured_at: datetime
+    outcomes: list[OutcomeOdds]
+    margin: float | None = None
+
+
+class OddsHistoryResponse(BaseModel):
+    """Full odds history for a market."""
+
+    event_id: int
+    bookmaker_slug: str
+    bookmaker_name: str
+    market_id: str
+    market_name: str
+    line: float | None = None
+    history: list[OddsHistoryPoint]
+
+
+class MarginHistoryPoint(BaseModel):
+    """Single margin point for charts."""
+
+    captured_at: datetime
+    margin: float | None = None
+
+
+class MarginHistoryResponse(BaseModel):
+    """Margin-only history for charts."""
+
+    event_id: int
+    bookmaker_slug: str
+    bookmaker_name: str
+    market_id: str
+    market_name: str
+    line: float | None = None
+    history: list[MarginHistoryPoint]
