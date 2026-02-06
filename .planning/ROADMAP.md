@@ -17,6 +17,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
 - ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
 - ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
+- 🚧 **v2.1 Historical Odds Tracking** — Phases 60-68 (in progress)
 
 ## Completed Milestones
 
@@ -152,6 +153,101 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v2.1 Historical Odds Tracking (In Progress)
+
+**Milestone Goal:** Add historical odds and margin tracking with interactive visualization, enabling users to view price movements over time through clickable popup dialogs.
+
+#### Phase 60: Investigation & Schema Design
+
+**Goal**: Analyze current snapshot lifecycle, design historical data retention model
+**Depends on**: v2.0 complete
+**Research**: Unlikely (internal design)
+**Plans**: TBD
+
+Plans:
+- [ ] 60-01: TBD (run /gsd:plan-phase 60 to break down)
+
+#### Phase 61: Historical Snapshot Retention
+
+**Goal**: Keep historical snapshots with configurable retention policy instead of overwriting
+**Depends on**: Phase 60
+**Research**: Unlikely (SQLAlchemy patterns established)
+**Plans**: TBD
+
+Plans:
+- [ ] 61-01: TBD
+
+#### Phase 62: Historical Data API
+
+**Goal**: Create API endpoints for querying outcome, margin, and market history
+**Depends on**: Phase 61
+**Research**: Unlikely (FastAPI patterns established)
+**Plans**: TBD
+
+Plans:
+- [ ] 62-01: TBD
+
+#### Phase 63: Freshness Timestamps
+
+**Goal**: Add "last updated" timestamps to odds display in Odds Comparison and Event Details pages
+**Depends on**: Phase 62
+**Research**: Unlikely (React patterns established)
+**Plans**: TBD
+
+Plans:
+- [ ] 63-01: TBD
+
+#### Phase 64: Chart Library Integration
+
+**Goal**: Add recharts library and create base chart components for historical visualization
+**Depends on**: Phase 63
+**Research**: Likely (charting library selection and patterns)
+**Research topics**: recharts vs chart.js vs visx, responsive charts, time-series patterns
+**Plans**: TBD
+
+Plans:
+- [ ] 64-01: TBD
+
+#### Phase 65: History Dialog Component
+
+**Goal**: Create reusable popup dialog with price/margin chart visualization
+**Depends on**: Phase 64
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 65-01: TBD
+
+#### Phase 66: Odds Comparison History
+
+**Goal**: Add click handlers on odds/margins in Odds Comparison page to open history dialog
+**Depends on**: Phase 65
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 66-01: TBD
+
+#### Phase 67: Event Details History
+
+**Goal**: Add click handlers on odds/margins in Event Details page to open history dialog
+**Depends on**: Phase 66
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 67-01: TBD
+
+#### Phase 68: Market-Level History View
+
+**Goal**: View complete market history with all outcomes on synchronized timeline
+**Depends on**: Phase 67
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 68-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -230,3 +326,12 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 58. WebSocket UI Migration | v2.0 | 2/2 | Complete | 2026-02-06 |
 | 59. SSE Removal & Cleanup | v2.0 | 2/2 | Complete | 2026-02-06 |
 | **v2.0 SHIPPED** | | | **2026-02-06** | |
+| 60. Investigation & Schema Design | v2.1 | 0/? | Not started | - |
+| 61. Historical Snapshot Retention | v2.1 | 0/? | Not started | - |
+| 62. Historical Data API | v2.1 | 0/? | Not started | - |
+| 63. Freshness Timestamps | v2.1 | 0/? | Not started | - |
+| 64. Chart Library Integration | v2.1 | 0/? | Not started | - |
+| 65. History Dialog Component | v2.1 | 0/? | Not started | - |
+| 66. Odds Comparison History | v2.1 | 0/? | Not started | - |
+| 67. Event Details History | v2.1 | 0/? | Not started | - |
+| 68. Market-Level History View | v2.1 | 0/? | Not started | - |
