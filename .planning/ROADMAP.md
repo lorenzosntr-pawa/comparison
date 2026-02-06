@@ -167,20 +167,16 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 60-01: SQL analysis of snapshot lifecycle + schema design recommendation
 
-#### Phase 61: Historical Snapshot Retention
+#### Phase 61: Historical Snapshot Retention — SKIPPED
 
 **Goal**: Keep historical snapshots with configurable retention policy instead of overwriting
-**Depends on**: Phase 60
-**Research**: Unlikely (SQLAlchemy patterns established)
-**Plans**: TBD
-
-Plans:
-- [ ] 61-01: TBD
+**Status**: SKIPPED — Existing `odds_retention_days` setting already provides this functionality
+**Decision**: Users can configure retention via existing settings (default 30, max 365 days)
 
 #### Phase 62: Historical Data API
 
 **Goal**: Create API endpoints for querying outcome, margin, and market history
-**Depends on**: Phase 61
+**Depends on**: Phase 60
 **Research**: Unlikely (FastAPI patterns established)
 **Plans**: TBD
 
@@ -327,7 +323,7 @@ Plans:
 | 59. SSE Removal & Cleanup | v2.0 | 2/2 | Complete | 2026-02-06 |
 | **v2.0 SHIPPED** | | | **2026-02-06** | |
 | 60. Investigation & Schema Design | v2.1 | 1/1 | Complete | 2026-02-06 |
-| 61. Historical Snapshot Retention | v2.1 | 0/? | Not started | - |
+| 61. Historical Snapshot Retention | v2.1 | - | Skipped | 2026-02-06 |
 | 62. Historical Data API | v2.1 | 0/? | Not started | - |
 | 63. Freshness Timestamps | v2.1 | 0/? | Not started | - |
 | 64. Chart Library Integration | v2.1 | 0/? | Not started | - |

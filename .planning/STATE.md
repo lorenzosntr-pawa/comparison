@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 60 of 68 (Investigation & Schema Design)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-06 — Completed 60-01-PLAN.md
+Phase: 62 of 68 (Historical Data API)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-02-06 — Phase 61 skipped (existing functionality sufficient)
 
-Progress: █░░░░░░░░░ 11%
+Progress: ██░░░░░░░░ 22%
 
 ## Milestones
 
@@ -212,9 +212,8 @@ Progress: █░░░░░░░░░ 11%
 - SSE endpoints removed, WebSocket-only frontend — no fallback complexity (v2.0 Phase 59)
 - Manual scrapes via POST /api/scrape + WebSocket observation (v2.0 Phase 59)
 - No major schema changes required — current architecture with odds_snapshots + market_odds already stores history (v2.1 Phase 60)
-- Add `historical_retention_days` setting — separate from operational retention to allow extended history (v2.1 Phase 60)
-- One index addition — `idx_market_odds_snapshot_market` for efficient trend queries (v2.1 Phase 60)
 - Storage budget: 500 events × 90 days = ~139 GB (acceptable with partitioning) (v2.1 Phase 60)
+- Phase 61 SKIPPED — existing `odds_retention_days` setting already provides configurable retention (v2.1)
 
 ### Blockers/Concerns
 
@@ -238,10 +237,11 @@ Progress: █░░░░░░░░░ 11%
 - Phase 55.1 inserted after Phase 55: Fix Phase 55 Bugs — BUG-005 write_ms duplicate keyword (blocker), BUG-006 stale detection timezone, BUG-007 on-demand cache bypass (URGENT)
 - v2.0 Real-Time Scraping Pipeline shipped 2026-02-06 with 7 phases (17 plans)
 - Milestone v2.1 created: Historical Odds Tracking, 9 phases (Phase 60-68)
+- Phase 61 skipped: existing odds_retention_days setting already provides configurable retention
 
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed Phase 60 (Investigation & Schema Design)
+Stopped at: Phase 61 skipped (existing functionality sufficient)
 Resume file: None
-Next action: Run /gsd:plan-phase 61 to implement historical snapshot retention
+Next action: Run /gsd:plan-phase 62 to create historical data API endpoints
