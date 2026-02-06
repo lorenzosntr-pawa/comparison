@@ -132,6 +132,10 @@ export const api = {
   resumeScheduler: () =>
     fetchJson<void>('/scheduler/resume', { method: 'POST' }),
 
+  // Scrape
+  triggerScrape: () =>
+    fetchJson<{ scrape_run_id: number }>('/scrape', { method: 'POST' }),
+
   // Palimpsest coverage
   getCoverage: (params?: { includeStarted?: boolean }) => {
     const searchParams = new URLSearchParams()

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import { useSchedulerHistory, useActiveScrapesObserver, useSchedulerStatus } from '../hooks'
 import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
 import { formatDistanceToNow } from 'date-fns'
 import { ArrowRight, Loader2, Play, CheckCircle2, XCircle, Radio, Circle, Clock } from 'lucide-react'
 
@@ -126,98 +126,41 @@ function getPlatformStatuses(
 }
 
 export function RecentRuns() {
-  const queryClient = useQueryClient()
-  const { data, isPending, error, refetch } = useSchedulerHistory(6)
+  const { data, isPending, error } = useSchedulerHistory(6)
   const { data: scheduler } = useSchedulerStatus()
-  const eventSourceRef = useRef<EventSource | null>(null)
 
   // State for manual scrapes triggered from this component
-  const [isManualStreaming, setIsManualStreaming] = useState(false)
-  const [manualProgress, setManualProgress] = useState<ScrapeProgressEvent | null>(null)
+  const [isStarting, setIsStarting] = useState(false)
   const [scrapeError, setScrapeError] = useState<string | null>(null)
-  const [completedPlatforms, setCompletedPlatforms] = useState(0)
+  const [isDismissed, setIsDismissed] = useState(false)
 
-  // Observer for scheduled scrapes running in the background
+  // Observer for active scrapes via WebSocket
   const {
     activeScrapeId,
-    isObserving: isObservingScheduled,
-    progress: scheduledProgress,
+    isObserving,
+    progress: activeProgress,
     stopChecking,
   } = useActiveScrapesObserver()
 
-  // Use either manual progress or observed scheduled progress
-  const activeProgress = isManualStreaming ? manualProgress : scheduledProgress
-  const isStreaming = isManualStreaming || isObservingScheduled
-  const isScheduledScrape = !isManualStreaming && isObservingScheduled
+  // Combined streaming state: either starting a scrape or observing one
+  const isStreaming = isStarting || isObserving
 
-  const cleanup = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-      eventSourceRef.current = null
-    }
-    setIsManualStreaming(false)
-  }, [])
-
-  const startScrape = useCallback(() => {
+  const startScrape = useCallback(async () => {
     // Stop checking for scheduled scrapes when starting manual
     stopChecking()
-    cleanup()
     setScrapeError(null)
-    setManualProgress(null)
-    setCompletedPlatforms(0)
-    setIsManualStreaming(true)
+    setIsDismissed(false)
+    setIsStarting(true)
 
-    const eventSource = new EventSource('/api/scrape/stream')
-    eventSourceRef.current = eventSource
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data) as ScrapeProgressEvent
-        setManualProgress(data)
-
-        // Track completed platforms
-        if (data.phase === 'storing_complete' ||
-            (data.phase === 'completed' && data.platform)) {
-          setCompletedPlatforms((prev) => Math.min(prev + 1, 3))
-        }
-
-        // Overall completion (platform is null) means whole scrape is done
-        if (!data.platform && (data.phase === 'completed' || data.phase === 'failed')) {
-          eventSource.close()
-          setIsManualStreaming(false)
-
-          // Optimistic update: immediately show correct status in list
-          const newStatus = data.phase === 'completed' ? 'completed' : 'failed'
-          queryClient.setQueryData(['scheduler-history'], (old: { runs: Array<{ id: number; status: string }> } | undefined) => {
-            if (!old?.runs?.[0]) return old
-            return {
-              ...old,
-              runs: old.runs.map((run, i) =>
-                i === 0 ? { ...run, status: newStatus } : run
-              ),
-            }
-          })
-
-          // Then refetch for accurate data (events count, etc.)
-          void queryClient.refetchQueries({ queryKey: ['scheduler-history'] })
-          void queryClient.refetchQueries({ queryKey: ['events'] })
-        }
-      } catch (e) {
-        console.error('Failed to parse SSE event:', e)
-      }
+    try {
+      await api.triggerScrape()
+      // WebSocket observer will automatically pick up progress
+    } catch {
+      setScrapeError('Failed to start scrape')
+    } finally {
+      setIsStarting(false)
     }
-
-    eventSource.onerror = () => {
-      eventSource.close()
-      setIsManualStreaming(false)
-      setScrapeError('Connection lost')
-    }
-  }, [cleanup, queryClient, refetch, stopChecking])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return cleanup
-  }, [cleanup])
+  }, [stopChecking])
 
   // Auto-rescrape: if latest run has connection_failed status, auto-trigger new scrape
   const autoRescrapeTriggered = useRef(false)
@@ -228,26 +171,18 @@ export function RecentRuns() {
       !isStreaming
     ) {
       autoRescrapeTriggered.current = true
-      startScrape()
+      void startScrape()
     }
   }, [data?.runs, isStreaming, startScrape])
 
-  // Calculate progress percentage for manual scrapes
-  const manualProgressPercent =
-    manualProgress?.phase === 'completed' ? 100 :
-    manualProgress?.phase === 'failed' ? 0 :
-    Math.round((completedPlatforms / 3) * 100 + (isManualStreaming && completedPlatforms < 3 ? 15 : 0))
-
-  // Calculate progress percentage for observed scheduled scrapes
-  const scheduledProgressPercent = scheduledProgress
-    ? scheduledProgress.phase === 'completed'
+  // Calculate progress percentage from WebSocket progress
+  const progressPercent = activeProgress
+    ? activeProgress.phase === 'completed'
       ? 100
-      : scheduledProgress.phase === 'failed'
+      : activeProgress.phase === 'failed'
       ? 0
-      : Math.round((scheduledProgress.current / scheduledProgress.total) * 100)
-    : 0
-
-  const progressPercent = isManualStreaming ? manualProgressPercent : scheduledProgressPercent
+      : Math.round((activeProgress.current / Math.max(activeProgress.total, 1)) * 100)
+    : isStarting ? 5 : 0
 
   if (isPending) {
     return (
@@ -281,9 +216,9 @@ export function RecentRuns() {
     )
   }
 
-  const showProgressSection = isStreaming ||
+  const showProgressSection = !isDismissed && (isStreaming ||
     activeProgress?.phase === 'completed' ||
-    activeProgress?.phase === 'failed'
+    activeProgress?.phase === 'failed')
 
   return (
     <Card>
@@ -372,13 +307,6 @@ export function RecentRuns() {
                        `Storing ${capitalizeFirst(activeProgress.platform)}...` :
                      'Starting scrape...'}
                   </span>
-                  {/* Show indicator for scheduled vs manual */}
-                  {isScheduledScrape && (
-                    <Badge variant="outline" className="ml-1 text-xs py-0 h-5">
-                      <Radio className="h-2.5 w-2.5 mr-1 text-blue-500" />
-                      Scheduled
-                    </Badge>
-                  )}
                 </div>
                 <span className="text-muted-foreground">
                   {activeProgress?.events_count ?? 0} events
@@ -425,10 +353,7 @@ export function RecentRuns() {
               variant="ghost"
               size="sm"
               className="w-full text-xs"
-              onClick={() => {
-                setManualProgress(null)
-                setCompletedPlatforms(0)
-              }}
+              onClick={() => setIsDismissed(true)}
             >
               Dismiss
             </Button>
