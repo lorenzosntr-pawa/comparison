@@ -1,16 +1,21 @@
-"""Bridge between ProgressBroadcaster and WebSocket clients.
+"""Bridge between ProgressBroadcaster/OddsCache and WebSocket clients.
 
 Subscribes to a ProgressBroadcaster instance and forwards each
 ScrapeProgress event as a WebSocket message to all clients subscribed
 to the "scrape_progress" topic.  Runs as a background asyncio task
 alongside the existing SSE streaming -- both are independent subscribers
 of the same broadcaster.
+
+Also provides a cache-to-WebSocket bridge for odds updates.
 """
+
+import asyncio
 
 import structlog
 
 from src.api.websocket.manager import ConnectionManager
-from src.api.websocket.messages import scrape_progress_message
+from src.api.websocket.messages import odds_update_message, scrape_progress_message
+from src.caching.odds_cache import OddsCache
 from src.scraping.broadcaster import ProgressBroadcaster
 
 log = structlog.get_logger("src.api.websocket.bridge")
@@ -56,3 +61,40 @@ async def bridge_scrape_to_websocket(
             scrape_run_id=scrape_run_id,
             events_forwarded=events_forwarded,
         )
+
+
+def create_cache_update_bridge(
+    odds_cache: OddsCache,
+    ws_manager: ConnectionManager,
+) -> None:
+    """Register OddsCache callback that broadcasts updates via WebSocket.
+
+    Connects cache change notifications to WebSocket broadcasting so clients
+    subscribed to "odds_updates" receive real-time notifications when odds data
+    changes.
+
+    Args:
+        odds_cache: The OddsCache instance to monitor for changes.
+        ws_manager: The ConnectionManager handling WebSocket connections.
+    """
+
+    def on_cache_update(event_ids: list[int], source: str) -> None:
+        """Sync callback -- schedule async broadcast on the running loop."""
+        try:
+            loop = asyncio.get_running_loop()
+            msg = odds_update_message(event_ids, source, len(event_ids))
+            loop.create_task(_safe_broadcast(ws_manager, msg))
+        except RuntimeError:
+            # No running loop (shouldn't happen in FastAPI context)
+            pass
+
+    odds_cache.on_update(on_cache_update)
+    log.info("ws.cache_bridge.registered")
+
+
+async def _safe_broadcast(ws_manager: ConnectionManager, msg: dict) -> None:
+    """Broadcast with error handling -- never crash the caller."""
+    try:
+        await ws_manager.broadcast(msg, topic="odds_updates")
+    except Exception:
+        log.exception("ws.cache_bridge.broadcast_error")

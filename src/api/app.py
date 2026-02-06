@@ -16,7 +16,7 @@ from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.scrape import router as scrape_router
 from src.api.routes.settings import router as settings_router
 from src.api.routes.ws import router as ws_router
-from src.api.websocket import ConnectionManager
+from src.api.websocket import ConnectionManager, create_cache_update_bridge
 from src.caching.odds_cache import OddsCache
 from src.caching.warmup import warm_cache_from_db
 from src.db.engine import async_session_factory
@@ -157,6 +157,10 @@ async def lifespan(app: FastAPI):
                 ws_manager = ConnectionManager()
                 app.state.ws_manager = ws_manager
                 log.info("ws_manager_ready")
+
+                # --- Cache-to-WebSocket bridge ---
+                create_cache_update_bridge(odds_cache, ws_manager)
+                log.info("ws.cache_bridge.ready")
 
                 yield
 
