@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 59 of 59 (SSE Removal & Cleanup)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-06 — Completed 59-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-06 — Completed 59-02-PLAN.md
 
-Progress: █████████░ 90%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -28,7 +28,7 @@ Progress: █████████░ 90%
 - **v1.7 Scraping Architecture Overhaul** — SHIPPED 2026-02-02 (7 phases, 16 plans)
 - **v1.8 Market Matching Accuracy** — SHIPPED 2026-02-03 (5 phases, 9 plans)
 - **v1.9 Event Details UX** — SHIPPED 2026-02-05 (5 phases, 10 plans)
-- **v2.0 Real-Time Scraping Pipeline** — IN PROGRESS (7 phases, Phase 53-59)
+- **v2.0 Real-Time Scraping Pipeline** — SHIPPED 2026-02-06 (7 phases, 17 plans)
 
 ## Performance Metrics
 
@@ -153,6 +153,7 @@ Progress: █████████░ 90%
 - **ProgressBroadcaster-to-WebSocket bridge** - async bridge task subscribes to broadcaster, forwards to ws_manager.broadcast (v2.0)
 - **OddsCache on_update callback pattern** - sync callbacks fire on cache mutations, use loop.create_task() for async broadcast scheduling (v2.0)
 - **WebSocket-first with SSE fallback** - useWebSocketScrapeProgress as primary, fall back to SSE after 3 failures (v2.0 Phase 58)
+- **WebSocket-only frontend** - SSE code removed, all progress via WebSocket, POST API for manual scrape trigger (v2.0 Phase 59)
 
 ### Key Decisions
 
@@ -197,11 +198,12 @@ Progress: █████████░ 90%
 - Bridge task gated on ws_manager.active_count — avoid creating task when no clients connected (v2.0 Phase 57)
 - WS_FAIL_THRESHOLD = 3 — WebSocket failures before SSE fallback (v2.0 Phase 58)
 - Transport indicator in hooks — expose 'websocket' | 'sse' for debugging (v2.0 Phase 58)
+- SSE endpoints removed, WebSocket-only frontend — no fallback complexity (v2.0 Phase 59)
+- Manual scrapes via POST /api/scrape + WebSocket observation (v2.0 Phase 59)
 
 ### Blockers/Concerns
 
 - Memory usage for cache must stay reasonable (<100MB for active events)
-- WebSocket must run alongside SSE initially — no breaking changes during migration
 - Keep current fixed scrape interval schedule (no change to refresh timing)
 
 ### Roadmap Evolution
@@ -219,10 +221,11 @@ Progress: █████████░ 90%
 - All milestones archived to .planning/milestones/
 - Milestone v2.0 created: Real-Time Scraping Pipeline, 7 phases (Phase 53-59)
 - Phase 55.1 inserted after Phase 55: Fix Phase 55 Bugs — BUG-005 write_ms duplicate keyword (blocker), BUG-006 stale detection timezone, BUG-007 on-demand cache bypass (URGENT)
+- v2.0 Real-Time Scraping Pipeline shipped 2026-02-06 with 7 phases (17 plans)
 
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 59-01-PLAN.md — SSE endpoints removed, SSE-only files deleted
+Stopped at: Completed 59-02-PLAN.md — Frontend simplified to WebSocket-only
 Resume file: None
-Next action: Execute 59-02-PLAN.md (frontend simplification)
+Next action: Ship v2.0 milestone (/gsd:complete-milestone)
