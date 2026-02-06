@@ -184,15 +184,15 @@ Plans:
 - [x] 62-01: Pydantic schemas + composite index migration
 - [x] 62-02: History router with snapshot, odds, and margin endpoints
 
-#### Phase 63: Freshness Timestamps
+#### Phase 63: Freshness Timestamps ✓
 
 **Goal**: Add "last updated" timestamps to odds display in Odds Comparison and Event Details pages
 **Depends on**: Phase 62
 **Research**: Unlikely (React patterns established)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 63-01: TBD
+- [x] 63-01: Add snapshot_time to BookmakerOdds schema + display in frontend
 
 #### Phase 64: Chart Library Integration
 
@@ -326,7 +326,7 @@ Plans:
 | 60. Investigation & Schema Design | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 61. Historical Snapshot Retention | v2.1 | - | Skipped | 2026-02-06 |
 | 62. Historical Data API | v2.1 | 2/2 | Complete | 2026-02-06 |
-| 63. Freshness Timestamps | v2.1 | 0/? | Not started | - |
+| 63. Freshness Timestamps | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 64. Chart Library Integration | v2.1 | 0/? | Not started | - |
 | 65. History Dialog Component | v2.1 | 0/? | Not started | - |
 | 66. Odds Comparison History | v2.1 | 0/? | Not started | - |
