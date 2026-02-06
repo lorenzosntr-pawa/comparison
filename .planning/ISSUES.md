@@ -39,6 +39,17 @@ Market mapping library covers core markets but many exotic/niche market types re
 
 ## Closed Bugs
 
+### BUG-009: /api/scrape/stream returns 422 instead of 404 (RESOLVED)
+**Discovered:** Post-Phase 59 verification - 2026-02-06
+**Root Cause:** After SSE removal in Phase 59, the `/{scrape_run_id}` route was catching `/stream` requests and trying to parse "stream" as an integer, resulting in validation error 422.
+**Resolution:** Fixed 2026-02-06 - Added explicit `/stream` route returning 410 Gone with message to use WebSocket instead. Route placed before dynamic `/{scrape_run_id}` for proper matching.
+
+### BUG-008: Cache eviction crashes with timezone mismatch (RESOLVED)
+**Discovered:** Post-Phase 59 verification - 2026-02-06
+**Root Cause:** `evict_expired()` compared naive `cutoff` against potentially timezone-aware kickoffs in `_event_kickoffs`. BetPawa API returns kickoffs with `Z` suffix parsed as UTC-aware datetime.
+**Impact:** All scheduled scrapes failed at the end during cache eviction step.
+**Resolution:** Fixed 2026-02-06 - Normalize both `cutoff` and `kickoff` to naive UTC before comparison in `evict_expired()`.
+
 ### BUG-007: On-demand scrapes bypass cache and async write pipeline (RESOLVED)
 **Discovered:** Phase 55 issue review - 2026-02-05
 **Resolution:** Fixed 2026-02-05 (Phase 55.1-01) - Added `odds_cache` and `write_queue` params from `request.app.state` to all 3 `EventCoordinator.from_settings()` calls in `src/api/routes/scrape.py`.
