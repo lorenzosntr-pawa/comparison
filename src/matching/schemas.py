@@ -41,6 +41,7 @@ class BookmakerOdds(BaseModel):
     event_url: str | None
     has_odds: bool = False
     inline_odds: list[InlineOdds] = []
+    snapshot_time: datetime | None = None
 
 
 class MatchedEvent(BaseModel):

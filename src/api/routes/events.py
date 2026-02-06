@@ -191,11 +191,13 @@ def _build_matched_event(
             comp_snapshot = competitor_snapshots.get(link.bookmaker.slug)
             inline_odds = _build_competitor_inline_odds(comp_snapshot)
             has_odds = bool(comp_snapshot and comp_snapshot.markets)
+            snapshot_time = comp_snapshot.captured_at if comp_snapshot else None
         else:
             # BetPawa - use regular snapshot
             snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
             inline_odds = _build_inline_odds(snapshot)
             has_odds = bool(snapshot and snapshot.markets)
+            snapshot_time = snapshot.captured_at if snapshot else None
 
         bookmakers.append(
             BookmakerOdds(
@@ -205,6 +207,7 @@ def _build_matched_event(
                 event_url=link.event_url,
                 has_odds=has_odds,
                 inline_odds=inline_odds,
+                snapshot_time=snapshot_time,
             )
         )
 
@@ -482,6 +485,7 @@ def _build_competitor_event_response(
                 event_url=None,  # Competitor events don't have URLs stored
                 has_odds=bool(snapshot and snapshot.markets),
                 inline_odds=inline_odds,
+                snapshot_time=snapshot.captured_at if snapshot else None,
             )
         )
 
@@ -711,6 +715,7 @@ def _build_event_detail_response(
                     event_url=link.event_url,
                     has_odds=has_odds,
                     inline_odds=inline_odds,
+                    snapshot_time=comp_snapshot.captured_at if comp_snapshot else None,
                 )
             )
 
@@ -735,6 +740,7 @@ def _build_event_detail_response(
                     event_url=link.event_url,
                     has_odds=bool(snapshot and snapshot.markets),
                     inline_odds=inline_odds,
+                    snapshot_time=snapshot.captured_at if snapshot else None,
                 )
             )
 
