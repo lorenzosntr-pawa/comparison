@@ -5,4 +5,4 @@ export {
   useSchedulerHealth,
 } from './use-scheduler'
 export { useEventsStats } from './use-events-stats'
-export { useObserveScrape, useActiveScrapesObserver } from './use-observe-scrape'
+export { useActiveScrapesObserver } from './use-observe-scrape'
