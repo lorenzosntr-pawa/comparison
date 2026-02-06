@@ -218,7 +218,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 58-01: TBD
+- [x] 58-01: WebSocket hooks (useWebSocket + useWebSocketScrapeProgress)
 
 #### Phase 59: SSE Removal & Cleanup
 
@@ -305,5 +305,5 @@ Plans:
 | 55.1 Fix Phase 55 Bugs (INSERTED) | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 56. Concurrency Tuning | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 57. WebSocket Infrastructure | v2.0 | 3/3 | Complete | 2026-02-06 |
-| 58. WebSocket UI Migration | v2.0 | 0/? | Not started | - |
+| 58. WebSocket UI Migration | v2.0 | 1/? | In progress | - |
 | 59. SSE Removal & Cleanup | v2.0 | 0/? | Not started | - |
