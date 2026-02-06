@@ -16,7 +16,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.7 Scraping Architecture Overhaul](milestones/v1.7-ROADMAP.md) — Phases 36-42 (shipped 2026-02-02)
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
 - ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
-- 🚧 **v2.0 Real-Time Scraping Pipeline** — Phases 53-59 (in progress)
+- ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
 
 ## Completed Milestones
 
@@ -138,99 +138,19 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### 🚧 v2.0 Real-Time Scraping Pipeline (In Progress)
+<details>
+<summary>✅ v2.0 Real-Time Scraping Pipeline (Phases 53-59) — SHIPPED 2026-02-06</summary>
 
-**Milestone Goal:** Eliminate DB storage bottleneck, add in-memory caching, and deliver real-time odds updates via WebSocket for the fastest possible competitive comparison.
+- [x] Phase 53: Investigation & Benchmarking (1/1 plans) — 2026-02-05
+- [x] Phase 54: In-Memory Cache Layer (3/3 plans) — 2026-02-05
+- [x] Phase 55: Async Write Pipeline + Incremental Upserts (4/4 plans) — 2026-02-05
+- [x] Phase 55.1: Fix Phase 55 Bugs (1/1 plans) — 2026-02-05
+- [x] Phase 56: Concurrency Tuning (1/1 plans) — 2026-02-05
+- [x] Phase 57: WebSocket Infrastructure (3/3 plans) — 2026-02-06
+- [x] Phase 58: WebSocket UI Migration (2/2 plans) — 2026-02-06
+- [x] Phase 59: SSE Removal & Cleanup (2/2 plans) — 2026-02-06
 
-#### Phase 53: Investigation & Benchmarking
-
-**Goal**: Measure current bottlenecks (scrape time vs DB write time vs API response time), establish baseline metrics
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal profiling)
-**Plans**: 1 plan
-
-Plans:
-- [x] 53-01: Pipeline timing instrumentation + benchmark baseline report
-
-#### Phase 54: In-Memory Cache Layer
-
-**Goal**: Implement always-on cache for latest odds, modify API to serve from cache, scope to active/upcoming events
-**Depends on**: Phase 53
-**Research**: Unlikely (internal patterns)
-**Plans**: 3 plans
-
-Plans:
-- [x] 54-01: Cache module & data structures + startup warmup
-- [x] 54-02: Scrape pipeline cache population + eviction
-- [x] 54-03: API cache integration & latency verification
-
-#### Phase 55: Async Write Pipeline + Incremental Upserts
-
-**Goal**: Decouple scraping from storage via write queue, only persist changed odds, retry with backoff
-**Depends on**: Phase 54
-**Research**: Unlikely (internal patterns, asyncio queues)
-**Plans**: TBD
-
-Plans:
-- [x] 55-01: last_confirmed_at column & change detection module
-- [x] 55-02: async write queue infrastructure & write handler
-- [x] 55-03: pipeline integration & verification
-- [x] 55-03-FIX: timezone fix + performance investigation
-
-#### Phase 55.1: Fix Phase 55 Bugs (INSERTED)
-
-**Goal**: Fix 3 bugs discovered during Phase 55 re-verification: BUG-005 write_ms duplicate keyword (blocker), BUG-006 stale detection timezone mismatch, BUG-007 on-demand scrapes bypass cache/write queue
-**Depends on**: Phase 55
-**Research**: Unlikely (known fixes)
-**Plans**: 1 plan
-
-Plans:
-- [x] 55.1-01: Fix BUG-005/006/007 (write_ms duplicate, timezone mismatch, cache bypass)
-
-#### Phase 56: Concurrency Tuning
-
-**Goal**: Increase parallelism limits, optimize per-event scraping now that storage isn't blocking
-**Depends on**: Phase 55.1
-**Research**: Unlikely (internal tuning)
-**Plans**: TBD
-
-Plans:
-- [x] 56-01: Intra-batch concurrent event scraping + HTTP pool tuning + benchmark
-
-#### Phase 57: WebSocket Infrastructure
-
-**Goal**: WebSocket server setup, connection management, event broadcasting system
-**Depends on**: Phase 56
-**Research**: Likely (new technology integration for this project)
-**Research topics**: FastAPI WebSocket support, connection lifecycle management, broadcasting patterns, reconnection strategies
-**Plans**: 3 plans
-
-Plans:
-- [x] 57-01: WebSocket connection manager and endpoint
-- [x] 57-02: WebSocket message protocol and scrape progress bridge
-- [x] 57-03: Odds change notifications via WebSocket
-
-#### Phase 58: WebSocket UI Migration
-
-**Goal**: Migrate dashboard pages from SSE polling to WebSocket, run alongside SSE initially
-**Depends on**: Phase 57
-**Research**: Unlikely (internal patterns once infrastructure decided)
-**Plans**: 2 plans
-
-Plans:
-- [x] 58-01: WebSocket hooks (useWebSocket + useWebSocketScrapeProgress)
-- [x] 58-02: Dashboard and scrape-runs WebSocket migration with SSE fallback
-
-#### Phase 59: SSE Removal & Cleanup
-
-**Goal**: Remove SSE infrastructure after WebSocket is stable, final validation
-**Depends on**: Phase 58
-**Research**: Unlikely (internal cleanup)
-**Plans**: 2 plans
-
-Plans:
-- [x] 59-01: Remove SSE endpoints from backend and delete SSE-only frontend files
-- [x] 59-02: Frontend simplification (remove SSE fallback, cleanup)
+</details>
 
 ## Progress
 
@@ -309,3 +229,4 @@ Plans:
 | 57. WebSocket Infrastructure | v2.0 | 3/3 | Complete | 2026-02-06 |
 | 58. WebSocket UI Migration | v2.0 | 2/2 | Complete | 2026-02-06 |
 | 59. SSE Removal & Cleanup | v2.0 | 2/2 | Complete | 2026-02-06 |
+| **v2.0 SHIPPED** | | | **2026-02-06** | |

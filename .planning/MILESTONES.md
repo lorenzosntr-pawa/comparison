@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.0 Real-Time Scraping Pipeline (Shipped: 2026-02-06)
+
+**Delivered:** Eliminated storage bottleneck with in-memory caching, async write pipeline with change detection, concurrent event scraping, and WebSocket real-time updates replacing SSE entirely.
+
+**Phases completed:** 53-59 + 55.1 (17 plans total: 16 original + 1 FIX plan)
+
+**Key accomplishments:**
+
+- In-memory cache layer achieving 97.3% API latency reduction (903ms → 24ms for event list endpoint)
+- Async write pipeline with change detection for incremental upserts — only persist changed odds
+- Intra-batch concurrent event scraping (10 parallel) reducing total pipeline time 65% (24 min → 8.5 min)
+- WebSocket infrastructure with connection manager, message protocol, and real-time odds change notifications
+- Complete SSE removal — WebSocket-only frontend for scrape progress and manual scrape triggers
+
+**Stats:**
+
+- 38 files changed
+- +4,097 / -1,117 lines (net +2,980)
+- 8 phases (7 original + 1 inserted), 17 plans, 60 commits
+- 2 days (2026-02-05 to 2026-02-06)
+- ~34,096 total LOC
+
+**Git range:** `ebac67c` → `3021f9b`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.1 features.
+
+---
+
 ## v1.9 Event Details UX (Shipped: 2026-02-05)
 
 **Delivered:** Transformed event details page into a powerful market exploration tool with category tabs, fuzzy search, competitor comparison mode, sticky navigation, and actionable summary metrics.

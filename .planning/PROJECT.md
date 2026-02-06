@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v1.9 Event Details UX)
+## Current State (v2.0 Real-Time Scraping Pipeline)
 
-**Shipped:** 2026-02-05
+**Shipped:** 2026-02-06
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~31,116 lines of code
+- ~34,096 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -24,7 +24,11 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - EventCoordinator with priority queue (kickoff urgency + coverage value)
 - Configurable concurrency limits via Settings API
 - On-demand single-event refresh POST /api/scrape/event/{sr_id}
-- Real-time progress streaming via SSE with per-platform event counts and timing
+- **In-memory cache layer** - 97.3% API latency reduction (903ms → 24ms for event list)
+- **Async write pipeline** - change detection for incremental upserts, only persist changed odds
+- **Intra-batch concurrent scraping** - 10 parallel events reducing pipeline time 65% (24 min → 8.5 min)
+- **WebSocket real-time updates** - /api/ws endpoint with topic subscriptions (scrape_progress, odds_updates)
+- **WebSocket-only frontend** - SSE infrastructure removed, all progress via WebSocket
 - Dashboard with scheduler controls, platform health, and live coverage metrics
 - Match list and detail views with color-coded odds comparison
 - Full competitor palimpsest scraping (~200+ tournaments per platform)
@@ -44,7 +48,6 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - Stale run detection watchdog with auto-fail for hung scrapes
 - Startup recovery for stale runs after server crashes
 - Connection loss detection with CONNECTION_FAILED status and auto-rescrape
-- Per-platform progress events with real counts and elapsed time
 - Accurate coverage statistics with DISTINCT SportRadar ID counting
 - **Event detail summary cards** - Market Coverage, Mapping Quality, Competitive Position with category breakdowns
 - **Tabbed market navigation** - BetPawa categories (Popular, Goals, Handicaps, Corners, Cards, Specials, Combos, Halves, Other)
@@ -116,10 +119,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Sticky navigation header with scroll-to-top button — v1.9
 - ✓ Shared market utilities eliminating code duplication — v1.9
 - ✓ Context-aware empty state messages — v1.9
+- ✓ In-memory cache layer with 97.3% API latency reduction — v2.0
+- ✓ Async write pipeline with change detection for incremental upserts — v2.0
+- ✓ Intra-batch concurrent event scraping (10 parallel, 65% pipeline reduction) — v2.0
+- ✓ WebSocket real-time updates (/api/ws with topic subscriptions) — v2.0
+- ✓ WebSocket-only frontend (SSE removed) — v2.0
 
 ### Active
 
-- [ ] WebSocket real-time updates on new scrape data
 - [ ] Historical trend visualization (data stored, UI deferred)
 
 ### Out of Scope
@@ -134,15 +141,18 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 ## Context
 
 **Existing codebase:**
-- `src/market_mapping/`: Python library for market transformation (108 mappings)
-- `src/scraping/`: Async clients for SportyBet, BetPawa, Bet9ja
-- `src/api/`: FastAPI backend with scheduler and SSE streaming
+- `src/market_mapping/`: Python library for market transformation (128 mappings)
+- `src/scraping/`: Async clients for SportyBet, BetPawa, Bet9ja with EventCoordinator
+- `src/caching/`: In-memory OddsCache with async write queue
+- `src/api/`: FastAPI backend with scheduler and WebSocket streaming
 - `web/`: React frontend with TanStack Query and shadcn/ui
 
 **Technical decisions:**
 - Betpawa is canonical format — competitors mapped to Betpawa taxonomy
 - SportRadar IDs enable reliable cross-platform matching
-- SSE streaming for scrape progress (WebSocket deferred)
+- WebSocket for real-time progress and odds updates (/api/ws)
+- In-memory cache with frozen dataclasses for fast API responses
+- Async write queue with change detection for efficient DB persistence
 - structlog for structured logging with JSON/console modes
 
 ## Constraints
@@ -206,6 +216,13 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | data-scroll-container attribute | Target correct scroll element in nested main elements | ✓ Good — v1.9 reusable pattern |
 | Shared market utilities module | Extract duplicated logic to lib/market-utils.ts | ✓ Good — v1.9 eliminated ~80 lines duplication |
 | Categories from data not heuristics | Use actual market_groups from API, not keyword matching | ✓ Good — v1.9 perfect alignment with tabs |
+| Frozen dataclasses for cache entries | Immutable, hashable, no ORM session dependency | ✓ Good — v2.0 avoids detached instance issues |
+| Cache-before-persist pattern | Update cache immediately, persist asynchronously | ✓ Good — v2.0 API always serves fresh data |
+| asyncio.gather over TaskGroup | Partial failure tolerance, no cascading cancellation | ✓ Good — v2.0 one event failure doesn't stop batch |
+| Dual-layer semaphore design | Event-level (10) + platform-level (50/50/15) throttling | ✓ Good — v2.0 fine-grained concurrency control |
+| WebSocket endpoint at /api/ws | Topic-based pub/sub with ConnectionManager | ✓ Good — v2.0 clean real-time infrastructure |
+| WebSocket-only frontend | SSE removed after WebSocket migration complete | ✓ Good — v2.0 eliminates transport complexity |
+| Change detection via normalized tuples | Sort outcomes by name for order-independent comparison | ✓ Good — v2.0 only persist changed odds |
 
 ---
-*Last updated: 2026-02-05 after v1.9 milestone*
+*Last updated: 2026-02-06 after v2.0 milestone*
