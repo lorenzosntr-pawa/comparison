@@ -157,15 +157,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Add historical odds and margin tracking with interactive visualization, enabling users to view price movements over time through clickable popup dialogs.
 
-#### Phase 60: Investigation & Schema Design
+#### Phase 60: Investigation & Schema Design ✓
 
 **Goal**: Analyze current snapshot lifecycle, design historical data retention model
 **Depends on**: v2.0 complete
 **Research**: Unlikely (internal design)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 60-01: TBD (run /gsd:plan-phase 60 to break down)
+- [x] 60-01: SQL analysis of snapshot lifecycle + schema design recommendation
 
 #### Phase 61: Historical Snapshot Retention
 
@@ -326,7 +326,7 @@ Plans:
 | 58. WebSocket UI Migration | v2.0 | 2/2 | Complete | 2026-02-06 |
 | 59. SSE Removal & Cleanup | v2.0 | 2/2 | Complete | 2026-02-06 |
 | **v2.0 SHIPPED** | | | **2026-02-06** | |
-| 60. Investigation & Schema Design | v2.1 | 0/? | Not started | - |
+| 60. Investigation & Schema Design | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 61. Historical Snapshot Retention | v2.1 | 0/? | Not started | - |
 | 62. Historical Data API | v2.1 | 0/? | Not started | - |
 | 63. Freshness Timestamps | v2.1 | 0/? | Not started | - |

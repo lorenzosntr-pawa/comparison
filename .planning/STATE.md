@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 60 of 68 (Investigation & Schema Design)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-06 — Milestone v2.1 created
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-06 — Completed 60-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 11%
 
 ## Milestones
 
@@ -163,6 +163,8 @@ Progress: ░░░░░░░░░░ 0%
 - **OddsCache on_update callback pattern** - sync callbacks fire on cache mutations, use loop.create_task() for async broadcast scheduling (v2.0)
 - **WebSocket-first with SSE fallback** - useWebSocketScrapeProgress as primary, fall back to SSE after 3 failures (v2.0 Phase 58)
 - **WebSocket-only frontend** - SSE code removed, all progress via WebSocket, POST API for manual scrape trigger (v2.0 Phase 59)
+- **Historical snapshots already kept** - Current schema stores ~52 snapshots per event on average, not overwriting (v2.1 Phase 60)
+- **Change-based retention** - Option C strategy: existing change detection naturally creates history without schema overhaul (v2.1 Phase 60)
 
 ### Key Decisions
 
@@ -209,6 +211,10 @@ Progress: ░░░░░░░░░░ 0%
 - Transport indicator in hooks — expose 'websocket' | 'sse' for debugging (v2.0 Phase 58)
 - SSE endpoints removed, WebSocket-only frontend — no fallback complexity (v2.0 Phase 59)
 - Manual scrapes via POST /api/scrape + WebSocket observation (v2.0 Phase 59)
+- No major schema changes required — current architecture with odds_snapshots + market_odds already stores history (v2.1 Phase 60)
+- Add `historical_retention_days` setting — separate from operational retention to allow extended history (v2.1 Phase 60)
+- One index addition — `idx_market_odds_snapshot_market` for efficient trend queries (v2.1 Phase 60)
+- Storage budget: 500 events × 90 days = ~139 GB (acceptable with partitioning) (v2.1 Phase 60)
 
 ### Blockers/Concerns
 
@@ -236,6 +242,6 @@ Progress: ░░░░░░░░░░ 0%
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Milestone v2.1 initialization
+Stopped at: Completed Phase 60 (Investigation & Schema Design)
 Resume file: None
-Next action: Run /gsd:plan-phase 60 to start implementation
+Next action: Run /gsd:plan-phase 61 to implement historical snapshot retention
