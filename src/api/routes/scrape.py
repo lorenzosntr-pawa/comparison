@@ -484,6 +484,19 @@ async def retry_scrape_run(
     )
 
 
+@router.get("/stream")
+async def stream_deprecated() -> dict:
+    """SSE streaming endpoint removed in v2.0.
+
+    Progress updates are now available via WebSocket at /api/ws.
+    Subscribe to the 'scrape_progress' topic for real-time updates.
+    """
+    raise HTTPException(
+        status_code=410,
+        detail="SSE streaming removed. Use WebSocket at /api/ws (topic: scrape_progress)",
+    )
+
+
 @router.get("/{scrape_run_id}", response_model=ScrapeStatusResponse)
 async def get_scrape_status(
     scrape_run_id: int,

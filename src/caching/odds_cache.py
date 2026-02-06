@@ -189,9 +189,15 @@ class OddsCache:
 
         Returns the number of events evicted.
         """
-        expired_ids = [
-            eid for eid, ko in self._event_kickoffs.items() if ko < cutoff
-        ]
+        # Normalize cutoff to naive UTC for comparison (strip timezone if present)
+        cutoff_naive = cutoff.replace(tzinfo=None) if cutoff.tzinfo else cutoff
+
+        expired_ids = []
+        for eid, ko in self._event_kickoffs.items():
+            # Normalize kickoff to naive for comparison (handles both aware and naive)
+            ko_naive = ko.replace(tzinfo=None) if ko.tzinfo else ko
+            if ko_naive < cutoff_naive:
+                expired_ids.append(eid)
         for eid in expired_ids:
             self._betpawa_snapshots.pop(eid, None)
             self._competitor_snapshots.pop(eid, None)
