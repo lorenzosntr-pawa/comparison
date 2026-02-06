@@ -1,6 +1,23 @@
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 
 /**
+ * Format an ISO timestamp as relative time (e.g., "2m ago").
+ */
+export function formatRelativeTime(isoString: string | null): string {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  return date.toLocaleDateString()
+}
+
+/**
  * Merge outcomes from multiple market records with the same key.
  * Some bookmakers (like Betpawa) split outcomes across multiple records.
  */

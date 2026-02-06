@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
-import { buildDeduplicatedMarkets, marketHasOdds } from '../lib/market-utils'
+import { buildDeduplicatedMarkets, formatRelativeTime, marketHasOdds } from '../lib/market-utils'
 
 // Bookmaker display names and order
 const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja'] as const
@@ -18,6 +18,7 @@ interface MarketCoverage {
   name: string
   count: number
   percentage: number
+  snapshotTime: string | null
 }
 
 interface MappingStats {
@@ -68,7 +69,8 @@ interface CompetitiveStats {
  * Only counts DEDUPLICATED markets that have actual odds available.
  */
 function calculateMarketCoverage(
-  bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>
+  bookmakerMaps: Map<string, Map<string, MarketOddsDetail>>,
+  marketsByBookmaker: BookmakerMarketData[]
 ): MarketCoverage[] {
   // Count deduplicated Betpawa markets with odds
   const betpawaMap = bookmakerMaps.get('betpawa')
@@ -79,6 +81,12 @@ function calculateMarketCoverage(
         betpawaCount++
       }
     }
+  }
+
+  // Build a map of slug -> snapshot_time from raw data
+  const snapshotTimes = new Map<string, string | null>()
+  for (const bm of marketsByBookmaker) {
+    snapshotTimes.set(bm.bookmaker_slug, bm.snapshot_time)
   }
 
   return BOOKMAKER_ORDER.map((slug) => {
@@ -98,6 +106,7 @@ function calculateMarketCoverage(
       name: BOOKMAKER_DISPLAY_NAMES[slug] ?? slug,
       count,
       percentage: slug === 'betpawa' ? 100 : percentage,
+      snapshotTime: snapshotTimes.get(slug) ?? null,
     }
   })
 }
@@ -262,8 +271,8 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
   )
 
   const marketCoverage = useMemo(
-    () => calculateMarketCoverage(bookmakerMaps),
-    [bookmakerMaps]
+    () => calculateMarketCoverage(bookmakerMaps, marketsByBookmaker),
+    [bookmakerMaps, marketsByBookmaker]
   )
 
   const mappingStats = useMemo(
@@ -303,11 +312,17 @@ export function SummarySection({ marketsByBookmaker }: SummarySectionProps) {
             <div className="space-y-2">
               {marketCoverage.map((coverage) => {
                 const isBetpawa = coverage.slug === 'betpawa'
+                const relativeTime = formatRelativeTime(coverage.snapshotTime)
                 return (
                   <div key={coverage.slug} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className={isBetpawa ? 'font-medium' : ''}>
                         {coverage.name}
+                        {relativeTime && (
+                          <span className="text-xs text-muted-foreground/70 ml-1">
+                            ({relativeTime})
+                          </span>
+                        )}
                       </span>
                       <span className="text-muted-foreground">
                         {coverage.count} markets

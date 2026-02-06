@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds } from '@/types/api'
+import { formatRelativeTime } from '../lib/market-utils'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
 // 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
@@ -505,9 +506,16 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                       </td>
                     </>
                   )}
-                  {/* Bookmaker label */}
-                  <td className="px-2 py-2 text-center text-xs font-medium text-muted-foreground">
-                    {BOOKMAKER_LABELS[bookmakerSlug] || bookmakerSlug}
+                  {/* Bookmaker label with timestamp */}
+                  <td className="px-2 py-2 text-center">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      {BOOKMAKER_LABELS[bookmakerSlug] || bookmakerSlug}
+                    </div>
+                    {bookmaker?.snapshot_time && (
+                      <div className="text-[10px] text-muted-foreground/70">
+                        {formatRelativeTime(bookmaker.snapshot_time)}
+                      </div>
+                    )}
                   </td>
                   {/* Odds cells for all markets (with margin per market) */}
                   {visibleMarkets.map((marketId) => (

@@ -88,6 +88,7 @@ export interface BookmakerOdds {
   event_url: string | null
   has_odds: boolean
   inline_odds: InlineOdds[]
+  snapshot_time: string | null
 }
 
 export interface MatchedEvent {
