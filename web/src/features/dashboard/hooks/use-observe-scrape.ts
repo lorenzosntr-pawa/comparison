@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import {
+  useWebSocketScrapeProgress,
+  type ScrapeProgressEvent,
+  type PlatformProgress,
+} from '@/hooks/use-websocket-scrape-progress'
 
 export interface ScrapeProgress {
   platform: string | null
@@ -11,6 +16,9 @@ export interface ScrapeProgress {
   message: string | null
   timestamp: string
 }
+
+/** Maximum WebSocket failures before falling back to SSE */
+const WS_FAIL_THRESHOLD = 3
 
 /**
  * Hook to observe progress of an existing running scrape.
@@ -87,11 +95,17 @@ export function useObserveScrape(scrapeRunId: number | null) {
 /**
  * Hook to check for and observe active scrapes.
  * Polls for active scrapes and automatically starts observing if one is found.
+ *
+ * Prefers WebSocket transport, falls back to SSE after repeated failures.
  */
 export function useActiveScrapesObserver() {
   const [activeScrapeId, setActiveScrapeId] = useState<number | null>(null)
   const [isChecking, setIsChecking] = useState(true)
   const checkIntervalRef = useRef<number | null>(null)
+
+  // Track WebSocket failures for fallback logic
+  const [wsFailCount, setWsFailCount] = useState(0)
+  const wsEnabled = wsFailCount < WS_FAIL_THRESHOLD
 
   const checkForActiveScrapes = useCallback(async () => {
     try {
@@ -125,13 +139,61 @@ export function useActiveScrapesObserver() {
     }
   }, [checkForActiveScrapes])
 
-  // Use the observe hook with the found ID
-  const observation = useObserveScrape(activeScrapeId)
+  // Primary: WebSocket transport (always enabled to detect when scrapes start)
+  const ws = useWebSocketScrapeProgress({
+    enabled: wsEnabled,
+    onComplete: () => {
+      // Reset active scrape ID when complete, triggering a fresh check
+      setActiveScrapeId(null)
+    },
+  })
+
+  // Track WebSocket errors to trigger fallback
+  const prevWsPhase = useRef<string | null>(null)
+  useEffect(() => {
+    if (ws.overallPhase === 'error' && prevWsPhase.current !== 'error') {
+      setWsFailCount((prev) => {
+        const newCount = prev + 1
+        if (newCount >= WS_FAIL_THRESHOLD) {
+          console.warn(
+            `[useActiveScrapesObserver] WebSocket failed ${newCount} times, falling back to SSE`
+          )
+        }
+        return newCount
+      })
+    }
+    prevWsPhase.current = ws.overallPhase
+  }, [ws.overallPhase])
+
+  // Fallback: SSE transport (used when WebSocket fails or as backup)
+  const sseObservation = useObserveScrape(wsEnabled ? null : activeScrapeId)
+
+  // Combine states: prefer WebSocket when connected, SSE when not
+  const isConnected = wsEnabled ? ws.isConnected : sseObservation.isObserving
+  const error = wsEnabled ? ws.error : sseObservation.error
+
+  // Combine progress: WebSocket state takes priority when connected
+  const progress: ScrapeProgress | null = wsEnabled && ws.currentProgress
+    ? ws.currentProgress
+    : sseObservation.progress
+
+  // Derive platformProgress for consistent return type
+  const platformProgress: Map<string, PlatformProgress> = wsEnabled
+    ? ws.platformProgress
+    : new Map()
 
   return {
     activeScrapeId,
     isChecking,
-    ...observation,
+    isObserving: isConnected,
+    progress,
+    platformProgress,
+    overallPhase: wsEnabled ? ws.overallPhase : (progress?.phase ?? 'idle'),
+    error,
+    // Expose transport info for debugging
+    transport: wsEnabled ? 'websocket' : 'sse',
+    observe: sseObservation.observe,
+    cleanup: sseObservation.cleanup,
     // Expose function to stop checking (e.g., when user starts manual scrape)
     stopChecking: () => {
       if (checkIntervalRef.current) {
