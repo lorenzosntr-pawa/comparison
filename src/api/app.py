@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from src.api.routes.cleanup import router as cleanup_router
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
+from src.api.routes.history import router as history_router
 from src.api.routes.palimpsest import router as palimpsest_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.scrape import router as scrape_router
@@ -188,6 +189,7 @@ def create_app() -> FastAPI:
     app.include_router(cleanup_router, prefix="/api")
     app.include_router(events_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
+    app.include_router(history_router, prefix="/api")
     app.include_router(palimpsest_router, prefix="/api")
     app.include_router(scheduler_router, prefix="/api")
     app.include_router(scrape_router, prefix="/api")
