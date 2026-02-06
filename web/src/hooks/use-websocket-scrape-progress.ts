@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { useQueryClient, QueryClient } from '@tanstack/react-query'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 
-import { useWebSocket, WebSocketMessage } from './use-websocket'
+import { useWebSocket, type WebSocketMessage } from './use-websocket'
 
 /**
  * Scrape progress event data shape (matches SSE hook interface)
@@ -74,7 +74,8 @@ export function useWebSocketScrapeProgress(
   const [platformProgress, setPlatformProgress] = useState<Map<string, PlatformProgress>>(
     () => new Map()
   )
-  const [overallPhase, setOverallPhase] = useState('idle')
+  // Track the phase from last received message (null if no message yet)
+  const [messagePhase, setMessagePhase] = useState<string | null>(null)
   const [wsError, setWsError] = useState<string | null>(null)
 
   // Stable ref for onComplete callback
@@ -90,7 +91,7 @@ export function useWebSocketScrapeProgress(
 
       const event = message.data
       setCurrentProgress(event)
-      setOverallPhase(event.phase)
+      setMessagePhase(event.phase)
 
       // Update platform-specific progress
       if (event.platform) {
@@ -138,14 +139,22 @@ export function useWebSocketScrapeProgress(
   // Combine errors
   const error = wsError ?? connectionError
 
-  // Update overall phase based on connection state
-  useEffect(() => {
-    if (state === 'connecting' && overallPhase === 'idle') {
-      setOverallPhase('connecting')
-    } else if (state === 'error') {
-      setOverallPhase('error')
+  // Derive overall phase from WebSocket state and message phase
+  // Priority: message phase (if received) > connection state > idle
+  const overallPhase = useMemo(() => {
+    // If we have a message phase, use it
+    if (messagePhase !== null) {
+      return messagePhase
     }
-  }, [state, overallPhase])
+    // Otherwise derive from connection state
+    if (state === 'connecting') {
+      return 'connecting'
+    }
+    if (state === 'error') {
+      return 'error'
+    }
+    return 'idle'
+  }, [messagePhase, state])
 
   return {
     isConnected,

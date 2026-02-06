@@ -66,7 +66,7 @@ export function useWebSocket<T = unknown>(
   const [state, setState] = useState<WebSocketState>('disconnected')
   const [error, setError] = useState<string | null>(null)
 
-  // Refs to avoid effect dependencies
+  // Refs to avoid effect dependencies and circular callback issues
   const wsRef = useRef<WebSocket | null>(null)
   const pingIntervalRef = useRef<number | null>(null)
   const pongTimeoutRef = useRef<number | null>(null)
@@ -74,6 +74,12 @@ export function useWebSocket<T = unknown>(
   const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY)
   const retriesRef = useRef(0)
   const mountedRef = useRef(true)
+  const topicsRef = useRef(topics)
+
+  // Keep topics ref updated
+  useEffect(() => {
+    topicsRef.current = topics
+  }, [topics])
 
   // Stable refs for callbacks
   const onMessageRef = useRef(onMessage)
@@ -126,6 +132,9 @@ export function useWebSocket<T = unknown>(
     }
   }, [])
 
+  // Ref to hold the connect function for use in scheduleReconnect
+  const connectRef = useRef<() => void>(() => {})
+
   // Schedule reconnect with exponential backoff
   const scheduleReconnect = useCallback(() => {
     if (!mountedRef.current) return
@@ -141,14 +150,14 @@ export function useWebSocket<T = unknown>(
 
     reconnectTimeoutRef.current = window.setTimeout(() => {
       if (mountedRef.current) {
-        connect()
+        connectRef.current()
       }
     }, delay)
 
     // Exponential backoff
     reconnectDelayRef.current = Math.min(delay * 2, MAX_RECONNECT_DELAY)
     retriesRef.current += 1
-  }, []) // connect added below
+  }, [])
 
   // Connect to WebSocket
   const connect = useCallback(() => {
@@ -161,8 +170,9 @@ export function useWebSocket<T = unknown>(
 
     // Build URL with optional topics
     let url = '/api/ws'
-    if (topics && topics.length > 0) {
-      url += `?topics=${encodeURIComponent(topics.join(','))}`
+    const currentTopics = topicsRef.current
+    if (currentTopics && currentTopics.length > 0) {
+      url += `?topics=${encodeURIComponent(currentTopics.join(','))}`
     }
 
     // Convert relative URL to absolute WebSocket URL
@@ -247,7 +257,12 @@ export function useWebSocket<T = unknown>(
       setError('Failed to create WebSocket connection')
       scheduleReconnect()
     }
-  }, [topics, clearTimers, startPing, handlePong, scheduleReconnect])
+  }, [clearTimers, startPing, handlePong, scheduleReconnect])
+
+  // Keep connectRef updated
+  useEffect(() => {
+    connectRef.current = connect
+  }, [connect])
 
   // Send message
   const send = useCallback((message: unknown) => {
@@ -263,6 +278,7 @@ export function useWebSocket<T = unknown>(
     mountedRef.current = true
 
     if (enabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- WebSocket connection is an external system
       connect()
     } else {
       // Disconnect if disabled
