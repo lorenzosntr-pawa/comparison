@@ -1,14 +1,11 @@
 """Scrape API endpoints for triggering and monitoring scrape operations."""
 
 import asyncio
-import contextlib
-import json
 import time
 from datetime import datetime
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,14 +29,13 @@ from src.api.schemas import (
     SingleEventPlatformResult,
     SingleEventScrapeResponse,
 )
-from src.scraping.schemas import Platform, ScrapeProgress
-from src.db.engine import async_session_factory, get_db
+from src.scraping.schemas import Platform
+from src.db.engine import get_db
 from src.db.models.competitor import CompetitorEvent
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.scrape import ScrapeError, ScrapePhaseLog, ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
-from src.api.websocket.bridge import bridge_scrape_to_websocket
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.event_coordinator import EventCoordinator
@@ -140,206 +136,6 @@ async def trigger_scrape(
         platforms=[],  # EventCoordinator doesn't return platform-level results
         total_events=total_events,
         events=None,  # EventCoordinator doesn't support include_data
-    )
-
-
-@router.get("/stream")
-async def stream_scrape(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    timeout: int = Query(
-        default=300,
-        ge=5,
-        le=600,
-        description="Timeout per platform in seconds",
-    ),
-) -> StreamingResponse:
-    """Stream scrape progress via Server-Sent Events.
-
-    Connect via EventSource in browser to receive real-time progress updates.
-    Each event is a JSON object with platform, phase, counts, and message.
-
-    The scrape runs as a background task that continues even if the SSE client
-    disconnects. SSE is purely for observation, not execution control.
-
-    Returns SSE stream with progress updates for each platform as scraping runs.
-    """
-    # Create ScrapeRun record
-    scrape_run = ScrapeRun(status=ScrapeStatus.RUNNING, trigger="api-stream")
-    db.add(scrape_run)
-    await db.commit()
-    await db.refresh(scrape_run)
-    scrape_run_id = scrape_run.id
-
-    # Create broadcaster for this scrape run before spawning background task
-    broadcaster = progress_registry.create_broadcaster(scrape_run_id)
-
-    # Capture app state references for background task (avoids request.app access)
-    sportybet_http = request.app.state.sportybet_client
-    betpawa_http = request.app.state.betpawa_client
-    bet9ja_http = request.app.state.bet9ja_client
-    odds_cache = getattr(request.app.state, "odds_cache", None)
-    write_queue = getattr(request.app.state, "write_queue", None)
-    ws_manager = getattr(request.app.state, "ws_manager", None)
-
-    async def run_scrape_background():
-        """Background task that runs independent of SSE connection.
-
-        Uses its own DB session to avoid CancelledError when client disconnects.
-        Broadcasts progress via progress_registry for SSE subscribers.
-        Also bridges progress to WebSocket clients when connected.
-        """
-        # Track metrics for final update
-        total_events = 0
-        failed_count = 0
-        final_status = ScrapeStatus.COMPLETED
-
-        # Start WebSocket bridge if clients are connected
-        bridge_task: asyncio.Task | None = None
-        if ws_manager is not None and ws_manager.active_count > 0:
-            bridge_task = asyncio.create_task(
-                bridge_scrape_to_websocket(broadcaster, ws_manager)
-            )
-
-        async with async_session_factory() as bg_db:
-            # Build clients with captured HTTP clients
-            sportybet = SportyBetClient(sportybet_http)
-            betpawa = BetPawaClient(betpawa_http)
-            bet9ja = Bet9jaClient(bet9ja_http)
-
-            # Get settings for EventCoordinator tuning
-            settings_result = await bg_db.execute(select(Settings).where(Settings.id == 1))
-            settings = settings_result.scalar_one_or_none()
-
-            # Create EventCoordinator from settings
-            coordinator = EventCoordinator.from_settings(
-                betpawa_client=betpawa,
-                sportybet_client=sportybet,
-                bet9ja_client=bet9ja,
-                settings=settings,
-                odds_cache=odds_cache,
-                write_queue=write_queue,
-            )
-
-            try:
-                async for progress_event in coordinator.run_full_cycle(
-                    db=bg_db,
-                    scrape_run_id=scrape_run_id,
-                ):
-                    # Convert dict events to ScrapeProgress for broadcaster compatibility
-                    event_type = progress_event.get("event_type", "")
-
-                    if event_type == "CYCLE_START":
-                        await broadcaster.publish(ScrapeProgress(
-                            platform=None,
-                            phase="starting",
-                            current=0,
-                            total=3,
-                            message="Starting event-centric scrape cycle",
-                        ))
-                    elif event_type == "DISCOVERY_COMPLETE":
-                        total = progress_event.get("total_events", 0)
-                        await broadcaster.publish(ScrapeProgress(
-                            platform=None,
-                            phase="discovery",
-                            current=1,
-                            total=3,
-                            message=f"Discovered {total} events across all platforms",
-                            events_count=total,
-                        ))
-
-                        # Disconnect detection after discovery
-                        if broadcaster.subscriber_count == 0:
-                            log = structlog.get_logger()
-                            log.warning(
-                                "SSE connection lost during manual scrape",
-                                scrape_run_id=scrape_run_id,
-                                phase="discovery",
-                            )
-                            final_status = ScrapeStatus.CONNECTION_FAILED
-                            break
-
-                    elif event_type == "BATCH_COMPLETE":
-                        processed = progress_event.get("events_stored", 0)
-                        await broadcaster.publish(ScrapeProgress(
-                            platform=None,
-                            phase="scraping",
-                            current=2,
-                            total=3,
-                            message=f"Processed batch: {processed} events stored",
-                            events_count=processed,
-                        ))
-                    elif event_type == "CYCLE_COMPLETE":
-                        total_events = progress_event.get("events_scraped", 0)
-                        failed_count = progress_event.get("events_failed", 0)
-                        total_ms = progress_event.get("total_timing_ms", 0)
-
-                        await broadcaster.publish(ScrapeProgress(
-                            platform=None,
-                            phase="completed",
-                            current=3,
-                            total=3,
-                            message=f"Completed: {total_events} events scraped ({total_ms}ms)",
-                            events_count=total_events,
-                            duration_ms=total_ms,
-                        ))
-
-                        # Determine final status
-                        if failed_count > 0 and total_events > 0:
-                            final_status = ScrapeStatus.PARTIAL
-                        elif total_events == 0:
-                            final_status = ScrapeStatus.FAILED
-
-            except Exception as e:
-                final_status = ScrapeStatus.FAILED
-                await broadcaster.publish(ScrapeProgress(
-                    phase="failed", current=0, total=0, message=str(e)
-                ))
-            finally:
-                # Update ScrapeRun with results (using background DB session)
-                scrape_run_obj = await bg_db.get(ScrapeRun, scrape_run_id)
-                if scrape_run_obj:
-                    scrape_run_obj.status = final_status
-                    scrape_run_obj.completed_at = datetime.utcnow()
-                    scrape_run_obj.events_scraped = total_events
-                    scrape_run_obj.events_failed = failed_count
-                    scrape_run_obj.platform_timings = None
-                    await bg_db.commit()
-
-                # Signal completion and clean up
-                await broadcaster.close()
-                progress_registry.remove_broadcaster(scrape_run_id)
-
-                # Cancel WebSocket bridge task if still running
-                if bridge_task is not None and not bridge_task.done():
-                    bridge_task.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await bridge_task
-
-    # Start background task (fire-and-forget, survives SSE disconnect)
-    asyncio.create_task(run_scrape_background())
-
-    # Small delay to ensure broadcaster is registered and ready
-    await asyncio.sleep(0.05)
-
-    async def event_generator():
-        """SSE stream that subscribes to progress updates."""
-        try:
-            async for progress in broadcaster.subscribe():
-                if await request.is_disconnected():
-                    break
-                yield f"data: {progress.model_dump_json()}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'phase': 'error', 'message': str(e)})}\n\n"
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # Disable nginx buffering
-        },
     )
 
 
@@ -731,79 +527,6 @@ async def get_scrape_status(
         trigger=scrape_run.trigger,
         platform_timings=scrape_run.platform_timings,
         errors=errors,
-    )
-
-
-@router.get("/runs/{scrape_run_id}/progress")
-async def observe_scrape_progress(
-    scrape_run_id: int,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> StreamingResponse:
-    """Observe progress of an existing scrape run via SSE.
-
-    Connect via EventSource in browser to receive real-time progress updates
-    for a specific scrape run (including scheduled scrapes).
-
-    Unlike /stream which starts a new scrape, this endpoint observes an
-    existing running scrape.
-
-    Returns 404 if scrape run not found.
-    Returns 410 (Gone) if scrape already completed.
-    """
-    # Verify scrape run exists
-    result = await db.execute(
-        select(ScrapeRun).where(ScrapeRun.id == scrape_run_id)
-    )
-    scrape_run = result.scalar_one_or_none()
-
-    if not scrape_run:
-        raise HTTPException(status_code=404, detail="Scrape run not found")
-
-    # Check if already completed
-    if scrape_run.status != ScrapeStatus.RUNNING.value:
-        raise HTTPException(
-            status_code=410,
-            detail=f"Scrape run already {scrape_run.status}",
-        )
-
-    # Get broadcaster for this scrape
-    broadcaster = progress_registry.get_broadcaster(scrape_run_id)
-
-    if not broadcaster:
-        # No broadcaster means scrape is running but not using progress streaming
-        # This can happen for older API-triggered scrapes or if scheduler
-        # hasn't been updated. Return empty stream that closes immediately.
-        async def empty_generator():
-            yield f"data: {json.dumps({'phase': 'unknown', 'message': 'No progress streaming available for this scrape run'})}\n\n"
-
-        return StreamingResponse(
-            empty_generator(),
-            media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "X-Accel-Buffering": "no",
-            },
-        )
-
-    async def event_generator():
-        try:
-            async for progress in broadcaster.subscribe():
-                if await request.is_disconnected():
-                    break
-                yield f"data: {progress.model_dump_json()}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'phase': 'failed', 'message': str(e)})}\n\n"
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
     )
 
 
