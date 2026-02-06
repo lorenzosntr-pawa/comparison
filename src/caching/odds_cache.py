@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Callable
 
 import structlog
 
@@ -79,6 +80,33 @@ class OddsCache:
         self._betpawa_snapshots: dict[int, dict[int, CachedSnapshot]] = {}
         self._competitor_snapshots: dict[int, dict[str, CachedSnapshot]] = {}
         self._event_kickoffs: dict[int, datetime] = {}
+        self._on_update_callbacks: list[Callable[[list[int], str], None]] = []
+
+    # -- Callback registration ------------------------------------------------
+
+    def on_update(self, callback: Callable[[list[int], str], None]) -> None:
+        """Register a callback for odds updates.
+
+        Callback signature: (event_ids: list[int], source: str) -> None
+        - event_ids: list of event IDs that were updated
+        - source: "betpawa", "sportybet", or "bet9ja"
+
+        The callback is synchronous (not async) because put_*_snapshot methods
+        are sync. The callback should be a thin wrapper that enqueues work for
+        async processing -- it must NOT do I/O or await.
+        """
+        self._on_update_callbacks.append(callback)
+
+    def _notify_update(self, event_ids: list[int], source: str) -> None:
+        """Fire all registered update callbacks.
+
+        Errors in one callback do NOT prevent other callbacks from running.
+        """
+        for cb in self._on_update_callbacks:
+            try:
+                cb(event_ids, source)
+            except Exception:
+                logger.exception("cache.on_update.callback_error", source=source)
 
     # -- Lookup methods (read) ---------------------------------------------
 
@@ -139,6 +167,7 @@ class OddsCache:
         self._betpawa_snapshots[event_id][bookmaker_id] = snapshot
         if kickoff is not None:
             self._event_kickoffs[event_id] = kickoff
+        self._notify_update([event_id], "betpawa")
 
     def put_competitor_snapshot(
         self,
@@ -153,6 +182,7 @@ class OddsCache:
         self._competitor_snapshots[event_id][source] = snapshot
         if kickoff is not None:
             self._event_kickoffs[event_id] = kickoff
+        self._notify_update([event_id], source)
 
     def evict_expired(self, cutoff: datetime) -> int:
         """Remove events whose kickoff is before *cutoff*.
