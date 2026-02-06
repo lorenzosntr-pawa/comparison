@@ -204,15 +204,15 @@ Plans:
 Plans:
 - [x] 64-01: TypeScript types, API methods, hooks, OddsLineChart and MarginLineChart components
 
-#### Phase 65: History Dialog Component
+#### Phase 65: History Dialog Component ✓
 
 **Goal**: Create reusable popup dialog with price/margin chart visualization
 **Depends on**: Phase 64
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 65-01: TBD
+- [x] 65-01: HistoryDialog component with tabbed Odds/Margin views
 
 #### Phase 66: Odds Comparison History
 
@@ -327,7 +327,7 @@ Plans:
 | 62. Historical Data API | v2.1 | 2/2 | Complete | 2026-02-06 |
 | 63. Freshness Timestamps | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 64. Chart Library Integration | v2.1 | 1/1 | Complete | 2026-02-06 |
-| 65. History Dialog Component | v2.1 | 0/? | Not started | - |
+| 65. History Dialog Component | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 66. Odds Comparison History | v2.1 | 0/? | Not started | - |
 | 67. Event Details History | v2.1 | 0/? | Not started | - |
 | 68. Market-Level History View | v2.1 | 0/? | Not started | - |

@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 64 of 68 (Chart Library Integration)
+Phase: 65 of 68 (History Dialog Component)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-06 — Completed 64-01-PLAN.md
+Last activity: 2026-02-06 — Completed 65-01-PLAN.md
 
-Progress: █████░░░░░ 56%
+Progress: ██████░░░░ 60%
 
 ## Milestones
 
@@ -169,6 +169,7 @@ Progress: █████░░░░░ 56%
 - **Composite index for history queries** - idx_market_odds_snapshot_market on (snapshot_id, betpawa_market_id) optimizes JOIN pattern (v2.1 Phase 62)
 - **recharts Tooltip formatter type guard** - (value) => typeof value === 'number' ? ... : '-' handles undefined values (v2.1 Phase 64)
 - **History hooks with full filter queryKey** - include all params (eventId, marketId, bookmakerSlug, fromTime, toTime) for proper cache invalidation (v2.1 Phase 64)
+- **Tab-conditional data fetching** - enabled=open && activeTab prevents API calls for inactive tabs in tabbed dialogs (v2.1 Phase 65)
 
 ### Key Decisions
 
@@ -246,6 +247,6 @@ Progress: █████░░░░░ 56%
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 64-01-PLAN.md
+Stopped at: Completed 65-01-PLAN.md
 Resume file: None
-Next action: Run /gsd:plan-phase 65 to create history dialog component
+Next action: Run /gsd:plan-phase 66 to add history click handlers in Odds Comparison page
