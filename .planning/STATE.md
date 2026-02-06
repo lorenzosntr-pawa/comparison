@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 ## Current Position
 
 Phase: 62 of 68 (Historical Data API)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-06 — Phase 61 skipped (existing functionality sufficient)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-06 — Completed 62-01-PLAN.md
 
-Progress: ██░░░░░░░░ 22%
+Progress: ██░░░░░░░░ 23%
 
 ## Milestones
 
@@ -165,6 +165,8 @@ Progress: ██░░░░░░░░ 22%
 - **WebSocket-only frontend** - SSE code removed, all progress via WebSocket, POST API for manual scrape trigger (v2.0 Phase 59)
 - **Historical snapshots already kept** - Current schema stores ~52 snapshots per event on average, not overwriting (v2.1 Phase 60)
 - **Change-based retention** - Option C strategy: existing change detection naturally creates history without schema overhaul (v2.1 Phase 60)
+- **Historical data schemas** - Separate full-data (OddsHistoryResponse) from chart-only (MarginHistoryResponse) for API flexibility (v2.1 Phase 62)
+- **Composite index for history queries** - idx_market_odds_snapshot_market on (snapshot_id, betpawa_market_id) optimizes JOIN pattern (v2.1 Phase 62)
 
 ### Key Decisions
 
@@ -242,6 +244,6 @@ Progress: ██░░░░░░░░ 22%
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Phase 61 skipped (existing functionality sufficient)
+Stopped at: Completed 62-01-PLAN.md
 Resume file: None
-Next action: Run /gsd:plan-phase 62 to create historical data API endpoints
+Next action: Run /gsd:plan-phase 63 to add freshness timestamps
