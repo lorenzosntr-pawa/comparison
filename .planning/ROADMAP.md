@@ -226,10 +226,11 @@ Plans:
 **Goal**: Remove SSE infrastructure after WebSocket is stable, final validation
 **Depends on**: Phase 58
 **Research**: Unlikely (internal cleanup)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 59-01: TBD
+- [x] 59-01: Remove SSE endpoints from backend and delete SSE-only frontend files
+- [ ] 59-02: Frontend simplification (remove SSE fallback, cleanup)
 
 ## Progress
 
@@ -307,4 +308,4 @@ Plans:
 | 56. Concurrency Tuning | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 57. WebSocket Infrastructure | v2.0 | 3/3 | Complete | 2026-02-06 |
 | 58. WebSocket UI Migration | v2.0 | 2/2 | Complete | 2026-02-06 |
-| 59. SSE Removal & Cleanup | v2.0 | 0/? | Not started | - |
+| 59. SSE Removal & Cleanup | v2.0 | 1/2 | In progress | - |
