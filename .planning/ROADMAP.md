@@ -194,16 +194,15 @@ Plans:
 Plans:
 - [x] 63-01: Add snapshot_time to BookmakerOdds schema + display in frontend
 
-#### Phase 64: Chart Library Integration
+#### Phase 64: Chart Library Integration ✓
 
 **Goal**: Add recharts library and create base chart components for historical visualization
 **Depends on**: Phase 63
-**Research**: Likely (charting library selection and patterns)
-**Research topics**: recharts vs chart.js vs visx, responsive charts, time-series patterns
-**Plans**: TBD
+**Research**: Unlikely (recharts already installed)
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 64-01: TBD
+- [x] 64-01: TypeScript types, API methods, hooks, OddsLineChart and MarginLineChart components
 
 #### Phase 65: History Dialog Component
 
@@ -327,7 +326,7 @@ Plans:
 | 61. Historical Snapshot Retention | v2.1 | - | Skipped | 2026-02-06 |
 | 62. Historical Data API | v2.1 | 2/2 | Complete | 2026-02-06 |
 | 63. Freshness Timestamps | v2.1 | 1/1 | Complete | 2026-02-06 |
-| 64. Chart Library Integration | v2.1 | 0/? | Not started | - |
+| 64. Chart Library Integration | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 65. History Dialog Component | v2.1 | 0/? | Not started | - |
 | 66. Odds Comparison History | v2.1 | 0/? | Not started | - |
 | 67. Event Details History | v2.1 | 0/? | Not started | - |

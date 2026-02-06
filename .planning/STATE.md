@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 63 of 68 (Freshness Timestamps)
+Phase: 64 of 68 (Chart Library Integration)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-06 — Completed 63-01-PLAN.md
+Last activity: 2026-02-06 — Completed 64-01-PLAN.md
 
-Progress: ████░░░░░░ 44%
+Progress: █████░░░░░ 56%
 
 ## Milestones
 
@@ -167,6 +167,8 @@ Progress: ████░░░░░░ 44%
 - **Change-based retention** - Option C strategy: existing change detection naturally creates history without schema overhaul (v2.1 Phase 60)
 - **Historical data schemas** - Separate full-data (OddsHistoryResponse) from chart-only (MarginHistoryResponse) for API flexibility (v2.1 Phase 62)
 - **Composite index for history queries** - idx_market_odds_snapshot_market on (snapshot_id, betpawa_market_id) optimizes JOIN pattern (v2.1 Phase 62)
+- **recharts Tooltip formatter type guard** - (value) => typeof value === 'number' ? ... : '-' handles undefined values (v2.1 Phase 64)
+- **History hooks with full filter queryKey** - include all params (eventId, marketId, bookmakerSlug, fromTime, toTime) for proper cache invalidation (v2.1 Phase 64)
 
 ### Key Decisions
 
@@ -244,6 +246,6 @@ Progress: ████░░░░░░ 44%
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 63-01-PLAN.md
+Stopped at: Completed 64-01-PLAN.md
 Resume file: None
-Next action: Run /gsd:plan-phase 64 to add chart library integration
+Next action: Run /gsd:plan-phase 65 to create history dialog component
