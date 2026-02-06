@@ -283,6 +283,7 @@ export function useScrapeProgress({ runId, isRunning, onComplete }: UseScrapePro
   const prevWsPhase = useRef<string | null>(null)
   useEffect(() => {
     if (ws.overallPhase === 'error' && prevWsPhase.current !== 'error') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- WebSocket state is external system
       setWsFailCount((prev) => {
         const newCount = prev + 1
         if (newCount >= WS_FAIL_THRESHOLD) {

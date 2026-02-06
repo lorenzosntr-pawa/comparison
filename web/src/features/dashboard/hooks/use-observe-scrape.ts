@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import {
   useWebSocketScrapeProgress,
-  type ScrapeProgressEvent,
   type PlatformProgress,
 } from '@/hooks/use-websocket-scrape-progress'
 
