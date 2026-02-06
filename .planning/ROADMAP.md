@@ -215,10 +215,11 @@ Plans:
 **Goal**: Migrate dashboard pages from SSE polling to WebSocket, run alongside SSE initially
 **Depends on**: Phase 57
 **Research**: Unlikely (internal patterns once infrastructure decided)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [x] 58-01: WebSocket hooks (useWebSocket + useWebSocketScrapeProgress)
+- [x] 58-02: Dashboard and scrape-runs WebSocket migration with SSE fallback
 
 #### Phase 59: SSE Removal & Cleanup
 
@@ -305,5 +306,5 @@ Plans:
 | 55.1 Fix Phase 55 Bugs (INSERTED) | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 56. Concurrency Tuning | v2.0 | 1/1 | Complete | 2026-02-05 |
 | 57. WebSocket Infrastructure | v2.0 | 3/3 | Complete | 2026-02-06 |
-| 58. WebSocket UI Migration | v2.0 | 1/? | In progress | - |
+| 58. WebSocket UI Migration | v2.0 | 2/2 | Complete | 2026-02-06 |
 | 59. SSE Removal & Cleanup | v2.0 | 0/? | Not started | - |

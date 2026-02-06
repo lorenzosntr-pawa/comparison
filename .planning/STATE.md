@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 58 of 59 (WebSocket UI Migration)
-Plan: 1 of ? in current phase
-Status: In progress
-Last activity: 2026-02-06 — Completed 58-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-06 — Completed 58-02-PLAN.md
 
-Progress: █████████░ 78%
+Progress: █████████░ 85%
 
 ## Milestones
 
@@ -152,6 +152,7 @@ Progress: █████████░ 78%
 - **WebSocket message envelope pattern** - all messages have {type, timestamp, data} shape for consistent parsing (v2.0)
 - **ProgressBroadcaster-to-WebSocket bridge** - async bridge task subscribes to broadcaster, forwards to ws_manager.broadcast (v2.0)
 - **OddsCache on_update callback pattern** - sync callbacks fire on cache mutations, use loop.create_task() for async broadcast scheduling (v2.0)
+- **WebSocket-first with SSE fallback** - useWebSocketScrapeProgress as primary, fall back to SSE after 3 failures (v2.0 Phase 58)
 
 ### Key Decisions
 
@@ -194,6 +195,8 @@ Progress: █████████░ 78%
 - WebSocket endpoint at /api/ws — runs alongside SSE, no breaking changes (v2.0 Phase 57)
 - Dict builders over Pydantic models for WebSocket messages — faster serialization on hot path (v2.0 Phase 57)
 - Bridge task gated on ws_manager.active_count — avoid creating task when no clients connected (v2.0 Phase 57)
+- WS_FAIL_THRESHOLD = 3 — WebSocket failures before SSE fallback (v2.0 Phase 58)
+- Transport indicator in hooks — expose 'websocket' | 'sse' for debugging (v2.0 Phase 58)
 
 ### Blockers/Concerns
 
@@ -220,6 +223,6 @@ Progress: █████████░ 78%
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 58-01-PLAN.md — WebSocket hooks for frontend
+Stopped at: Completed 58-02-PLAN.md — WebSocket UI migration with SSE fallback
 Resume file: None
-Next action: Execute 58-02-PLAN.md (or plan if not yet created)
+Next action: Plan Phase 59 (SSE Removal & Cleanup)
