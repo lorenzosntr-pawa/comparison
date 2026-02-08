@@ -35,6 +35,62 @@ Market mapping library covers core markets but many exotic/niche market types re
 
 ## Open Bugs
 
+### BUG-010: Competitor odds history not working
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Type:** Critical Bug
+**Severity:** High
+
+**Description:**
+Clicking SportyBet or Bet9ja odds/margins in history dialog shows "No historical data available" even though competitor data exists in the database.
+
+**Root Cause:**
+Backend API endpoint (`src/api/routes/history.py`) only queries `odds_snapshots` table which contains BetPawa data. It never queries `competitor_odds_snapshots` table where SportyBet/Bet9ja historical data is stored.
+
+**Impact:**
+- History dialog is 67% broken (only works for 1 of 3 bookmakers)
+- Users cannot analyze competitor price movements over time
+- Core feature of comparison tool is partially non-functional
+
+---
+
+### BUG-011: Odds tab redundantly shows margin line
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Type:** UX Bug
+**Severity:** Low
+
+**Description:**
+The Odds tab in history dialog shows a margin line overlaid on the odds chart, but there's already a separate Margin tab. Margin data appears twice with different visualizations.
+
+**Root Cause:**
+`OddsLineChart` component is called with `showMargin={true}` in the history dialog Odds tab.
+
+**Impact:**
+- Redundant display of same data
+- Confusing UX - users may not understand why margin appears twice
+- Clutters the Odds chart with unnecessary line
+
+---
+
+### BUG-012: No multi-bookmaker comparison capability
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Type:** Missing Feature
+**Severity:** Medium
+
+**Description:**
+History dialog can only display one bookmaker at a time. Users cannot compare price/margin movements across BetPawa, SportyBet, and Bet9ja side-by-side.
+
+**Root Cause:**
+Entire architecture designed for single-bookmaker viewing:
+- Dialog accepts single `bookmakerSlug` parameter
+- Hooks fetch single bookmaker data
+- API accepts single `bookmaker_slug` query parameter
+- Charts render single bookmaker series
+
+**Impact:**
+- Users cannot compare historical odds movements between bookmakers
+- Core use case for comparison tool is unsupported
+- MarginLineChart has unused `referenceValue` prop suggesting intended comparison feature
+
 ---
 
 ## Closed Bugs
