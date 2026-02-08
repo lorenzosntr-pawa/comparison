@@ -11,6 +11,9 @@ interface MarketRowProps {
   line: number | null
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
   bookmakerOrder?: string[]
+  eventId?: number
+  onOddsClick?: (bookmakerSlug: string, marketId: string, marketName: string) => void
+  onMarginClick?: (bookmakerSlug: string, marketId: string, marketName: string) => void
 }
 
 interface OutcomeDisplay {
@@ -124,6 +127,9 @@ export function MarketRow({
   line,
   bookmakerMarkets,
   bookmakerOrder = BOOKMAKER_ORDER,
+  eventId,
+  onOddsClick,
+  onMarginClick,
 }: MarketRowProps) {
   const outcomeNames = getUnifiedOutcomes(bookmakerMarkets)
 
@@ -146,6 +152,12 @@ export function MarketRow({
   // Format market display name with line if present
   const displayName =
     line !== null ? `${marketName} ${line}` : marketName
+
+  // Get market ID from any bookmaker (prefer Betpawa)
+  const marketId = betpawaMarket?.betpawa_market_id ??
+    bookmakerMarkets.get('sportybet')?.betpawa_market_id ??
+    bookmakerMarkets.get('bet9ja')?.betpawa_market_id ??
+    ''
 
   return (
     <tr
@@ -194,6 +206,9 @@ export function MarketRow({
                   outcome.isActive &&
                   comparison.best !== comparison.worst
 
+                // Determine if this odds cell should be clickable
+                const oddsClickable = onOddsClick && eventId && market && outcome.odds !== null
+
                 return (
                   <div key={outcomeName} className="h-6 flex items-center justify-center">
                     <OddsBadge
@@ -202,6 +217,10 @@ export function MarketRow({
                       isWorst={isWorst}
                       isSuspended={!outcome.isActive && outcome.odds !== null}
                       betpawaOdds={slug !== 'betpawa' ? betpawaOutcome.odds : undefined}
+                      onClick={oddsClickable ? (e) => {
+                        e.stopPropagation()
+                        onOddsClick(slug, marketId, displayName)
+                      } : undefined}
                     />
                   </div>
                 )
@@ -212,6 +231,10 @@ export function MarketRow({
                   <MarginIndicator
                     margin={margin}
                     betpawaMargin={slug !== 'betpawa' ? betpawaMargin : null}
+                    onClick={onMarginClick && eventId && market ? (e) => {
+                      e.stopPropagation()
+                      onMarginClick(slug, marketId, displayName)
+                    } : undefined}
                   />
                 </div>
               )}

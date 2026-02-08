@@ -3,6 +3,7 @@ import { ArrowUp } from 'lucide-react'
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 import { MarketRow } from './market-row'
 import { MarketFilterBar } from './market-filter-bar'
+import { HistoryDialog, type BookmakerInfo } from './history-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,16 @@ const TAB_NAMES: Record<string, string> = {
 
 interface MarketGridProps {
   marketsByBookmaker: BookmakerMarketData[]
+  eventId: number
+}
+
+interface HistoryDialogState {
+  eventId: number
+  marketId: string
+  bookmakerSlug: string
+  marketName: string
+  bookmakerName: string
+  allBookmakers: BookmakerInfo[]
 }
 
 interface UnifiedMarket {
@@ -249,12 +260,13 @@ function MarketTabs({
   )
 }
 
-export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
+export function MarketGrid({ marketsByBookmaker, eventId }: MarketGridProps) {
   const [activeTab, setActiveTab] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [isHeaderStuck, setIsHeaderStuck] = useState(false)
+  const [historyDialog, setHistoryDialog] = useState<HistoryDialogState | null>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const placeholderRef = useRef<HTMLDivElement>(null)
 
@@ -334,6 +346,28 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
     [selectedCompetitor]
   )
 
+  // Build all bookmakers list for comparison mode
+  const allBookmakers = useMemo(() => {
+    return marketsByBookmaker
+      .filter((bm) => bm.markets.length > 0)
+      .map((bm) => ({
+        slug: bm.bookmaker_slug,
+        name: BOOKMAKER_NAMES[bm.bookmaker_slug] ?? bm.bookmaker_slug,
+      }))
+  }, [marketsByBookmaker])
+
+  // Handler for odds/margin clicks to open history dialog
+  const handleHistoryClick = (bookmakerSlug: string, marketId: string, marketName: string) => {
+    setHistoryDialog({
+      eventId,
+      marketId,
+      bookmakerSlug,
+      marketName,
+      bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
+      allBookmakers,
+    })
+  }
+
   if (unifiedMarkets.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -411,6 +445,9 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
                     line={market.line}
                     bookmakerMarkets={market.bookmakerMarkets}
                     bookmakerOrder={bookmakerOrder}
+                    eventId={eventId}
+                    onOddsClick={handleHistoryClick}
+                    onMarginClick={handleHistoryClick}
                   />
                 ))}
               </tbody>
@@ -442,6 +479,20 @@ export function MarketGrid({ marketsByBookmaker }: MarketGridProps) {
         >
           <ArrowUp className="h-4 w-4" />
         </Button>
+      )}
+
+      {/* History Dialog */}
+      {historyDialog && (
+        <HistoryDialog
+          open={true}
+          onOpenChange={(open) => !open && setHistoryDialog(null)}
+          eventId={historyDialog.eventId}
+          marketId={historyDialog.marketId}
+          bookmakerSlug={historyDialog.bookmakerSlug}
+          marketName={historyDialog.marketName}
+          bookmakerName={historyDialog.bookmakerName}
+          allBookmakers={historyDialog.allBookmakers}
+        />
       )}
     </div>
   )

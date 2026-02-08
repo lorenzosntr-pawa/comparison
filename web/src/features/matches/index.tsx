@@ -248,7 +248,7 @@ export function MatchDetail() {
 
       <SummarySection marketsByBookmaker={event.markets_by_bookmaker} />
 
-      <MarketGrid marketsByBookmaker={event.markets_by_bookmaker} />
+      <MarketGrid marketsByBookmaker={event.markets_by_bookmaker} eventId={eventId!} />
     </div>
   )
 }
