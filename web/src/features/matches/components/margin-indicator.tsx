@@ -9,6 +9,7 @@ import {
 interface MarginIndicatorProps {
   margin: number
   betpawaMargin: number | null
+  onClick?: (e: React.MouseEvent) => void
 }
 
 /**
@@ -22,6 +23,7 @@ interface MarginIndicatorProps {
 export function MarginIndicator({
   margin,
   betpawaMargin,
+  onClick,
 }: MarginIndicatorProps) {
   // Calculate difference from Betpawa
   const marginDiff =
@@ -43,7 +45,19 @@ export function MarginIndicator({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={cn('text-xs cursor-help', textClass)}>
+          <span
+            className={cn(
+              'text-xs',
+              textClass,
+              onClick ? 'cursor-pointer hover:ring-1 hover:ring-primary/50' : 'cursor-help'
+            )}
+            onClick={(e) => {
+              if (onClick) {
+                e.stopPropagation()
+                onClick(e)
+              }
+            }}
+          >
             {margin.toFixed(1)}%
           </span>
         </TooltipTrigger>

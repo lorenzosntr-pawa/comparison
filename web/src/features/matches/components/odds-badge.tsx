@@ -6,6 +6,7 @@ interface OddsBadgeProps {
   isWorst: boolean
   isSuspended: boolean
   betpawaOdds?: number | null
+  onClick?: (e: React.MouseEvent) => void
 }
 
 /**
@@ -23,6 +24,7 @@ export function OddsBadge({
   isWorst,
   isSuspended,
   betpawaOdds,
+  onClick,
 }: OddsBadgeProps) {
   if (odds === null) {
     return <span className="text-muted-foreground">-</span>
@@ -53,8 +55,10 @@ export function OddsBadge({
       className={cn(
         'inline-flex items-center justify-center px-2 py-0.5 rounded text-sm font-medium min-w-[3rem]',
         bgClass,
-        textClass
+        textClass,
+        onClick && 'cursor-pointer hover:ring-1 hover:ring-primary/50'
       )}
+      onClick={(e) => onClick?.(e)}
     >
       {odds.toFixed(2)}
     </span>
