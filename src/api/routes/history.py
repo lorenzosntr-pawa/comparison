@@ -11,6 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
+from src.db.models.competitor import (
+    CompetitorEvent,
+    CompetitorMarketOdds,
+    CompetitorOddsSnapshot,
+)
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.matching.schemas import (
     HistoricalSnapshot,
@@ -200,7 +205,10 @@ async def get_odds_history(
     Use this endpoint for detailed odds movement visualization including
     individual outcome odds values.
     """
-    # Get bookmaker
+    # Check if this is a competitor bookmaker
+    is_competitor = bookmaker_slug in ("sportybet", "bet9ja")
+
+    # Get bookmaker info for response
     bookmaker_result = await db.execute(
         select(Bookmaker).where(Bookmaker.slug == bookmaker_slug)
     )
@@ -208,25 +216,48 @@ async def get_odds_history(
     if not bookmaker:
         raise HTTPException(status_code=404, detail=f"Bookmaker not found: {bookmaker_slug}")
 
-    # Query snapshots with the specific market
-    query = (
-        select(OddsSnapshot, MarketOdds)
-        .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
-        .where(OddsSnapshot.event_id == event_id)
-        .where(OddsSnapshot.bookmaker_id == bookmaker.id)
-        .where(MarketOdds.betpawa_market_id == market_id)
-    )
+    if is_competitor:
+        # Query competitor tables
+        # Link CompetitorEvent -> CompetitorOddsSnapshot -> CompetitorMarketOdds
+        query = (
+            select(CompetitorOddsSnapshot, CompetitorMarketOdds)
+            .join(CompetitorEvent, CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id)
+            .join(CompetitorMarketOdds, CompetitorMarketOdds.snapshot_id == CompetitorOddsSnapshot.id)
+            .where(CompetitorEvent.betpawa_event_id == event_id)
+            .where(CompetitorEvent.source == bookmaker_slug)
+            .where(CompetitorMarketOdds.betpawa_market_id == market_id)
+        )
 
-    # Apply time filters (DB stores naive UTC)
-    if from_time:
-        from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
-        query = query.where(OddsSnapshot.captured_at >= from_time_naive)
-    if to_time:
-        to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
-        query = query.where(OddsSnapshot.captured_at <= to_time_naive)
+        # Apply time filters (DB stores naive UTC)
+        if from_time:
+            from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+            query = query.where(CompetitorOddsSnapshot.captured_at >= from_time_naive)
+        if to_time:
+            to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+            query = query.where(CompetitorOddsSnapshot.captured_at <= to_time_naive)
 
-    # Order chronologically for charts
-    query = query.order_by(OddsSnapshot.captured_at)
+        # Order chronologically for charts
+        query = query.order_by(CompetitorOddsSnapshot.captured_at)
+    else:
+        # Query BetPawa tables (original behavior)
+        query = (
+            select(OddsSnapshot, MarketOdds)
+            .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
+            .where(OddsSnapshot.event_id == event_id)
+            .where(OddsSnapshot.bookmaker_id == bookmaker.id)
+            .where(MarketOdds.betpawa_market_id == market_id)
+        )
+
+        # Apply time filters (DB stores naive UTC)
+        if from_time:
+            from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+            query = query.where(OddsSnapshot.captured_at >= from_time_naive)
+        if to_time:
+            to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+            query = query.where(OddsSnapshot.captured_at <= to_time_naive)
+
+        # Order chronologically for charts
+        query = query.order_by(OddsSnapshot.captured_at)
 
     result = await db.execute(query)
     rows = result.all()
@@ -237,8 +268,8 @@ async def get_odds_history(
     line = None
 
     for row in rows:
-        snapshot = row[0]  # OddsSnapshot
-        market = row[1]  # MarketOdds
+        snapshot = row[0]  # OddsSnapshot or CompetitorOddsSnapshot
+        market = row[1]  # MarketOdds or CompetitorMarketOdds
 
         # Capture market metadata from first row
         if market_name is None:
@@ -270,6 +301,7 @@ async def get_odds_history(
         event_id=event_id,
         market_id=market_id,
         bookmaker_slug=bookmaker_slug,
+        is_competitor=is_competitor,
         points=len(history),
     )
 
@@ -310,7 +342,10 @@ async def get_margin_history(
     Use this endpoint for margin-only charts where individual outcome odds
     are not needed.
     """
-    # Get bookmaker
+    # Check if this is a competitor bookmaker
+    is_competitor = bookmaker_slug in ("sportybet", "bet9ja")
+
+    # Get bookmaker info for response
     bookmaker_result = await db.execute(
         select(Bookmaker).where(Bookmaker.slug == bookmaker_slug)
     )
@@ -318,25 +353,47 @@ async def get_margin_history(
     if not bookmaker:
         raise HTTPException(status_code=404, detail=f"Bookmaker not found: {bookmaker_slug}")
 
-    # Query snapshots with the specific market
-    query = (
-        select(OddsSnapshot, MarketOdds)
-        .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
-        .where(OddsSnapshot.event_id == event_id)
-        .where(OddsSnapshot.bookmaker_id == bookmaker.id)
-        .where(MarketOdds.betpawa_market_id == market_id)
-    )
+    if is_competitor:
+        # Query competitor tables
+        query = (
+            select(CompetitorOddsSnapshot, CompetitorMarketOdds)
+            .join(CompetitorEvent, CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id)
+            .join(CompetitorMarketOdds, CompetitorMarketOdds.snapshot_id == CompetitorOddsSnapshot.id)
+            .where(CompetitorEvent.betpawa_event_id == event_id)
+            .where(CompetitorEvent.source == bookmaker_slug)
+            .where(CompetitorMarketOdds.betpawa_market_id == market_id)
+        )
 
-    # Apply time filters (DB stores naive UTC)
-    if from_time:
-        from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
-        query = query.where(OddsSnapshot.captured_at >= from_time_naive)
-    if to_time:
-        to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
-        query = query.where(OddsSnapshot.captured_at <= to_time_naive)
+        # Apply time filters (DB stores naive UTC)
+        if from_time:
+            from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+            query = query.where(CompetitorOddsSnapshot.captured_at >= from_time_naive)
+        if to_time:
+            to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+            query = query.where(CompetitorOddsSnapshot.captured_at <= to_time_naive)
 
-    # Order chronologically for charts
-    query = query.order_by(OddsSnapshot.captured_at)
+        # Order chronologically for charts
+        query = query.order_by(CompetitorOddsSnapshot.captured_at)
+    else:
+        # Query BetPawa tables (original behavior)
+        query = (
+            select(OddsSnapshot, MarketOdds)
+            .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
+            .where(OddsSnapshot.event_id == event_id)
+            .where(OddsSnapshot.bookmaker_id == bookmaker.id)
+            .where(MarketOdds.betpawa_market_id == market_id)
+        )
+
+        # Apply time filters (DB stores naive UTC)
+        if from_time:
+            from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+            query = query.where(OddsSnapshot.captured_at >= from_time_naive)
+        if to_time:
+            to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+            query = query.where(OddsSnapshot.captured_at <= to_time_naive)
+
+        # Order chronologically for charts
+        query = query.order_by(OddsSnapshot.captured_at)
 
     result = await db.execute(query)
     rows = result.all()
@@ -347,8 +404,8 @@ async def get_margin_history(
     line = None
 
     for row in rows:
-        snapshot = row[0]  # OddsSnapshot
-        market = row[1]  # MarketOdds
+        snapshot = row[0]  # OddsSnapshot or CompetitorOddsSnapshot
+        market = row[1]  # MarketOdds or CompetitorMarketOdds
 
         # Capture market metadata from first row
         if market_name is None:
@@ -370,6 +427,7 @@ async def get_margin_history(
         event_id=event_id,
         market_id=market_id,
         bookmaker_slug=bookmaker_slug,
+        is_competitor=is_competitor,
         points=len(history),
     )
 
