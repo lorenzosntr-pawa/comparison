@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 65 of 68 (History Dialog Component)
+Phase: 66 of 68 (Odds Comparison History)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-06 — Completed 65-01-PLAN.md
+Last activity: 2026-02-08 — Completed 66-01-PLAN.md
 
-Progress: ██████░░░░ 60%
+Progress: ███████░░░ 65%
 
 ## Milestones
 
@@ -170,6 +170,7 @@ Progress: ██████░░░░ 60%
 - **recharts Tooltip formatter type guard** - (value) => typeof value === 'number' ? ... : '-' handles undefined values (v2.1 Phase 64)
 - **History hooks with full filter queryKey** - include all params (eventId, marketId, bookmakerSlug, fromTime, toTime) for proper cache invalidation (v2.1 Phase 64)
 - **Tab-conditional data fetching** - enabled=open && activeTab prevents API calls for inactive tabs in tabbed dialogs (v2.1 Phase 65)
+- **Cell click with stopPropagation** - onClick on nested elements uses e.stopPropagation() to prevent row navigation while enabling cell-specific actions (v2.1 Phase 66)
 
 ### Key Decisions
 
@@ -246,7 +247,7 @@ Progress: ██████░░░░ 60%
 
 ## Session Continuity
 
-Last session: 2026-02-06
-Stopped at: Completed 65-01-PLAN.md
+Last session: 2026-02-08
+Stopped at: Completed 66-01-PLAN.md
 Resume file: None
-Next action: Run /gsd:plan-phase 66 to add history click handlers in Odds Comparison page
+Next action: Run /gsd:plan-phase 67 to add history click handlers in Event Details page

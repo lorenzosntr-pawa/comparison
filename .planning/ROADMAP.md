@@ -214,15 +214,15 @@ Plans:
 Plans:
 - [x] 65-01: HistoryDialog component with tabbed Odds/Margin views
 
-#### Phase 66: Odds Comparison History
+#### Phase 66: Odds Comparison History ✓
 
 **Goal**: Add click handlers on odds/margins in Odds Comparison page to open history dialog
 **Depends on**: Phase 65
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 66-01: TBD
+- [x] 66-01: Add HistoryDialog state, click handlers on OddsValue/MarginValue, render dialog
 
 #### Phase 67: Event Details History
 
@@ -328,6 +328,6 @@ Plans:
 | 63. Freshness Timestamps | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 64. Chart Library Integration | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 65. History Dialog Component | v2.1 | 1/1 | Complete | 2026-02-06 |
-| 66. Odds Comparison History | v2.1 | 0/? | Not started | - |
+| 66. Odds Comparison History | v2.1 | 1/1 | Complete | 2026-02-08 |
 | 67. Event Details History | v2.1 | 0/? | Not started | - |
 | 68. Market-Level History View | v2.1 | 0/? | Not started | - |
