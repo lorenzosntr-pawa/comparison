@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { OddsLineChart } from './odds-line-chart'
 import { MarginLineChart } from './margin-line-chart'
+import { MarketHistoryPanel } from './market-history-panel'
 import { useOddsHistory } from '../hooks/use-odds-history'
 import { useMarginHistory } from '../hooks/use-margin-history'
 import { useMultiOddsHistory } from '../hooks/use-multi-odds-history'
@@ -80,6 +81,7 @@ export function HistoryDialog({
 }: HistoryDialogProps) {
   const [activeTab, setActiveTab] = useState<'odds' | 'margin'>('odds')
   const [comparisonMode, setComparisonMode] = useState(false)
+  const [fullMarketView, setFullMarketView] = useState(false)
   const [selectedBookmakers, setSelectedBookmakers] = useState<string[]>([])
 
   // Reset state when dialog opens with new bookmaker
@@ -87,8 +89,16 @@ export function HistoryDialog({
     if (open) {
       setSelectedBookmakers([bookmakerSlug])
       setComparisonMode(false)
+      setFullMarketView(false)
     }
   }, [open, bookmakerSlug])
+
+  // Reset fullMarketView when comparison mode is turned off
+  useEffect(() => {
+    if (!comparisonMode) {
+      setFullMarketView(false)
+    }
+  }, [comparisonMode])
 
   // Get available bookmakers for comparison (default to standard set if not provided)
   const availableBookmakers = allBookmakers || [
@@ -144,7 +154,9 @@ export function HistoryDialog({
   }
 
   const dialogTitle = comparisonMode
-    ? `${marketName} - Compare Bookmakers`
+    ? fullMarketView
+      ? `${marketName} - Full Market View`
+      : `${marketName} - Compare Bookmakers`
     : `${marketName} - ${bookmakerName}`
 
   return (
@@ -170,21 +182,35 @@ export function HistoryDialog({
 
             {/* Bookmaker Selection (visible in comparison mode) */}
             {comparisonMode && (
-              <div className="flex flex-wrap gap-3">
-                {bookmakersToShow.map((bm) => (
-                  <div key={bm.slug} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`bm-${bm.slug}`}
-                      checked={selectedBookmakers.includes(bm.slug)}
-                      onCheckedChange={(checked) =>
-                        handleBookmakerToggle(bm.slug, checked as boolean)
-                      }
-                    />
-                    <Label htmlFor={`bm-${bm.slug}`} className="text-sm">
-                      {bm.name}
-                    </Label>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-3">
+                  {bookmakersToShow.map((bm) => (
+                    <div key={bm.slug} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`bm-${bm.slug}`}
+                        checked={selectedBookmakers.includes(bm.slug)}
+                        onCheckedChange={(checked) =>
+                          handleBookmakerToggle(bm.slug, checked as boolean)
+                        }
+                      />
+                      <Label htmlFor={`bm-${bm.slug}`} className="text-sm">
+                        {bm.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Full Market View toggle */}
+                <div className="flex items-center gap-3 pt-2 border-t">
+                  <Switch
+                    id="full-market-view"
+                    checked={fullMarketView}
+                    onCheckedChange={setFullMarketView}
+                  />
+                  <Label htmlFor="full-market-view" className="text-sm">
+                    Show all outcomes
+                  </Label>
+                </div>
               </div>
             )}
           </div>
@@ -217,6 +243,17 @@ export function HistoryDialog({
                     Retry
                   </Button>
                 </div>
+              ) : fullMarketView ? (
+                // Full Market View - small-multiples layout
+                <ChartErrorBoundary
+                  fallback={
+                    <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                      Unable to render charts
+                    </div>
+                  }
+                >
+                  <MarketHistoryPanel multiData={multiOddsHistory.data} />
+                </ChartErrorBoundary>
               ) : (
                 <ChartErrorBoundary
                   fallback={
