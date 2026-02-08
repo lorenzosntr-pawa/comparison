@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds } from '@/types/api'
 import { formatRelativeTime } from '../lib/market-utils'
-import { HistoryDialog } from './history-dialog'
+import { HistoryDialog, type BookmakerInfo } from './history-dialog'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
 // 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
@@ -38,6 +38,7 @@ interface HistoryDialogState {
   bookmakerSlug: string
   marketName: string
   bookmakerName: string
+  allBookmakers: BookmakerInfo[]
 }
 
 // Static color classes for Tailwind JIT compilation
@@ -563,12 +564,23 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                 odds !== null && bookmaker
                                   ? (e: React.MouseEvent) => {
                                       e.stopPropagation()
+                                      // Get all bookmakers that have this market
+                                      const allBookmakers = event.bookmakers
+                                        .filter((b) => {
+                                          const market = b.inline_odds?.find((m) => m.market_id === marketId)
+                                          return market && market.outcomes.length > 0
+                                        })
+                                        .map((b) => ({
+                                          slug: b.bookmaker_slug,
+                                          name: BOOKMAKER_NAMES[b.bookmaker_slug] ?? b.bookmaker_slug,
+                                        }))
                                       setHistoryDialog({
                                         eventId: event.id,
                                         marketId,
                                         bookmakerSlug,
                                         marketName: MARKET_CONFIG[marketId].label,
                                         bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
+                                        allBookmakers,
                                       })
                                     }
                                   : undefined
@@ -593,12 +605,23 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                             bookmaker && getMargin(bookmaker, marketId) !== null
                               ? (e: React.MouseEvent) => {
                                   e.stopPropagation()
+                                  // Get all bookmakers that have this market
+                                  const allBookmakers = event.bookmakers
+                                    .filter((b) => {
+                                      const market = b.inline_odds?.find((m) => m.market_id === marketId)
+                                      return market && market.outcomes.length > 0
+                                    })
+                                    .map((b) => ({
+                                      slug: b.bookmaker_slug,
+                                      name: BOOKMAKER_NAMES[b.bookmaker_slug] ?? b.bookmaker_slug,
+                                    }))
                                   setHistoryDialog({
                                     eventId: event.id,
                                     marketId,
                                     bookmakerSlug,
                                     marketName: MARKET_CONFIG[marketId].label,
                                     bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
+                                    allBookmakers,
                                   })
                                 }
                               : undefined
@@ -622,6 +645,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         bookmakerSlug={historyDialog?.bookmakerSlug ?? ''}
         marketName={historyDialog?.marketName ?? ''}
         bookmakerName={historyDialog?.bookmakerName ?? ''}
+        allBookmakers={historyDialog?.allBookmakers}
       />
     </div>
   )
