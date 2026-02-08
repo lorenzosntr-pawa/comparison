@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 66 of 68 (Odds Comparison History)
-Plan: 2 of 2 in current phase (complete)
+Phase: 67 of 68 (Event Details History)
+Plan: 1 of 1 in current phase (complete)
 Status: Phase complete
-Last activity: 2026-02-08 — Completed 66-02-FIX.md
+Last activity: 2026-02-08 — Completed 67-01-PLAN.md
 
-Progress: ████████░░ 78%
+Progress: █████████░ 89%
 
 ## Milestones
 
@@ -171,6 +171,7 @@ Progress: ████████░░ 78%
 - **History hooks with full filter queryKey** - include all params (eventId, marketId, bookmakerSlug, fromTime, toTime) for proper cache invalidation (v2.1 Phase 64)
 - **Tab-conditional data fetching** - enabled=open && activeTab prevents API calls for inactive tabs in tabbed dialogs (v2.1 Phase 65)
 - **Cell click with stopPropagation** - onClick on nested elements uses e.stopPropagation() to prevent row navigation while enabling cell-specific actions (v2.1 Phase 66)
+- **Reusable onClick on value components** - OddsBadge and MarginIndicator accept optional onClick prop for clickable behavior across any page (v2.1 Phase 67)
 
 ### Key Decisions
 
@@ -248,6 +249,6 @@ Progress: ████████░░ 78%
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 66-02-FIX.md
+Stopped at: Completed 67-01-PLAN.md
 Resume file: None
-Next action: Plan Phase 67 (Event Details History)
+Next action: Plan Phase 68 (Market-Level History View)
