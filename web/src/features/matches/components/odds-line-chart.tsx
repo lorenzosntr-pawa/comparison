@@ -189,6 +189,8 @@ export function OddsLineChart({
                 ? multiData[name as string]?.bookmakerName || name
                 : name
             ]}
+            cursor={{ strokeDasharray: '3 3' }}
+            isAnimationActive={false}
           />
           <Legend
             formatter={(value) =>
@@ -210,6 +212,7 @@ export function OddsLineChart({
                 dot={false}
                 activeDot={{ r: 4 }}
                 connectNulls
+                isAnimationActive={false}
               />
             ))
           ) : (
@@ -224,6 +227,7 @@ export function OddsLineChart({
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}
+                  isAnimationActive={false}
                 />
               ))}
               {showMargin && (
@@ -235,6 +239,7 @@ export function OddsLineChart({
                   strokeDasharray="5 5"
                   dot={false}
                   name="Margin %"
+                  isAnimationActive={false}
                 />
               )}
             </>

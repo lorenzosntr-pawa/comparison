@@ -129,6 +129,8 @@ export function MarginLineChart({
               ? multiData[name as string]?.bookmakerName || 'Margin'
               : 'Margin'
           ]}
+          cursor={{ strokeDasharray: '3 3' }}
+          isAnimationActive={false}
         />
         {comparisonMode && <Legend
           formatter={(value) =>
@@ -148,6 +150,7 @@ export function MarginLineChart({
               dot={false}
               activeDot={{ r: 4 }}
               connectNulls
+              isAnimationActive={false}
             />
           ))
         ) : (
@@ -159,6 +162,7 @@ export function MarginLineChart({
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 4 }}
+            isAnimationActive={false}
           />
         )}
 
