@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 
 ## Current Position
 
-Phase: 67 of 68 (Event Details History)
-Plan: 1 of 1 + 1 FIX in current phase (complete)
-Status: Phase complete
-Last activity: 2026-02-08 — Completed 67-01-FIX.md (UAT fixes)
+Phase: 68 of 68 (Market-Level History View)
+Plan: 1 of 1 in current phase (complete)
+Status: Phase complete - Milestone v2.1 ready for wrap-up
+Last activity: 2026-02-08 — Completed 68-01-PLAN.md
 
-Progress: █████████░ 89%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -172,6 +172,7 @@ Progress: █████████░ 89%
 - **Tab-conditional data fetching** - enabled=open && activeTab prevents API calls for inactive tabs in tabbed dialogs (v2.1 Phase 65)
 - **Cell click with stopPropagation** - onClick on nested elements uses e.stopPropagation() to prevent row navigation while enabling cell-specific actions (v2.1 Phase 66)
 - **Reusable onClick on value components** - OddsBadge and MarginIndicator accept optional onClick prop for clickable behavior across any page (v2.1 Phase 67)
+- **Small-multiples for multi-outcome visualization** - Grid of mini-charts (one per outcome) with synchronized time axes, cleaner than one chart with many lines (v2.1 Phase 68)
 
 ### Key Decisions
 
@@ -249,6 +250,6 @@ Progress: █████████░ 89%
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 67-01-FIX.md (UAT fixes)
+Stopped at: Completed 68-01-PLAN.md (Market-Level History View)
 Resume file: None
-Next action: Plan Phase 68 (Market-Level History View)
+Next action: /gsd:complete-milestone to wrap up v2.1

@@ -236,15 +236,15 @@ Plans:
 - [x] 67-01: Add onClick to OddsBadge/MarginIndicator, wire up HistoryDialog in MarketGrid
 - [x] 67-01-FIX: Fix UAT issues (chart smoothness)
 
-#### Phase 68: Market-Level History View
+#### Phase 68: Market-Level History View ✓
 
 **Goal**: View complete market history with all outcomes on synchronized timeline
 **Depends on**: Phase 67
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 68-01: TBD
+- [x] 68-01: MarketHistoryPanel with small-multiples layout + Full Market View toggle
 
 ## Progress
 
@@ -332,4 +332,4 @@ Plans:
 | 65. History Dialog Component | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 66. Odds Comparison History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 67. Event Details History | v2.1 | 2/2 | Complete | 2026-02-08 |
-| 68. Market-Level History View | v2.1 | 0/? | Not started | - |
+| 68. Market-Level History View | v2.1 | 1/1 | Complete | 2026-02-08 |
