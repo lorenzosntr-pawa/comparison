@@ -36,17 +36,17 @@ export function OddsLineChart({
         timeLabel: format(new Date(point.captured_at), 'HH:mm'),
         margin: point.margin,
       }
-      // Add each outcome as a separate column
-      point.outcomes.forEach((outcome) => {
+      // Add each outcome as a separate column (safely handle missing outcomes)
+      point.outcomes?.forEach((outcome) => {
         row[outcome.name] = outcome.odds
       })
       return row
     })
   }, [data])
 
-  // Get unique outcome names from first data point
+  // Get unique outcome names from first data point (safely handle missing outcomes)
   const outcomeNames = useMemo(() => {
-    if (!data.length || !data[0].outcomes.length) return []
+    if (!data.length || !data[0]?.outcomes?.length) return []
     return data[0].outcomes.map((o) => o.name)
   }, [data])
 
