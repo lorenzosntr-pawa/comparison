@@ -127,7 +127,7 @@ export function HistoryDialog({
               >
                 <OddsLineChart
                   data={oddsHistory.data?.history ?? []}
-                  showMargin={true}
+                  showMargin={false}
                 />
               </ChartErrorBoundary>
             )}
