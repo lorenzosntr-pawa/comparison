@@ -17,7 +17,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.8 Market Matching Accuracy](milestones/v1.8-ROADMAP.md) — Phases 43-47 (shipped 2026-02-03)
 - ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
 - ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
-- 🚧 **v2.1 Historical Odds Tracking** — Phases 60-68 (in progress)
+- ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 
 ## Completed Milestones
 
@@ -153,98 +153,20 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
-### 🚧 v2.1 Historical Odds Tracking (In Progress)
+<details>
+<summary>✅ v2.1 Historical Odds Tracking (Phases 60-68) — SHIPPED 2026-02-08</summary>
 
-**Milestone Goal:** Add historical odds and margin tracking with interactive visualization, enabling users to view price movements over time through clickable popup dialogs.
+- [x] Phase 60: Investigation & Schema Design (1/1 plans) — 2026-02-06
+- [x] Phase 61: Historical Snapshot Retention — SKIPPED (existing setting sufficient)
+- [x] Phase 62: Historical Data API (2/2 plans) — 2026-02-06
+- [x] Phase 63: Freshness Timestamps (1/1 plans) — 2026-02-06
+- [x] Phase 64: Chart Library Integration (1/1 plans) — 2026-02-06
+- [x] Phase 65: History Dialog Component (1/1 plans) — 2026-02-06
+- [x] Phase 66: Odds Comparison History (2/2 plans) — 2026-02-08
+- [x] Phase 67: Event Details History (2/2 plans) — 2026-02-08
+- [x] Phase 68: Market-Level History View (1/1 plans) — 2026-02-08
 
-#### Phase 60: Investigation & Schema Design ✓
-
-**Goal**: Analyze current snapshot lifecycle, design historical data retention model
-**Depends on**: v2.0 complete
-**Research**: Unlikely (internal design)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 60-01: SQL analysis of snapshot lifecycle + schema design recommendation
-
-#### Phase 61: Historical Snapshot Retention — SKIPPED
-
-**Goal**: Keep historical snapshots with configurable retention policy instead of overwriting
-**Status**: SKIPPED — Existing `odds_retention_days` setting already provides this functionality
-**Decision**: Users can configure retention via existing settings (default 30, max 365 days)
-
-#### Phase 62: Historical Data API ✓
-
-**Goal**: Create API endpoints for querying outcome, margin, and market history
-**Depends on**: Phase 60
-**Research**: Unlikely (FastAPI patterns established)
-**Plans**: 2/2 complete
-
-Plans:
-- [x] 62-01: Pydantic schemas + composite index migration
-- [x] 62-02: History router with snapshot, odds, and margin endpoints
-
-#### Phase 63: Freshness Timestamps ✓
-
-**Goal**: Add "last updated" timestamps to odds display in Odds Comparison and Event Details pages
-**Depends on**: Phase 62
-**Research**: Unlikely (React patterns established)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 63-01: Add snapshot_time to BookmakerOdds schema + display in frontend
-
-#### Phase 64: Chart Library Integration ✓
-
-**Goal**: Add recharts library and create base chart components for historical visualization
-**Depends on**: Phase 63
-**Research**: Unlikely (recharts already installed)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 64-01: TypeScript types, API methods, hooks, OddsLineChart and MarginLineChart components
-
-#### Phase 65: History Dialog Component ✓
-
-**Goal**: Create reusable popup dialog with price/margin chart visualization
-**Depends on**: Phase 64
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 65-01: HistoryDialog component with tabbed Odds/Margin views
-
-#### Phase 66: Odds Comparison History ✓
-
-**Goal**: Add click handlers on odds/margins in Odds Comparison page to open history dialog
-**Depends on**: Phase 65
-**Research**: Unlikely (internal patterns)
-**Plans**: 2/2 complete
-
-Plans:
-- [x] 66-01: Add HistoryDialog state, click handlers on OddsValue/MarginValue, render dialog
-- [x] 66-02-FIX: Fix BUG-010 (competitor history), BUG-011 (margin redundancy), BUG-012 (multi-bookmaker comparison)
-
-#### Phase 67: Event Details History ✓
-
-**Goal**: Add click handlers on odds/margins in Event Details page to open history dialog
-**Depends on**: Phase 66
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 67-01: Add onClick to OddsBadge/MarginIndicator, wire up HistoryDialog in MarketGrid
-- [x] 67-01-FIX: Fix UAT issues (chart smoothness)
-
-#### Phase 68: Market-Level History View ✓
-
-**Goal**: View complete market history with all outcomes on synchronized timeline
-**Depends on**: Phase 67
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 68-01: MarketHistoryPanel with small-multiples layout + Full Market View toggle
+</details>
 
 ## Progress
 
@@ -333,3 +255,4 @@ Plans:
 | 66. Odds Comparison History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 67. Event Details History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 68. Market-Level History View | v2.1 | 1/1 | Complete | 2026-02-08 |
+| **v2.1 SHIPPED** | | | **2026-02-08** | |

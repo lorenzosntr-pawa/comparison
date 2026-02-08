@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-06)
+See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v2.1 Historical Odds Tracking — enable users to view odds/margin movements over time
+**Current focus:** v2.1 shipped — planning next milestone
 
 ## Current Position
 
 Phase: 68 of 68 (Market-Level History View)
-Plan: 1 of 1 in current phase (complete)
-Status: Phase complete - Milestone v2.1 ready for wrap-up
-Last activity: 2026-02-08 — Completed 68-01-PLAN.md
+Plan: Complete
+Status: Milestone v2.1 SHIPPED
+Last activity: 2026-02-08 — Completed v2.1 milestone
 
 Progress: ██████████ 100%
 
@@ -29,7 +29,7 @@ Progress: ██████████ 100%
 - **v1.8 Market Matching Accuracy** — SHIPPED 2026-02-03 (5 phases, 9 plans)
 - **v1.9 Event Details UX** — SHIPPED 2026-02-05 (5 phases, 10 plans)
 - **v2.0 Real-Time Scraping Pipeline** — SHIPPED 2026-02-06 (7 phases, 17 plans)
-- **v2.1 Historical Odds Tracking** — IN PROGRESS (9 phases, Phases 60-68)
+- **v2.1 Historical Odds Tracking** — SHIPPED 2026-02-08 (9 phases, 12 plans)
 
 ## Performance Metrics
 
@@ -104,6 +104,15 @@ Progress: ██████████ 100%
 - WebSocket real-time updates replacing SSE entirely
 - +4,097 / -1,117 lines (net +2,980)
 - ~34,096 total LOC
+
+**v2.1 Summary:**
+- 9 phases completed (12 plans including 2 FIX plans, 1 phase skipped)
+- 3 days from v2.0 to v2.1 (2026-02-06 to 2026-02-08)
+- Historical Data API with 3 endpoints for snapshot, odds, and margin history
+- recharts integration with HistoryDialog, multi-bookmaker comparison mode
+- Small-multiples MarketHistoryPanel for full market view
+- +4,505 / -51 lines (net +4,454)
+- ~38,550 total LOC
 
 ## Accumulated Context
 
@@ -246,10 +255,11 @@ Progress: ██████████ 100%
 - v2.0 Real-Time Scraping Pipeline shipped 2026-02-06 with 7 phases (17 plans)
 - Milestone v2.1 created: Historical Odds Tracking, 9 phases (Phase 60-68)
 - Phase 61 skipped: existing odds_retention_days setting already provides configurable retention
+- v2.1 Historical Odds Tracking shipped 2026-02-08 with 9 phases (12 plans)
 
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 68-01-PLAN.md (Market-Level History View)
+Stopped at: Completed v2.1 milestone
 Resume file: None
-Next action: /gsd:complete-milestone to wrap up v2.1
+Next action: /gsd:discuss-milestone to plan v2.2

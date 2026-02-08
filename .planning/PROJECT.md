@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.0 Real-Time Scraping Pipeline)
+## Current State (v2.1 Historical Odds Tracking)
 
-**Shipped:** 2026-02-06
+**Shipped:** 2026-02-08
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
-- Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui
-- ~34,096 lines of code
+- Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
+- ~38,550 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -57,6 +57,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Sticky navigation header** - fixed positioning with scroll-to-top button for long market lists
 - **Shared market utilities** - deduplicated code in lib/market-utils.ts
 - **Context-aware empty states** - messages explaining which filters cause zero results
+- **Historical Data API** - 3 endpoints for snapshot history, odds time-series, margin time-series
+- **Freshness timestamps** - "last updated" display on odds in Odds Comparison and Event Details pages
+- **HistoryDialog component** - tabbed Odds/Margin views with conditional data fetching
+- **Clickable odds/margins** - click any odds or margin value to open history dialog
+- **Multi-bookmaker comparison** - overlay charts comparing odds/margins across BetPawa, SportyBet, Bet9ja
+- **Small-multiples MarketHistoryPanel** - view all outcomes × all bookmakers simultaneously
 
 ## Requirements
 
@@ -124,10 +130,16 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Intra-batch concurrent event scraping (10 parallel, 65% pipeline reduction) — v2.0
 - ✓ WebSocket real-time updates (/api/ws with topic subscriptions) — v2.0
 - ✓ WebSocket-only frontend (SSE removed) — v2.0
+- ✓ Historical Data API with snapshot, odds, and margin history endpoints — v2.1
+- ✓ Freshness timestamps on odds display — v2.1
+- ✓ HistoryDialog with tabbed Odds/Margin chart views — v2.1
+- ✓ Clickable odds/margins in Odds Comparison and Event Details pages — v2.1
+- ✓ Multi-bookmaker comparison mode with overlay charts — v2.1
+- ✓ Small-multiples MarketHistoryPanel for full market view — v2.1
 
 ### Active
 
-- [ ] Historical trend visualization (data stored, UI deferred)
+(No active requirements — project feature-complete for v2.1)
 
 ### Out of Scope
 
@@ -223,6 +235,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | WebSocket endpoint at /api/ws | Topic-based pub/sub with ConnectionManager | ✓ Good — v2.0 clean real-time infrastructure |
 | WebSocket-only frontend | SSE removed after WebSocket migration complete | ✓ Good — v2.0 eliminates transport complexity |
 | Change detection via normalized tuples | Sort outcomes by name for order-independent comparison | ✓ Good — v2.0 only persist changed odds |
+| No schema changes for history | Current architecture with odds_snapshots + market_odds already stores history | ✓ Good — v2.1 avoided overhaul |
+| Skip Phase 61 | Existing odds_retention_days setting already provides configurable retention | ✓ Good — v2.1 no duplicate functionality |
+| Tab-conditional data fetching | enabled=open && activeTab prevents API calls for inactive tabs | ✓ Good — v2.1 optimal performance |
+| Reusable onClick on value components | OddsBadge/MarginIndicator accept optional onClick for any page | ✓ Good — v2.1 code reuse |
+| Small-multiples for multi-outcome viz | One mini-chart per outcome cleaner than one chart with many lines | ✓ Good — v2.1 readable charts |
+| useQueries for parallel multi-bookmaker | TanStack Query useQueries for concurrent API calls | ✓ Good — v2.1 efficient fetching |
 
 ---
-*Last updated: 2026-02-06 after v2.0 milestone*
+*Last updated: 2026-02-08 after v2.1 milestone*

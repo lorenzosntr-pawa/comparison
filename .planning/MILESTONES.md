@@ -1,5 +1,36 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.1 Historical Odds Tracking (Shipped: 2026-02-08)
+
+**Delivered:** Interactive historical odds and margin visualization with clickable cells, tabbed dialogs, multi-bookmaker comparison mode, and small-multiples full market view.
+
+**Phases completed:** 60-68 (12 plans total: 10 original + 2 FIX plans, Phase 61 skipped)
+
+**Key accomplishments:**
+
+- SQL analysis discovered existing schema already stores ~52 snapshots/event — no major schema changes needed
+- Historical Data API with 3 endpoints for snapshot browsing, odds time-series, and margin time-series
+- Freshness timestamps showing "last updated" on odds displays in Odds Comparison and Event Details pages
+- recharts integration with OddsLineChart and MarginLineChart components with responsive sizing
+- HistoryDialog component with tabbed Odds/Margin views and conditional data fetching
+- Clickable odds/margins in both Odds Comparison and Event Details pages opening history dialogs
+- Multi-bookmaker comparison mode with useQueries parallel fetch and overlay charts
+- Small-multiples MarketHistoryPanel for viewing all outcomes × all bookmakers simultaneously
+
+**Stats:**
+
+- 44 files changed
+- +4,505 / -51 lines (net +4,454)
+- 9 phases (1 skipped), 12 plans, 37 commits
+- 3 days (2026-02-06 to 2026-02-08)
+- ~38,550 total LOC
+
+**Git range:** `94d1825` → `7fb6d37`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.2 features.
+
+---
+
 ## v2.0 Real-Time Scraping Pipeline (Shipped: 2026-02-06)
 
 **Delivered:** Eliminated storage bottleneck with in-memory caching, async write pipeline with change detection, concurrent event scraping, and WebSocket real-time updates replacing SSE entirely.
