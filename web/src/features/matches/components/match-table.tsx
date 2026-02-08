@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds } from '@/types/api'
 import { formatRelativeTime } from '../lib/market-utils'
+import { HistoryDialog } from './history-dialog'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
 // 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
@@ -20,6 +22,22 @@ const BOOKMAKER_LABELS: Record<string, string> = {
   betpawa: 'BP',
   sportybet: 'SB',
   bet9ja: 'B9',
+}
+
+// Full bookmaker names for dialog titles
+const BOOKMAKER_NAMES: Record<string, string> = {
+  betpawa: 'BetPawa',
+  sportybet: 'SportyBet',
+  bet9ja: 'Bet9ja',
+}
+
+// State type for history dialog
+interface HistoryDialogState {
+  eventId: number
+  marketId: string
+  bookmakerSlug: string
+  marketName: string
+  bookmakerName: string
 }
 
 // Static color classes for Tailwind JIT compilation
@@ -150,10 +168,12 @@ function OddsValue({
   odds,
   bookmakerSlug,
   comparisonData,
+  onClick,
 }: {
   odds: number | null
   bookmakerSlug: string
   comparisonData: ComparisonData
+  onClick?: (e: React.MouseEvent) => void
 }) {
   if (odds === null) {
     return <span className="text-muted-foreground text-xs">-</span>
@@ -199,8 +219,10 @@ function OddsValue({
       className={cn(
         'inline-block px-1.5 py-0.5 rounded text-xs font-medium min-w-[2.5rem] text-center',
         bgClass,
-        isBetpawa && 'font-bold'
+        isBetpawa && 'font-bold',
+        onClick && 'cursor-pointer hover:ring-1 hover:ring-primary/50'
       )}
+      onClick={(e) => onClick?.(e)}
     >
       {odds.toFixed(2)}
     </span>
@@ -251,11 +273,13 @@ function MarginValue({
   bookmakerSlug,
   comparisonData,
   isBestMargin,
+  onClick,
 }: {
   margin: number | null
   bookmakerSlug: string
   comparisonData: MarginComparisonData
   isBestMargin: boolean
+  onClick?: (e: React.MouseEvent) => void
 }) {
   if (margin === null) {
     return <span className="text-muted-foreground text-xs">-</span>
@@ -293,8 +317,10 @@ function MarginValue({
       className={cn(
         'inline-block px-1.5 py-0.5 text-xs min-w-[2.5rem] text-center',
         textClass,
-        isBestMargin && 'font-bold underline'
+        isBestMargin && 'font-bold underline',
+        onClick && 'cursor-pointer hover:ring-1 hover:ring-primary/50'
       )}
+      onClick={(e) => onClick?.(e)}
     >
       {margin.toFixed(1)}%
     </span>
@@ -335,6 +361,7 @@ function formatKickoff(kickoff: string): string {
 
 export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false }: MatchTableProps) {
   const navigate = useNavigate()
+  const [historyDialog, setHistoryDialog] = useState<HistoryDialogState | null>(null)
 
   // Get ordered list of bookmakers
   // Exclude betpawa when showing competitor-only events
@@ -532,6 +559,20 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                               odds={odds}
                               bookmakerSlug={bookmakerSlug}
                               comparisonData={comparisonData}
+                              onClick={
+                                odds !== null && bookmaker
+                                  ? (e: React.MouseEvent) => {
+                                      e.stopPropagation()
+                                      setHistoryDialog({
+                                        eventId: event.id,
+                                        marketId,
+                                        bookmakerSlug,
+                                        marketName: MARKET_CONFIG[marketId].label,
+                                        bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
+                                      })
+                                    }
+                                  : undefined
+                              }
                             />
                           </td>
                         )
@@ -548,6 +589,20 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                 bestMargins[marketId] !== null
                               : false
                           }
+                          onClick={
+                            bookmaker && getMargin(bookmaker, marketId) !== null
+                              ? (e: React.MouseEvent) => {
+                                  e.stopPropagation()
+                                  setHistoryDialog({
+                                    eventId: event.id,
+                                    marketId,
+                                    bookmakerSlug,
+                                    marketName: MARKET_CONFIG[marketId].label,
+                                    bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
+                                  })
+                                }
+                              : undefined
+                          }
                         />
                       </td>
                     </>
@@ -558,6 +613,16 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
           })}
         </tbody>
       </table>
+
+      <HistoryDialog
+        open={historyDialog !== null}
+        onOpenChange={(open) => !open && setHistoryDialog(null)}
+        eventId={historyDialog?.eventId ?? 0}
+        marketId={historyDialog?.marketId ?? ''}
+        bookmakerSlug={historyDialog?.bookmakerSlug ?? ''}
+        marketName={historyDialog?.marketName ?? ''}
+        bookmakerName={historyDialog?.bookmakerName ?? ''}
+      />
     </div>
   )
 }
