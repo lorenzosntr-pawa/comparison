@@ -71,7 +71,7 @@ export function OddsLineChart({
           domain={['auto', 'auto']}
           tick={{ fontSize: 12 }}
           className="text-muted-foreground"
-          tickFormatter={(value) => value.toFixed(2)}
+          tickFormatter={(value) => typeof value === 'number' ? value.toFixed(2) : ''}
         />
         <Tooltip
           contentStyle={{

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -423,7 +423,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
           <tr className="border-b bg-muted/10">
             <th colSpan={5}></th>
             {visibleMarkets.map((marketId) => (
-              <>
+              <Fragment key={marketId}>
                 {MARKET_CONFIG[marketId].outcomes.map((outcome) => (
                   <th
                     key={`${marketId}-${outcome}`}
@@ -438,7 +438,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                 >
                   %
                 </th>
-              </>
+              </Fragment>
             ))}
           </tr>
         </thead>
@@ -546,7 +546,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                   </td>
                   {/* Odds cells for all markets (with margin per market) */}
                   {visibleMarkets.map((marketId) => (
-                    <>
+                    <Fragment key={marketId}>
                       {MARKET_CONFIG[marketId].outcomes.map((outcome) => {
                         const odds = bookmaker
                           ? getOutcomeOdds(bookmaker, marketId, outcome)
@@ -605,7 +605,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                           }
                         />
                       </td>
-                    </>
+                    </Fragment>
                   ))}
                 </tr>
               )

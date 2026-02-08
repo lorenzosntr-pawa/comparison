@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Component, type ReactNode } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,39 @@ import { OddsLineChart } from './odds-line-chart'
 import { MarginLineChart } from './margin-line-chart'
 import { useOddsHistory } from '../hooks/use-odds-history'
 import { useMarginHistory } from '../hooks/use-margin-history'
+
+// Error boundary to catch chart rendering errors
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback: ReactNode
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+class ChartErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Chart rendering error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+    return this.props.children
+  }
+}
 
 export interface HistoryDialogProps {
   open: boolean
@@ -85,10 +118,18 @@ export function HistoryDialog({
                 </Button>
               </div>
             ) : (
-              <OddsLineChart
-                data={oddsHistory.data?.history ?? []}
-                showMargin={true}
-              />
+              <ChartErrorBoundary
+                fallback={
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Unable to render chart
+                  </div>
+                }
+              >
+                <OddsLineChart
+                  data={oddsHistory.data?.history ?? []}
+                  showMargin={true}
+                />
+              </ChartErrorBoundary>
             )}
           </TabsContent>
 
@@ -111,7 +152,15 @@ export function HistoryDialog({
                 </Button>
               </div>
             ) : (
-              <MarginLineChart data={marginHistory.data?.history ?? []} />
+              <ChartErrorBoundary
+                fallback={
+                  <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                    Unable to render chart
+                  </div>
+                }
+              >
+                <MarginLineChart data={marginHistory.data?.history ?? []} />
+              </ChartErrorBoundary>
             )}
           </TabsContent>
         </Tabs>

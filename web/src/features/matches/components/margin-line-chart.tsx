@@ -54,7 +54,7 @@ export function MarginLineChart({
           domain={['auto', 'auto']}
           tick={{ fontSize: 12 }}
           className="text-muted-foreground"
-          tickFormatter={(value) => `${value.toFixed(1)}%`}
+          tickFormatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
           width={50}
         />
         <Tooltip
