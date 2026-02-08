@@ -219,10 +219,11 @@ Plans:
 **Goal**: Add click handlers on odds/margins in Odds Comparison page to open history dialog
 **Depends on**: Phase 65
 **Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
+**Plans**: 2/2 complete
 
 Plans:
 - [x] 66-01: Add HistoryDialog state, click handlers on OddsValue/MarginValue, render dialog
+- [x] 66-02-FIX: Fix BUG-010 (competitor history), BUG-011 (margin redundancy), BUG-012 (multi-bookmaker comparison)
 
 #### Phase 67: Event Details History
 
@@ -328,6 +329,6 @@ Plans:
 | 63. Freshness Timestamps | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 64. Chart Library Integration | v2.1 | 1/1 | Complete | 2026-02-06 |
 | 65. History Dialog Component | v2.1 | 1/1 | Complete | 2026-02-06 |
-| 66. Odds Comparison History | v2.1 | 1/1 | Complete | 2026-02-08 |
+| 66. Odds Comparison History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 67. Event Details History | v2.1 | 0/? | Not started | - |
 | 68. Market-Level History View | v2.1 | 0/? | Not started | - |
