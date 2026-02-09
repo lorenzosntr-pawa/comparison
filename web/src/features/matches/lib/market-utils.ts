@@ -5,7 +5,9 @@ import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
  */
 export function formatRelativeTime(isoString: string | null): string {
   if (!isoString) return ''
-  const date = new Date(isoString)
+  // API sends UTC timestamps without 'Z' suffix - ensure correct parsing
+  const normalized = isoString.endsWith('Z') ? isoString : isoString + 'Z'
+  const date = new Date(normalized)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)

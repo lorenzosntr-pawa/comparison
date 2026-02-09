@@ -51,7 +51,9 @@ function formatDate(dateStr: string | null): string {
 }
 
 function formatRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr)
+  // API sends UTC timestamps without 'Z' suffix - ensure correct parsing
+  const normalized = dateStr.endsWith('Z') ? dateStr : dateStr + 'Z'
+  const date = new Date(normalized)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
