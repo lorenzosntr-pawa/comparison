@@ -64,7 +64,7 @@ export function useActiveScrapesObserver() {
   return {
     activeScrapeId,
     isChecking,
-    isObserving: ws.isConnected,
+    isObserving: activeScrapeId !== null && ws.isConnected,
     progress: ws.currentProgress,
     platformProgress: ws.platformProgress as Map<string, PlatformProgress>,
     overallPhase: ws.overallPhase,
