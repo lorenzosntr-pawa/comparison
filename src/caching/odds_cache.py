@@ -56,6 +56,7 @@ class CachedSnapshot:
     event_id: int
     bookmaker_id: int
     captured_at: datetime
+    last_confirmed_at: datetime  # When odds were last verified (for freshness display)
     markets: tuple[CachedMarket, ...]  # tuple for immutability
 
 
