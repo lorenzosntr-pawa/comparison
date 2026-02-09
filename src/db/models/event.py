@@ -1,4 +1,9 @@
-"""Event and EventBookmaker models."""
+"""Event and EventBookmaker models.
+
+This module defines the core Event model representing matched sporting
+events and the EventBookmaker junction table linking events to bookmaker-
+specific data like external IDs and URLs.
+"""
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -14,7 +19,29 @@ if TYPE_CHECKING:
 
 
 class Event(Base):
-    """Matched event across platforms."""
+    """Matched event across betting platforms.
+
+    Represents a sporting event that has been matched across multiple
+    bookmakers using SportRadar ID. The Event table stores canonical
+    event data from Betpawa (the reference platform).
+
+    Attributes:
+        id: Primary key.
+        tournament_id: FK to tournaments table.
+        name: Display name (e.g., "Arsenal vs Chelsea").
+        home_team: Home team name.
+        away_team: Away team name.
+        kickoff: Event start time (UTC).
+        sportradar_id: Cross-platform matching key (unique).
+        created_at: Timestamp when record was created.
+
+    Relationships:
+        tournament: Parent Tournament (many-to-one).
+        bookmaker_links: EventBookmaker entries (one-to-many, cascade delete).
+
+    Constraints:
+        - sportradar_id: unique
+    """
 
     __tablename__ = "events"
 
@@ -36,7 +63,26 @@ class Event(Base):
 
 
 class EventBookmaker(Base):
-    """Per-bookmaker event data (links event to bookmaker-specific info)."""
+    """Per-bookmaker event data linking an event to bookmaker-specific info.
+
+    Junction table connecting events to bookmakers with platform-specific
+    identifiers. Used to map canonical events to bookmaker event pages.
+
+    Attributes:
+        id: Primary key.
+        event_id: FK to events table.
+        bookmaker_id: FK to bookmakers table.
+        external_event_id: Bookmaker's internal event ID.
+        event_url: Direct URL to event page on bookmaker site.
+        created_at: Timestamp when record was created.
+
+    Relationships:
+        event: Parent Event (many-to-one).
+        bookmaker: Associated Bookmaker (many-to-one).
+
+    Constraints:
+        - Unique on (event_id, bookmaker_id): One link per event-bookmaker pair.
+    """
 
     __tablename__ = "event_bookmakers"
 

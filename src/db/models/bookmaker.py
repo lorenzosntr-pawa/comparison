@@ -1,4 +1,8 @@
-"""Bookmaker configuration model."""
+"""Bookmaker configuration model.
+
+This module defines the Bookmaker model representing betting platforms
+tracked by the system (e.g., Betpawa, SportyBet, Bet9ja).
+"""
 
 from datetime import datetime
 
@@ -9,7 +13,25 @@ from src.db.base import Base
 
 
 class Bookmaker(Base):
-    """Bookmaker configuration (e.g., Sportybet, Betpawa, Bet9ja)."""
+    """Bookmaker configuration entity.
+
+    Represents a betting platform whose odds are scraped and compared.
+    Currently supports Betpawa (reference platform), SportyBet, and Bet9ja.
+
+    Attributes:
+        id: Primary key.
+        name: Display name (e.g., "SportyBet Nigeria").
+        slug: URL-friendly identifier (e.g., "sportybet"). Must be unique.
+        is_active: Whether this bookmaker is currently being scraped.
+        base_url: Website URL for linking to events.
+        logo_url: URL to bookmaker logo for UI display.
+        created_at: Timestamp when record was created.
+        updated_at: Timestamp of last modification.
+
+    Constraints:
+        - name: unique
+        - slug: unique
+    """
 
     __tablename__ = "bookmakers"
 

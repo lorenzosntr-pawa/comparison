@@ -1,4 +1,10 @@
-"""Scrape run and error tracking models."""
+"""Scrape run and error tracking models.
+
+This module defines models for tracking scrape execution: ScrapeRun for
+individual scrape operations, ScrapeBatch for grouping related runs,
+ScrapeError for failure tracking, and ScrapePhaseLog for phase-level
+audit trails.
+"""
 
 from datetime import datetime
 from enum import StrEnum
@@ -16,7 +22,19 @@ if TYPE_CHECKING:
 
 
 class ScrapeStatus(StrEnum):
-    """Status of a scrape run."""
+    """Status values for scrape run tracking.
+
+    Used in ScrapeRun.status and ScrapeBatch.status columns to indicate
+    the current state of a scrape operation.
+
+    Values:
+        PENDING: Scrape scheduled but not yet started.
+        RUNNING: Scrape currently in progress.
+        COMPLETED: All platforms scraped successfully.
+        PARTIAL: Some platforms succeeded, some failed.
+        FAILED: All platforms failed.
+        CONNECTION_FAILED: Network/connection error prevented scrape.
+    """
 
     PENDING = "pending"
     RUNNING = "running"
@@ -27,11 +45,22 @@ class ScrapeStatus(StrEnum):
 
 
 class ScrapeBatch(Base):
-    """Groups multiple ScrapeRuns (one per platform) for unified batch visibility.
+    """Groups multiple ScrapeRuns for unified batch visibility.
 
     A batch represents a single logical scraping operation that may spawn
-    separate runs per platform. Enables UI views like:
-    "Batch 123: betpawa ✓, sportybet ✓, bet9ja ✗"
+    separate runs per platform. Enables aggregated UI views showing status
+    across all platforms (e.g., "Batch 123: betpawa OK, sportybet OK, bet9ja FAILED").
+
+    Attributes:
+        id: Primary key.
+        started_at: When the batch was initiated.
+        completed_at: When all runs finished (nullable).
+        status: Aggregate status of the batch.
+        trigger: How batch was initiated ("scheduled", "manual").
+        notes: Optional notes about the batch.
+
+    Relationships:
+        runs: Child ScrapeRun entries (one-to-many, cascade delete).
     """
 
     __tablename__ = "scrape_batches"
@@ -57,7 +86,34 @@ class ScrapeBatch(Base):
 
 
 class ScrapeRun(Base):
-    """Tracks each scraping execution for operational monitoring."""
+    """Tracks each scraping execution for operational monitoring.
+
+    Records metadata about a single scrape execution including timing,
+    event counts, and per-platform status. Used for monitoring dashboards
+    and debugging scrape issues.
+
+    Attributes:
+        id: Primary key.
+        batch_id: FK to scrape_batches (nullable for backwards compat).
+        status: Current run status (ScrapeStatus value).
+        started_at: When the run began.
+        completed_at: When the run finished (nullable).
+        events_scraped: Count of successfully scraped events.
+        events_failed: Count of failed events.
+        trigger: How run was initiated ("scheduled", "manual", "webhook").
+        platform_timings: JSON with per-platform timing data.
+            Format: {"betpawa": {"duration_ms": 1234, "events_count": 40}}
+        current_phase: Active phase name for progress tracking.
+        current_platform: Active platform for progress tracking.
+        platform_status: JSON with per-platform status.
+            Format: {"betpawa": "completed", "sportybet": "active"}
+
+    Relationships:
+        batch: Parent ScrapeBatch if part of a batch (many-to-one).
+        errors: ScrapeError children (one-to-many, cascade delete).
+        snapshots: OddsSnapshot entries created by this run.
+        phase_logs: ScrapePhaseLog children (one-to-many, cascade delete).
+    """
 
     __tablename__ = "scrape_runs"
 
@@ -105,7 +161,25 @@ class ScrapeRun(Base):
 
 
 class ScrapeError(Base):
-    """Tracks individual scrape failures for debugging and monitoring."""
+    """Tracks individual scrape failures for debugging and monitoring.
+
+    Records error details when a scrape operation fails at the bookmaker
+    or event level. Enables error analysis and alerting.
+
+    Attributes:
+        id: Primary key.
+        scrape_run_id: FK to scrape_runs table.
+        bookmaker_id: FK to bookmakers (null if global error).
+        event_id: FK to events (null if bookmaker-level error).
+        error_type: Category of error (e.g., "timeout", "rate_limit").
+        error_message: Detailed error description.
+        occurred_at: Timestamp when error occurred.
+
+    Relationships:
+        scrape_run: Parent ScrapeRun (many-to-one).
+        bookmaker: Associated Bookmaker if platform-specific error.
+        event: Associated Event if event-level error.
+    """
 
     __tablename__ = "scrape_errors"
 
@@ -137,8 +211,22 @@ class ScrapeError(Base):
 class ScrapePhaseLog(Base):
     """Tracks phase transitions during a scrape run for audit trail.
 
-    Each record represents a phase start/end within a scrape execution,
+    Records the start and end of each phase within a scrape execution,
     enabling detailed timeline reconstruction and performance analysis.
+
+    Attributes:
+        id: Primary key.
+        scrape_run_id: FK to scrape_runs table.
+        platform: Platform being processed (nullable for global phases).
+        phase: Phase name (e.g., "fetch_events", "save_odds").
+        started_at: When this phase began.
+        ended_at: When this phase completed (nullable if still running).
+        events_processed: Count of events processed in this phase.
+        message: Optional status or progress message.
+        error_details: JSON with error info if phase failed.
+
+    Relationships:
+        scrape_run: Parent ScrapeRun (many-to-one).
     """
 
     __tablename__ = "scrape_phase_logs"

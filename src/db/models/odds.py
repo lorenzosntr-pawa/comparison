@@ -1,4 +1,13 @@
-"""Odds snapshot and market odds models."""
+"""Odds snapshot and market odds models.
+
+This module defines the OddsSnapshot and MarketOdds models for storing
+point-in-time odds data captured from bookmakers. OddsSnapshot represents
+a complete odds capture for an event, while MarketOdds stores individual
+market data with normalized structure.
+
+The odds_snapshots table is partitioned by captured_at for efficient
+time-range queries and data retention management.
+"""
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -17,8 +26,28 @@ if TYPE_CHECKING:
 class OddsSnapshot(Base):
     """Point-in-time odds capture for an event from a bookmaker.
 
-    This table will be partitioned by captured_at in the migration.
-    SQLAlchemy model defines structure, Alembic migration handles partitioning.
+    Records a complete odds state for an event at a specific moment.
+    This table is partitioned by captured_at in the database migration
+    for efficient time-range queries and cleanup operations.
+
+    Attributes:
+        id: Primary key (BigInteger for high volume).
+        event_id: FK to events table.
+        bookmaker_id: FK to bookmakers table.
+        captured_at: Timestamp when odds were captured.
+        scrape_run_id: FK to scrape_runs (nullable).
+        raw_response: Raw JSON response from bookmaker API.
+        last_confirmed_at: When odds were last verified unchanged.
+
+    Relationships:
+        event: Parent Event (many-to-one).
+        bookmaker: Source Bookmaker (many-to-one).
+        scrape_run: Associated ScrapeRun if from scheduled scrape.
+        markets: MarketOdds children (one-to-many, cascade delete).
+
+    Note:
+        Partitioning by captured_at is configured via Alembic migration,
+        not in the SQLAlchemy model definition.
     """
 
     __tablename__ = "odds_snapshots"
@@ -56,11 +85,27 @@ class OddsSnapshot(Base):
 
 
 class MarketOdds(Base):
-    """Individual market odds within a snapshot.
+    """Individual market odds within an odds snapshot.
 
-    Stores normalized market data with JSONB outcomes.
-    Outcomes structure varies by market type, e.g.:
-    [{"name": "1", "odds": 1.85, "is_active": true}, ...]
+    Stores normalized market data mapped to Betpawa market taxonomy.
+    The outcomes JSON contains selection names and odds values in a
+    consistent structure across all platforms.
+
+    Attributes:
+        id: Primary key (BigInteger for high volume).
+        snapshot_id: FK to odds_snapshots table.
+        betpawa_market_id: Normalized market ID in Betpawa taxonomy.
+        betpawa_market_name: Human-readable market name.
+        line: Over/under line for total markets (e.g., 2.5).
+        handicap_type: Type of handicap ("asian", "european").
+        handicap_home: Home team handicap value.
+        handicap_away: Away team handicap value.
+        outcomes: JSON array of selections with odds.
+            Format: [{"name": "1", "odds": 1.85, "is_active": true}, ...]
+        market_groups: Categories this market belongs to (e.g., ["main"]).
+
+    Relationships:
+        snapshot: Parent OddsSnapshot (many-to-one).
     """
 
     __tablename__ = "market_odds"

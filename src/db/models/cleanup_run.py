@@ -1,4 +1,9 @@
-"""Cleanup run tracking model."""
+"""Cleanup run tracking model.
+
+This module defines the CleanupRun model for tracking data retention
+operations. Cleanup jobs delete old odds snapshots and expired events
+to manage database size.
+"""
 
 from datetime import datetime
 
@@ -11,8 +16,30 @@ from src.db.base import Base
 class CleanupRun(Base):
     """Tracks cleanup execution history for audit and monitoring.
 
-    Records when cleanup jobs run, what settings were used,
-    and how many records were deleted from each table.
+    Records when cleanup jobs run, what retention settings were applied,
+    and how many records were deleted from each table. Used for operational
+    visibility and debugging of data retention policies.
+
+    Attributes:
+        id: Primary key.
+        started_at: When the cleanup job started.
+        completed_at: When the job finished (null if still running/failed).
+        trigger: How the cleanup was initiated ("scheduled" or "manual").
+        odds_retention_days: Retention policy used for odds data.
+        match_retention_days: Retention policy used for match data.
+        odds_deleted: Count of odds_snapshots rows deleted.
+        competitor_odds_deleted: Count of competitor_odds_snapshots deleted.
+        scrape_runs_deleted: Count of scrape_runs rows deleted.
+        scrape_batches_deleted: Count of scrape_batches rows deleted.
+        events_deleted: Count of events rows deleted.
+        competitor_events_deleted: Count of competitor_events deleted.
+        tournaments_deleted: Count of tournaments rows deleted.
+        competitor_tournaments_deleted: Count of competitor_tournaments deleted.
+        oldest_odds_date: Oldest odds timestamp that was cleaned.
+        oldest_match_date: Oldest match timestamp that was cleaned.
+        status: Current status ("running", "completed", "failed").
+        error_message: Error details if status is "failed".
+        duration_seconds: Total execution time.
     """
 
     __tablename__ = "cleanup_runs"

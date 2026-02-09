@@ -1,4 +1,19 @@
-"""Async database engine and session factory for PostgreSQL."""
+"""Async database engine and session factory for PostgreSQL.
+
+This module configures the SQLAlchemy async engine and session factory for
+database access. It provides the core database connectivity layer used by
+FastAPI endpoints via dependency injection.
+
+Configuration:
+    - Pool size: 10 connections
+    - Max overflow: 20 additional connections under load
+    - expire_on_commit=False: Required for async sessions to prevent
+      DetachedInstanceError when accessing lazy-loaded attributes
+
+Environment Variables:
+    DATABASE_URL: PostgreSQL connection string. Defaults to local development
+        database if not set.
+"""
 
 import os
 from contextlib import asynccontextmanager
@@ -12,7 +27,11 @@ from sqlalchemy.ext.asyncio import (
 
 
 def get_database_url() -> str:
-    """Get database URL from environment variable or use default."""
+    """Get database URL from environment variable or use default.
+
+    Returns:
+        PostgreSQL connection string using asyncpg driver.
+    """
     return os.environ.get(
         "DATABASE_URL",
         "postgresql+asyncpg://postgres:postgres@localhost:5433/pawarisk",

@@ -1,4 +1,9 @@
-"""Sport and Tournament models."""
+"""Sport and Tournament models.
+
+This module defines the Sport and Tournament models for categorizing
+events. Sports are top-level categories (Football, Basketball) while
+Tournaments represent leagues or competitions within a sport.
+"""
 
 from typing import TYPE_CHECKING
 
@@ -12,7 +17,23 @@ if TYPE_CHECKING:
 
 
 class Sport(Base):
-    """Sport entity (e.g., Football, Basketball)."""
+    """Sport entity representing a category of athletic competition.
+
+    Top-level categorization for events (e.g., Football, Basketball).
+    Each sport contains multiple tournaments.
+
+    Attributes:
+        id: Primary key.
+        name: Display name (e.g., "Football").
+        slug: URL-friendly identifier (e.g., "football"). Must be unique.
+
+    Relationships:
+        tournaments: Child Tournament entries (one-to-many, cascade delete).
+
+    Constraints:
+        - name: unique
+        - slug: unique
+    """
 
     __tablename__ = "sports"
 
@@ -28,7 +49,25 @@ class Sport(Base):
 
 
 class Tournament(Base):
-    """Tournament/League entity (e.g., English Premier League)."""
+    """Tournament or league entity within a sport.
+
+    Represents a competition like "English Premier League" or "La Liga".
+    Contains events and belongs to a single sport.
+
+    Attributes:
+        id: Primary key.
+        sport_id: FK to sports table.
+        name: Display name (e.g., "English Premier League").
+        country: Country where tournament is based (nullable).
+        sportradar_id: Cross-platform matching key (unique, nullable).
+
+    Relationships:
+        sport: Parent Sport (many-to-one).
+        events: Child Event entries (one-to-many, cascade delete).
+
+    Constraints:
+        - sportradar_id: unique (when not null)
+    """
 
     __tablename__ = "tournaments"
 

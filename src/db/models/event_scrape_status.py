@@ -1,7 +1,9 @@
 """EventScrapeStatus model for per-event scrape status tracking.
 
-This model tracks the scrape status for each event within a scrape run,
-providing per-event observability of the new event-centric architecture.
+This module defines the EventScrapeStatus model that tracks scrape
+results for individual events within a scrape run. It provides
+granular observability into which platforms succeeded or failed
+for each event, enabling detailed debugging and monitoring.
 """
 
 from datetime import datetime
@@ -15,19 +17,22 @@ from src.db.base import Base
 class EventScrapeStatus(Base):
     """Per-event scrape status within a scrape run.
 
-    Tracks which platforms were requested/scraped/failed for each event,
-    enabling detailed observability and debugging of scrape issues.
+    Tracks which platforms were requested, succeeded, or failed for each
+    event during a scrape execution. Enables detailed observability and
+    debugging of scrape issues at the individual event level.
 
     Attributes:
         id: Primary key.
-        scrape_run_id: FK to scrape_runs.id.
-        sportradar_id: SR ID of the event.
-        status: Overall status - "completed" or "failed".
+        scrape_run_id: FK to scrape_runs table.
+        sportradar_id: SportRadar ID identifying the event.
+        status: Overall status ("completed" or "failed").
         platforms_requested: JSON list of platforms that were attempted.
+            Example: ["betpawa", "sportybet", "bet9ja"]
         platforms_scraped: JSON list of platforms that succeeded.
         platforms_failed: JSON list of platforms that failed.
         timing_ms: Scrape duration for this event in milliseconds.
-        error_details: JSON dict of platform -> error message (nullable).
+        error_details: JSON dict mapping platform to error message.
+            Example: {"bet9ja": "timeout after 5000ms"}
         created_at: Timestamp when this record was created.
     """
 

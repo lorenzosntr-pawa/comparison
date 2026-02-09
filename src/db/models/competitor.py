@@ -1,4 +1,10 @@
-"""Competitor models for SportyBet and Bet9ja data storage."""
+"""Competitor models for SportyBet and Bet9ja data storage.
+
+This module defines models for storing raw data from competitor platforms
+(SportyBet, Bet9ja) before matching to Betpawa events. The competitor_*
+tables mirror the Betpawa data structure but store platform-specific IDs
+and are linked via SportRadar IDs for cross-platform matching.
+"""
 
 from datetime import datetime
 from enum import StrEnum
@@ -14,14 +20,41 @@ if TYPE_CHECKING:
 
 
 class CompetitorSource(StrEnum):
-    """Source platforms for competitor data."""
+    """Source platforms for competitor data.
+
+    Identifies which competitor platform the data originated from.
+    Used in source columns to distinguish SportyBet vs Bet9ja records.
+    """
 
     SPORTYBET = "sportybet"
     BET9JA = "bet9ja"
 
 
 class CompetitorTournament(Base):
-    """Tournament from a competitor platform (SportyBet, Bet9ja)."""
+    """Tournament from a competitor platform (SportyBet, Bet9ja).
+
+    Stores tournament metadata from competitor platforms before matching
+    to Betpawa tournaments. Links to Sport for categorization.
+
+    Attributes:
+        id: Primary key.
+        source: Platform identifier ("sportybet" or "bet9ja").
+        sport_id: FK to sports table.
+        name: Tournament display name from source platform.
+        country_raw: Raw country string from source platform.
+        country_iso: Normalized ISO 3166-1 alpha-3 country code.
+        external_id: Platform-specific tournament ID.
+        sportradar_id: Cross-platform matching key (nullable).
+        created_at: Timestamp when record was created.
+        deleted_at: Soft delete timestamp for logical deletion.
+
+    Relationships:
+        sport: Parent Sport entity (many-to-one).
+        events: CompetitorEvent children (one-to-many, cascade delete).
+
+    Constraints:
+        - Unique on (source, external_id): One record per platform tournament.
+    """
 
     __tablename__ = "competitor_tournaments"
 
@@ -56,7 +89,34 @@ class CompetitorTournament(Base):
 
 
 class CompetitorEvent(Base):
-    """Event from a competitor platform with SportRadar ID linkage."""
+    """Event from a competitor platform with SportRadar ID linkage.
+
+    Stores event data from SportyBet or Bet9ja. The sportradar_id field
+    enables matching to Betpawa events for odds comparison.
+
+    Attributes:
+        id: Primary key.
+        source: Platform identifier ("sportybet" or "bet9ja").
+        tournament_id: FK to competitor_tournaments.
+        betpawa_event_id: FK to events table when matched (nullable).
+        name: Event display name (e.g., "Arsenal vs Chelsea").
+        home_team: Home team name.
+        away_team: Away team name.
+        kickoff: Event start time (UTC).
+        external_id: Platform-specific event ID.
+        sportradar_id: Cross-platform matching key (required).
+        created_at: Timestamp when record was created.
+        updated_at: Timestamp of last modification.
+        deleted_at: Soft delete timestamp for logical deletion.
+
+    Relationships:
+        tournament: Parent CompetitorTournament (many-to-one).
+        betpawa_event: Matched Betpawa Event if linked (many-to-one).
+        odds_snapshots: CompetitorOddsSnapshot children (one-to-many).
+
+    Constraints:
+        - Unique on (source, external_id): One record per platform event.
+    """
 
     __tablename__ = "competitor_events"
 
@@ -107,7 +167,25 @@ if TYPE_CHECKING:
 
 
 class CompetitorOddsSnapshot(Base):
-    """Point-in-time odds capture for a competitor event."""
+    """Point-in-time odds capture for a competitor event.
+
+    Records a complete odds state for a competitor event at a specific
+    moment in time. Contains the raw API response and links to normalized
+    market data via CompetitorMarketOdds.
+
+    Attributes:
+        id: Primary key (auto-increment).
+        competitor_event_id: FK to competitor_events.
+        captured_at: Timestamp when odds were captured.
+        scrape_run_id: FK to scrape_runs (nullable).
+        raw_response: Raw JSON response from platform API.
+        last_confirmed_at: When odds were last confirmed unchanged.
+
+    Relationships:
+        competitor_event: Parent CompetitorEvent (many-to-one).
+        scrape_run: Associated ScrapeRun if captured during scheduled scrape.
+        markets: CompetitorMarketOdds children (one-to-many, cascade delete).
+    """
 
     __tablename__ = "competitor_odds_snapshots"
 
@@ -137,7 +215,27 @@ class CompetitorOddsSnapshot(Base):
 
 
 class CompetitorMarketOdds(Base):
-    """Individual market odds within a competitor odds snapshot."""
+    """Individual market odds within a competitor odds snapshot.
+
+    Stores normalized market data mapped to Betpawa market taxonomy.
+    The outcomes JSON contains selection names and odds values.
+
+    Attributes:
+        id: Primary key (auto-increment).
+        snapshot_id: FK to competitor_odds_snapshots.
+        betpawa_market_id: Normalized market ID in Betpawa taxonomy.
+        betpawa_market_name: Human-readable market name.
+        line: Over/under line for total markets (e.g., 2.5).
+        handicap_type: Type of handicap ("asian", "european").
+        handicap_home: Home team handicap value.
+        handicap_away: Away team handicap value.
+        outcomes: JSON array of selections with odds.
+            Format: [{"name": "1", "odds": 1.85, "is_active": true}, ...]
+        market_groups: Categories this market belongs to.
+
+    Relationships:
+        snapshot: Parent CompetitorOddsSnapshot (many-to-one).
+    """
 
     __tablename__ = "competitor_market_odds"
 
