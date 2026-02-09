@@ -19,6 +19,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
+- 🚧 **v2.3 Code Quality & Reliability** — Phases 72-78 (in progress)
 
 ## Completed Milestones
 
@@ -178,6 +179,80 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v2.3 Code Quality & Reliability (In Progress)
+
+**Milestone Goal:** Stabilize WebSocket implementation, clean up technical debt, and establish documentation standards across the codebase.
+
+#### Phase 72: WebSocket Investigation & Bug Fixes
+
+**Goal**: Fix "always in progress" bug when WebSocket connects, audit current WebSocket implementation
+**Depends on**: v2.2 complete
+**Research**: Unlikely (internal patterns, existing infrastructure)
+**Plans**: TBD
+
+Plans:
+- [ ] 72-01: TBD (run /gsd:plan-phase 72 to break down)
+
+#### Phase 73: WebSocket Reliability
+
+**Goal**: Improve connection lifecycle, reconnection logic, and state synchronization between UI and server
+**Depends on**: Phase 72
+**Research**: Unlikely (WebSocket already integrated)
+**Plans**: TBD
+
+Plans:
+- [ ] 73-01: TBD
+
+#### Phase 74: Dead Code Audit & Removal (Backend)
+
+**Goal**: Scan and remove unused Python services, routes, utilities from backend
+**Depends on**: Phase 73
+**Research**: Unlikely (internal refactoring)
+**Plans**: TBD
+
+Plans:
+- [ ] 74-01: TBD
+
+#### Phase 75: Dead Code Audit & Removal (Frontend)
+
+**Goal**: Scan and remove unused React components, hooks, utilities from frontend
+**Depends on**: Phase 74
+**Research**: Unlikely (internal refactoring)
+**Plans**: TBD
+
+Plans:
+- [ ] 75-01: TBD
+
+#### Phase 76: Documentation (Backend)
+
+**Goal**: Add comprehensive docstrings to Python modules, classes, and functions
+**Depends on**: Phase 75
+**Research**: Unlikely (internal documentation)
+**Plans**: TBD
+
+Plans:
+- [ ] 76-01: TBD
+
+#### Phase 77: Documentation (Frontend) + README
+
+**Goal**: Add TypeScript documentation and update project README with current architecture
+**Depends on**: Phase 76
+**Research**: Unlikely (internal documentation)
+**Plans**: TBD
+
+Plans:
+- [ ] 77-01: TBD
+
+#### Phase 78: Type Annotations & Error Handling
+
+**Goal**: Fill type annotation gaps across both codebases and improve error messages/recovery
+**Depends on**: Phase 77
+**Research**: Unlikely (internal improvements)
+**Plans**: TBD
+
+Plans:
+- [ ] 78-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -270,3 +345,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 70. Backend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
 | 71. Frontend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
 | **v2.2 SHIPPED** | | | **2026-02-09** | |
+| 72. WebSocket Investigation & Bug Fixes | v2.3 | 0/? | Not started | - |
+| 73. WebSocket Reliability | v2.3 | 0/? | Not started | - |
+| 74. Dead Code Audit & Removal (Backend) | v2.3 | 0/? | Not started | - |
+| 75. Dead Code Audit & Removal (Frontend) | v2.3 | 0/? | Not started | - |
+| 76. Documentation (Backend) | v2.3 | 0/? | Not started | - |
+| 77. Documentation (Frontend) + README | v2.3 | 0/? | Not started | - |
+| 78. Type Annotations & Error Handling | v2.3 | 0/? | Not started | - |
