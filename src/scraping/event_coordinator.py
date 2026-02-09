@@ -1460,6 +1460,7 @@ class EventCoordinator:
                         event_id=swd.event_id,
                         bookmaker_id=swd.bookmaker_id,
                         captured_at=now_naive,
+                        last_confirmed_at=now_naive,
                         markets=swd.markets,
                     )
                     self._odds_cache.put_betpawa_snapshot(
@@ -1497,6 +1498,7 @@ class EventCoordinator:
                         event_id=betpawa_eid,
                         bookmaker_id=0,
                         captured_at=now_naive,
+                        last_confirmed_at=now_naive,
                         markets=cswd.markets,
                     )
                     self._odds_cache.put_competitor_snapshot(
@@ -1645,11 +1647,14 @@ class EventCoordinator:
                         kickoff = kickoff_by_sr.get(sr_id) if sr_id else None
                         # captured_at may be None if server_default not yet loaded
                         captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
+                        # Use last_confirmed_at for freshness (fallback to captured_at for old data)
+                        last_confirmed = snapshot.last_confirmed_at or captured_at
                         cached = snapshot_to_cached_from_models(
                             snapshot_id=snapshot.id,
                             event_id=snapshot.event_id,
                             bookmaker_id=snapshot.bookmaker_id,
                             captured_at=captured_at,
+                            last_confirmed_at=last_confirmed,
                             markets=markets,
                         )
                         self._odds_cache.put_betpawa_snapshot(
@@ -1678,11 +1683,14 @@ class EventCoordinator:
                             continue
                         kickoff = kickoff_by_sr.get(sr_id)
                         captured_at = snapshot.captured_at or datetime.now(timezone.utc).replace(tzinfo=None)
+                        # Use last_confirmed_at for freshness (fallback to captured_at for old data)
+                        last_confirmed = snapshot.last_confirmed_at or captured_at
                         cached = snapshot_to_cached_from_models(
                             snapshot_id=snapshot.id,
                             event_id=betpawa_event_id,
                             bookmaker_id=0,
                             captured_at=captured_at,
+                            last_confirmed_at=last_confirmed,
                             markets=markets,
                         )
                         self._odds_cache.put_competitor_snapshot(

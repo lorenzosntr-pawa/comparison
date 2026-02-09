@@ -35,6 +35,7 @@ def snapshot_to_cached_from_data(
     event_id: int,
     bookmaker_id: int,
     captured_at: datetime,
+    last_confirmed_at: datetime,
     markets: tuple,
 ) -> CachedSnapshot:
     """Convert write-data DTO market tuples to a CachedSnapshot.
@@ -54,6 +55,8 @@ def snapshot_to_cached_from_data(
         The bookmaker_id (0 for competitor snapshots).
     captured_at:
         Timestamp for when the snapshot was captured.
+    last_confirmed_at:
+        Timestamp for when the odds were last verified (for freshness display).
     markets:
         Tuple of ``MarketWriteData`` frozen dataclasses.
     """
@@ -77,6 +80,7 @@ def snapshot_to_cached_from_data(
         event_id=event_id,
         bookmaker_id=bookmaker_id,
         captured_at=captured_at,
+        last_confirmed_at=last_confirmed_at,
         markets=tuple(cached_markets),
     )
 
@@ -86,6 +90,7 @@ def snapshot_to_cached_from_models(
     event_id: int,
     bookmaker_id: int,
     captured_at: datetime,
+    last_confirmed_at: datetime,
     markets: list,
 ) -> CachedSnapshot:
     """Convert in-memory ORM model data to a CachedSnapshot.
@@ -104,6 +109,8 @@ def snapshot_to_cached_from_models(
         The bookmaker_id (0 for competitor snapshots).
     captured_at:
         When the snapshot was captured.
+    last_confirmed_at:
+        When the odds were last verified (for freshness display).
     markets:
         List of MarketOdds or CompetitorMarketOdds ORM objects.
     """
@@ -127,6 +134,7 @@ def snapshot_to_cached_from_models(
         event_id=event_id,
         bookmaker_id=bookmaker_id,
         captured_at=captured_at,
+        last_confirmed_at=last_confirmed_at,
         markets=tuple(cached_markets),
     )
 
@@ -178,11 +186,15 @@ def snapshot_to_cached(
             )
         )
 
+    # Use last_confirmed_at if available, fall back to captured_at for old data
+    last_confirmed = getattr(snapshot, "last_confirmed_at", None) or snapshot.captured_at
+
     return CachedSnapshot(
         snapshot_id=snapshot.id,
         event_id=resolved_event_id,
         bookmaker_id=resolved_bookmaker_id,
         captured_at=snapshot.captured_at,
+        last_confirmed_at=last_confirmed,
         markets=tuple(cached_markets),
     )
 
