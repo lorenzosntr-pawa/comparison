@@ -1,4 +1,26 @@
-"""Pydantic schemas for scraping orchestration."""
+"""Pydantic schemas for scraping orchestration.
+
+This module defines Pydantic models used throughout the scraping pipeline
+for type-safe data transfer and API response serialization.
+
+Enums:
+    Platform: Supported betting platforms (BETPAWA, SPORTYBET, BET9JA)
+    ScrapePhase: Lifecycle phases (INITIALIZING -> COMPLETED/FAILED)
+    PlatformStatus: Per-platform status within a scrape run
+
+Models:
+    ScrapeProgress: Real-time progress update for SSE/WebSocket streaming
+    PlatformResult: Result summary for a single platform
+    ScrapeResult: Aggregated result across all platforms
+    ScrapeErrorContext: Structured error info for debugging
+
+Usage:
+    ScrapeProgress is the primary model for real-time UI updates. It's
+    published via ProgressBroadcaster and consumed by WebSocket clients.
+
+    async for progress in broadcaster.subscribe():
+        yield f"data: {progress.model_dump_json()}\\n\\n"
+"""
 
 from datetime import datetime
 from enum import StrEnum

@@ -1,7 +1,28 @@
 """Progress broadcaster for real-time scrape progress updates.
 
-Allows scheduled jobs to publish progress events and WebSocket endpoints
-to subscribe and stream those events to clients.
+This module implements the pub/sub pattern for streaming scrape progress
+to WebSocket clients. It provides:
+
+- ProgressBroadcaster: Per-run broadcaster with subscriber management
+- ProgressRegistry: Global singleton registry of active broadcasters
+
+Architecture:
+    Scheduled jobs -> ProgressBroadcaster.publish() -> Queue per subscriber
+    WebSocket endpoint -> ProgressBroadcaster.subscribe() -> AsyncGenerator
+
+Thread Safety:
+    Uses asyncio.Lock for subscriber list mutations. Safe for single-writer
+    (scheduled job) / multi-reader (multiple WebSocket clients) pattern.
+
+Example:
+    # In scheduled job
+    broadcaster = progress_registry.create_broadcaster(scrape_run_id)
+    await broadcaster.publish(progress_event)
+
+    # In WebSocket endpoint
+    broadcaster = progress_registry.get_broadcaster(scrape_run_id)
+    async for progress in broadcaster.subscribe():
+        await websocket.send_json(progress.model_dump())
 """
 
 import asyncio

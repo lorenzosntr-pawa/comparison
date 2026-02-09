@@ -1,12 +1,36 @@
 """Event-centric scraping coordinator.
 
-This module implements the EventCoordinator class which:
-1. Discovers events from all platforms in parallel
-2. Builds a unified priority queue based on kickoff urgency and coverage
-3. Provides batched event access for parallel scraping (Phase 38)
+This module implements the EventCoordinator class, the core orchestration
+layer for cross-platform odds scraping. It coordinates all platforms
+(BetPawa, SportyBet, Bet9ja) in a unified, event-centric workflow.
 
-The coordinator is the orchestration layer for the new event-centric architecture
-that replaces the sequential platform-by-platform scraping approach.
+Architecture Overview:
+    1. Discovery: Parallel discovery from all platforms (discover_events)
+    2. Queue: Build priority queue by kickoff urgency + coverage (build_priority_queue)
+    3. Scrape: Process batches with per-event parallel platform requests (scrape_batch)
+    4. Store: Persist results with dual-path (async queue vs sync) (store_batch_results)
+
+Key Features:
+    - from_settings() factory: Creates coordinator from DB Settings model
+    - scrape_batch() async generator: Yields progress events for SSE streaming
+    - store_batch_results() dual-path: Uses AsyncWriteQueue if available,
+      falls back to synchronous flush+commit otherwise
+    - Change detection: Only writes snapshots when odds actually changed
+    - OddsCache integration: Updates in-memory cache immediately after scrape
+
+Concurrency Model:
+    - Per-platform semaphores control HTTP request parallelism
+    - Event-level semaphore limits concurrent events per batch
+    - Bet9ja gets 25ms delay after each request (rate limit sensitive)
+    - Default limits: BetPawa=50, SportyBet=50, Bet9ja=15 concurrent requests
+
+Usage:
+    coordinator = EventCoordinator.from_settings(
+        betpawa_client, sportybet_client, bet9ja_client, settings,
+        odds_cache=cache, write_queue=queue
+    )
+    async for progress in coordinator.run_full_cycle(db, scrape_run_id):
+        await broadcaster.publish(progress)
 """
 
 from __future__ import annotations

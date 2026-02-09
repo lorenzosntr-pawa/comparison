@@ -1,4 +1,23 @@
-"""Async HTTP client for Bet9ja API."""
+"""Async HTTP client for Bet9ja API.
+
+Provides the Bet9jaClient class for fetching events and odds from the
+Bet9ja sports betting platform (sports.bet9ja.com).
+
+Rate Limiting:
+    Bet9ja is more sensitive to request rates than other platforms.
+    The EventCoordinator applies a 25ms delay after each Bet9ja request
+    and limits concurrency to 15 parallel requests (vs 50 for others).
+
+Response Structure:
+    - Uses "R" field for result code: "OK" or "D" = success, "E" = not found
+    - Event data nested in "D" payload
+    - Odds in "D.O" dict with keys like "S_1X2_1", "S_OU_2.5_O", etc.
+    - SportRadar ID in "EXTID" field for cross-platform matching
+
+Retry Behavior:
+    All methods use @retry decorator with exponential backoff (max 3 attempts).
+    Retries on network errors and timeouts, not on 404/invalid event.
+"""
 
 import httpx
 

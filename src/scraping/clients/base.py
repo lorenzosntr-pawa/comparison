@@ -1,4 +1,18 @@
-"""Base protocol and shared retry configuration for scraper clients."""
+"""Base protocol and shared retry configuration for scraper clients.
+
+This module defines:
+- ScraperClient: Protocol interface that all platform clients must implement
+- Retry configuration: Exponential backoff with configurable limits
+- create_retry_decorator(): Factory for tenacity @retry decorators
+
+Retry Behavior:
+    - Max 3 attempts with exponential backoff (1s, 2s, 4s base)
+    - Retries on: HTTPStatusError, TimeoutException, ConnectError
+    - Re-raises after final attempt exhausted
+
+All platform clients (Bet9jaClient, BetPawaClient, SportyBetClient) use
+the shared retry decorator to ensure consistent error handling.
+"""
 
 from typing import Protocol
 

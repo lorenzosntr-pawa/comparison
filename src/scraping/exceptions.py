@@ -1,4 +1,28 @@
-"""Exception hierarchy for scraper clients."""
+"""Exception hierarchy for scraper clients.
+
+Provides a typed exception hierarchy for distinguishing between different
+failure modes during scraping:
+
+- ScraperError: Base class for all scraper exceptions
+- InvalidEventIdError: Event not found (404) or invalid ID format
+- NetworkError: Connection timeout, DNS failure, or network unreachable
+- ApiError: Unexpected response structure or business logic error
+- RateLimitError: HTTP 429 or platform-specific rate limit response
+
+Usage:
+    All scraper clients raise these exceptions. The EventCoordinator
+    catches them to update per-event error tracking without failing
+    the entire batch.
+
+    try:
+        data = await client.fetch_event(event_id)
+    except InvalidEventIdError:
+        # Event gone or ID changed - log and skip
+    except NetworkError:
+        # Transient - may retry
+    except ApiError:
+        # Response parsing failed - log for investigation
+"""
 
 from typing import Any
 

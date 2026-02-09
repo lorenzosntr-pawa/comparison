@@ -2,6 +2,22 @@
 
 Uses structlog for structured, context-rich logging with support for
 both development (console) and production (JSON) output formats.
+
+Configuration:
+    Set SCRAPE_LOG_JSON=true environment variable for JSON output
+    (production). Default is colored console output (development).
+
+Processors:
+    - merge_contextvars: Inherits context from asyncio task
+    - add_log_level: Adds level field to all log entries
+    - TimeStamper: ISO format timestamps
+    - StackInfoRenderer: Stack traces on exceptions
+
+Usage:
+    from src.scraping.logging import configure_logging, logger
+
+    configure_logging()  # Call once at startup
+    logger.info("scraping.started", platform="betpawa", events=42)
 """
 
 import logging

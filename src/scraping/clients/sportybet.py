@@ -1,4 +1,27 @@
-"""Async HTTP client for SportyBet API."""
+"""Async HTTP client for SportyBet API.
+
+Provides the SportyBetClient class for fetching events and odds from
+the SportyBet Nigeria platform (www.sportybet.com).
+
+SportRadar Integration:
+    SportyBet uses SportRadar IDs natively. The eventId field contains
+    the full SR match ID (e.g., "sr:match:61300947"). This makes cross-
+    platform matching straightforward.
+
+Response Structure:
+    - Uses "bizCode" for status: 10000 = success, others = error
+    - Event data in nested "data" object
+    - Markets in "markets" array with "outcomes" containing odds
+    - Tournament info in "sport.category.tournament" hierarchy
+
+Headers:
+    Requires platform-specific headers: clientid, operid, platform.
+    Uses timestamp parameter (_t) for cache busting.
+
+Retry Behavior:
+    All methods use @retry decorator with exponential backoff (max 3 attempts).
+    Non-10000 bizCode for event fetch raises InvalidEventIdError.
+"""
 
 import time
 

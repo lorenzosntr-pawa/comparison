@@ -1,9 +1,24 @@
 """Coordinator-specific data structures for event-centric scraping.
 
 This module defines the core data structures used by EventCoordinator:
-- ScrapeStatus: Enum for tracking event scrape lifecycle
-- EventTarget: Dataclass representing an event to scrape across platforms
-- ScrapeBatch: TypedDict for a batch of events to process together
+
+Classes:
+    ScrapeStatus: Enum for tracking event scrape lifecycle (PENDING -> COMPLETED/FAILED)
+    EventTarget: Mutable dataclass representing an event to scrape across platforms
+    ScrapeBatch: TypedDict for a batch of events to process together
+
+Design Decisions:
+    - EventTarget is a mutable dataclass (not Pydantic) because status and
+      results are updated during the scrape cycle
+    - ScrapeBatch is a TypedDict for simple dict semantics with type hints
+    - ScrapeStatus uses StrEnum for DB-compatible string serialization
+
+Priority Queue:
+    EventTarget.priority_key() returns a tuple for sorting:
+    (urgency_tier, kickoff, -coverage, not_has_betpawa)
+
+    Urgency tiers: 0=imminent (<30min), 1=soon (<2hr), 2=future
+    More platforms and BetPawa presence = higher priority
 """
 
 from dataclasses import dataclass, field

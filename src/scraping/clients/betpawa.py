@@ -1,4 +1,25 @@
-"""Async HTTP client for BetPawa API."""
+"""Async HTTP client for BetPawa API.
+
+Provides the BetPawaClient class for fetching events and odds from the
+BetPawa Nigeria platform (www.betpawa.ng).
+
+BetPawa is the primary/canonical platform in this system. All other
+platforms' odds are mapped to BetPawa's market format for comparison.
+
+Response Structure:
+    - Event ID is in "id" field
+    - SportRadar ID in "widgets" array where type="SPORTRADAR"
+    - Markets in "markets" array with nested "row" containing "prices"
+    - Competition/region info for tournament matching
+
+Headers:
+    Requires "x-pawa-brand: betpawa-nigeria" header for API access.
+    Uses standard browser User-Agent for compatibility.
+
+Retry Behavior:
+    All methods use @retry decorator with exponential backoff (max 3 attempts).
+    Returns 404 for invalid event IDs (raises InvalidEventIdError).
+"""
 
 import json
 from urllib.parse import quote

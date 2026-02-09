@@ -1,4 +1,28 @@
-"""Tournament discovery service for competitor platforms."""
+"""Tournament discovery service for competitor platforms.
+
+Provides TournamentDiscoveryService for discovering and storing football
+tournaments from SportyBet and Bet9ja APIs into the competitor_tournaments
+table.
+
+Discovery Flow:
+    1. Fetch tournament hierarchy from platform API
+    2. Parse country/region and tournament names
+    3. Upsert into competitor_tournaments with source tracking
+    4. Extract SportRadar IDs where available (SportyBet only)
+
+Usage:
+    Called at the start of each scrape cycle to pick up new tournaments
+    before event scraping begins. Also available via admin API endpoint.
+
+    service = TournamentDiscoveryService()
+    results = await service.discover_all(sportybet_client, bet9ja_client, db)
+    # results = {"sportybet": {"new": 5, "updated": 2}, "bet9ja": {...}}
+
+Note:
+    Bet9ja tournaments don't have SportRadar IDs at the tournament level.
+    Cross-platform tournament matching relies on name similarity and
+    country_raw field for future normalization.
+"""
 
 import structlog
 from sqlalchemy import select

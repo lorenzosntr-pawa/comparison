@@ -1,7 +1,32 @@
 """Competitor event scraping service for SportyBet and Bet9ja.
 
-Refactored to use fetch-then-store pattern to avoid SQLAlchemy session concurrency issues.
-All API calls happen in parallel (Phase 1), then all DB writes happen sequentially (Phase 2).
+This module provides CompetitorEventScrapingService for bulk scraping of
+competitor platform events and odds. Used by tournament discovery and
+standalone competitor scraping workflows.
+
+Architecture: Fetch-Then-Store Pattern
+    Phase 1 (API only): Parallel HTTP requests to fetch all events
+    Phase 2 (DB only): Sequential database writes with single session
+
+    This two-phase approach avoids SQLAlchemy async session concurrency
+    issues that occur when mixing parallel awaits with session operations.
+
+Data Flow:
+    1. Load active CompetitorTournaments from DB
+    2. Parallel API calls to fetch events per tournament
+    3. Parse events into standard format with market mapping
+    4. Sequential upsert of CompetitorEvent + CompetitorOddsSnapshot
+    5. Optional Phase 3: Fetch full odds for each event (more markets)
+
+Market Mapping:
+    Competitor odds are mapped to BetPawa market format using:
+    - map_sportybet_to_betpawa() for SportyBet
+    - map_bet9ja_odds_to_betpawa() for Bet9ja
+
+Note:
+    This service is separate from EventCoordinator, which handles the
+    primary event-centric scraping flow. CompetitorEventScrapingService
+    is used for discovery and standalone competitor data collection.
 """
 
 import asyncio
