@@ -128,7 +128,7 @@
 - Priority: Low (TypeScript provides compile-time safety)
 - Difficulty to test: Type guards exist but not called by default
 
-## Dead Code Audit Notes (Phase 74)
+## Dead Code Audit Notes (Phase 74 - Backend)
 
 **SSE-related comments/docstrings:**
 - Confidence: LOW (cosmetic - not functional dead code)
@@ -140,6 +140,30 @@
 **Empty src/scripts/ directory:**
 - Status: Cleaned - audit scripts deleted in Phase 74
 - Note: Directory remains with only `__pycache__/`; can be removed if no future scripts planned
+
+## Dead Code Audit Notes (Phase 75 - Frontend)
+
+**Removed in this phase:**
+- `web/src/types/index.ts` - Empty file (just `export {}`)
+- Duplicate `ScrapeProgressEvent` and `PlatformProgress` type definitions in `web/src/features/scrape-runs/hooks/use-scrape-progress.ts`
+- Dead type exports from `web/src/features/scrape-runs/hooks/index.ts`
+
+**SSE-related comments in frontend (not removed):**
+- Confidence: LOW (cosmetic - not functional dead code)
+- Files:
+  - `web/src/features/scrape-runs/detail.tsx` - Comments mentioning "SSE streaming" and "accumulate from SSE"
+  - `web/src/hooks/use-websocket-scrape-progress.ts` - Comments mentioning "matches SSE hook interface"
+  - `web/src/features/scrape-runs/components/live-log.tsx` - Comment "Helper to convert SSE progress event"
+- Issue: Comments reference SSE after WebSocket-only migration (Phase 59)
+- Impact: Documentation clarity only, no functional impact
+- Recommendation: Update comments during next touch of these files (low priority)
+
+**Inline type duplication (not removed):**
+- Confidence: LOW (code style - not dead code)
+- File: `web/src/features/dashboard/components/recent-runs.tsx` has inline `ScrapeProgressEvent` interface
+- Issue: Could import from `@/hooks/use-websocket-scrape-progress` instead
+- Impact: Minor code duplication, no functional impact
+- Recommendation: Consolidate during next refactor of this file (low priority)
 
 ---
 
