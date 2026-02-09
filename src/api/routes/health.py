@@ -22,10 +22,19 @@ async def health_check(
 ) -> HealthResponse:
     """Check connectivity to all platforms and database.
 
-    Returns overall status:
-    - "healthy": All platforms and database reachable
-    - "degraded": Some platforms unreachable but at least one works
-    - "unhealthy": No platforms reachable or database down
+    Performs concurrent health checks against all betting platforms
+    (SportyBet, BetPawa, Bet9ja) and the database. Each platform check
+    includes response time measurement.
+
+    Args:
+        request: FastAPI request object for accessing app state.
+        db: Async database session (injected).
+
+    Returns:
+        HealthResponse with overall status and per-platform details:
+        - "healthy": All platforms and database reachable
+        - "degraded": Some platforms unreachable but at least one works
+        - "unhealthy": No platforms reachable or database down
     """
     # Check database
     db_status = await _check_database(db)
@@ -73,7 +82,14 @@ async def health_check(
 
 
 async def _check_database(db: AsyncSession) -> str:
-    """Check database connectivity."""
+    """Check database connectivity.
+
+    Args:
+        db: Async database session to test.
+
+    Returns:
+        "connected" if database is reachable, "disconnected" otherwise.
+    """
     try:
         await db.execute(text("SELECT 1"))
         return "connected"
@@ -82,7 +98,15 @@ async def _check_database(db: AsyncSession) -> str:
 
 
 async def _check_platform(platform: Platform, client) -> PlatformHealth:
-    """Check a single platform's health."""
+    """Check a single platform's health.
+
+    Args:
+        platform: Platform enum value to check.
+        client: Platform client instance with check_health method.
+
+    Returns:
+        PlatformHealth with status, response time, and any error details.
+    """
     start = time.perf_counter()
     try:
         healthy = await client.check_health()

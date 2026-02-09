@@ -44,8 +44,14 @@ async def get_settings(
 ) -> SettingsResponse:
     """Get current scraping settings.
 
+    Returns all configurable settings including scrape interval, enabled
+    platforms, retention settings, and concurrency tuning parameters.
+
+    Args:
+        db: Async database session (injected).
+
     Returns:
-        Current settings including interval and enabled platforms.
+        SettingsResponse with all current configuration values.
     """
     settings = await get_or_create_settings(db)
     return SettingsResponse.model_validate(settings)
@@ -58,14 +64,19 @@ async def update_settings(
 ) -> SettingsResponse:
     """Update scraping settings.
 
-    Partial update - only provided fields will be updated.
+    Partial update - only provided fields will be updated. Changes to
+    scrape_interval_minutes take effect immediately by updating the
+    scheduler at runtime.
 
     Args:
-        update: Settings fields to update.
-        db: Database session.
+        update: Settings fields to update (only non-null fields applied).
+        db: Async database session (injected).
 
     Returns:
-        Updated settings.
+        SettingsResponse with all settings after the update.
+
+    Note:
+        Invalid platform slugs in enabled_platforms are silently filtered out.
     """
     settings = await get_or_create_settings(db)
 

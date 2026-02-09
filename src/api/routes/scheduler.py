@@ -34,7 +34,13 @@ router = APIRouter(prefix="/scheduler", tags=["scheduler"])
 
 
 class PauseResumeResponse(BaseModel):
-    """Response for pause/resume operations."""
+    """Response model for scheduler pause/resume operations.
+
+    Attributes:
+        success: Whether the operation succeeded.
+        paused: Current paused state after the operation.
+        message: Human-readable status message.
+    """
 
     success: bool
     paused: bool
@@ -73,8 +79,15 @@ async def get_scheduler_status() -> SchedulerStatus:
 async def pause_scheduler() -> PauseResumeResponse:
     """Pause the scheduler (stops job execution without stopping scheduler).
 
+    Pauses all scheduled jobs without shutting down the scheduler itself.
+    Jobs will not run until the scheduler is resumed. Useful for maintenance
+    or when platforms are experiencing issues.
+
     Returns:
         PauseResumeResponse indicating success and current paused state.
+
+    Note:
+        Returns success=False if scheduler is not running.
     """
     if not scheduler.running:
         return PauseResumeResponse(
@@ -95,8 +108,14 @@ async def pause_scheduler() -> PauseResumeResponse:
 async def resume_scheduler() -> PauseResumeResponse:
     """Resume the scheduler (restarts job execution).
 
+    Resumes all paused scheduled jobs. Jobs will begin executing according
+    to their configured intervals.
+
     Returns:
         PauseResumeResponse indicating success and current paused state.
+
+    Note:
+        Returns success=False if scheduler is not running.
     """
     if not scheduler.running:
         return PauseResumeResponse(
@@ -220,10 +239,17 @@ async def discover_tournaments(
     """Trigger tournament discovery for SportyBet and Bet9ja.
 
     Discovers all football tournaments from both competitor platforms
-    and stores them in the competitor_tournaments table.
+    and stores them in the competitor_tournaments table. New tournaments
+    are created and existing ones are updated with latest metadata.
+
+    Args:
+        db: Async database session (injected).
 
     Returns:
-        TournamentDiscoveryResponse with discovery counts per platform and total.
+        TournamentDiscoveryResponse with:
+        - Per-platform counts of new and updated tournaments
+        - Total tournament count after discovery
+        - Any errors encountered during discovery
     """
     log.info("Starting tournament discovery")
 
@@ -272,11 +298,19 @@ async def scrape_competitor_events(
     competitor_events with odds snapshots. Handles partial failures -
     if one platform fails, the other continues.
 
-    Requires tournament discovery to have been run first to have
-    tournament records in competitor_tournaments.
+    Args:
+        db: Async database session (injected).
 
     Returns:
-        CompetitorScrapeResponse with scrape counts per platform and duration.
+        CompetitorScrapeResponse with:
+        - Per-platform counts of new/updated events and snapshots
+        - Market counts and events with full odds
+        - Duration in milliseconds
+        - Any errors encountered
+
+    Note:
+        Requires tournament discovery to have been run first to have
+        tournament records in competitor_tournaments.
     """
     import time
 

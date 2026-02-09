@@ -50,7 +50,14 @@ async def get_stats(
 ) -> DataStats:
     """Get comprehensive data statistics for all tables.
 
-    Returns counts, date ranges, and platform breakdowns.
+    Returns counts, date ranges, and platform breakdowns for events,
+    odds snapshots, and market data across all bookmakers.
+
+    Args:
+        db: Async database session (injected).
+
+    Returns:
+        DataStats with counts, date ranges, and per-platform breakdowns.
     """
     return await get_data_stats(db)
 
@@ -63,7 +70,16 @@ async def get_preview(
 ) -> CleanupPreview:
     """Preview what would be deleted by cleanup.
 
-    If days parameters are not provided, uses current settings values.
+    Calculates cleanup impact without actually deleting data. Useful for
+    confirming retention settings before executing cleanup.
+
+    Args:
+        odds_days: Days of odds data to retain (1-365). Uses settings if not provided.
+        match_days: Days of match data to retain (1-365). Uses settings if not provided.
+        db: Async database session (injected).
+
+    Returns:
+        CleanupPreview with counts of records that would be deleted per table.
     """
     default_odds, default_match = await get_settings_values(db)
 
@@ -81,8 +97,19 @@ async def execute(
 ) -> CleanupResult:
     """Execute cleanup of old data.
 
-    Records as 'manual' trigger in cleanup_runs table.
-    If retention days not provided, uses current settings values.
+    Deletes odds snapshots, market data, and events older than the specified
+    retention periods. Records the operation as a 'manual' trigger in the
+    cleanup_runs table for audit purposes.
+
+    Args:
+        request: Optional cleanup parameters (retention days). Uses settings if None.
+        db: Async database session (injected).
+
+    Returns:
+        CleanupResult with counts of deleted records per table.
+
+    Raises:
+        Exception: If cleanup is already running (concurrent execution prevented).
     """
     global _cleanup_running
 
@@ -122,7 +149,15 @@ async def get_history(
 ) -> CleanupHistoryResponse:
     """Get list of recent cleanup runs.
 
-    Returns cleanup run history ordered by most recent first.
+    Returns cleanup run history ordered by most recent first, including
+    trigger type (manual/scheduled), timing, and deletion counts.
+
+    Args:
+        limit: Maximum number of runs to return (1-100, default 10).
+        db: Async database session (injected).
+
+    Returns:
+        CleanupHistoryResponse with list of runs and total count.
     """
     # Get total count
     count_result = await db.execute(select(func.count(CleanupRun.id)))
@@ -146,7 +181,11 @@ async def get_history(
 async def get_status() -> CleanupStatusResponse:
     """Get current cleanup and scraping activity status.
 
-    Used by frontend for status indicators.
+    Returns whether cleanup or scraping is currently running. Used by
+    frontend for status indicators and to prevent concurrent operations.
+
+    Returns:
+        CleanupStatusResponse with is_cleanup_running and is_scraping_active flags.
     """
     return CleanupStatusResponse(
         is_cleanup_running=_cleanup_running,

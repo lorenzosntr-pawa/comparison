@@ -21,6 +21,12 @@ router = APIRouter(tags=["websocket"])
 async def websocket_endpoint(websocket: WebSocket) -> None:
     """WebSocket endpoint with topic-based subscriptions.
 
+    Provides real-time communication with clients via topic-based pub/sub.
+    Clients can subscribe to specific topics to receive targeted updates.
+
+    Args:
+        websocket: FastAPI WebSocket connection.
+
     Query params:
         topics: Comma-separated topic names (e.g. ?topics=scrape_progress,odds_updates).
                 Defaults to all topics if omitted.
@@ -29,6 +35,12 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         - {"type": "ping"} -> responds with {"type": "pong", "timestamp": "..."}
         - {"type": "subscribe", "topics": [...]} -> adds topic subscriptions
         - {"type": "unsubscribe", "topics": [...]} -> removes topic subscriptions
+
+    Server message types:
+        - {"type": "connection_ack", "topics": [...]} -> sent on connect
+        - {"type": "pong", "timestamp": "..."} -> response to ping
+        - {"type": "subscription_update", "topics": [...]} -> after subscribe/unsubscribe
+        - Topic-specific messages from broadcasters
     """
     # Accept the connection first
     await websocket.accept()

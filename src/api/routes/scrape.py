@@ -69,12 +69,19 @@ async def trigger_scrape(
 ) -> ScrapeResponse:
     """Trigger a scrape operation across selected platforms.
 
-    - **platforms**: Which platforms to scrape (default: all)
-    - **detail**: "summary" for counts only, "full" to include all event data
-    - **timeout**: Max seconds per platform (default 300, max 600)
+    Initiates an event-centric scrape cycle using the EventCoordinator.
+    Creates a ScrapeRun record to track execution and collects results
+    from all platforms.
 
-    Returns scrape results with status and per-platform breakdown.
-    Creates ScrapeRun record to track execution.
+    Args:
+        request: FastAPI request object for accessing app state.
+        db: Async database session (injected).
+        body: Optional scrape configuration (platforms to scrape).
+        detail: Response detail level ("summary" or "full").
+        timeout: Timeout per platform in seconds (5-600, default 300).
+
+    Returns:
+        ScrapeResponse with scrape run ID, status, timing, and event counts.
     """
     # Create ScrapeRun record at start
     scrape_run = ScrapeRun(
@@ -147,7 +154,16 @@ async def list_scrape_runs(
 ) -> list[ScrapeRunResponse]:
     """List scrape runs with pagination.
 
-    Returns most recent runs first, including platform timing breakdown.
+    Returns most recent runs first, including status, timing, event counts,
+    and platform timing breakdown.
+
+    Args:
+        db: Async database session (injected).
+        limit: Maximum number of runs to return (1-100, default 20).
+        offset: Number of runs to skip for pagination (default 0).
+
+    Returns:
+        List of ScrapeRunResponse objects ordered by started_at descending.
     """
     result = await db.execute(
         select(ScrapeRun)
@@ -176,7 +192,17 @@ async def list_scrape_runs(
 async def get_scrape_stats(
     db: AsyncSession = Depends(get_db),
 ) -> ScrapeStatsResponse:
-    """Get scrape run statistics."""
+    """Get scrape run statistics.
+
+    Returns aggregate statistics including total runs, runs in last 24 hours,
+    and average duration of completed runs.
+
+    Args:
+        db: Async database session (injected).
+
+    Returns:
+        ScrapeStatsResponse with total_runs, runs_24h, and avg_duration_seconds.
+    """
     from datetime import timedelta
 
     from sqlalchemy import func
@@ -218,8 +244,16 @@ async def get_scrape_analytics(
 ) -> ScrapeAnalyticsResponse:
     """Get historical analytics for scrape runs.
 
-    Returns aggregated daily metrics and per-platform statistics
+    Returns aggregated daily metrics (duration, events, success/failure counts)
+    and per-platform statistics (success rate, average duration, total events)
     for the specified time period.
+
+    Args:
+        db: Async database session (injected).
+        days: Number of days to analyze (1-30, default 14).
+
+    Returns:
+        ScrapeAnalyticsResponse with daily_metrics, platform_metrics, and period dates.
     """
     from collections import defaultdict
     from datetime import timedelta
@@ -355,11 +389,19 @@ async def retry_scrape_run(
     (or all failed platforms if none specified). The original run
     is preserved for audit trail.
 
-    - **run_id**: ID of the scrape run to retry
-    - **platforms**: List of platform names to retry (empty = all failed)
-    - **timeout**: Max seconds per platform
+    Args:
+        run_id: ID of the scrape run to retry.
+        request: FastAPI request object for accessing app state.
+        db: Async database session (injected).
+        body: Optional retry configuration with specific platforms to retry.
+        timeout: Timeout per platform in seconds (5-600, default 300).
 
-    Returns 400 if run is still running, or if no platforms need retry.
+    Returns:
+        RetryResponse with new run ID and list of platforms retried.
+
+    Raises:
+        HTTPException: 404 if scrape run not found.
+        HTTPException: 400 if run is still running or no platforms need retry.
     """
     # Fetch the original run with errors
     result = await db.execute(
@@ -486,10 +528,14 @@ async def retry_scrape_run(
 
 @router.get("/stream")
 async def stream_deprecated() -> dict:
-    """SSE streaming endpoint removed in v2.0.
+    """SSE streaming endpoint (deprecated, removed in v2.0).
 
+    This endpoint has been replaced by WebSocket-based streaming.
     Progress updates are now available via WebSocket at /api/ws.
     Subscribe to the 'scrape_progress' topic for real-time updates.
+
+    Raises:
+        HTTPException: 410 Gone - endpoint no longer available.
     """
     raise HTTPException(
         status_code=410,
@@ -504,7 +550,18 @@ async def get_scrape_status(
 ) -> ScrapeStatusResponse:
     """Get status of a scrape run by ID.
 
-    Returns current status, counts, timing information, and any errors.
+    Returns current status, event counts, timing information, platform
+    timings breakdown, and any errors that occurred during the run.
+
+    Args:
+        scrape_run_id: ID of the scrape run to retrieve.
+        db: Async database session (injected).
+
+    Returns:
+        ScrapeStatusResponse with full run details and error information.
+
+    Raises:
+        HTTPException: 404 if scrape run not found.
     """
     result = await db.execute(
         select(ScrapeRun)
@@ -548,7 +605,11 @@ async def get_active_scrapes() -> list[int]:
     """Get IDs of currently running scrapes with progress streaming.
 
     Returns list of scrape run IDs that have active progress broadcasters.
-    Useful for frontend to discover running scrapes to observe.
+    Useful for frontend to discover running scrapes and subscribe to their
+    progress via WebSocket.
+
+    Returns:
+        List of integer scrape run IDs with active progress streams.
     """
     return progress_registry.get_active_scrape_ids()
 
@@ -561,7 +622,18 @@ async def get_phase_history(
     """Get phase transition history for a scrape run.
 
     Returns ordered list of phase log entries for timeline visualization.
-    Each entry shows phase start/end times, platform, message, and error details.
+    Each entry shows phase start/end times, platform, events processed,
+    and any messages.
+
+    Args:
+        run_id: ID of the scrape run to get phases for.
+        db: Async database session (injected).
+
+    Returns:
+        List of ScrapePhaseLogResponse ordered by started_at ascending.
+
+    Raises:
+        HTTPException: 404 if scrape run not found.
     """
     # Verify scrape run exists
     run_result = await db.execute(select(ScrapeRun).where(ScrapeRun.id == run_id))
@@ -596,17 +668,20 @@ async def get_event_scrape_metrics(
     db: AsyncSession = Depends(get_db),
     days: int = Query(default=7, ge=1, le=30, description="Number of days to analyze"),
 ) -> EventScrapeMetricsResponse:
-    """Get per-event scrape metrics from the new EventCoordinator flow.
+    """Get per-event scrape metrics from the EventCoordinator flow.
 
     Aggregates data from EventScrapeStatus records to provide insights on
     per-event success rates and per-platform performance.
 
-    Returns metrics broken down by platform showing:
-    - Total events requested per platform
-    - Total events successfully scraped
-    - Total events that failed
-    - Success rate percentage
-    - Average timing in ms
+    Args:
+        db: Async database session (injected).
+        days: Number of days to analyze (1-30, default 7).
+
+    Returns:
+        EventScrapeMetricsResponse with:
+        - Period start/end dates
+        - Total events and breakdown (fully/partially scraped, failed)
+        - Per-platform metrics (requested, scraped, failed, success rate, timing)
     """
     from collections import defaultdict
     from datetime import timedelta
@@ -707,13 +782,23 @@ async def scrape_single_event(
 ) -> SingleEventScrapeResponse:
     """Scrape a single event across all available bookmakers.
 
-    Enables manual refresh of a specific event's odds without running a full scrape cycle.
-    Useful for traders monitoring specific matches or refreshing stale data.
+    Enables manual refresh of a specific event's odds without running a full
+    scrape cycle. Useful for traders monitoring specific matches or refreshing
+    stale data. Scrapes all platforms concurrently.
 
-    - **sr_id**: SportRadar ID of the event (e.g., "12345678")
+    Args:
+        sr_id: SportRadar ID of the event (e.g., "12345678").
+        request: FastAPI request object for accessing app state.
+        db: Async database session (injected).
 
-    Returns per-platform success/failure details and timing information.
-    Returns 404 if event not found in any platform database.
+    Returns:
+        SingleEventScrapeResponse with:
+        - Overall status (completed, partial, failed)
+        - Lists of platforms scraped and failed
+        - Per-platform results with timing and market counts
+
+    Raises:
+        HTTPException: 404 if event not found in any platform database.
     """
     log = structlog.get_logger()
     start_time = time.perf_counter()

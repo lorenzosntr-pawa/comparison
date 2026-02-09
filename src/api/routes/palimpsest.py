@@ -38,11 +38,20 @@ async def get_coverage_stats(
 ) -> CoverageStats:
     """Get coverage statistics across all platforms.
 
-    Returns overall coverage summary and per-platform breakdown showing:
-    - Total unique events across platforms
-    - Events matched between BetPawa and competitors
-    - BetPawa-only events (not on competitors)
-    - Competitor-only events (not on BetPawa)
+    Returns overall coverage summary and per-platform breakdown showing
+    match rates and event distribution across BetPawa and competitors.
+
+    Args:
+        db: Async database session (injected).
+        include_started: Whether to include events that have already started.
+
+    Returns:
+        CoverageStats with:
+        - Total unique events across platforms
+        - Events matched between BetPawa and competitors
+        - BetPawa-only events (not on competitors)
+        - Competitor-only events (not on BetPawa)
+        - Per-platform match rates
     """
     # Time filter for upcoming events
     now = datetime.now(timezone.utc).replace(tzinfo=None)  # DB stores naive UTC
@@ -186,9 +195,21 @@ async def get_palimpsest_events(
 ) -> PalimpsestEventsResponse:
     """Get palimpsest events with filtering, search, and grouping.
 
-    Returns events grouped by tournament with coverage statistics.
-    Supports filtering by availability (matched, betpawa-only, competitor-only),
-    platform, sport, and full-text search.
+    Returns events grouped by tournament with coverage statistics. Supports
+    filtering by availability (matched, betpawa-only, competitor-only),
+    platform, sport, and full-text search across team and tournament names.
+
+    Args:
+        db: Async database session (injected).
+        availability: Filter by event availability type.
+        platforms: Filter to specific competitor platforms (sportybet, bet9ja).
+        sport_id: Optional sport ID filter.
+        include_started: Whether to include events that have already started.
+        search: Full-text search across team and tournament names.
+        sort: Sort order (kickoff, alphabetical, tournament).
+
+    Returns:
+        PalimpsestEventsResponse with coverage stats and tournament-grouped events.
     """
     # Time filter
     now = datetime.now(timezone.utc).replace(tzinfo=None)

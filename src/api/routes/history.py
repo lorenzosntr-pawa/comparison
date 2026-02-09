@@ -78,10 +78,23 @@ async def get_snapshot_history(
     """Get historical snapshots for an event.
 
     Returns a paginated list of snapshots with market counts, ordered by
-    captured_at descending (most recent first).
+    captured_at descending (most recent first). Useful for browsing
+    available historical data and selecting specific snapshots for analysis.
 
-    This endpoint is useful for browsing available historical data and
-    selecting specific snapshots for detailed analysis.
+    Args:
+        event_id: BetPawa event ID to get history for.
+        db: Async database session (injected).
+        bookmaker_slug: Optional filter by bookmaker (betpawa, sportybet, bet9ja).
+        from_time: Optional start of time range (inclusive).
+        to_time: Optional end of time range (inclusive).
+        page: Page number for pagination (default 1).
+        page_size: Results per page (1-500, default 100).
+
+    Returns:
+        SnapshotHistoryResponse with paginated snapshots and total count.
+
+    Raises:
+        HTTPException: 404 if bookmaker_slug is invalid.
     """
     # Subquery to count markets per snapshot
     market_count_subq = (
@@ -200,10 +213,22 @@ async def get_odds_history(
     """Get odds time-series for a specific market.
 
     Returns chronological odds history with margin calculations for each point.
-    Ordered by captured_at ASC for chart consumption.
+    Ordered by captured_at ASC for chart consumption. Use this endpoint for
+    detailed odds movement visualization including individual outcome odds.
 
-    Use this endpoint for detailed odds movement visualization including
-    individual outcome odds values.
+    Args:
+        event_id: BetPawa event ID.
+        market_id: BetPawa market ID (e.g., "3743" for 1X2).
+        db: Async database session (injected).
+        bookmaker_slug: Required bookmaker slug (betpawa, sportybet, bet9ja).
+        from_time: Optional start of time range (inclusive).
+        to_time: Optional end of time range (inclusive).
+
+    Returns:
+        OddsHistoryResponse with chronological odds history and margin data.
+
+    Raises:
+        HTTPException: 404 if bookmaker not found.
     """
     # Check if this is a competitor bookmaker
     is_competitor = bookmaker_slug in ("sportybet", "bet9ja")
@@ -337,10 +362,22 @@ async def get_margin_history(
     """Get margin-only time-series for a specific market.
 
     Returns a lighter response with just timestamps and margins (no outcomes).
-    Ordered by captured_at ASC for chart consumption.
+    Ordered by captured_at ASC for chart consumption. Use this endpoint for
+    margin-only charts where individual outcome odds are not needed.
 
-    Use this endpoint for margin-only charts where individual outcome odds
-    are not needed.
+    Args:
+        event_id: BetPawa event ID.
+        market_id: BetPawa market ID (e.g., "3743" for 1X2).
+        db: Async database session (injected).
+        bookmaker_slug: Required bookmaker slug (betpawa, sportybet, bet9ja).
+        from_time: Optional start of time range (inclusive).
+        to_time: Optional end of time range (inclusive).
+
+    Returns:
+        MarginHistoryResponse with chronological margin data only.
+
+    Raises:
+        HTTPException: 404 if bookmaker not found.
     """
     # Check if this is a competitor bookmaker
     is_competitor = bookmaker_slug in ("sportybet", "bet9ja")
