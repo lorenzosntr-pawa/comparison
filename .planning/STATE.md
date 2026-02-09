@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-08)
+See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v2.2 Odds Freshness — ensuring accurate timestamps and real-time updates
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 71 of 71 (Frontend Freshness Fixes)
-Plan: 1 of 1 (complete)
-Status: Phase complete
-Last activity: 2026-02-09 — Completed 71-01-PLAN.md
+Phase: 71 of 71 (complete)
+Plan: -
+Status: v2.2 Milestone SHIPPED
+Last activity: 2026-02-09 — Completed v2.2 Odds Freshness milestone
 
 Progress: ██████████ 100%
 
@@ -30,7 +30,7 @@ Progress: ██████████ 100%
 - **v1.9 Event Details UX** — SHIPPED 2026-02-05 (5 phases, 10 plans)
 - **v2.0 Real-Time Scraping Pipeline** — SHIPPED 2026-02-06 (7 phases, 17 plans)
 - **v2.1 Historical Odds Tracking** — SHIPPED 2026-02-08 (9 phases, 12 plans)
-- **v2.2 Odds Freshness** — IN PROGRESS (3 phases)
+- **v2.2 Odds Freshness** — SHIPPED 2026-02-09 (3 phases, 3 plans)
 
 ## Performance Metrics
 
@@ -114,6 +114,15 @@ Progress: ██████████ 100%
 - Small-multiples MarketHistoryPanel for full market view
 - +4,505 / -51 lines (net +4,454)
 - ~38,550 total LOC
+
+**v2.2 Summary:**
+- 3 phases completed (3 plans)
+- 1 day from v2.1 to v2.2 (2026-02-08 to 2026-02-09)
+- Data flow audit identified 7 staleness sources (2 CRITICAL, 2 HIGH)
+- Added `last_confirmed_at` to cache and API for accurate freshness
+- Created `useOddsUpdates` hook for real-time query invalidation
+- +1,517 / -26 lines (net +1,491)
+- ~40,000 total LOC
 
 ## Accumulated Context
 
@@ -261,11 +270,11 @@ Progress: ██████████ 100%
 - Milestone v2.1 created: Historical Odds Tracking, 9 phases (Phase 60-68)
 - Phase 61 skipped: existing odds_retention_days setting already provides configurable retention
 - v2.1 Historical Odds Tracking shipped 2026-02-08 with 9 phases (12 plans)
-- Milestone v2.2 created: Odds Freshness, 3 phases (Phase 69-71)
+- v2.2 Odds Freshness shipped 2026-02-09 with 3 phases (3 plans)
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 71-01-PLAN.md (Frontend Freshness Fixes)
+Stopped at: Completed v2.2 Odds Freshness milestone
 Resume file: None
-Next action: /gsd:complete-milestone (v2.2 Odds Freshness)
+Next action: /gsd:discuss-milestone (plan v2.3 features)

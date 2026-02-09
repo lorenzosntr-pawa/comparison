@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.1 Historical Odds Tracking)
+## Current State (v2.2 Odds Freshness)
 
-**Shipped:** 2026-02-08
+**Shipped:** 2026-02-09
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~38,550 lines of code
+- ~40,000 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -63,6 +63,8 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Clickable odds/margins** - click any odds or margin value to open history dialog
 - **Multi-bookmaker comparison** - overlay charts comparing odds/margins across BetPawa, SportyBet, Bet9ja
 - **Small-multiples MarketHistoryPanel** - view all outcomes × all bookmakers simultaneously
+- **Accurate odds freshness timestamps** - uses `last_confirmed_at` for correct freshness display
+- **Real-time timestamp updates** - WebSocket odds_updates subscription with automatic query invalidation
 
 ## Requirements
 
@@ -136,10 +138,13 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Clickable odds/margins in Odds Comparison and Event Details pages — v2.1
 - ✓ Multi-bookmaker comparison mode with overlay charts — v2.1
 - ✓ Small-multiples MarketHistoryPanel for full market view — v2.1
+- ✓ Accurate odds freshness timestamps using `last_confirmed_at` — v2.2
+- ✓ Real-time timestamp updates via WebSocket odds_updates subscription — v2.2
+- ✓ Automatic query invalidation on odds changes without polling — v2.2
 
 ### Active
 
-(No active requirements — project feature-complete for v2.1)
+(No active requirements — project feature-complete for v2.2)
 
 ### Out of Scope
 
@@ -241,6 +246,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Reusable onClick on value components | OddsBadge/MarginIndicator accept optional onClick for any page | ✓ Good — v2.1 code reuse |
 | Small-multiples for multi-outcome viz | One mini-chart per outcome cleaner than one chart with many lines | ✓ Good — v2.1 readable charts |
 | useQueries for parallel multi-bookmaker | TanStack Query useQueries for concurrent API calls | ✓ Good — v2.1 efficient fetching |
+| `last_confirmed_at` for freshness | Separate "when changed" from "when verified" — use latter for display | ✓ Good — v2.2 accurate timestamps |
+| `_get_snapshot_time()` helper | DRY timestamp extraction with fallback for backward compatibility | ✓ Good — v2.2 consistent handling |
+| Global WebSocket subscription in App | useOddsUpdates hook at root for automatic query invalidation | ✓ Good — v2.2 real-time updates |
+| Inner AppContent component | Hooks needing QueryClient must be inside QueryClientProvider | ✓ Good — v2.2 proper React context |
 
 ---
-*Last updated: 2026-02-08 after v2.1 milestone*
+*Last updated: 2026-02-09 after v2.2 milestone*

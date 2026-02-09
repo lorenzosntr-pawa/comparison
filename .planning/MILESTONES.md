@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.2 Odds Freshness (Shipped: 2026-02-09)
+
+**Delivered:** Accurate real-time odds timestamps with WebSocket-based query invalidation, fixing staleness issues across the entire data flow from scraping to display.
+
+**Phases completed:** 69-71 (3 plans total)
+
+**Key accomplishments:**
+
+- Complete data flow audit identifying 7 staleness sources (2 CRITICAL, 2 HIGH, 2 MEDIUM, 1 LOW)
+- Root cause identified: API used `captured_at` (when odds changed) instead of `last_confirmed_at` (when last verified)
+- Added `last_confirmed_at` to CachedSnapshot with `_get_snapshot_time()` helper pattern for consistent handling
+- Created `useOddsUpdates` hook subscribing to WebSocket odds_updates topic with automatic query invalidation
+- Real-time timestamp updates now work end-to-end without waiting for polling interval
+
+**Stats:**
+
+- 20 files changed
+- +1,517 / -26 lines (net +1,491)
+- 3 phases, 3 plans, 15 commits
+- 1 day (2026-02-08 to 2026-02-09)
+- ~40,000 total LOC
+
+**Git range:** `8cfabdf` → `5b63b84`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.3 features.
+
+---
+
 ## v2.1 Historical Odds Tracking (Shipped: 2026-02-08)
 
 **Delivered:** Interactive historical odds and margin visualization with clickable cells, tabbed dialogs, multi-bookmaker comparison mode, and small-multiples full market view.
