@@ -93,7 +93,15 @@ def create_cache_update_bridge(
 
 
 async def _safe_broadcast(ws_manager: ConnectionManager, msg: dict) -> None:
-    """Broadcast with error handling -- never crash the caller."""
+    """Broadcast with error handling -- never crash the caller.
+
+    Catches and logs any exceptions during broadcast to prevent
+    cache update callbacks from failing.
+
+    Args:
+        ws_manager: The ConnectionManager to broadcast through.
+        msg: The message dict to broadcast.
+    """
     try:
         await ws_manager.broadcast(msg, topic="odds_updates")
     except Exception:

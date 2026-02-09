@@ -23,9 +23,15 @@ class ConnectionManager:
 
     Thread-safe via asyncio.Lock for connect/disconnect operations.
     Broadcast uses snapshot iteration to avoid mutation during send.
+
+    Attributes:
+        _connections: Mapping of WebSocket to subscribed topic names.
+        _topics: Reverse index mapping topic name to subscribed WebSockets.
+        _lock: Asyncio lock for thread-safe connect/disconnect.
     """
 
     def __init__(self) -> None:
+        """Initialize the connection manager with empty connection tracking."""
         # WebSocket -> set of subscribed topic names
         self._connections: dict[WebSocket, set[str]] = {}
         # Topic name -> set of subscribed WebSockets (reverse index)
@@ -179,10 +185,18 @@ class ConnectionManager:
 
     @property
     def active_count(self) -> int:
-        """Number of connected clients."""
+        """Number of connected clients.
+
+        Returns:
+            Total count of active WebSocket connections.
+        """
         return len(self._connections)
 
     @property
     def topic_counts(self) -> dict[str, int]:
-        """Subscriber count per topic."""
+        """Subscriber count per topic.
+
+        Returns:
+            Dict mapping topic name to subscriber count.
+        """
         return {topic: len(subs) for topic, subs in self._topics.items()}

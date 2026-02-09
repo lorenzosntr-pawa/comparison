@@ -1,4 +1,14 @@
-"""FastAPI application factory with async lifespan handler."""
+"""FastAPI application factory with async lifespan handler.
+
+This module provides the main FastAPI application setup including:
+- HTTP client lifecycle management for all betting platforms
+- Scheduler initialization and configuration
+- In-memory cache warmup and async write queue
+- WebSocket connection manager and cache-to-websocket bridge
+- Router registration for all API endpoints
+
+The lifespan context manager ensures proper resource cleanup on shutdown.
+"""
 
 from contextlib import asynccontextmanager
 from time import perf_counter
@@ -35,6 +45,7 @@ from src.scraping.logging import configure_logging
 
 # Default timeout for all HTTP clients (seconds)
 DEFAULT_TIMEOUT = 30.0
+"""Default HTTP request timeout in seconds for all platform clients."""
 
 # Connection pool limits for concurrent scraping (Phase 56: increased for intra-batch concurrency)
 # max_connections: total connections across all hosts
@@ -44,6 +55,7 @@ CONNECTION_LIMITS = httpx.Limits(
     max_connections=200,
     max_keepalive_connections=100,
 )
+"""HTTP connection pool limits for concurrent scraping operations."""
 
 
 # Platform-specific headers (copied from scraper configs to avoid import issues)
@@ -72,7 +84,16 @@ BET9JA_HEADERS = {
 
 
 class AppState(TypedDict):
-    """Application state containing HTTP clients for each platform."""
+    """Application state containing HTTP clients for each platform.
+
+    These clients are shared across all requests and managed by the
+    lifespan context manager.
+
+    Attributes:
+        sportybet_client: HTTP client for SportyBet API.
+        betpawa_client: HTTP client for BetPawa API.
+        bet9ja_client: HTTP client for Bet9ja API.
+    """
 
     sportybet_client: httpx.AsyncClient
     betpawa_client: httpx.AsyncClient
@@ -86,6 +107,27 @@ async def lifespan(app: FastAPI):
     Creates AsyncClient instances at startup and closes them at shutdown.
     Clients are stored in app.state for dependency injection.
     Scheduler is configured and started after clients are available.
+
+    Startup sequence:
+    1. Create HTTP clients for all platforms
+    2. Configure structured logging
+    3. Initialize scheduler with app state access
+    4. Recover stale runs from previous process
+    5. Warm in-memory odds cache from database
+    6. Start async write queue
+    7. Initialize WebSocket connection manager
+    8. Set up cache-to-WebSocket bridge
+
+    Shutdown sequence:
+    1. Drain and stop write queue
+    2. Shutdown scheduler gracefully
+    3. Close HTTP clients (handled by context managers)
+
+    Args:
+        app: The FastAPI application instance.
+
+    Yields:
+        None - resources are attached to app.state.
     """
     async with httpx.AsyncClient(
         base_url="https://www.sportybet.com",
@@ -176,8 +218,11 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """Create and configure FastAPI application.
 
+    Creates the FastAPI app with lifespan handler and registers all
+    API routers under the /api prefix.
+
     Returns:
-        Configured FastAPI application instance.
+        Configured FastAPI application instance ready to serve requests.
     """
     app = FastAPI(
         lifespan=lifespan,
