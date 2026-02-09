@@ -14,7 +14,7 @@ All platform clients (Bet9jaClient, BetPawaClient, SportyBetClient) use
 the shared retry decorator to ensure consistent error handling.
 """
 
-from typing import Protocol
+from typing import Callable, Protocol, TypeVar
 
 import httpx
 from tenacity import (
@@ -23,6 +23,8 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
+
+T = TypeVar("T")
 
 # Retry configuration constants
 MAX_RETRIES = 3
@@ -54,7 +56,7 @@ class ScraperClient(Protocol):
         ...
 
 
-def create_retry_decorator():
+def create_retry_decorator() -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Create a configured tenacity @retry decorator.
 
     Returns:

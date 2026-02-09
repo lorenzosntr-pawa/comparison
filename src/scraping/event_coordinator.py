@@ -206,7 +206,7 @@ class EventCoordinator:
         # Timed discovery wrappers for per-platform timing
         platform_timings_ms: dict[str, int] = {}
 
-        async def _timed_discover(name: str, coro):
+        async def _timed_discover(name: str, coro) -> list[dict]:
             t0 = time.perf_counter()
             result = await coro
             platform_timings_ms[name] = int((time.perf_counter() - t0) * 1000)

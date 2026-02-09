@@ -860,7 +860,7 @@ async def scrape_single_event(
     }
 
     # Scrape all platforms in parallel
-    async def scrape_platform(platform: str, platform_id: str):
+    async def scrape_platform(platform: str, platform_id: str) -> tuple[str, bool, str | None, int, int | None]:
         client = clients[platform]
         platform_start = time.perf_counter()
         try:

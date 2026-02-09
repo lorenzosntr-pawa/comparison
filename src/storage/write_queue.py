@@ -121,13 +121,13 @@ class AsyncWriteQueue:
 
     # -- lifecycle -----------------------------------------------------------
 
-    async def start(self):
+    async def start(self) -> None:
         """Start the background worker task."""
         self._running = True
         self._worker_task = asyncio.create_task(self._worker_loop())
         self._log.info("write_queue_started", maxsize=self._queue.maxsize)
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Signal stop, drain remaining items, then cancel worker."""
         self._running = False
         if self._worker_task:
@@ -142,7 +142,7 @@ class AsyncWriteQueue:
 
     # -- public API ----------------------------------------------------------
 
-    async def enqueue(self, batch: WriteBatch):
+    async def enqueue(self, batch: WriteBatch) -> None:
         """Add a write batch to the queue.
 
         Blocks if the queue is full (backpressure).
@@ -167,7 +167,7 @@ class AsyncWriteQueue:
 
     # -- internals -----------------------------------------------------------
 
-    async def _worker_loop(self):
+    async def _worker_loop(self) -> None:
         """Main worker: dequeue and process batches."""
         while self._running or not self._queue.empty():
             try:
@@ -177,14 +177,14 @@ class AsyncWriteQueue:
             await self._process_with_retry(batch)
             self._queue.task_done()
 
-    async def _drain(self):
+    async def _drain(self) -> None:
         """Process all remaining items in the queue."""
         while not self._queue.empty():
             batch = self._queue.get_nowait()
             await self._process_with_retry(batch)
             self._queue.task_done()
 
-    async def _process_with_retry(self, batch: WriteBatch):
+    async def _process_with_retry(self, batch: WriteBatch) -> None:
         """Process a batch with retry + exponential backoff.
 
         - Max ``_MAX_ATTEMPTS`` attempts.

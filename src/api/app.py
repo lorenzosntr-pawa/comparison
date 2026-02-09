@@ -10,6 +10,7 @@ This module provides the main FastAPI application setup including:
 The lifespan context manager ensures proper resource cleanup on shutdown.
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from time import perf_counter
 from typing import TypedDict
@@ -101,7 +102,7 @@ class AppState(TypedDict):
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Async lifespan context manager for HTTP client and scheduler lifecycle.
 
     Creates AsyncClient instances at startup and closes them at shutdown.
