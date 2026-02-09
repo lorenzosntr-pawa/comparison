@@ -3,6 +3,17 @@
 Provides a single entry point for mapping any competitor's market data
 to Betpawa format. Uses Pydantic's discriminated union for type-safe
 handling of different data sources.
+
+Usage:
+    This module provides a unified API for all competitor platforms.
+    Use map_to_betpawa() with either SportybetInput or Bet9jaInput.
+
+Example:
+    >>> from market_mapping import map_to_betpawa, SportybetInput, Bet9jaInput
+    >>> # Sportybet single market
+    >>> result = map_to_betpawa(SportybetInput(market=sportybet_market))
+    >>> # Bet9ja batch processing
+    >>> results = map_to_betpawa(Bet9jaInput(odds={"S_1X2_1": "1.50", ...}))
 """
 
 from market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa

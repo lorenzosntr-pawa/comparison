@@ -3,6 +3,15 @@
 Type definitions for the unified multi-competitor API.
 Provides a discriminated union for type-safe handling of different
 competitor data sources in a single function.
+
+Available Input Types:
+    SportybetInput: Wraps a single SportybetMarket for mapping.
+    Bet9jaInput: Wraps a full odds dict for batch mapping.
+    CompetitorInput: Discriminated union of the above types.
+
+Usage:
+    Use CompetitorInput for type hints when accepting either input type.
+    Pydantic will automatically narrow the type based on the 'source' field.
 """
 
 from typing import Annotated, Literal, Union

@@ -2,6 +2,24 @@
 
 These models match the actual JSON structure from Sportybet's event API.
 Used for parsing and validating Sportybet API responses.
+
+Model Hierarchy:
+    SportybetEvent (API response wrapper)
+      - data: SportybetEventData
+          - sport: SportybetSport
+              - category: SportybetCategory
+                  - tournament: SportybetTournament
+          - markets: list[SportybetMarket]
+              - outcomes: list[SportybetOutcome]
+              - market_extend_vos: list[SportybetMarketExtend] | None
+
+Key Fields:
+    SportybetMarket.specifier: For parameterized markets (e.g., "total=2.5").
+    SportybetOutcome.is_active: 1 = active, 0 = suspended.
+    SportybetOutcome.desc: Outcome description for matching (e.g., "Home", "Over").
+
+Note:
+    All models use camelCase aliases for JSON compatibility with the API.
 """
 
 from pydantic import BaseModel, ConfigDict, Field

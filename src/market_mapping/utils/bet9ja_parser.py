@@ -1,7 +1,22 @@
 """Bet9ja Key Parser.
 
 Utility for parsing Bet9ja's flattened key format:
-S_{MARKET}[@{PARAM}]_{OUTCOME}
+    S_{MARKET}[@{PARAM}]_{OUTCOME}
+
+Key Components:
+    - S_: Required prefix for all odds keys.
+    - MARKET: Market type identifier (e.g., "1X2", "OU", "AH").
+    - @PARAM: Optional parameter for parameterized markets (e.g., "@2.5").
+    - _OUTCOME: Outcome suffix (e.g., "_1", "_O", "_1H").
+
+Usage:
+    >>> from market_mapping.utils import parse_bet9ja_key
+    >>> parsed = parse_bet9ja_key("S_OU@2.5_O")
+    >>> print(parsed.market, parsed.param, parsed.outcome)
+    'OU' '2.5' 'O'
+
+Security:
+    Guards against ReDoS attacks by limiting max key length to 500 chars.
 """
 
 import re

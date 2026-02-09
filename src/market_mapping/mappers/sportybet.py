@@ -3,6 +3,19 @@
 Transforms Sportybet markets into Betpawa's format, using Betpawa's
 market IDs and naming conventions. This allows Betpawa to work with
 competitor data using their native vocabulary.
+
+Main Entry Point:
+    map_sportybet_to_betpawa: Transforms a SportybetMarket to MappedMarket.
+
+Market Types Supported:
+    - Simple markets (1X2, Double Chance, BTTS, etc.)
+    - Over/Under markets with line values (parsed from specifier)
+    - Handicap markets (Asian and European, parsed from specifier)
+    - Variant markets (Exact Goals, Winning Margin, etc.)
+
+Error Handling:
+    Raises MappingError with specific error codes on failure.
+    See MappingErrorCode for available error types.
 """
 
 from market_mapping.mappings import (

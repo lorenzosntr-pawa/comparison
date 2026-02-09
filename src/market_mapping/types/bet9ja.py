@@ -2,7 +2,16 @@
 
 Types for Bet9ja's flattened key-value market structure.
 Bet9ja encodes market/outcome information in key strings:
-S_{MARKET}[@{PARAM}]_{OUTCOME}
+    S_{MARKET}[@{PARAM}]_{OUTCOME}
+
+Key Format Examples:
+    - Simple: "S_1X2_1" -> market=1X2, outcome=1
+    - With param: "S_OU@2.5_O" -> market=OU, param=2.5, outcome=O
+    - Handicap: "S_AH@-0.5_1" -> market=AH, param=-0.5, outcome=1
+
+Models:
+    Bet9jaOdds: Single key-value pair from flattened structure.
+    Bet9jaMarketMeta: Market metadata from D.MK array in API response.
 """
 
 from pydantic import BaseModel, ConfigDict, Field

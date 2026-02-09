@@ -2,6 +2,21 @@
 
 These models match the actual JSON structure from Betpawa's event API.
 Used for parsing and validating Betpawa API responses.
+
+Model Hierarchy:
+    BetpawaEvent
+      - participants: list[BetpawaParticipant]
+      - widgets: list[BetpawaWidget]
+      - markets: list[BetpawaMarket]
+          - market_type: BetpawaMarketType
+          - row: list[BetpawaRow]
+              - prices: list[BetpawaPrice]
+                  - additional_info: BetpawaPriceAdditionalInfo
+          - additional_info: BetpawaMarketAdditionalInfo
+
+Note:
+    All models use camelCase aliases for JSON compatibility with the API.
+    The _to_camel function handles the snake_case to camelCase conversion.
 """
 
 from pydantic import BaseModel, ConfigDict

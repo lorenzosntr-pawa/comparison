@@ -5,10 +5,18 @@ market IDs and naming conventions. This allows Betpawa to work with
 competitor data using their native vocabulary.
 
 Bet9ja uses a flattened key-value format for odds:
-  {"S_1X2_1": "1.50", "S_1X2_X": "3.20", "S_1X2_2": "2.10"}
+    {"S_1X2_1": "1.50", "S_1X2_X": "3.20", "S_1X2_2": "2.10"}
 
 Keys are parsed to extract market type, param (for O/U, handicaps), and outcome suffix.
 This mapper groups outcomes by market, then maps each market to Betpawa format.
+
+Main Entry Points:
+    map_bet9ja_market_to_betpawa: Map a single market (raises MappingError on failure).
+    map_bet9ja_odds_to_betpawa: Map all odds in batch (skips failures silently).
+
+Error Handling:
+    Functions raise MappingError with specific error codes for debugging.
+    See MappingErrorCode for available error types.
 """
 
 from dataclasses import dataclass

@@ -3,6 +3,20 @@
 Platform-agnostic interfaces for the normalized market representation.
 These types serve as the common ground between Betpawa and competitor structures,
 enabling unified comparison and transformation logic.
+
+Model Categories:
+    Normalized Types (for runtime data):
+        NormalizedMarket: Platform-agnostic market structure.
+        NormalizedOutcome: Platform-agnostic outcome structure.
+        NormalizedSpecifier: Parsed specifier data.
+
+    Mapping Types (for static configuration):
+        MarketMapping: Maps canonical IDs to platform-specific IDs.
+        OutcomeMapping: Maps canonical outcomes to platform-specific names.
+
+Type Aliases:
+    SourcePlatform: Literal["betpawa", "sportybet", "bet9ja"]
+    SpecifierType: Literal["total", "handicap", "goalnr", "score", "other"]
 """
 
 from typing import Literal

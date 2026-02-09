@@ -3,6 +3,25 @@
 Static lookup table mapping between Betpawa, Sportybet, and Bet9ja market IDs.
 Based on analysis from .planning/phases/01-market-structure-analysis/field-mappings.md
 and market-inventory.md.
+
+Structure:
+    MARKET_MAPPINGS is a tuple of MarketMapping objects, each containing:
+    - canonical_id: Internal identifier for the market (e.g., "1x2_ft")
+    - name: Human-readable name (e.g., "1X2 - Full Time")
+    - betpawa_id: Betpawa's marketType.id (e.g., "3743")
+    - sportybet_id: Sportybet's market.id (e.g., "1")
+    - bet9ja_key: Bet9ja's market key prefix (e.g., "S_1X2")
+    - outcome_mapping: How outcomes map between platforms
+
+Lookup Functions (in __init__.py):
+    find_by_betpawa_id(id): Find mapping by Betpawa market ID
+    find_by_sportybet_id(id): Find mapping by Sportybet market ID
+    find_by_bet9ja_key(key): Find mapping by Bet9ja key prefix
+
+Adding New Mappings:
+    1. Add a new MarketMapping entry to MARKET_MAPPINGS
+    2. Define outcome_mapping with OutcomeMapping for each outcome
+    3. Lookup functions will automatically include the new mapping
 """
 
 from ..types.normalized import MarketMapping, OutcomeMapping

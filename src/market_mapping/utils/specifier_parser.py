@@ -3,9 +3,27 @@
 Parses Sportybet specifier strings into structured data for parameterized markets.
 Sportybet uses specifiers like "total=2.5" for Over/Under lines and "hcp=0:1" for handicaps.
 
-Specifier formats:
-- Simple: "total=2.5"
-- Compound: "minsnr=10|total=1.5"
+Specifier Formats:
+    - Simple: "total=2.5"
+    - Compound: "minsnr=10|total=1.5"
+    - Handicap European: "hcp=0:1" (away starts +1)
+    - Handicap Asian: "hcp=-0.5" (home -0.5)
+
+Supported Specifier Keys:
+    total: Line value for Over/Under (float).
+    hcp: Handicap value, European (X:Y) or Asian (single number).
+    variant: Variant identifier for exact goals, etc.
+    goalnr: Goal number for first/last goal markets.
+    score: Score specifier for correct score markets.
+
+Usage:
+    >>> from market_mapping.utils import parse_specifier
+    >>> parsed = parse_specifier("total=2.5")
+    >>> print(parsed.total)
+    2.5
+
+Security:
+    Guards against ReDoS attacks by limiting max specifier length to 1000 chars.
 """
 
 from dataclasses import dataclass

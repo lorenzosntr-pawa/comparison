@@ -5,9 +5,17 @@ These represent competitor data transformed to use Betpawa's IDs and naming conv
 
 Purpose: Betpawa is the reference platform. By mapping competitor data to Betpawa's
 format, Betpawa can:
-- Identify markets using their native IDs
-- Act on comparison results using familiar naming
-- Easily spot discrepancies in their own terms
+    - Identify markets using their native IDs
+    - Act on comparison results using familiar naming
+    - Easily spot discrepancies in their own terms
+
+Model Hierarchy:
+    MappedMarket: Complete mapped market with Betpawa identifiers.
+        - outcomes: tuple[MappedOutcome, ...] - Individual selections.
+        - handicap: MappedHandicap | None - For handicap markets.
+        - line: float | None - For Over/Under markets.
+
+All models are frozen (immutable) for thread safety and hashability.
 """
 
 from typing import Literal

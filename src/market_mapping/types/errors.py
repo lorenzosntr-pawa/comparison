@@ -3,6 +3,23 @@
 Provides structured error handling for mapping failures. These types
 enable detailed feedback about why a mapping failed, making debugging
 easier and providing actionable error messages to consumers.
+
+Available Error Codes:
+    UNKNOWN_MARKET: No mapping exists for the market ID/key.
+    UNSUPPORTED_PLATFORM: Market exists but not on Betpawa.
+    INVALID_SPECIFIER: Specifier present but couldn't be parsed.
+    UNKNOWN_PARAM_MARKET: Parameterized market type not recognized.
+    NO_MATCHING_OUTCOMES: All outcomes failed to map.
+    INVALID_ODDS: Odds value could not be parsed.
+    INVALID_KEY_FORMAT: Bet9ja key format invalid.
+
+Usage:
+    try:
+        result = map_sportybet_to_betpawa(market)
+    except MappingError as e:
+        if e.code == MappingErrorCode.UNKNOWN_MARKET:
+            # Handle unknown market
+            pass
 """
 
 from enum import StrEnum
