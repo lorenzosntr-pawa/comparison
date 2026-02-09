@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 
 ## Current Position
 
-Phase: 69 of 71 (Investigation & Freshness Audit)
+Phase: 70 of 71 (Backend Freshness Fixes)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-09 — Completed 69-01-PLAN.md
+Last activity: 2026-02-09 — Completed 70-01-PLAN.md
 
-Progress: ███░░░░░░░ 33%
+Progress: ██████░░░░ 67%
 
 ## Milestones
 
@@ -184,6 +184,7 @@ Progress: ███░░░░░░░ 33%
 - **Reusable onClick on value components** - OddsBadge and MarginIndicator accept optional onClick prop for clickable behavior across any page (v2.1 Phase 67)
 - **Small-multiples for multi-outcome visualization** - Grid of mini-charts (one per outcome) with synchronized time axes, cleaner than one chart with many lines (v2.1 Phase 68)
 - **`captured_at` vs `last_confirmed_at` distinction** - `captured_at` = when odds changed, `last_confirmed_at` = when last verified; use latter for freshness display (v2.2 Phase 69)
+- **`_get_snapshot_time()` helper pattern** - consistent timestamp extraction with fallback to `captured_at` for backward compatibility (v2.2 Phase 70)
 
 ### Key Decisions
 
@@ -263,6 +264,6 @@ Progress: ███░░░░░░░ 33%
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 69-01-PLAN.md (Investigation & Freshness Audit)
+Stopped at: Completed 70-01-PLAN.md (Backend Freshness Fixes)
 Resume file: None
-Next action: /gsd:plan-phase 70
+Next action: /gsd:plan-phase 71
