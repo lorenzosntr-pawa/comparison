@@ -10,7 +10,7 @@ import {
   Database,
   Package,
 } from 'lucide-react'
-import type { PlatformProgress } from '../hooks/use-scrape-progress'
+import type { PlatformProgress } from '@/hooks/use-websocket-scrape-progress'
 
 // Platform styling
 const PLATFORM_STYLES: Record<string, { border: string; text: string; bg: string }> = {

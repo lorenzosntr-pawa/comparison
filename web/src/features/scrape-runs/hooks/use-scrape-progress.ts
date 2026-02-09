@@ -1,23 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useWebSocketScrapeProgress } from '@/hooks/use-websocket-scrape-progress'
 
-export interface ScrapeProgressEvent {
-  platform: string | null
-  phase: string
-  current: number
-  total: number
-  events_count: number | null
-  message: string | null
-  timestamp: string
-}
-
-export interface PlatformProgress {
-  phase: string
-  eventsCount: number
-  isComplete: boolean
-  isFailed: boolean
-}
-
 interface UseScrapeProgressOptions {
   /** Run ID to track (only connects when provided and run is active) */
   runId?: number
