@@ -1,14 +1,13 @@
 """Progress broadcaster for real-time scrape progress updates.
 
-Allows scheduled jobs to publish progress events and SSE endpoints
+Allows scheduled jobs to publish progress events and WebSocket endpoints
 to subscribe and stream those events to clients.
 """
 
 import asyncio
 from collections.abc import AsyncGenerator
-from datetime import datetime
 
-from src.scraping.schemas import Platform, ScrapeProgress
+from src.scraping.schemas import ScrapeProgress
 
 
 class ProgressBroadcaster:
