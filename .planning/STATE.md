@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v2.1 shipped — planning next milestone
+**Current focus:** v2.2 Odds Freshness — ensuring accurate timestamps and real-time updates
 
 ## Current Position
 
-Phase: 68 of 68 (Market-Level History View)
-Plan: Complete
-Status: Milestone v2.1 SHIPPED
-Last activity: 2026-02-08 — Completed v2.1 milestone
+Phase: 69 of 71 (Investigation & Freshness Audit)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-02-09 — Milestone v2.2 created
 
-Progress: ██████████ 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -30,6 +30,7 @@ Progress: ██████████ 100%
 - **v1.9 Event Details UX** — SHIPPED 2026-02-05 (5 phases, 10 plans)
 - **v2.0 Real-Time Scraping Pipeline** — SHIPPED 2026-02-06 (7 phases, 17 plans)
 - **v2.1 Historical Odds Tracking** — SHIPPED 2026-02-08 (9 phases, 12 plans)
+- **v2.2 Odds Freshness** — IN PROGRESS (3 phases)
 
 ## Performance Metrics
 
@@ -256,10 +257,11 @@ Progress: ██████████ 100%
 - Milestone v2.1 created: Historical Odds Tracking, 9 phases (Phase 60-68)
 - Phase 61 skipped: existing odds_retention_days setting already provides configurable retention
 - v2.1 Historical Odds Tracking shipped 2026-02-08 with 9 phases (12 plans)
+- Milestone v2.2 created: Odds Freshness, 3 phases (Phase 69-71)
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Completed v2.1 milestone
+Last session: 2026-02-09
+Stopped at: Milestone v2.2 initialization
 Resume file: None
-Next action: /gsd:discuss-milestone to plan v2.2
+Next action: /gsd:plan-phase 69

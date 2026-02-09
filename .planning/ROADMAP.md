@@ -18,6 +18,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v1.9 Event Details UX](milestones/v1.9-ROADMAP.md) — Phases 48-52 (shipped 2026-02-05)
 - ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
+- 🚧 **v2.2 Odds Freshness** — Phases 69-71 (in progress)
 
 ## Completed Milestones
 
@@ -168,6 +169,40 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 </details>
 
+### 🚧 v2.2 Odds Freshness (In Progress)
+
+**Milestone Goal:** Ensure the most updated odds are always shown per bookmaker with accurate timestamps that update in real-time
+
+#### Phase 69: Investigation & Freshness Audit
+
+**Goal**: Trace data flow from scrape to display, identify all staleness sources
+**Depends on**: v2.1 complete
+**Research**: Unlikely (internal code audit)
+**Plans**: TBD
+
+Plans:
+- [ ] 69-01: TBD (run /gsd:plan-phase 69 to break down)
+
+#### Phase 70: Backend Freshness Fixes
+
+**Goal**: Fix storage, cache, and API timestamp issues found in investigation
+**Depends on**: Phase 69
+**Research**: Unlikely (existing v2.0 patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 70-01: TBD
+
+#### Phase 71: Frontend Freshness Fixes
+
+**Goal**: Fix WebSocket handlers and UI reactivity for real-time timestamp updates
+**Depends on**: Phase 70
+**Research**: Unlikely (existing v2.0 patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 71-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -256,3 +291,6 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 67. Event Details History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 68. Market-Level History View | v2.1 | 1/1 | Complete | 2026-02-08 |
 | **v2.1 SHIPPED** | | | **2026-02-08** | |
+| 69. Investigation & Freshness Audit | v2.2 | 0/? | Not started | - |
+| 70. Backend Freshness Fixes | v2.2 | 0/? | Not started | - |
+| 71. Frontend Freshness Fixes | v2.2 | 0/? | Not started | - |
