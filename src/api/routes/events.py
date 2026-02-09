@@ -115,6 +115,18 @@ async def _load_snapshots_cached(
     return betpawa, competitor
 
 
+def _get_snapshot_time(snapshot) -> datetime | None:
+    """Get freshness timestamp preferring last_confirmed_at over captured_at.
+
+    last_confirmed_at represents when the odds were last verified (updated every
+    scrape cycle), while captured_at represents when the odds last changed.
+    For freshness display, we want the verification time.
+    """
+    if not snapshot:
+        return None
+    return getattr(snapshot, "last_confirmed_at", None) or snapshot.captured_at
+
+
 def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
     """Extract inline odds for key markets from a snapshot.
 
@@ -191,13 +203,13 @@ def _build_matched_event(
             comp_snapshot = competitor_snapshots.get(link.bookmaker.slug)
             inline_odds = _build_competitor_inline_odds(comp_snapshot)
             has_odds = bool(comp_snapshot and comp_snapshot.markets)
-            snapshot_time = comp_snapshot.captured_at if comp_snapshot else None
+            snapshot_time = _get_snapshot_time(comp_snapshot)
         else:
             # BetPawa - use regular snapshot
             snapshot = snapshots_by_bookmaker.get(link.bookmaker_id)
             inline_odds = _build_inline_odds(snapshot)
             has_odds = bool(snapshot and snapshot.markets)
-            snapshot_time = snapshot.captured_at if snapshot else None
+            snapshot_time = _get_snapshot_time(snapshot)
 
         bookmakers.append(
             BookmakerOdds(
@@ -485,7 +497,7 @@ def _build_competitor_event_response(
                 event_url=None,  # Competitor events don't have URLs stored
                 has_odds=bool(snapshot and snapshot.markets),
                 inline_odds=inline_odds,
-                snapshot_time=snapshot.captured_at if snapshot else None,
+                snapshot_time=_get_snapshot_time(snapshot),
             )
         )
 
@@ -592,10 +604,9 @@ def _build_bookmaker_market_data(
         BookmakerMarketData with all markets (excluding goalscorer markets).
     """
     markets = []
-    snapshot_time = None
+    snapshot_time = _get_snapshot_time(snapshot)
 
     if snapshot:
-        snapshot_time = snapshot.captured_at
         for market in snapshot.markets:
             # Skip excluded markets (goalscorer, etc.)
             if _is_excluded_market(market.betpawa_market_name):
@@ -659,10 +670,9 @@ def _build_competitor_bookmaker_market_data(
         BookmakerMarketData with all markets (excluding goalscorer markets).
     """
     markets = []
-    snapshot_time = None
+    snapshot_time = _get_snapshot_time(snapshot)
 
     if snapshot:
-        snapshot_time = snapshot.captured_at
         for market in snapshot.markets:
             # Skip excluded markets (goalscorer, etc.)
             if _is_excluded_market(market.betpawa_market_name):
@@ -715,7 +725,7 @@ def _build_event_detail_response(
                     event_url=link.event_url,
                     has_odds=has_odds,
                     inline_odds=inline_odds,
-                    snapshot_time=comp_snapshot.captured_at if comp_snapshot else None,
+                    snapshot_time=_get_snapshot_time(comp_snapshot),
                 )
             )
 
@@ -740,7 +750,7 @@ def _build_event_detail_response(
                     event_url=link.event_url,
                     has_odds=bool(snapshot and snapshot.markets),
                     inline_odds=inline_odds,
-                    snapshot_time=snapshot.captured_at if snapshot else None,
+                    snapshot_time=_get_snapshot_time(snapshot),
                 )
             )
 
