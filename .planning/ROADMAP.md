@@ -188,10 +188,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Fix "always in progress" bug when WebSocket connects, audit current WebSocket implementation
 **Depends on**: v2.2 complete
 **Research**: Unlikely (internal patterns, existing infrastructure)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 72-01: TBD (run /gsd:plan-phase 72 to break down)
+- [x] 72-01: Fix "always in progress" bug — 2026-02-09
 
 #### Phase 73: WebSocket Reliability
 
@@ -345,7 +345,7 @@ Plans:
 | 70. Backend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
 | 71. Frontend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
 | **v2.2 SHIPPED** | | | **2026-02-09** | |
-| 72. WebSocket Investigation & Bug Fixes | v2.3 | 0/? | Not started | - |
+| 72. WebSocket Investigation & Bug Fixes | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 73. WebSocket Reliability | v2.3 | 0/? | Not started | - |
 | 74. Dead Code Audit & Removal (Backend) | v2.3 | 0/? | Not started | - |
 | 75. Dead Code Audit & Removal (Frontend) | v2.3 | 0/? | Not started | - |

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 72 of 78 (WebSocket Investigation & Bug Fixes)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-09 — Milestone v2.3 created
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-09 — Completed 72-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 14%
 
 ## Milestones
 
@@ -197,6 +197,7 @@ Progress: ░░░░░░░░░░ 0%
 - **`_get_snapshot_time()` helper pattern** - consistent timestamp extraction with fallback to `captured_at` for backward compatibility (v2.2 Phase 70)
 - **Global WebSocket subscription via App hook** - useOddsUpdates in App root for automatic query invalidation on odds_update messages (v2.2 Phase 71)
 - **Inner component for QueryClient context** - hooks requiring useQueryClient must be inside QueryClientProvider children (v2.2 Phase 71)
+- **Compound boolean for observing state** - `isObserving` requires both `activeScrapeId !== null` AND `ws.isConnected`; connection alone insufficient (v2.3 Phase 72)
 
 ### Key Decisions
 
@@ -277,6 +278,6 @@ Progress: ░░░░░░░░░░ 0%
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Milestone v2.3 initialization
+Stopped at: Completed 72-01-PLAN.md
 Resume file: None
-Next action: /gsd:plan-phase 72
+Next action: /gsd:plan-phase 73
