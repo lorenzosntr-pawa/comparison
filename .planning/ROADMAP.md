@@ -252,10 +252,10 @@ Plans:
 **Goal**: Fill type annotation gaps across both codebases and improve error messages/recovery
 **Depends on**: Phase 77
 **Research**: Unlikely (internal improvements)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 78-01: TBD
+- [ ] 78-01: Add return types to 10 functions + JSONDecodeError handling
 
 ## Progress
 
@@ -355,4 +355,4 @@ Plans:
 | 75. Dead Code Audit & Removal (Frontend) | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 76. Documentation (Backend) | v2.3 | 3/3 | Complete | 2026-02-09 |
 | 77. Documentation (Frontend) + README | v2.3 | 3/3 | Complete | 2026-02-09 |
-| 78. Type Annotations & Error Handling | v2.3 | 0/? | Not started | - |
+| 78. Type Annotations & Error Handling | v2.3 | 0/1 | Planned | - |
