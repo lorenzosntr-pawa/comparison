@@ -19,6 +19,8 @@ Retry Behavior:
     Retries on network errors and timeouts, not on 404/invalid event.
 """
 
+import json
+
 import httpx
 
 from src.scraping.clients.base import create_retry_decorator
@@ -102,7 +104,13 @@ class Bet9jaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for event {event_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         # Check for "D" result code which indicates success for single event
         if not isinstance(data, dict):
@@ -165,7 +173,13 @@ class Bet9jaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for tournament {tournament_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
         _validate_response_success(data, f"tournament {tournament_id}")
 
         d_data = data.get("D")
@@ -211,7 +225,13 @@ class Bet9jaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for sports",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
         _validate_response_success(data, "sports")
 
         d_data = data.get("D")

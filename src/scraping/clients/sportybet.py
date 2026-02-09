@@ -23,6 +23,7 @@ Retry Behavior:
     Non-10000 bizCode for event fetch raises InvalidEventIdError.
 """
 
+import json
 import time
 
 import httpx
@@ -107,7 +108,13 @@ class SportyBetClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for event {event_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         if data.get("bizCode") != 10000:
             raise InvalidEventIdError(
@@ -153,7 +160,13 @@ class SportyBetClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for tournaments",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         if data.get("bizCode") != 10000:
             raise ApiError(
@@ -210,7 +223,13 @@ class SportyBetClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for tournament {tournament_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         if data.get("bizCode") != 10000:
             raise ApiError(

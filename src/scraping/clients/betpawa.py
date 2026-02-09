@@ -110,7 +110,13 @@ class BetPawaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for event {event_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
         _validate_response_structure(data)
 
         return data
@@ -168,7 +174,13 @@ class BetPawaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for competition {competition_id}",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         if not isinstance(data, dict):
             raise ApiError(
@@ -204,7 +216,13 @@ class BetPawaClient:
                 cause=e,
             ) from e
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            raise ApiError(
+                f"Invalid JSON response for categories",
+                details={"response_text": response.text[:500], "error": str(e)},
+            ) from e
 
         if not isinstance(data, dict):
             raise ApiError(
