@@ -208,10 +208,10 @@ Plans:
 **Goal**: Scan and remove unused Python services, routes, utilities from backend
 **Depends on**: Phase 73
 **Research**: Unlikely (internal refactoring)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 74-01: TBD
+- [x] 74-01: Backend dead code audit — 2026-02-09
 
 #### Phase 75: Dead Code Audit & Removal (Frontend)
 
@@ -347,7 +347,7 @@ Plans:
 | **v2.2 SHIPPED** | | | **2026-02-09** | |
 | 72. WebSocket Investigation & Bug Fixes | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 73. WebSocket Reliability | v2.3 | 1/1 | Complete | 2026-02-09 |
-| 74. Dead Code Audit & Removal (Backend) | v2.3 | 0/? | Not started | - |
+| 74. Dead Code Audit & Removal (Backend) | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 75. Dead Code Audit & Removal (Frontend) | v2.3 | 0/? | Not started | - |
 | 76. Documentation (Backend) | v2.3 | 0/? | Not started | - |
 | 77. Documentation (Frontend) + README | v2.3 | 0/? | Not started | - |
