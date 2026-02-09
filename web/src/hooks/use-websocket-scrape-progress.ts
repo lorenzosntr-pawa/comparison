@@ -52,6 +52,8 @@ export interface UseWebSocketScrapeProgressReturn {
   overallPhase: string
   /** Error message if any */
   error: string | null
+  /** Manually trigger reconnection */
+  reconnect: () => void
 }
 
 /**
@@ -125,12 +127,21 @@ export function useWebSocketScrapeProgress(
     setWsError(`${code}: ${detail}`)
   }, [])
 
+  // Handle reconnection - invalidate queries to sync state
+  const handleReconnect = useCallback(() => {
+    console.log('[useWebSocketScrapeProgress] Reconnected, invalidating queries')
+    queryClient.invalidateQueries({ queryKey: ['scheduler-history'] })
+    queryClient.invalidateQueries({ queryKey: ['events'] })
+    queryClient.invalidateQueries({ queryKey: ['scrape-run'] })
+  }, [queryClient])
+
   // Connect to WebSocket with scrape_progress topic
-  const { state, error: connectionError } = useWebSocket<ScrapeProgressEvent>({
+  const { state, error: connectionError, reconnect } = useWebSocket<ScrapeProgressEvent>({
     topics: ['scrape_progress'],
     enabled,
     onMessage: handleMessage,
     onError: handleError,
+    onReconnect: handleReconnect,
   })
 
   // Derive isConnected from state
@@ -162,5 +173,6 @@ export function useWebSocketScrapeProgress(
     platformProgress,
     overallPhase,
     error,
+    reconnect,
   }
 }

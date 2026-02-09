@@ -28,6 +28,8 @@ export interface UseOddsUpdatesOptions {
 export interface UseOddsUpdatesReturn {
   /** Whether WebSocket is connected */
   isConnected: boolean
+  /** Manually trigger reconnection */
+  reconnect: () => void
 }
 
 /**
@@ -64,14 +66,22 @@ export function useOddsUpdates(
     [queryClient]
   )
 
+  // Handle reconnection - invalidate queries to sync state
+  const handleReconnect = useCallback(() => {
+    console.log('[useOddsUpdates] Reconnected, invalidating queries')
+    queryClient.invalidateQueries({ queryKey: ['events'] })
+  }, [queryClient])
+
   // Connect to WebSocket with odds_updates topic
-  const { state } = useWebSocket<OddsUpdateData>({
+  const { state, reconnect } = useWebSocket<OddsUpdateData>({
     topics: ['odds_updates'],
     enabled,
     onMessage: handleMessage,
+    onReconnect: handleReconnect,
   })
 
   return {
     isConnected: state === 'connected',
+    reconnect,
   }
 }

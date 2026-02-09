@@ -26,6 +26,8 @@ export interface UseWebSocketOptions<T = unknown> {
   enabled?: boolean
   /** Callback for error messages from server */
   onError?: (code: string, detail: string) => void
+  /** Callback fired when connection re-establishes after a disconnect (not on initial connect) */
+  onReconnect?: () => void
 }
 
 /**
@@ -38,6 +40,8 @@ export interface UseWebSocketReturn {
   send: (message: unknown) => void
   /** Last error message (if state is 'error') */
   error: string | null
+  /** Manually trigger reconnection (clears timers, resets retry state, and connects) */
+  reconnect: () => void
 }
 
 // Reconnect configuration
@@ -61,7 +65,7 @@ const PONG_TIMEOUT = 5000
 export function useWebSocket<T = unknown>(
   options: UseWebSocketOptions<T> = {}
 ): UseWebSocketReturn {
-  const { topics, onMessage, enabled = true, onError } = options
+  const { topics, onMessage, enabled = true, onError, onReconnect } = options
 
   const [state, setState] = useState<WebSocketState>('disconnected')
   const [error, setError] = useState<string | null>(null)
@@ -71,10 +75,13 @@ export function useWebSocket<T = unknown>(
   const pingIntervalRef = useRef<number | null>(null)
   const pongTimeoutRef = useRef<number | null>(null)
   const reconnectTimeoutRef = useRef<number | null>(null)
+  const stableConnectionTimeoutRef = useRef<number | null>(null)
   const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY)
   const retriesRef = useRef(0)
   const mountedRef = useRef(true)
   const topicsRef = useRef(topics)
+  // Track whether we had a previous successful connection (for detecting reconnection)
+  const wasConnectedRef = useRef(false)
 
   // Keep topics ref updated
   useEffect(() => {
@@ -84,10 +91,12 @@ export function useWebSocket<T = unknown>(
   // Stable refs for callbacks
   const onMessageRef = useRef(onMessage)
   const onErrorRef = useRef(onError)
+  const onReconnectRef = useRef(onReconnect)
   useEffect(() => {
     onMessageRef.current = onMessage
     onErrorRef.current = onError
-  }, [onMessage, onError])
+    onReconnectRef.current = onReconnect
+  }, [onMessage, onError, onReconnect])
 
   // Clear all timers
   const clearTimers = useCallback(() => {
@@ -102,6 +111,10 @@ export function useWebSocket<T = unknown>(
     if (reconnectTimeoutRef.current !== null) {
       window.clearTimeout(reconnectTimeoutRef.current)
       reconnectTimeoutRef.current = null
+    }
+    if (stableConnectionTimeoutRef.current !== null) {
+      window.clearTimeout(stableConnectionTimeoutRef.current)
+      stableConnectionTimeoutRef.current = null
     }
   }, [])
 
@@ -188,11 +201,31 @@ export function useWebSocket<T = unknown>(
           ws.close()
           return
         }
-        console.log('[useWebSocket] Connected')
+
+        // Detect reconnection (not initial connect)
+        const isReconnect = wasConnectedRef.current
+        if (isReconnect) {
+          console.log('[useWebSocket] Reconnected')
+          // Fire reconnect callback
+          onReconnectRef.current?.()
+        } else {
+          console.log('[useWebSocket] Connected')
+        }
+
+        // Mark that we've been connected at least once
+        wasConnectedRef.current = true
         setState('connected')
-        // Reset reconnect state on successful connection
+
+        // Reset reconnect delay immediately for next disconnect
         reconnectDelayRef.current = INITIAL_RECONNECT_DELAY
-        retriesRef.current = 0
+
+        // Reset retry counter after connection is stable for 30s
+        stableConnectionTimeoutRef.current = window.setTimeout(() => {
+          if (mountedRef.current && wsRef.current?.readyState === WebSocket.OPEN) {
+            retriesRef.current = 0
+          }
+        }, 30000)
+
         // Start keepalive
         startPing()
       }
@@ -273,6 +306,25 @@ export function useWebSocket<T = unknown>(
     }
   }, [])
 
+  // Manual reconnect function
+  const reconnect = useCallback(() => {
+    console.log('[useWebSocket] Manual reconnect requested')
+    // Clear all timers and reset state
+    clearTimers()
+    reconnectDelayRef.current = INITIAL_RECONNECT_DELAY
+    retriesRef.current = 0
+    setError(null)
+
+    // Close existing connection if any
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'Manual reconnect')
+      wsRef.current = null
+    }
+
+    // Reconnect
+    connect()
+  }, [clearTimers, connect])
+
   // Connect/disconnect based on enabled flag
   useEffect(() => {
     mountedRef.current = true
@@ -300,5 +352,5 @@ export function useWebSocket<T = unknown>(
     }
   }, [enabled, connect, clearTimers])
 
-  return { state, send, error }
+  return { state, send, error, reconnect }
 }
