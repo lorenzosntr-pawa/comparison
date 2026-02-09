@@ -11,7 +11,7 @@ import type { WebSocketState } from '@/hooks/use-websocket'
 export interface ConnectionStatusIndicatorProps {
   /** Current WebSocket connection state */
   state: WebSocketState
-  /** Optional callback for manual reconnection (shows Retry button in error state) */
+  /** Optional callback for manual reconnection (shows Retry button in error/disconnected states) */
   onReconnect?: () => void
   /** Whether to show a text label next to the indicator */
   showLabel?: boolean
@@ -29,6 +29,7 @@ export interface ConnectionStatusIndicatorProps {
  * - connecting: yellow dot with pulse animation
  * - disconnected: gray dot
  * - error: red dot with optional Retry button
+ * - disconnected/error: shows Retry button when onReconnect provided
  */
 export function ConnectionStatusIndicator({
   state,
@@ -98,8 +99,8 @@ export function ConnectionStatusIndicator({
               <span className="text-xs text-muted-foreground">{config.label}</span>
             )}
 
-            {/* Retry button for error state */}
-            {state === 'error' && onReconnect && (
+            {/* Retry button for error or disconnected state */}
+            {(state === 'error' || state === 'disconnected') && onReconnect && (
               <Button
                 variant="ghost"
                 size="sm"
