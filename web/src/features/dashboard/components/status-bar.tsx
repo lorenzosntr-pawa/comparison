@@ -1,6 +1,8 @@
 import { useHealth, useSchedulerStatus } from '../hooks'
+import { useActiveScrapesObserver } from '../hooks/use-observe-scrape'
 import { cn } from '@/lib/utils'
-import { Database, Clock, Loader2 } from 'lucide-react'
+import { Database, Clock, Loader2, Wifi } from 'lucide-react'
+import { ConnectionStatusIndicator } from '@/components/ui/connection-status'
 
 // Platform abbreviations
 const PLATFORM_ABBREV: Record<string, string> = {
@@ -19,6 +21,7 @@ const PLATFORM_COLORS: Record<string, string> = {
 export function StatusBar() {
   const { data: health, isPending: healthLoading } = useHealth()
   const { data: scheduler, isPending: schedulerLoading } = useSchedulerStatus()
+  const { connectionState, reconnect, error: wsError } = useActiveScrapesObserver()
 
   const isLoading = healthLoading || schedulerLoading
 
@@ -57,6 +60,17 @@ export function StatusBar() {
           )}
         />
         <span className="text-muted-foreground">Scheduler</span>
+      </div>
+
+      {/* WebSocket status */}
+      <div className="flex items-center gap-1.5">
+        <Wifi className="h-3.5 w-3.5 text-muted-foreground" />
+        <ConnectionStatusIndicator
+          state={connectionState}
+          onReconnect={reconnect}
+          error={wsError}
+        />
+        <span className="text-muted-foreground">WS</span>
       </div>
 
       {/* Separator */}

@@ -69,6 +69,8 @@ export function useActiveScrapesObserver() {
     platformProgress: ws.platformProgress as Map<string, PlatformProgress>,
     overallPhase: ws.overallPhase,
     error: ws.error,
+    connectionState: ws.connectionState,
+    reconnect: ws.reconnect,
     stopChecking: () => {
       if (checkIntervalRef.current) {
         window.clearInterval(checkIntervalRef.current)

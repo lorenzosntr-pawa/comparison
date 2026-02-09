@@ -44,6 +44,8 @@ export interface UseWebSocketScrapeProgressOptions {
 export interface UseWebSocketScrapeProgressReturn {
   /** Whether WebSocket is connected */
   isConnected: boolean
+  /** WebSocket connection state (for status indicator) */
+  connectionState: 'connecting' | 'connected' | 'disconnected' | 'error'
   /** Latest progress event */
   currentProgress: ScrapeProgressEvent | null
   /** Per-platform progress map */
@@ -169,6 +171,7 @@ export function useWebSocketScrapeProgress(
 
   return {
     isConnected,
+    connectionState: state,
     currentProgress,
     platformProgress,
     overallPhase,
