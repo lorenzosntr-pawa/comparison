@@ -218,10 +218,10 @@ Plans:
 **Goal**: Scan and remove unused React components, hooks, utilities from frontend
 **Depends on**: Phase 74
 **Research**: Unlikely (internal refactoring)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 75-01: TBD
+- [x] 75-01: Frontend dead code audit — 2026-02-09
 
 #### Phase 76: Documentation (Backend)
 
@@ -348,7 +348,7 @@ Plans:
 | 72. WebSocket Investigation & Bug Fixes | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 73. WebSocket Reliability | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 74. Dead Code Audit & Removal (Backend) | v2.3 | 1/1 | Complete | 2026-02-09 |
-| 75. Dead Code Audit & Removal (Frontend) | v2.3 | 0/? | Not started | - |
+| 75. Dead Code Audit & Removal (Frontend) | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 76. Documentation (Backend) | v2.3 | 0/? | Not started | - |
 | 77. Documentation (Frontend) + README | v2.3 | 0/? | Not started | - |
 | 78. Type Annotations & Error Handling | v2.3 | 0/? | Not started | - |
