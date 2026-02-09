@@ -178,10 +178,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Trace data flow from scrape to display, identify all staleness sources
 **Depends on**: v2.1 complete
 **Research**: Unlikely (internal code audit)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 69-01: TBD (run /gsd:plan-phase 69 to break down)
+- [x] 69-01: Data flow tracing and freshness audit — 2026-02-09
 
 #### Phase 70: Backend Freshness Fixes
 
@@ -291,6 +291,6 @@ Plans:
 | 67. Event Details History | v2.1 | 2/2 | Complete | 2026-02-08 |
 | 68. Market-Level History View | v2.1 | 1/1 | Complete | 2026-02-08 |
 | **v2.1 SHIPPED** | | | **2026-02-08** | |
-| 69. Investigation & Freshness Audit | v2.2 | 0/? | Not started | - |
+| 69. Investigation & Freshness Audit | v2.2 | 1/1 | Complete | 2026-02-09 |
 | 70. Backend Freshness Fixes | v2.2 | 0/? | Not started | - |
 | 71. Frontend Freshness Fixes | v2.2 | 0/? | Not started | - |
