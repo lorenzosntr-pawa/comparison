@@ -188,10 +188,10 @@ Plans:
 **Goal**: Fix storage, cache, and API timestamp issues found in investigation
 **Depends on**: Phase 69
 **Research**: Unlikely (existing v2.0 patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 70-01: TBD
+- [ ] 70-01: Add last_confirmed_at to cache and API
 
 #### Phase 71: Frontend Freshness Fixes
 
@@ -292,5 +292,5 @@ Plans:
 | 68. Market-Level History View | v2.1 | 1/1 | Complete | 2026-02-08 |
 | **v2.1 SHIPPED** | | | **2026-02-08** | |
 | 69. Investigation & Freshness Audit | v2.2 | 1/1 | Complete | 2026-02-09 |
-| 70. Backend Freshness Fixes | v2.2 | 0/? | Not started | - |
+| 70. Backend Freshness Fixes | v2.2 | 0/1 | Planned | - |
 | 71. Frontend Freshness Fixes | v2.2 | 0/? | Not started | - |
