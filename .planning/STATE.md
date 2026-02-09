@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 72 of 78 (WebSocket Investigation & Bug Fixes)
+Phase: 73 of 78 (WebSocket Reliability)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-09 — Completed 72-01-PLAN.md
+Last activity: 2026-02-09 — Completed 73-01-PLAN.md
 
-Progress: █░░░░░░░░░ 14%
+Progress: ██░░░░░░░░ 29%
 
 ## Milestones
 
@@ -198,6 +198,8 @@ Progress: █░░░░░░░░░ 14%
 - **Global WebSocket subscription via App hook** - useOddsUpdates in App root for automatic query invalidation on odds_update messages (v2.2 Phase 71)
 - **Inner component for QueryClient context** - hooks requiring useQueryClient must be inside QueryClientProvider children (v2.2 Phase 71)
 - **Compound boolean for observing state** - `isObserving` requires both `activeScrapeId !== null` AND `ws.isConnected`; connection alone insufficient (v2.3 Phase 72)
+- **wasConnectedRef pattern for reconnection detection** - track first connection via ref, fire onReconnect only on disconnected→connected transition (v2.3 Phase 73)
+- **Stable connection timeout before retry reset** - delay 30s before resetting retry counter to prevent premature reset on flaky networks (v2.3 Phase 73)
 
 ### Key Decisions
 
@@ -278,6 +280,6 @@ Progress: █░░░░░░░░░ 14%
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 72-01-PLAN.md
+Stopped at: Completed 73-01-PLAN.md
 Resume file: None
-Next action: /gsd:plan-phase 73
+Next action: /gsd:plan-phase 74

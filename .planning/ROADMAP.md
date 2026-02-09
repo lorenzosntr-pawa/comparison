@@ -198,10 +198,10 @@ Plans:
 **Goal**: Improve connection lifecycle, reconnection logic, and state synchronization between UI and server
 **Depends on**: Phase 72
 **Research**: Unlikely (WebSocket already integrated)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 73-01: TBD
+- [x] 73-01: Reconnect callbacks and connection status indicator — 2026-02-09
 
 #### Phase 74: Dead Code Audit & Removal (Backend)
 
@@ -346,7 +346,7 @@ Plans:
 | 71. Frontend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
 | **v2.2 SHIPPED** | | | **2026-02-09** | |
 | 72. WebSocket Investigation & Bug Fixes | v2.3 | 1/1 | Complete | 2026-02-09 |
-| 73. WebSocket Reliability | v2.3 | 0/? | Not started | - |
+| 73. WebSocket Reliability | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 74. Dead Code Audit & Removal (Backend) | v2.3 | 0/? | Not started | - |
 | 75. Dead Code Audit & Removal (Frontend) | v2.3 | 0/? | Not started | - |
 | 76. Documentation (Backend) | v2.3 | 0/? | Not started | - |
