@@ -244,7 +244,7 @@ Plans:
 
 Plans:
 - [x] 77-01: Core infrastructure documentation (API client, types, shared hooks) — 2026-02-09
-- [ ] 77-02: Feature hooks documentation (21 hooks across 5 features) — 21 files
+- [x] 77-02: Feature hooks documentation (21 hooks across 5 features) — 2026-02-09
 - [ ] 77-03: README creation — 1 file
 
 #### Phase 78: Type Annotations & Error Handling
@@ -354,5 +354,5 @@ Plans:
 | 74. Dead Code Audit & Removal (Backend) | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 75. Dead Code Audit & Removal (Frontend) | v2.3 | 1/1 | Complete | 2026-02-09 |
 | 76. Documentation (Backend) | v2.3 | 3/3 | Complete | 2026-02-09 |
-| 77. Documentation (Frontend) + README | v2.3 | 1/3 | In Progress | - |
+| 77. Documentation (Frontend) + README | v2.3 | 2/3 | In Progress | - |
 | 78. Type Annotations & Error Handling | v2.3 | 0/? | Not started | - |
