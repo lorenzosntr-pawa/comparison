@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-01-20
+**Analysis Date:** 2026-02-09
 
 ## Tech Debt
 
@@ -128,7 +128,20 @@
 - Priority: Low (TypeScript provides compile-time safety)
 - Difficulty to test: Type guards exist but not called by default
 
+## Dead Code Audit Notes (Phase 74)
+
+**SSE-related comments/docstrings:**
+- Confidence: LOW (cosmetic - not functional dead code)
+- Files: `src/scraping/broadcaster.py`, `src/api/websocket/bridge.py`, `src/scraping/event_coordinator.py`, `src/scraping/jobs.py`
+- Issue: Docstrings still reference "SSE" after WebSocket-only migration (Phase 59)
+- Impact: Documentation clarity only, no functional impact
+- Recommendation: Update docstrings during next touch of these files (low priority)
+
+**Empty src/scripts/ directory:**
+- Status: Cleaned - audit scripts deleted in Phase 74
+- Note: Directory remains with only `__pycache__/`; can be removed if no future scripts planned
+
 ---
 
-*Concerns audit: 2026-01-20*
+*Concerns audit: 2026-02-09*
 *Update as issues are fixed or new ones discovered*
