@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AppLayout } from '@/components/layout'
 import { AppRoutes } from '@/routes'
+import { useOddsUpdates } from '@/hooks'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,16 +17,30 @@ const queryClient = new QueryClient({
   },
 })
 
+/**
+ * Inner app component that has access to QueryClient context.
+ * Enables hooks that depend on React Query (like useOddsUpdates).
+ */
+function AppContent() {
+  // Subscribe to real-time odds updates via WebSocket
+  // Hook's side effect automatically invalidates queries on updates
+  useOddsUpdates()
+
+  return (
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="system" storageKey="betpawa-ui-theme">
+        <AppLayout>
+          <AppRoutes />
+        </AppLayout>
+      </ThemeProvider>
+    </BrowserRouter>
+  )
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider defaultTheme="system" storageKey="betpawa-ui-theme">
-          <AppLayout>
-            <AppRoutes />
-          </AppLayout>
-        </ThemeProvider>
-      </BrowserRouter>
+      <AppContent />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
