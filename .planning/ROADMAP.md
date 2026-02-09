@@ -198,10 +198,10 @@ Plans:
 **Goal**: Fix WebSocket handlers and UI reactivity for real-time timestamp updates
 **Depends on**: Phase 70
 **Research**: Unlikely (existing v2.0 patterns)
-**Plans**: 1 ready
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 71-01: Subscribe to odds_updates and invalidate queries
+- [x] 71-01: Subscribe to odds_updates and invalidate queries — 2026-02-09
 
 ## Progress
 
@@ -293,4 +293,4 @@ Plans:
 | **v2.1 SHIPPED** | | | **2026-02-08** | |
 | 69. Investigation & Freshness Audit | v2.2 | 1/1 | Complete | 2026-02-09 |
 | 70. Backend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |
-| 71. Frontend Freshness Fixes | v2.2 | 0/1 | Plan ready | - |
+| 71. Frontend Freshness Fixes | v2.2 | 1/1 | Complete | 2026-02-09 |

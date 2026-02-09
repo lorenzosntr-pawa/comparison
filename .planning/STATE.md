@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 71 of 71 (Frontend Freshness Fixes)
-Plan: 0 of 1 (plan ready)
-Status: Ready for execution
-Last activity: 2026-02-09 — Created 71-01-PLAN.md
+Plan: 1 of 1 (complete)
+Status: Phase complete
+Last activity: 2026-02-09 — Completed 71-01-PLAN.md
 
-Progress: ██████░░░░ 67%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -185,6 +185,8 @@ Progress: ██████░░░░ 67%
 - **Small-multiples for multi-outcome visualization** - Grid of mini-charts (one per outcome) with synchronized time axes, cleaner than one chart with many lines (v2.1 Phase 68)
 - **`captured_at` vs `last_confirmed_at` distinction** - `captured_at` = when odds changed, `last_confirmed_at` = when last verified; use latter for freshness display (v2.2 Phase 69)
 - **`_get_snapshot_time()` helper pattern** - consistent timestamp extraction with fallback to `captured_at` for backward compatibility (v2.2 Phase 70)
+- **Global WebSocket subscription via App hook** - useOddsUpdates in App root for automatic query invalidation on odds_update messages (v2.2 Phase 71)
+- **Inner component for QueryClient context** - hooks requiring useQueryClient must be inside QueryClientProvider children (v2.2 Phase 71)
 
 ### Key Decisions
 
@@ -264,6 +266,6 @@ Progress: ██████░░░░ 67%
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Created 71-01-PLAN.md (Frontend Freshness Fixes)
+Stopped at: Completed 71-01-PLAN.md (Frontend Freshness Fixes)
 Resume file: None
-Next action: /gsd:execute-plan .planning/phases/71-frontend-freshness-fixes/71-01-PLAN.md
+Next action: /gsd:complete-milestone (v2.2 Odds Freshness)
