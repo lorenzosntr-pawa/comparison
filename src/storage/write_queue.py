@@ -2,7 +2,29 @@
 
 Decouples scraping from DB writes: scraped data is enqueued as plain
 frozen dataclasses, and a background worker processes them with automatic
-retry and exponential backoff.  Scraping never waits for DB commits.
+retry and exponential backoff. Scraping never waits for DB commits.
+
+Data Structures (Frozen Dataclasses):
+    MarketWriteData: Plain data for creating a MarketOdds row
+    SnapshotWriteData: BetPawa snapshot with markets tuple
+    CompetitorSnapshotWriteData: Competitor snapshot with markets tuple
+    WriteBatch: Complete batch with changed/unchanged separation
+
+Queue Characteristics:
+    - Bounded: maxsize parameter provides backpressure
+    - Single worker: One background task processes batches sequentially
+    - Retry: 3 attempts with exponential backoff (1s, 2s, 4s)
+
+Lifecycle:
+    queue = AsyncWriteQueue(session_factory, maxsize=50)
+    await queue.start()  # Spawns worker task
+    await queue.enqueue(batch)  # Blocks if full
+    await queue.stop()  # Drains remaining items, then stops
+
+Benefits:
+    - Scraping throughput not blocked by DB latency
+    - Failed writes don't crash scrape cycle
+    - Backpressure prevents unbounded memory growth
 """
 
 from __future__ import annotations

@@ -1,4 +1,29 @@
-"""Event matching service with upsert logic for cross-platform events."""
+"""Event matching service with upsert logic for cross-platform events.
+
+Provides EventMatchingService for atomic upsert operations on events,
+tournaments, and event-bookmaker links using PostgreSQL INSERT...ON CONFLICT.
+
+Metadata Priority:
+    BetPawa is the canonical source. Its data overwrites existing records.
+    Competitor platforms use insert-only for metadata (except kickoff which
+    is always updated to handle time corrections).
+
+Upsert Pattern:
+    INSERT ... VALUES (...)
+    ON CONFLICT (sportradar_id)
+    DO UPDATE SET ... (BetPawa) / DO NOTHING (competitors)
+    RETURNING *
+
+Methods:
+    upsert_tournament(): Create/update tournament by sportradar_id
+    upsert_event(): Create/update event by sportradar_id
+    upsert_event_bookmaker(): Create/update platform link
+    process_scraped_events(): Batch orchestration for scraped data
+
+SportRadar ID:
+    The sportradar_id field is the unique cross-platform identifier.
+    All upserts use it as the conflict target for deduplication.
+"""
 
 from __future__ import annotations
 

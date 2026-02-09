@@ -3,6 +3,27 @@
 Stores the latest odds per event/bookmaker in plain frozen dataclasses to
 avoid SQLAlchemy detached-instance issues. Thread-safe for single-writer /
 multi-reader asyncio usage (GIL protects dict mutations).
+
+Data Structures:
+    CachedMarket: Frozen dataclass mirroring MarketOdds/CompetitorMarketOdds
+    CachedSnapshot: Frozen dataclass with snapshot_id, event_id, markets tuple
+
+Internal Layout:
+    _betpawa_snapshots: Dict[event_id, Dict[bookmaker_id, CachedSnapshot]]
+    _competitor_snapshots: Dict[event_id, Dict[source, CachedSnapshot]]
+    _event_kickoffs: Dict[event_id, datetime] for eviction cutoff
+
+Thread Safety:
+    Single-writer (EventCoordinator) / multi-reader (API endpoints) safe.
+    Dict mutations are atomic under GIL. No explicit locking needed for
+    the common put/get patterns.
+
+Callbacks:
+    Register on_update callbacks for WebSocket broadcasting:
+    cache.on_update(lambda event_ids, source: ws_manager.notify(event_ids))
+
+Memory:
+    ~200 bytes per CachedMarket, stats() returns estimated_memory_mb
 """
 
 from __future__ import annotations

@@ -1,4 +1,32 @@
-"""Scheduled job functions for periodic scraping and cleanup."""
+"""Scheduled job functions for periodic scraping and cleanup.
+
+This module contains the async job functions invoked by APScheduler:
+
+Jobs:
+    scrape_all_platforms(): Main scraping job (default: every 5 minutes)
+    cleanup_old_data(): Data retention cleanup (default: every 24 hours)
+
+Integration:
+    Jobs access app.state via set_app_state() called during lifespan.
+    This provides HTTP clients, OddsCache, and AsyncWriteQueue.
+
+Coordination:
+    is_scraping_active() allows cleanup to check if scraping is in progress
+    and skip to avoid conflicts (cleanup deletes while scrape inserts).
+
+Scrape Job Flow:
+    1. Create ScrapeRun record with RUNNING status
+    2. Create ProgressBroadcaster for SSE streaming
+    3. Run TournamentDiscoveryService.discover_all()
+    4. Create EventCoordinator.from_settings()
+    5. Execute coordinator.run_full_cycle(), publish progress
+    6. Update ScrapeRun with results, evict expired cache entries
+    7. Clean up broadcaster
+
+APScheduler Configuration:
+    Jobs are configured in src/scheduling/scheduler.py with IntervalTrigger.
+    Intervals can be updated at runtime via update_scheduler_interval().
+"""
 
 import logging
 from datetime import datetime, timedelta, timezone

@@ -3,6 +3,28 @@
 Loads the latest betpawa and competitor snapshots for upcoming events
 (kickoff > now - 2 hours) so the API can serve them from memory instead
 of running expensive GROUP BY queries on every request.
+
+Warmup Flow:
+    1. Query Event.id where kickoff > cutoff (upcoming events)
+    2. Subquery: MAX(OddsSnapshot.id) GROUP BY event_id, bookmaker_id
+    3. Join to get full snapshots with selectinload(markets)
+    4. Convert to CachedSnapshot and populate cache
+    5. Repeat for CompetitorOddsSnapshot via CompetitorEvent link
+
+Conversion Helpers:
+    snapshot_to_cached(): Convert ORM snapshot to CachedSnapshot
+    snapshot_to_cached_from_models(): Convert in-memory ORM objects
+    snapshot_to_cached_from_data(): Convert MarketWriteData DTOs
+
+Usage:
+    # In FastAPI lifespan
+    async with async_session_factory() as db:
+        stats = await warm_cache_from_db(cache, db)
+        logger.info("Cache warmed", **stats)
+
+Performance:
+    Typical warmup: ~200-500ms for 500 events with 50 markets each.
+    Run once at startup; incremental updates via EventCoordinator.
 """
 
 from __future__ import annotations

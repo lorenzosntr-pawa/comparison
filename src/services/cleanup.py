@@ -1,4 +1,36 @@
-"""Cleanup service for data retention management."""
+"""Cleanup service for data retention management.
+
+Provides functions for previewing and executing data cleanup based on
+configurable retention periods. Respects foreign key relationships by
+deleting in the correct order.
+
+Retention Parameters:
+    odds_days: Delete odds snapshots captured before this many days ago
+    match_days: Delete events with kickoff before this many days ago
+
+Deletion Order (respects FKs):
+    1. market_odds (FK: snapshot_id)
+    2. odds_snapshots
+    3. competitor_market_odds (FK: snapshot_id)
+    4. competitor_odds_snapshots
+    5. scrape_errors, scrape_phase_logs (FK: scrape_run_id)
+    6. scrape_runs
+    7. scrape_batches (orphaned)
+    8. event_bookmakers (FK: event_id)
+    9. events
+    10. competitor_events
+    11. tournaments (orphaned - no remaining events)
+    12. competitor_tournaments (orphaned)
+
+Batch Deletion:
+    Uses _batch_delete() to delete in batches of 1000 rows to avoid
+    long-running transactions and lock contention.
+
+Functions:
+    preview_cleanup(): Return counts without deleting (dry run)
+    execute_cleanup(): Perform actual deletion with timing
+    execute_cleanup_with_tracking(): Creates CleanupRun record
+"""
 
 import time
 from datetime import datetime, timedelta, timezone

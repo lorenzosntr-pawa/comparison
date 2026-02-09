@@ -3,6 +3,32 @@
 Provides a watchdog job that auto-fails scrape runs stuck in RUNNING status,
 and a startup recovery function that cleans up runs left over from a previous
 process crash or restart.
+
+Detection Algorithm:
+    A run is stale if RUNNING and:
+    - Last ScrapePhaseLog.started_at > threshold (default 10 min), OR
+    - No phase logs AND ScrapeRun.started_at > threshold
+
+Functions:
+    find_stale_runs(): Query for RUNNING runs exceeding threshold
+    mark_run_stale(): Update status to FAILED with ScrapeError record
+    detect_stale_runs(): Scheduled watchdog job (every 2 minutes)
+    recover_stale_runs_on_startup(): Clean up on process restart
+
+Startup Recovery:
+    Called BEFORE scheduler starts. Any RUNNING run at startup is stale
+    by definition since no orchestrator is active. Marks all as FAILED
+    with "process restarted" message.
+
+Error Recording:
+    Creates ScrapeError record with error_type="stale" containing:
+    - Duration stuck in RUNNING
+    - Last known phase and platform
+    - Timestamp information
+
+Broadcaster Cleanup:
+    When marking a run stale, also closes and removes its ProgressBroadcaster
+    to clean up any waiting WebSocket subscribers.
 """
 
 import logging

@@ -1,4 +1,36 @@
-"""APScheduler configuration and lifecycle management."""
+"""APScheduler configuration and lifecycle management.
+
+Provides the global scheduler instance and lifecycle functions for
+managing periodic background jobs in the application.
+
+Scheduler Instance:
+    Module-level AsyncIOScheduler with UTC timezone. Access via:
+    from src.scheduling.scheduler import scheduler
+
+Jobs Configured:
+    - scrape_all_platforms: Interval trigger (default 5 min)
+    - detect_stale_runs: Every 2 minutes (watchdog for stuck runs)
+    - cleanup_old_data: Interval trigger (default 24 hours)
+
+Lifecycle:
+    configure_scheduler(): Add jobs with default intervals
+    start_scheduler(): Begin job execution
+    shutdown_scheduler(): Graceful stop with optional wait
+    sync_settings_on_startup(): Load intervals from database Settings
+
+Runtime Updates:
+    update_scheduler_interval(): Change scrape job interval
+    update_cleanup_interval(): Change cleanup job interval
+    Both reschedule existing jobs without restart.
+
+Usage:
+    # In FastAPI lifespan
+    configure_scheduler()
+    start_scheduler()
+    await sync_settings_on_startup()  # After DB is available
+    yield
+    shutdown_scheduler()
+"""
 
 import logging
 

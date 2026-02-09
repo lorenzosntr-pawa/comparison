@@ -1,8 +1,29 @@
-"""Write handler — performs actual DB operations for a WriteBatch.
+"""Write handler - performs actual DB operations for a WriteBatch.
 
 Opens its own async session (isolated from scraping) and processes:
 - INSERT for changed BetPawa and competitor snapshots (with markets)
 - UPDATE last_confirmed_at for unchanged snapshot IDs
+
+Session Isolation:
+    The handler receives a session_factory and opens its own session
+    for each batch. This isolates write operations from the scraping
+    session, preventing transaction interference.
+
+Processing Steps:
+    1. INSERT changed OddsSnapshot records (BetPawa)
+    2. INSERT changed CompetitorOddsSnapshot records
+    3. flush() to get snapshot IDs
+    4. INSERT MarketOdds/CompetitorMarketOdds with snapshot_id FK
+    5. UPDATE last_confirmed_at for unchanged snapshot IDs
+    6. commit()
+
+Error Handling:
+    - IntegrityError: Log warning, skip batch (concurrent write conflict)
+    - OperationalError: Rollback and re-raise for retry in AsyncWriteQueue
+
+Helper Functions:
+    _build_market_odds(): Convert MarketWriteData to MarketOdds ORM
+    _build_competitor_market_odds(): Convert to CompetitorMarketOdds ORM
 """
 
 from __future__ import annotations

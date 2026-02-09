@@ -1,4 +1,31 @@
-"""Pydantic schemas for event matching API responses."""
+"""Pydantic schemas for event matching API responses.
+
+This module defines the Pydantic models used by the events API for
+returning matched cross-platform event data with odds comparison.
+
+Core Response Models:
+    MatchedEvent: Event matched across bookmakers with inline odds
+    MatchedEventList: Paginated list response
+    EventDetailResponse: Extended with full markets_by_bookmaker
+
+Odds Models:
+    OutcomeOdds: Single outcome (name, odds)
+    InlineOdds: Market with outcomes for list view
+    MarketOddsDetail: Full market with margin for detail view
+    BookmakerOdds: Per-bookmaker odds availability
+    BookmakerMarketData: Complete market data from one bookmaker
+
+Historical Models:
+    HistoricalSnapshot: Snapshot metadata for list
+    OddsHistoryPoint: Time series point with outcomes
+    OddsHistoryResponse: Full history for a market
+    MarginHistoryPoint/Response: Margin-only for charts
+
+Usage:
+    These models are used by src/api/routes/events.py to serialize
+    API responses. All use ConfigDict(from_attributes=True) for
+    ORM model compatibility.
+"""
 
 from datetime import datetime
 
