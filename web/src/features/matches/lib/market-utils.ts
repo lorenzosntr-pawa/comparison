@@ -1,7 +1,34 @@
+/**
+ * Utility functions for market data processing and display.
+ *
+ * @module market-utils
+ * @description Provides helper functions for working with betting market data,
+ * including time formatting, market deduplication, outcome merging, and
+ * margin recalculation. Used primarily by the event detail and odds comparison views.
+ *
+ * Key functionality:
+ * - Relative time formatting for snapshot timestamps
+ * - Market outcome merging (handles split outcome records)
+ * - Deduplicated market maps for cross-bookmaker comparison
+ * - Market odds availability checking
+ */
+
 import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
 
 /**
- * Format an ISO timestamp as relative time (e.g., "2m ago").
+ * Formats an ISO timestamp as human-readable relative time.
+ *
+ * @description Converts timestamps to user-friendly strings like "2m ago" or "3h ago".
+ * Handles API timestamps that may lack the 'Z' UTC suffix.
+ *
+ * @param isoString - ISO timestamp string, or null
+ * @returns Formatted relative time string, or empty string if input is null
+ *
+ * @example
+ * ```typescript
+ * formatRelativeTime('2024-01-15T10:30:00Z') // "5m ago" (if 5 minutes have passed)
+ * formatRelativeTime(null) // ""
+ * ```
  */
 export function formatRelativeTime(isoString: string | null): string {
   if (!isoString) return ''
@@ -20,8 +47,24 @@ export function formatRelativeTime(isoString: string | null): string {
 }
 
 /**
- * Merge outcomes from multiple market records with the same key.
- * Some bookmakers (like Betpawa) split outcomes across multiple records.
+ * Merges outcomes from multiple market records with the same key.
+ *
+ * @description Some bookmakers (like Betpawa) split outcomes across multiple records.
+ * This function combines them into a single market with all outcomes and recalculates
+ * the margin based on the merged outcome set.
+ *
+ * @param existing - The existing market record to merge into
+ * @param incoming - The new market record with additional outcomes
+ * @returns A new MarketOddsDetail with merged outcomes and recalculated margin
+ *
+ * @example
+ * ```typescript
+ * // Market split across two records:
+ * // Record 1: { outcomes: [{ name: "Home", odds: 2.0 }] }
+ * // Record 2: { outcomes: [{ name: "Away", odds: 2.0 }] }
+ * const merged = mergeMarketOutcomes(record1, record2)
+ * // Result: { outcomes: [{ name: "Home", odds: 2.0 }, { name: "Away", odds: 2.0 }], margin: 0 }
+ * ```
  */
 export function mergeMarketOutcomes(
   existing: MarketOddsDetail,
@@ -58,9 +101,26 @@ export function mergeMarketOutcomes(
 }
 
 /**
- * Build deduplicated market maps for all bookmakers.
- * Markets with the same ID+line are merged (outcomes combined).
- * Returns Map<bookmaker_slug, Map<market_key, MarketOddsDetail>>
+ * Builds deduplicated market maps for all bookmakers.
+ *
+ * @description Creates a nested map structure organizing markets by bookmaker and market key.
+ * Markets with the same ID+line combination are merged (outcomes combined). This enables
+ * efficient cross-bookmaker market comparison in the UI.
+ *
+ * @param marketsByBookmaker - Array of bookmaker market data from API
+ * @returns Nested Map: bookmaker_slug -> market_key -> MarketOddsDetail
+ *
+ * @example
+ * ```typescript
+ * const deduped = buildDeduplicatedMarkets(eventDetail.markets_by_bookmaker)
+ *
+ * // Access betpawa's 1x2 market
+ * const betpawaMarkets = deduped.get('betpawa')
+ * const match1x2 = betpawaMarkets?.get('1x2')
+ *
+ * // Access over/under 2.5 market (with line)
+ * const ouMarket = betpawaMarkets?.get('over_under_2.5')
+ * ```
  */
 export function buildDeduplicatedMarkets(
   marketsByBookmaker: BookmakerMarketData[]
@@ -91,8 +151,22 @@ export function buildDeduplicatedMarkets(
 }
 
 /**
- * Check if a market has actual odds available.
- * A market has odds if it has at least one active outcome with odds > 0.
+ * Checks if a market has actual odds available.
+ *
+ * @description Determines if a market should be displayed by checking for at least
+ * one active outcome with valid odds. Markets without active outcomes or with
+ * zero odds are considered unavailable.
+ *
+ * @param market - The market to check
+ * @returns True if market has at least one active outcome with odds > 0
+ *
+ * @example
+ * ```typescript
+ * const market = bookmakerMarkets.get('1x2')
+ * if (market && marketHasOdds(market)) {
+ *   // Safe to render odds
+ * }
+ * ```
  */
 export function marketHasOdds(market: MarketOddsDetail): boolean {
   return (

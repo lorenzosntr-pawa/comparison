@@ -1,66 +1,141 @@
+/**
+ * Core WebSocket hook for real-time communication with the backend.
+ *
+ * @module use-websocket
+ * @description Provides a robust WebSocket connection to the FastAPI backend's `/api/ws`
+ * endpoint with automatic reconnection, exponential backoff, and ping/pong keepalive.
+ * Supports topic-based subscriptions for filtering messages.
+ *
+ * Features:
+ * - Auto-reconnect with exponential backoff (up to 10 retries)
+ * - Ping/pong keepalive every 30 seconds
+ * - Type-safe message handling with generics
+ * - Clean cleanup on component unmount
+ * - Reconnection callback for state synchronization
+ *
+ * @example
+ * ```typescript
+ * import { useWebSocket, type WebSocketMessage } from '@/hooks/use-websocket'
+ *
+ * interface MyData {
+ *   id: number
+ *   value: string
+ * }
+ *
+ * function MyComponent() {
+ *   const { state, send, reconnect } = useWebSocket<MyData>({
+ *     topics: ['my_topic'],
+ *     onMessage: (message) => {
+ *       console.log('Received:', message.data)
+ *     },
+ *     onReconnect: () => {
+ *       // Invalidate caches or refresh state
+ *     },
+ *   })
+ *
+ *   return <div>Status: {state}</div>
+ * }
+ * ```
+ */
+
 import { useEffect, useRef, useCallback, useState } from 'react'
 
 /**
- * WebSocket connection state
+ * WebSocket connection state.
+ *
+ * @description Represents the current state of the WebSocket connection.
+ * - 'connecting': Initial connection in progress
+ * - 'connected': Successfully connected
+ * - 'disconnected': Not connected (initial or after close)
+ * - 'error': Connection failed (check error property for details)
  */
 export type WebSocketState = 'connecting' | 'connected' | 'disconnected' | 'error'
 
 /**
- * WebSocket message envelope
+ * WebSocket message envelope structure.
+ *
+ * @description All messages from the backend are wrapped in this envelope
+ * containing message type, timestamp, and payload data.
+ *
+ * @template T - The type of the data payload
  */
 export interface WebSocketMessage<T = unknown> {
+  /** Message type identifier (e.g., 'scrape_progress', 'odds_update') */
   type: string
+  /** ISO timestamp when message was sent */
   timestamp: string
+  /** Message payload */
   data: T
 }
 
 /**
- * Options for useWebSocket hook
+ * Configuration options for the useWebSocket hook.
+ *
+ * @template T - The expected message data type
  */
 export interface UseWebSocketOptions<T = unknown> {
-  /** Topics to subscribe to (passed as query param) */
+  /** Topics to subscribe to (passed as query param, e.g., ['scrape_progress', 'odds_updates']) */
   topics?: string[]
   /** Callback for incoming messages (excluding internal pong/connection_ack) */
   onMessage?: (message: WebSocketMessage<T>) => void
-  /** Whether to connect (default: true) */
+  /** Whether to connect (default: true). Set to false to disable the connection. */
   enabled?: boolean
   /** Callback for error messages from server */
   onError?: (code: string, detail: string) => void
-  /** Callback fired when connection re-establishes after a disconnect (not on initial connect) */
+  /** Callback fired when connection re-establishes after a disconnect (not on initial connect). Use for cache invalidation. */
   onReconnect?: () => void
 }
 
 /**
- * Return type for useWebSocket hook
+ * Return value from the useWebSocket hook.
+ *
+ * @description Provides connection state, messaging capability, and manual reconnection control.
  */
 export interface UseWebSocketReturn {
   /** Current connection state */
   state: WebSocketState
-  /** Send a message to the server */
+  /** Send a JSON-serializable message to the server. No-op if not connected. */
   send: (message: unknown) => void
-  /** Last error message (if state is 'error') */
+  /** Last error message (populated when state is 'error') */
   error: string | null
-  /** Manually trigger reconnection (clears timers, resets retry state, and connects) */
+  /** Manually trigger reconnection. Clears timers, resets retry state, and initiates new connection. */
   reconnect: () => void
 }
 
-// Reconnect configuration
+// ─────────────────────────────────────────────────────────────────────────────
+// Configuration Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Initial delay before first reconnection attempt (ms) */
 const INITIAL_RECONNECT_DELAY = 1000
+/** Maximum delay between reconnection attempts (ms) */
 const MAX_RECONNECT_DELAY = 30000
+/** Maximum number of reconnection attempts before giving up */
 const MAX_RETRIES = 10
 
-// Keepalive configuration
+/** Interval between ping messages (ms) */
 const PING_INTERVAL = 30000
+/** Timeout waiting for pong response before considering connection dead (ms) */
 const PONG_TIMEOUT = 5000
 
 /**
  * Core WebSocket hook for connecting to /api/ws with topic-based subscriptions.
  *
- * Features:
- * - Auto-reconnect with exponential backoff
- * - Ping/pong keepalive
- * - Message envelope parsing
- * - Clean cleanup on unmount
+ * @description Establishes and maintains a WebSocket connection to the backend,
+ * handling reconnection, keepalive, and message routing automatically.
+ *
+ * @template T - The expected type of message data payloads
+ * @param options - Configuration options for the WebSocket connection
+ * @returns Object containing connection state and control methods
+ *
+ * @example
+ * ```typescript
+ * const { state, send, error, reconnect } = useWebSocket({
+ *   topics: ['scrape_progress'],
+ *   onMessage: (msg) => console.log(msg),
+ *   onReconnect: () => queryClient.invalidateQueries(),
+ * })
+ * ```
  */
 export function useWebSocket<T = unknown>(
   options: UseWebSocketOptions<T> = {}

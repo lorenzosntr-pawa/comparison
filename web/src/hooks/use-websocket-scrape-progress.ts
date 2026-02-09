@@ -1,69 +1,127 @@
+/**
+ * WebSocket-based scrape progress tracking hook.
+ *
+ * @module use-websocket-scrape-progress
+ * @description Provides real-time scrape progress updates via WebSocket subscription.
+ * Tracks overall scrape status and per-platform progress, automatically invalidating
+ * TanStack Query caches when scrapes complete.
+ *
+ * This hook is a drop-in replacement for the SSE-based useScrapeProgress hook,
+ * providing the same interface for easy migration.
+ *
+ * @example
+ * ```typescript
+ * import { useWebSocketScrapeProgress } from '@/hooks/use-websocket-scrape-progress'
+ *
+ * function ScrapeMonitor() {
+ *   const {
+ *     isConnected,
+ *     currentProgress,
+ *     platformProgress,
+ *     overallPhase,
+ *   } = useWebSocketScrapeProgress({
+ *     onComplete: () => console.log('Scrape finished!'),
+ *   })
+ *
+ *   return (
+ *     <div>
+ *       <p>Phase: {overallPhase}</p>
+ *       {currentProgress && (
+ *         <p>Progress: {currentProgress.current}/{currentProgress.total}</p>
+ *       )}
+ *     </div>
+ *   )
+ * }
+ * ```
+ */
+
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 
 import { useWebSocket, type WebSocketMessage } from './use-websocket'
 
 /**
- * Scrape progress event data shape (matches SSE hook interface)
+ * Scrape progress event data from the backend.
+ *
+ * @description Represents a single progress update during a scrape run,
+ * providing phase information, counts, and optional messages.
  */
 export interface ScrapeProgressEvent {
+  /** Platform slug (null for overall progress) */
   platform: string | null
+  /** Current phase (e.g., 'fetching', 'scraping', 'storing', 'completed', 'failed') */
   phase: string
+  /** Current progress count */
   current: number
+  /** Total items to process */
   total: number
+  /** Number of events processed (null during early phases) */
   events_count: number | null
+  /** Optional status message */
   message: string | null
+  /** ISO timestamp of this progress update */
   timestamp: string
 }
 
 /**
- * Per-platform progress tracking
+ * Progress tracking for a single platform.
+ *
+ * @description Aggregated progress state for one bookmaker platform.
  */
 export interface PlatformProgress {
+  /** Current phase for this platform */
   phase: string
+  /** Number of events scraped from this platform */
   eventsCount: number
+  /** Whether scraping for this platform is complete */
   isComplete: boolean
+  /** Whether scraping for this platform failed */
   isFailed: boolean
 }
 
 /**
- * Options for useWebSocketScrapeProgress hook
+ * Configuration options for the scrape progress hook.
  */
 export interface UseWebSocketScrapeProgressOptions {
-  /** Whether to connect (default: true) */
+  /** Whether to connect (default: true). Set to false to disable progress tracking. */
   enabled?: boolean
-  /** Query client for invalidation (uses hook's client if not provided) */
+  /** Optional query client for cache invalidation (uses hook's client if not provided) */
   queryClient?: QueryClient
-  /** Callback when scrape completes */
+  /** Callback invoked when scrape completes (success or failure) */
   onComplete?: () => void
 }
 
 /**
- * Return type matching existing SSE hook interface
+ * Return value from the scrape progress hook.
+ *
+ * @description Provides comprehensive scrape progress state for UI rendering.
  */
 export interface UseWebSocketScrapeProgressReturn {
   /** Whether WebSocket is connected */
   isConnected: boolean
   /** WebSocket connection state (for status indicator) */
   connectionState: 'connecting' | 'connected' | 'disconnected' | 'error'
-  /** Latest progress event */
+  /** Latest progress event received, or null if none */
   currentProgress: ScrapeProgressEvent | null
-  /** Per-platform progress map */
+  /** Per-platform progress map (keyed by platform slug) */
   platformProgress: Map<string, PlatformProgress>
   /** Overall phase (idle, connecting, scraping, completed, failed, etc.) */
   overallPhase: string
-  /** Error message if any */
+  /** Error message if connection failed, or null */
   error: string | null
-  /** Manually trigger reconnection */
+  /** Manually trigger WebSocket reconnection */
   reconnect: () => void
 }
 
 /**
- * WebSocket-based scrape progress hook.
+ * Hook for tracking real-time scrape progress via WebSocket.
  *
- * Drop-in replacement for the SSE-based useScrapeProgress hook.
- * Subscribes to the scrape_progress topic and provides the same
- * interface for easy migration.
+ * @description Subscribes to the 'scrape_progress' WebSocket topic and maintains
+ * progress state for both overall scrape and per-platform progress. Automatically
+ * invalidates relevant TanStack Query caches when scrapes complete.
+ *
+ * @param options - Configuration options
+ * @returns Scrape progress state and control methods
  */
 export function useWebSocketScrapeProgress(
   options: UseWebSocketScrapeProgressOptions = {}
