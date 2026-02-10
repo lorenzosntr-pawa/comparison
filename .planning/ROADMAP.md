@@ -61,15 +61,16 @@ Plans:
 - [x] 81-01: Click-to-lock crosshair with comparison panel
 - [x] 81-01-FIX: Fix click-to-lock not persisting (debounce, refs, index comparison)
 
-#### Phase 82: Comparison Table
+#### Phase 82: Comparison Table ✓
 
 **Goal**: Locked timestamp comparison display for multi-bookmaker analysis
 **Depends on**: Phase 81
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
+**Completed**: 2026-02-10
 
 Plans:
-- [ ] 82-01: TBD
+- [x] 82-01: ComparisonTable component with best/worst highlighting and delta columns
 
 #### Phase 83: Historical Analysis Page Foundation
 
@@ -406,7 +407,7 @@ Plans:
 | 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 80. Specifier Bug Fix | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 81. Interactive Chart | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-10 |
-| 82. Comparison Table | v2.4 | 0/? | Not started | - |
+| 82. Comparison Table | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
 | 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |
 | 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |

@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 81 of 88 (Interactive Chart)
+Phase: 82 of 88 (Comparison Table)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-10 — Completed 81-01-FIX (click-to-lock bug fix)
+Last activity: 2026-02-10 — Completed 82-01-PLAN.md
 
-Progress: ███░░░░░░░ 30%
+Progress: ████░░░░░░ 40%
 
 ## Milestones
 
@@ -215,6 +215,8 @@ Progress: ███░░░░░░░ 30%
 - **Stable connection timeout before retry reset** - delay 30s before resetting retry counter to prevent premature reset on flaky networks (v2.3 Phase 73)
 - **Ref-based state for stable callbacks** - use useRef to track state in useCallback handlers to avoid stale closures and allow empty dependency arrays (v2.4 Phase 81)
 - **Click handler debounce** - ignore clicks within 100ms of last click to prevent rapid double-fire issues (v2.4 Phase 81)
+- **oddsDataByOutcome prop for multi-outcome comparison** - pass outcome -> { bookmaker -> odds } for tables with multiple rows (v2.4 Phase 82)
+- **ComparisonTable best/worst highlighting** - green for best odds per row, red for >3% worse than Betpawa, Betpawa column never colored (v2.4 Phase 82)
 
 ### Key Decisions
 
@@ -298,6 +300,6 @@ Progress: ███░░░░░░░ 30%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 81-01-FIX (click-to-lock bug fix)
+Stopped at: Completed 82-01-PLAN.md (comparison table)
 Resume file: None
-Next action: Continue to `/gsd:plan-phase 82` (Comparison Table)
+Next action: Continue to `/gsd:plan-phase 83` (Historical Analysis Page Foundation)
