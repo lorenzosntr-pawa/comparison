@@ -59,6 +59,7 @@ export function MarginLineChart({
       // Timestamps are bucketed to the nearest minute so data from different
       // bookmakers captured at similar times gets merged together
       const timeMap = new Map<string, Record<string, number | null>>()
+      const allBookmakers = Object.keys(multiData)
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
         history.forEach((point) => {
@@ -75,14 +76,32 @@ export function MarginLineChart({
         })
       })
 
-      // Convert to array sorted by time
-      return Array.from(timeMap.entries())
+      // Sort by time and apply forward-fill so every row has values for all bookmakers
+      const sortedEntries = Array.from(timeMap.entries())
         .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-        .map(([time, values]) => ({
+
+      // Forward-fill: carry forward the last known value for each bookmaker
+      const lastKnown: Record<string, number | null> = {}
+      const filledData = sortedEntries.map(([time, values]) => {
+        // Update last known values with any new data at this timestamp
+        for (const slug of allBookmakers) {
+          if (values[slug] !== undefined && values[slug] !== null) {
+            lastKnown[slug] = values[slug]
+          }
+        }
+        // Build row with forward-filled values
+        const filledRow: Record<string, number | null> = {}
+        for (const slug of allBookmakers) {
+          filledRow[slug] = values[slug] ?? lastKnown[slug] ?? null
+        }
+        return {
           time,
           timeLabel: format(new Date(time), 'HH:mm'),
-          ...values,
-        }))
+          ...filledRow,
+        }
+      })
+
+      return filledData
     }
 
     // Single bookmaker mode (original behavior)
