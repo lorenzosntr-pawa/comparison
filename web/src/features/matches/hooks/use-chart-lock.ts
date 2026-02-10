@@ -16,12 +16,18 @@ export interface ChartLockState {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ChartClickData = Record<string, any>
 
+/** Chart data point with at least a time field */
+export interface ChartDataPoint {
+  time: string
+  [key: string]: unknown
+}
+
 /**
  * Return type for useChartLock hook.
  */
 export interface UseChartLockReturn extends ChartLockState {
-  /** Handle chart click to toggle lock state */
-  handleChartClick: (data: ChartClickData) => void
+  /** Handle chart click to toggle lock state - pass chartData to enable index lookup */
+  handleChartClick: (data: ChartClickData, chartData?: ChartDataPoint[]) => void
   /** Clear the lock state */
   clearLock: () => void
 }
@@ -35,6 +41,9 @@ export interface UseChartLockReturn extends ChartLockState {
  *
  * Uses index-based comparison for toggle to avoid time string format issues.
  * Includes debounce to prevent multiple rapid clicks from causing issues.
+ *
+ * IMPORTANT: Pass chartData to handleChartClick to enable index lookup when
+ * recharts doesn't provide activeTooltipIndex (which happens in some cases).
  */
 export function useChartLock(): UseChartLockReturn {
   const [lockedTime, setLockedTime] = useState<string | null>(null)
@@ -49,7 +58,7 @@ export function useChartLock(): UseChartLockReturn {
   const isLocked = lockedTime !== null
 
   const handleChartClick = useCallback(
-    (data: ChartClickData) => {
+    (data: ChartClickData, chartData?: ChartDataPoint[]) => {
       // Debounce: ignore clicks within 100ms of last click
       const now = Date.now()
       if (now - lastClickRef.current < 100) {
@@ -59,11 +68,27 @@ export function useChartLock(): UseChartLockReturn {
 
       // Extract time from recharts payload
       const time = data.activePayload?.[0]?.payload?.time as string | undefined
-      // activeTooltipIndex is the index in the data array
-      const index = typeof data.activeTooltipIndex === 'number' ? data.activeTooltipIndex : null
 
-      if (time === undefined || index === null) {
-        // Clicked outside of data area or between points
+      if (time === undefined) {
+        // Clicked outside of data area
+        return
+      }
+
+      // Try to get index from activeTooltipIndex first (may not always be provided by recharts)
+      let index: number | null = typeof data.activeTooltipIndex === 'number'
+        ? data.activeTooltipIndex
+        : null
+
+      // Fallback: find index by matching time in chartData
+      if (index === null && chartData) {
+        const foundIndex = chartData.findIndex((point) => point.time === time)
+        if (foundIndex >= 0) {
+          index = foundIndex
+        }
+      }
+
+      if (index === null) {
+        // Could not determine index
         return
       }
 

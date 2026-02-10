@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -10,7 +10,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts'
-import { useChartLock } from '../hooks/use-chart-lock'
+import { useChartLock, type ChartClickData } from '../hooks/use-chart-lock'
 import { format } from 'date-fns'
 import type { OddsHistoryPoint } from '@/types/api'
 import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
@@ -126,6 +126,14 @@ export function OddsLineChart({
     return []
   }, [multiData, comparisonMode])
 
+  // Wrapper for handleChartClick that passes chartData for index lookup
+  const onChartClick = useCallback(
+    (data: ChartClickData) => {
+      handleChartClick(data, chartData as { time: string; [key: string]: unknown }[])
+    },
+    [handleChartClick, chartData]
+  )
+
   // Call onLockChange when lock state changes
   // Note: Only depends on lock state, not chartData (to avoid retriggering on data updates)
   useEffect(() => {
@@ -180,7 +188,7 @@ export function OddsLineChart({
         <LineChart
           data={chartData}
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-          onClick={handleChartClick}
+          onClick={onChartClick}
         >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis
