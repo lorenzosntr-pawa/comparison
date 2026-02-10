@@ -77,10 +77,10 @@ Plans:
 **Goal**: New page with route, navigation, filter bar, and tournament list
 **Depends on**: Phase 82
 **Research**: Unlikely (established React patterns)
-**Plans**: TBD
+**Plans**: 1 created
 
 Plans:
-- [ ] 83-01: TBD
+- [ ] 83-01: Feature structure, route, navigation, filter bar, tournament list
 
 #### Phase 84: Tournament Summary Metrics
 
@@ -408,7 +408,7 @@ Plans:
 | 80. Specifier Bug Fix | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 81. Interactive Chart | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-10 |
 | 82. Comparison Table | v2.4 | 1/1 | Complete | 2026-02-10 |
-| 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
+| 83. Historical Analysis Page Foundation | v2.4 | 0/1 | Plan created | - |
 | 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |
 | 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
