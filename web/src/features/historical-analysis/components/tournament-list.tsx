@@ -1,12 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { TRACKED_MARKETS, type TournamentWithCount, type MarginMetrics } from '../hooks'
 
 // Country flag emoji mapping (basic set for common countries)
@@ -28,136 +22,28 @@ const countryFlags: Record<string, string> = {
   Tanzania: 'Tanzania',
 }
 
-/** Bookmaker color configuration for coverage bar */
-const BOOKMAKER_COLORS: Record<string, { bg: string; label: string }> = {
-  betpawa: { bg: 'bg-blue-500', label: 'Betpawa' },
-  sportybet: { bg: 'bg-green-500', label: 'SportyBet' },
-  bet9ja: { bg: 'bg-orange-500', label: 'Bet9ja' },
-}
-
-/** Ordered list of bookmakers for consistent display */
-const BOOKMAKER_ORDER = ['betpawa', 'sportybet', 'bet9ja']
-
 interface TournamentListProps {
   tournaments: TournamentWithCount[]
   isLoading: boolean
 }
 
 /**
- * Renders a trend arrow indicator.
- */
-function TrendIndicator({ trend }: { trend: 'up' | 'down' | 'stable' | null }) {
-  if (trend === null) return null
-
-  if (trend === 'up') {
-    // Worsening - red arrow up
-    return (
-      <span className="text-red-500 text-xs" title="Margins increasing">
-        ▲
-      </span>
-    )
-  }
-  if (trend === 'down') {
-    // Improving - green arrow down
-    return (
-      <span className="text-green-500 text-xs" title="Margins decreasing">
-        ▼
-      </span>
-    )
-  }
-  // Stable - gray dash
-  return (
-    <span className="text-muted-foreground text-xs" title="Stable margins">
-      —
-    </span>
-  )
-}
-
-/**
- * Renders a coverage bar showing bookmaker coverage percentages.
- */
-function CoverageBar({
-  coverageByBookmaker,
-}: {
-  coverageByBookmaker: Record<string, number>
-}) {
-  const hasAnyCoverage = BOOKMAKER_ORDER.some(
-    (slug) => (coverageByBookmaker[slug] ?? 0) > 0
-  )
-
-  if (!hasAnyCoverage) return null
-
-  const tooltipContent = BOOKMAKER_ORDER.map((slug) => {
-    const coverage = coverageByBookmaker[slug] ?? 0
-    const config = BOOKMAKER_COLORS[slug]
-    return `${config?.label ?? slug}: ${coverage.toFixed(0)}%`
-  }).join(' | ')
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-          {BOOKMAKER_ORDER.map((slug) => {
-            const coverage = coverageByBookmaker[slug] ?? 0
-            if (coverage === 0) return null
-            const config = BOOKMAKER_COLORS[slug]
-            return (
-              <div
-                key={slug}
-                className={`${config?.bg ?? 'bg-gray-500'} h-full`}
-                style={{ width: `${Math.min(coverage, 100) / 3}%` }}
-              />
-            )
-          })}
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="text-xs">{tooltipContent}</p>
-      </TooltipContent>
-    </Tooltip>
-  )
-}
-
-/**
- * Renders a margin badge with comparison coloring for a single market.
+ * Renders a plain margin value.
+ * Simplified version: no colors, no deltas, no trends.
  */
 function MarginBadge({
   avgMargin,
-  competitorAvgMargin,
-  trend,
 }: {
   avgMargin: number | null
-  competitorAvgMargin: number | null
-  trend: 'up' | 'down' | 'stable' | null
 }) {
-  if (avgMargin === null) {
+  // Negative margins indicate bad data - treat as no data
+  if (avgMargin === null || avgMargin < 0) {
     return <span className="text-muted-foreground">—</span>
   }
 
-  // Determine color based on comparison
-  let colorClass = 'text-foreground' // neutral
-  if (competitorAvgMargin !== null) {
-    if (avgMargin < competitorAvgMargin) {
-      colorClass = 'text-green-600 dark:text-green-400' // Better than competitors
-    } else if (avgMargin > competitorAvgMargin) {
-      colorClass = 'text-red-600 dark:text-red-400' // Worse than competitors
-    }
-  }
-
-  // Calculate delta if competitor data available
-  const delta =
-    competitorAvgMargin !== null ? avgMargin - competitorAvgMargin : null
-
   return (
-    <span className={`font-medium flex items-center gap-1 ${colorClass}`}>
-      <span>{avgMargin.toFixed(1)}%</span>
-      {delta !== null && (
-        <span className="text-xs opacity-75">
-          ({delta > 0 ? '+' : ''}
-          {delta.toFixed(1)})
-        </span>
-      )}
-      <TrendIndicator trend={trend} />
+    <span className="font-medium">
+      {avgMargin.toFixed(1)}%
     </span>
   )
 }
@@ -190,11 +76,7 @@ function MarketBreakdown({
         return (
           <div key={market.id} className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">{market.label}:</span>
-            <MarginBadge
-              avgMargin={metrics.avgMargin}
-              competitorAvgMargin={metrics.competitorAvgMargin}
-              trend={metrics.trend}
-            />
+            <MarginBadge avgMargin={metrics.avgMargin} />
           </div>
         )
       })}
@@ -278,12 +160,10 @@ export function TournamentList({ tournaments, isLoading }: TournamentListProps) 
   }
 
   return (
-    <TooltipProvider>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {tournaments.map((tournament) => (
-          <TournamentCard key={tournament.id} tournament={tournament} />
-        ))}
-      </div>
-    </TooltipProvider>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {tournaments.map((tournament) => (
+        <TournamentCard key={tournament.id} tournament={tournament} />
+      ))}
+    </div>
   )
 }
