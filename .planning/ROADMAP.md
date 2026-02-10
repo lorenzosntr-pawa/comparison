@@ -37,16 +37,17 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 Plans:
 - [x] 79-01: SQL verification and bug report documentation
 
-#### Phase 80: Specifier Bug Fix
+#### Phase 80: Specifier Bug Fix ✓
 
 **Goal**: Fix historical data for markets with specifiers (Over/Under, Handicap)
 **Depends on**: Phase 79
 **Research**: Unlikely (internal patterns)
-**Plans**: 1/2 complete
+**Plans**: 2/2 complete
+**Completed**: 2026-02-10
 
 Plans:
 - [x] 80-01: Backend API and frontend data layer (line parameter)
-- [ ] 80-02: Frontend components (pass line through click handlers)
+- [x] 80-02: Frontend components (pass line through click handlers)
 
 #### Phase 81: Interactive Chart
 
@@ -401,7 +402,7 @@ Plans:
 | 78. Type Annotations & Error Handling | v2.3 | 1/1 | Complete | 2026-02-09 |
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
 | 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
-| 80. Specifier Bug Fix | v2.4 | 1/2 | In progress | - |
+| 80. Specifier Bug Fix | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 81. Interactive Chart | v2.4 | 0/? | Not started | - |
 | 82. Comparison Table | v2.4 | 0/? | Not started | - |
 | 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
