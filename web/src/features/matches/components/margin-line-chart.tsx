@@ -88,12 +88,17 @@ export function MarginLineChart({
   }, [multiData, comparisonMode])
 
   // Call onLockChange when lock state changes
+  // Note: Only depends on lock state, not chartData (to avoid retriggering on data updates)
   useEffect(() => {
-    if (onLockChange) {
-      const lockedData = isLocked && lockedIndex !== null ? chartData[lockedIndex] : null
-      onLockChange(lockedTime, lockedData as Record<string, unknown> | null)
+    if (!onLockChange) return
+
+    if (isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex]) {
+      onLockChange(lockedTime, chartData[lockedIndex] as Record<string, unknown>)
+    } else {
+      onLockChange(null, null)
     }
-  }, [lockedTime, lockedIndex, isLocked, chartData, onLockChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartData excluded intentionally to prevent effect re-fire on data updates
+  }, [lockedTime, lockedIndex, isLocked, onLockChange])
 
   // Check for empty data
   const isEmpty = comparisonMode
@@ -199,7 +204,7 @@ export function MarginLineChart({
         )}
 
         {/* Lock indicator line */}
-        {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
+        {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
           <ReferenceLine
             x={chartData[lockedIndex]?.timeLabel}
             stroke="hsl(var(--primary))"
@@ -210,7 +215,7 @@ export function MarginLineChart({
       </ResponsiveContainer>
 
       {/* Locked comparison panel */}
-      {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
+      {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
         <div className="mt-3 p-3 border rounded-lg bg-muted/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">
