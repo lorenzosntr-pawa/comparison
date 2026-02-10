@@ -22,6 +22,16 @@ const BOOKMAKER_COLORS: Record<string, string> = {
   bet9ja: '#f97316',     // Orange
 }
 
+/**
+ * Bucket a timestamp to the nearest minute for comparison mode data merging.
+ * This allows bookmaker data captured at slightly different times to be grouped together.
+ */
+function bucketTimeToMinute(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp)
+  d.setSeconds(0, 0) // Round down to the start of the minute
+  return d.toISOString()
+}
+
 interface MarginLineChartProps {
   data?: MarginHistoryPoint[]
   multiData?: MultiMarginHistoryData
@@ -46,16 +56,22 @@ export function MarginLineChart({
   const chartData = useMemo(() => {
     if (comparisonMode && multiData) {
       // Comparison mode: merge all bookmaker data on a time axis
+      // Timestamps are bucketed to the nearest minute so data from different
+      // bookmakers captured at similar times gets merged together
       const timeMap = new Map<string, Record<string, number | null>>()
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
         history.forEach((point) => {
-          const time = point.captured_at
-          if (!timeMap.has(time)) {
-            timeMap.set(time, {})
+          // Bucket to nearest minute for merging
+          const bucketedTime = bucketTimeToMinute(point.captured_at)
+          if (!timeMap.has(bucketedTime)) {
+            timeMap.set(bucketedTime, {})
           }
-          const row = timeMap.get(time)!
-          row[bookmakerSlug] = point.margin
+          const row = timeMap.get(bucketedTime)!
+          // Only update if we don't have a value yet
+          if (row[bookmakerSlug] === undefined) {
+            row[bookmakerSlug] = point.margin
+          }
         })
       })
 

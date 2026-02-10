@@ -19,6 +19,16 @@ const BOOKMAKER_COLORS: Record<string, string> = {
   bet9ja: '#f97316', // Orange
 }
 
+/**
+ * Bucket a timestamp to the nearest minute for comparison mode data merging.
+ * This allows bookmaker data captured at slightly different times to be grouped together.
+ */
+function bucketTimeToMinute(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp)
+  d.setSeconds(0, 0) // Round down to the start of the minute
+  return d.toISOString()
+}
+
 interface MarketHistoryPanelProps {
   multiData?: MultiOddsHistoryData
   height?: number
@@ -58,6 +68,8 @@ export function MarketHistoryPanel({
   }, [multiData])
 
   // Transform data for each outcome's chart
+  // Timestamps are bucketed to the nearest minute so data from different
+  // bookmakers captured at similar times gets merged together
   const chartDataByOutcome = useMemo(() => {
     if (!multiData) return {}
 
@@ -68,15 +80,19 @@ export function MarketHistoryPanel({
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
         history.forEach((point) => {
-          const time = point.captured_at
-          if (!timeMap.has(time)) {
-            timeMap.set(time, {})
+          // Bucket to nearest minute for merging
+          const bucketedTime = bucketTimeToMinute(point.captured_at)
+          if (!timeMap.has(bucketedTime)) {
+            timeMap.set(bucketedTime, {})
           }
-          const row = timeMap.get(time)!
+          const row = timeMap.get(bucketedTime)!
 
           // Find this outcome's odds
           const outcome = point.outcomes?.find((o) => o.name === outcomeName)
-          row[bookmakerSlug] = outcome?.odds ?? null
+          // Only update if we don't have a value yet
+          if (row[bookmakerSlug] === undefined) {
+            row[bookmakerSlug] = outcome?.odds ?? null
+          }
         })
       })
 

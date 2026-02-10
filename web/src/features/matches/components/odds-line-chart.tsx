@@ -18,6 +18,16 @@ import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
 // Color palette for outcome lines (up to 4 outcomes typical)
 const OUTCOME_COLORS = ['#3b82f6', '#22c55e', '#f97316', '#8b5cf6']
 
+/**
+ * Bucket a timestamp to the nearest minute for comparison mode data merging.
+ * This allows bookmaker data captured at slightly different times to be grouped together.
+ */
+function bucketTimeToMinute(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp)
+  d.setSeconds(0, 0) // Round down to the start of the minute
+  return d.toISOString()
+}
+
 // Color palette for bookmakers in comparison mode
 const BOOKMAKER_COLORS: Record<string, string> = {
   betpawa: '#3b82f6',    // Blue
@@ -75,20 +85,27 @@ export function OddsLineChart({
   const chartData = useMemo(() => {
     if (comparisonMode && multiData) {
       // Comparison mode: merge all bookmaker data on a time axis
-      // Create a map of time -> { bookmaker: odds }
+      // Create a map of bucketed time -> { bookmaker: odds }
+      // Timestamps are bucketed to the nearest minute so data from different
+      // bookmakers captured at similar times gets merged together
       const timeMap = new Map<string, Record<string, number | null>>()
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
         history.forEach((point) => {
-          const time = point.captured_at
-          if (!timeMap.has(time)) {
-            timeMap.set(time, {})
+          // Bucket to nearest minute for merging
+          const bucketedTime = bucketTimeToMinute(point.captured_at)
+          if (!timeMap.has(bucketedTime)) {
+            timeMap.set(bucketedTime, {})
           }
-          const row = timeMap.get(time)!
+          const row = timeMap.get(bucketedTime)!
 
           // Find the selected outcome's odds
           const outcome = point.outcomes?.find((o) => o.name === selectedOutcome)
-          row[bookmakerSlug] = outcome?.odds ?? null
+          // Only update if we don't have a value yet or if this is a newer data point
+          // (later entries in history array are typically newer)
+          if (row[bookmakerSlug] === undefined) {
+            row[bookmakerSlug] = outcome?.odds ?? null
+          }
         })
       })
 
