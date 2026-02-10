@@ -1,5 +1,36 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.3 Code Quality & Reliability (Shipped: 2026-02-09)
+
+**Delivered:** Stabilized WebSocket implementation, removed 1,256 LOC of dead code, added comprehensive documentation across frontend and backend, and improved type safety with annotations and error handling.
+
+**Phases completed:** 72-78 (11 plans total)
+
+**Key accomplishments:**
+
+- Fixed WebSocket "always in progress" bug with compound isObserving state check (requires both activeScrapeId and connection)
+- Added WebSocket reconnection callbacks with query invalidation and connection status indicator with manual retry
+- Removed 1,256 LOC of dead backend code (unused imports, dependency functions, one-off audit scripts)
+- Removed dead frontend code (empty types barrel, duplicate type definitions) with documented deferred items
+- Added PEP 257 compliant docstrings to 19 backend API layer files (routes, schemas, WebSocket, core)
+- Added JSDoc documentation to 29 frontend files (API client, types, shared hooks, feature hooks, utilities)
+- Created comprehensive README.md documenting architecture, setup, API endpoints, and development workflow
+- Added return type annotations to 10 functions and JSONDecodeError handling to 9 scraper API calls
+
+**Stats:**
+
+- 132 files changed
+- +9,035 / -1,808 lines (net +7,227)
+- 7 phases, 11 plans, 48 commits
+- 1 day (2026-02-09)
+- ~40,000 total LOC
+
+**Git range:** `5b63b84` → `b273091`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.4 features.
+
+---
+
 ## v2.2 Odds Freshness (Shipped: 2026-02-09)
 
 **Delivered:** Accurate real-time odds timestamps with WebSocket-based query invalidation, fixing staleness issues across the entire data flow from scraping to display.

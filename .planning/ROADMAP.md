@@ -19,9 +19,31 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.0 Real-Time Scraping Pipeline](milestones/v2.0-ROADMAP.md) — Phases 53-59 (shipped 2026-02-06)
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
-- ✅ **v2.3 Code Quality & Reliability** — Phases 72-78 (shipped 2026-02-09)
+- ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.3 Code Quality & Reliability (Phases 72-78) — SHIPPED 2026-02-09</summary>
+
+- [x] Phase 72: WebSocket Investigation & Bug Fixes (1/1 plans) — 2026-02-09
+- [x] Phase 73: WebSocket Reliability (1/1 plans) — 2026-02-09
+- [x] Phase 74: Dead Code Audit & Removal (Backend) (1/1 plans) — 2026-02-09
+- [x] Phase 75: Dead Code Audit & Removal (Frontend) (1/1 plans) — 2026-02-09
+- [x] Phase 76: Documentation (Backend) (3/3 plans) — 2026-02-09
+- [x] Phase 77: Documentation (Frontend) + README (3/3 plans) — 2026-02-09
+- [x] Phase 78: Type Annotations & Error Handling (1/1 plans) — 2026-02-09
+
+</details>
+
+<details>
+<summary>✅ v2.2 Odds Freshness (Phases 69-71) — SHIPPED 2026-02-09</summary>
+
+- [x] Phase 69: Investigation & Freshness Audit (1/1 plans) — 2026-02-09
+- [x] Phase 70: Backend Freshness Fixes (1/1 plans) — 2026-02-09
+- [x] Phase 71: Frontend Freshness Fixes (1/1 plans) — 2026-02-09
+
+</details>
 
 <details>
 <summary>✅ v1.9 Event Details UX (Phases 48-52) — SHIPPED 2026-02-05</summary>
@@ -169,93 +191,6 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - [x] Phase 68: Market-Level History View (1/1 plans) — 2026-02-08
 
 </details>
-
-<details>
-<summary>✅ v2.2 Odds Freshness (Phases 69-71) — SHIPPED 2026-02-09</summary>
-
-- [x] Phase 69: Investigation & Freshness Audit (1/1 plans) — 2026-02-09
-- [x] Phase 70: Backend Freshness Fixes (1/1 plans) — 2026-02-09
-- [x] Phase 71: Frontend Freshness Fixes (1/1 plans) — 2026-02-09
-
-</details>
-
-### ✅ v2.3 Code Quality & Reliability (SHIPPED 2026-02-09)
-
-**Milestone Goal:** Stabilize WebSocket implementation, clean up technical debt, and establish documentation standards across the codebase.
-
-#### Phase 72: WebSocket Investigation & Bug Fixes
-
-**Goal**: Fix "always in progress" bug when WebSocket connects, audit current WebSocket implementation
-**Depends on**: v2.2 complete
-**Research**: Unlikely (internal patterns, existing infrastructure)
-**Plans**: 1/1
-
-Plans:
-- [x] 72-01: Fix "always in progress" bug — 2026-02-09
-
-#### Phase 73: WebSocket Reliability
-
-**Goal**: Improve connection lifecycle, reconnection logic, and state synchronization between UI and server
-**Depends on**: Phase 72
-**Research**: Unlikely (WebSocket already integrated)
-**Plans**: 1/1
-
-Plans:
-- [x] 73-01: Reconnect callbacks and connection status indicator — 2026-02-09
-
-#### Phase 74: Dead Code Audit & Removal (Backend)
-
-**Goal**: Scan and remove unused Python services, routes, utilities from backend
-**Depends on**: Phase 73
-**Research**: Unlikely (internal refactoring)
-**Plans**: 1/1
-
-Plans:
-- [x] 74-01: Backend dead code audit — 2026-02-09
-
-#### Phase 75: Dead Code Audit & Removal (Frontend)
-
-**Goal**: Scan and remove unused React components, hooks, utilities from frontend
-**Depends on**: Phase 74
-**Research**: Unlikely (internal refactoring)
-**Plans**: 1/1
-
-Plans:
-- [x] 75-01: Frontend dead code audit — 2026-02-09
-
-#### Phase 76: Documentation (Backend)
-
-**Goal**: Add comprehensive docstrings to Python modules, classes, and functions
-**Depends on**: Phase 75
-**Research**: Unlikely (internal documentation)
-**Plans**: 3/3
-
-Plans:
-- [x] 76-01: API layer documentation — 2026-02-09
-- [x] 76-02: Data layer documentation — 2026-02-09
-- [x] 76-03: Orchestration layer documentation — 2026-02-09
-
-#### Phase 77: Documentation (Frontend) + README
-
-**Goal**: Add TypeScript documentation and update project README with current architecture
-**Depends on**: Phase 76
-**Research**: Unlikely (internal documentation)
-**Plans**: 3/3
-
-Plans:
-- [x] 77-01: Core infrastructure documentation (API client, types, shared hooks) — 2026-02-09
-- [x] 77-02: Feature hooks documentation (21 hooks across 5 features) — 2026-02-09
-- [x] 77-03: README creation — 2026-02-09
-
-#### Phase 78: Type Annotations & Error Handling
-
-**Goal**: Fill type annotation gaps across both codebases and improve error messages/recovery
-**Depends on**: Phase 77
-**Research**: Unlikely (internal improvements)
-**Plans**: 1/1
-
-Plans:
-- [x] 78-01: Add return types to 10 functions + JSONDecodeError handling — 2026-02-09
 
 ## Progress
 

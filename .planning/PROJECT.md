@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.2 Odds Freshness)
+## Current State (v2.3 Code Quality & Reliability)
 
 **Shipped:** 2026-02-09
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~40,000 lines of code
+- ~40,000 lines of code (net after dead code removal)
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -65,6 +65,10 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Small-multiples MarketHistoryPanel** - view all outcomes × all bookmakers simultaneously
 - **Accurate odds freshness timestamps** - uses `last_confirmed_at` for correct freshness display
 - **Real-time timestamp updates** - WebSocket odds_updates subscription with automatic query invalidation
+- **WebSocket connection indicator** - visual status (green/yellow/gray/red) with manual retry button
+- **WebSocket reconnection callbacks** - automatic query invalidation on reconnect for fresh data
+- **Comprehensive documentation** - PEP 257 docstrings for backend, JSDoc for frontend
+- **README.md** - project overview, architecture, setup, API endpoints, development workflow
 
 ## Requirements
 
@@ -141,10 +145,19 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Accurate odds freshness timestamps using `last_confirmed_at` — v2.2
 - ✓ Real-time timestamp updates via WebSocket odds_updates subscription — v2.2
 - ✓ Automatic query invalidation on odds changes without polling — v2.2
+- ✓ WebSocket "always in progress" bug fix with compound isObserving state — v2.3
+- ✓ WebSocket reconnection callbacks with query invalidation — v2.3
+- ✓ Connection status indicator with manual retry button — v2.3
+- ✓ Dead code removal (1,256 LOC backend, duplicate types frontend) — v2.3
+- ✓ PEP 257 docstrings for backend API, data, and orchestration layers — v2.3
+- ✓ JSDoc documentation for frontend API client, types, and hooks — v2.3
+- ✓ Comprehensive README.md with architecture and setup guide — v2.3
+- ✓ Return type annotations for 10 functions — v2.3
+- ✓ JSONDecodeError handling for 9 scraper API calls — v2.3
 
 ### Active
 
-(No active requirements — project feature-complete for v2.2)
+(No active requirements — project feature-complete for v2.3)
 
 ### Out of Scope
 
@@ -250,6 +263,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | `_get_snapshot_time()` helper | DRY timestamp extraction with fallback for backward compatibility | ✓ Good — v2.2 consistent handling |
 | Global WebSocket subscription in App | useOddsUpdates hook at root for automatic query invalidation | ✓ Good — v2.2 real-time updates |
 | Inner AppContent component | Hooks needing QueryClient must be inside QueryClientProvider | ✓ Good — v2.2 proper React context |
+| Compound boolean for isObserving | Requires both activeScrapeId !== null AND ws.isConnected | ✓ Good — v2.3 fixed false progress |
+| wasConnectedRef pattern | Track first connection to distinguish reconnection from initial connect | ✓ Good — v2.3 correct callback timing |
+| Stable connection timeout | Delay 30s before resetting retry counter to prevent premature reset | ✓ Good — v2.3 handles flaky networks |
+| Remove HIGH confidence dead code only | Defer LOW confidence items as documented concerns | ✓ Good — v2.3 safe cleanup |
+| JSDoc format matching PEP 257 style | Consistency between frontend and backend documentation | ✓ Good — v2.3 unified style |
+| TypeVar for generic decorator | Simple T = TypeVar("T") instead of complex protocol types | ✓ Good — v2.3 readable annotations |
 
 ---
-*Last updated: 2026-02-09 after v2.2 milestone*
+*Last updated: 2026-02-09 after v2.3 milestone*
