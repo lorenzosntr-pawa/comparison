@@ -578,7 +578,8 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                       setHistoryDialog({
                                         eventId: event.id,
                                         marketId,
-                                        line: null, // Inline markets use fixed configurations
+                                        // O/U 2.5 (5000) has a specific line; others don't
+                                        line: marketId === '5000' ? 2.5 : null,
                                         bookmakerSlug,
                                         marketName: MARKET_CONFIG[marketId].label,
                                         bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
@@ -620,7 +621,8 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                   setHistoryDialog({
                                     eventId: event.id,
                                     marketId,
-                                    line: null, // Inline markets use fixed configurations
+                                    // O/U 2.5 (5000) has a specific line; others don't
+                                    line: marketId === '5000' ? 2.5 : null,
                                     bookmakerSlug,
                                     marketName: MARKET_CONFIG[marketId].label,
                                     bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
