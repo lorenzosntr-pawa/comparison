@@ -12,8 +12,8 @@ interface MarketRowProps {
   bookmakerMarkets: Map<string, MarketOddsDetail | null>
   bookmakerOrder?: string[]
   eventId?: number
-  onOddsClick?: (bookmakerSlug: string, marketId: string, marketName: string) => void
-  onMarginClick?: (bookmakerSlug: string, marketId: string, marketName: string) => void
+  onOddsClick?: (bookmakerSlug: string, marketId: string, marketName: string, line: number | null) => void
+  onMarginClick?: (bookmakerSlug: string, marketId: string, marketName: string, line: number | null) => void
 }
 
 interface OutcomeDisplay {
@@ -219,7 +219,7 @@ export function MarketRow({
                       betpawaOdds={slug !== 'betpawa' ? betpawaOutcome.odds : undefined}
                       onClick={oddsClickable ? (e) => {
                         e.stopPropagation()
-                        onOddsClick(slug, marketId, displayName)
+                        onOddsClick(slug, marketId, displayName, line)
                       } : undefined}
                     />
                   </div>
@@ -233,7 +233,7 @@ export function MarketRow({
                     betpawaMargin={slug !== 'betpawa' ? betpawaMargin : null}
                     onClick={onMarginClick && eventId && market ? (e) => {
                       e.stopPropagation()
-                      onMarginClick(slug, marketId, displayName)
+                      onMarginClick(slug, marketId, displayName, line)
                     } : undefined}
                   />
                 </div>

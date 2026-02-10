@@ -40,6 +40,7 @@ interface MarketGridProps {
 interface HistoryDialogState {
   eventId: number
   marketId: string
+  line: number | null
   bookmakerSlug: string
   marketName: string
   bookmakerName: string
@@ -357,10 +358,11 @@ export function MarketGrid({ marketsByBookmaker, eventId }: MarketGridProps) {
   }, [marketsByBookmaker])
 
   // Handler for odds/margin clicks to open history dialog
-  const handleHistoryClick = (bookmakerSlug: string, marketId: string, marketName: string) => {
+  const handleHistoryClick = (bookmakerSlug: string, marketId: string, marketName: string, line: number | null) => {
     setHistoryDialog({
       eventId,
       marketId,
+      line,
       bookmakerSlug,
       marketName,
       bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
@@ -488,6 +490,7 @@ export function MarketGrid({ marketsByBookmaker, eventId }: MarketGridProps) {
           onOpenChange={(open) => !open && setHistoryDialog(null)}
           eventId={historyDialog.eventId}
           marketId={historyDialog.marketId}
+          line={historyDialog.line}
           bookmakerSlug={historyDialog.bookmakerSlug}
           marketName={historyDialog.marketName}
           bookmakerName={historyDialog.bookmakerName}
