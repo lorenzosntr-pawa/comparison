@@ -3,6 +3,8 @@ import { subDays } from 'date-fns'
 import { FilterBar, TournamentList, type DateRange } from './components'
 import { useTournaments } from './hooks'
 
+export { TournamentDetailPage } from './tournament-detail'
+
 export function HistoricalAnalysisPage() {
   // Default to last 7 days
   const [dateRange, setDateRange] = useState<DateRange>(() => {

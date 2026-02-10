@@ -1,5 +1,7 @@
+import { useNavigate } from 'react-router'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TRACKED_MARKETS, type TournamentWithCount, type MarginMetrics } from '../hooks'
 
@@ -85,16 +87,14 @@ function MarketBreakdown({
 }
 
 function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
-  const handleClick = () => {
-    // Placeholder for future drill-down
-    console.log('Tournament clicked:', tournament.id, tournament.name)
+  const navigate = useNavigate()
+
+  const handleViewDetails = () => {
+    navigate(`/historical-analysis/${tournament.id}`)
   }
 
   return (
-    <Card
-      className="cursor-pointer transition-colors hover:bg-muted/50"
-      onClick={handleClick}
-    >
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -114,6 +114,18 @@ function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
         <div className="mt-3">
           {/* Per-market margin breakdown */}
           <MarketBreakdown marginsByMarket={tournament.marginsByMarket} />
+        </div>
+
+        {/* View Details button */}
+        <div className="mt-3 pt-3 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleViewDetails}
+          >
+            View Details
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -5,3 +5,10 @@ export {
   type TournamentWithCount,
   type MarginMetrics,
 } from './use-tournaments'
+
+export {
+  useTournamentMarkets,
+  type TournamentMarket,
+  type TournamentInfo,
+  type MarginHistoryPoint as TournamentMarginHistoryPoint,
+} from './use-tournament-markets'
