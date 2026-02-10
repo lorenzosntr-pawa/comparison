@@ -83,15 +83,16 @@ Plans:
 Plans:
 - [x] 83-01: Feature structure, route, navigation, filter bar, tournament list
 
-#### Phase 84: Tournament Summary Metrics
+#### Phase 84: Tournament Summary Metrics ✓
 
 **Goal**: Event count, avg margin, coverage stats, and trend indicators
 **Depends on**: Phase 83
 **Research**: Unlikely (SQL aggregation, established patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
+**Completed**: 2026-02-10
 
 Plans:
-- [ ] 84-01: TBD
+- [x] 84-01: Extend useTournaments hook with metrics, add display to tournament cards
 
 #### Phase 85: Time-to-Kickoff Charts
 
@@ -410,7 +411,7 @@ Plans:
 | 81. Interactive Chart | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-10 |
 | 82. Comparison Table | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 83. Historical Analysis Page Foundation | v2.4 | 1/1 | Complete | 2026-02-10 |
-| 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |
+| 84. Tournament Summary Metrics | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |

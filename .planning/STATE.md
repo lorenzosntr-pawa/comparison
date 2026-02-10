@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 84 of 88 (Tournament Summary Metrics)
-Plan: 0 of ? in current phase
-Status: Ready for next phase planning
-Last activity: 2026-02-10 — Completed 83-01 (Historical Analysis Page Foundation)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-10 — Completed 84-01 (Tournament Summary Metrics)
 
-Progress: ████░░░░░░ 45%
+Progress: █████░░░░░ 50%
 
 ## Milestones
 
@@ -217,6 +217,9 @@ Progress: ████░░░░░░ 45%
 - **Click handler debounce** - ignore clicks within 100ms of last click to prevent rapid double-fire issues (v2.4 Phase 81)
 - **oddsDataByOutcome prop for multi-outcome comparison** - pass outcome -> { bookmaker -> odds } for tables with multiple rows (v2.4 Phase 82)
 - **ComparisonTable best/worst highlighting** - green for best odds per row, red for >3% worse than Betpawa, Betpawa column never colored (v2.4 Phase 82)
+- **TournamentAccumulator pattern** - aggregate multiple metrics (margins, coverage counts, event list) during single iteration over events, then compute averages/trends from accumulated data (v2.4 Phase 84)
+- **First-half vs second-half trend calculation** - compare average margin of first half of events to second half; 0.5% threshold, minimum 4 events for meaningful comparison (v2.4 Phase 84)
+- **Coverage bar with proportional bookmaker segments** - horizontal bar with colored segments (blue/green/orange) proportional to coverage %, tooltip shows exact percentages (v2.4 Phase 84)
 
 ### Key Decisions
 
@@ -300,6 +303,6 @@ Progress: ████░░░░░░ 45%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 83 (Historical Analysis Page Foundation)
+Stopped at: Completed Phase 84 (Tournament Summary Metrics)
 Resume file: None
-Next action: `/gsd:plan-phase 84` to create Tournament Summary Metrics plan
+Next action: `/gsd:plan-phase 85` to create Time-to-Kickoff Charts plan
