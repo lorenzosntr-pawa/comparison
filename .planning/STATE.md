@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 84.1 of 88 (Fix Tournament Metrics Design)
-Plan: 1 of 1 in current phase + 1 FIX
-Status: Phase complete (UAT fixes applied)
-Last activity: 2026-02-10 — Completed 84.1-01-FIX.md
+Phase: 84.2 of 88 (Tournament Detail Page)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-10 — Completed 84.2-01-PLAN.md
 
-Progress: █████░░░░░ 52%
+Progress: █████░░░░░ 54%
 
 ## Milestones
 
@@ -224,6 +224,8 @@ Progress: █████░░░░░ 52%
 - **Per-market accumulator with Record<marketId, data> structure** - keyed by market ID (3743/5000/3795/4693) for 1X2/OU/BTTS/DC; each entry has betpawaMargins[], competitorMargins[], eventMargins[] (v2.4 Phase 84.1)
 - **TRACKED_MARKETS constant for shared market configuration** - exported from hooks for reuse in components; array of { id, label } for consistent iteration (v2.4 Phase 84.1)
 - **Simplify over explain pattern** - when UX confuses users, remove complexity rather than add tooltips/labels; less is more (v2.4 Phase 84.1-FIX)
+- **getMarketKey(id, line) pattern** - unique market identification using id:line combination to distinguish Over 2.5 from Over 1.5 etc.; markets without specifiers use id only (v2.4 Phase 84.2)
+- **useTournamentMarkets hook** - extracts ALL unique markets from tournament events (not just tracked 4); computes avg/min/max margin and marginHistory for timeline charts (v2.4 Phase 84.2)
 
 ### Key Decisions
 
@@ -304,10 +306,11 @@ Progress: █████░░░░░ 52%
 - v2.3 archived to .planning/milestones/v2.3-ROADMAP.md
 - Milestone v2.4 created: Historical Analytics, 10 phases (Phase 79-88)
 - Phase 84.1 inserted after Phase 84: Fix Tournament Metrics Design (URGENT) - BUG-013/014/015
+- Phase 84.2 inserted after Phase 84.1: Tournament Detail Page - ISS-005 (user requested feature)
 
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 84.1 FIX (UAT issues resolved)
+Stopped at: Completed Phase 84.2 (Tournament Detail Page)
 Resume file: None
-Next action: `/gsd:verify-work 84.1` to re-verify, then `/gsd:plan-phase 85`
+Next action: `/gsd:plan-phase 85` (time-to-kickoff charts)

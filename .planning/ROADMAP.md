@@ -108,6 +108,18 @@ Plans:
 - [x] 84.1-01: Multi-market metrics (1X2, O/U 2.5, BTTS, DC) and include_started fix
 - [x] 84.1-01-FIX: Simplify tournament card display (UAT-001 through UAT-005)
 
+#### Phase 84.2: Tournament Detail Page (INSERTED) ✓
+
+**Goal**: Click-through from tournament card to detail page with event list and margin timeline
+**Depends on**: Phase 84.1
+**Research**: Unlikely (established React patterns)
+**Plans**: 1/1 complete
+**Addresses**: ISS-005
+**Completed**: 2026-02-10
+
+Plans:
+- [x] 84.2-01: Route, data hook, TournamentDetailPage with market cards and timeline chart
+
 #### Phase 85: Time-to-Kickoff Charts
 
 **Goal**: Market type grouping with aggregate vs individual event toggle
@@ -427,6 +439,7 @@ Plans:
 | 83. Historical Analysis Page Foundation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84. Tournament Summary Metrics | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.1 Fix Tournament Metrics Design (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
+| 84.2 Tournament Detail Page (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |

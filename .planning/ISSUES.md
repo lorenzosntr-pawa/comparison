@@ -35,65 +35,35 @@ Market mapping library covers core markets but many exotic/niche market types re
 
 ## Open Bugs
 
-### BUG-010: Competitor odds history not working
-**Discovered:** Phase 66 UAT - 2026-02-08
-**Type:** Critical Bug
-**Severity:** High
-
-**Description:**
-Clicking SportyBet or Bet9ja odds/margins in history dialog shows "No historical data available" even though competitor data exists in the database.
-
-**Root Cause:**
-Backend API endpoint (`src/api/routes/history.py`) only queries `odds_snapshots` table which contains BetPawa data. It never queries `competitor_odds_snapshots` table where SportyBet/Bet9ja historical data is stored.
-
-**Impact:**
-- History dialog is 67% broken (only works for 1 of 3 bookmakers)
-- Users cannot analyze competitor price movements over time
-- Core feature of comparison tool is partially non-functional
-
----
-
-### BUG-011: Odds tab redundantly shows margin line
-**Discovered:** Phase 66 UAT - 2026-02-08
-**Type:** UX Bug
-**Severity:** Low
-
-**Description:**
-The Odds tab in history dialog shows a margin line overlaid on the odds chart, but there's already a separate Margin tab. Margin data appears twice with different visualizations.
-
-**Root Cause:**
-`OddsLineChart` component is called with `showMargin={true}` in the history dialog Odds tab.
-
-**Impact:**
-- Redundant display of same data
-- Confusing UX - users may not understand why margin appears twice
-- Clutters the Odds chart with unnecessary line
-
----
-
-### BUG-012: No multi-bookmaker comparison capability
-**Discovered:** Phase 66 UAT - 2026-02-08
-**Type:** Missing Feature
-**Severity:** Medium
-
-**Description:**
-History dialog can only display one bookmaker at a time. Users cannot compare price/margin movements across BetPawa, SportyBet, and Bet9ja side-by-side.
-
-**Root Cause:**
-Entire architecture designed for single-bookmaker viewing:
-- Dialog accepts single `bookmakerSlug` parameter
-- Hooks fetch single bookmaker data
-- API accepts single `bookmaker_slug` query parameter
-- Charts render single bookmaker series
-
-**Impact:**
-- Users cannot compare historical odds movements between bookmakers
-- Core use case for comparison tool is unsupported
-- MarginLineChart has unused `referenceValue` prop suggesting intended comparison feature
+None.
 
 ---
 
 ## Closed Bugs
+
+### BUG-015: No per-market margin breakdown per tournament (RESOLVED)
+**Discovered:** Phase 84 UAT - 2026-02-10
+**Resolution:** Fixed 2026-02-10 (Phase 84.1-01) - `MarketBreakdown` component added to `tournament-list.tsx` displaying per-market margins (1X2, O/U 2.5, BTTS, DC) in 2-column grid layout.
+
+### BUG-014: Tournament metrics only show 1X2 market margins (RESOLVED)
+**Discovered:** Phase 84 UAT - 2026-02-10
+**Resolution:** Fixed 2026-02-10 (Phase 84.1-01) - `TRACKED_MARKETS` constant with 4 market types (1X2, O/U 2.5, BTTS, DC) replaces hardcoded `MARKET_1X2_ID`. All markets now processed.
+
+### BUG-013: Tournament metrics exclude started events (RESOLVED)
+**Discovered:** Phase 84 UAT - 2026-02-10
+**Resolution:** Fixed 2026-02-10 (Phase 84.1-01) - API request now includes `include_started: true` to fetch completed matches for historical analysis.
+
+### BUG-012: No multi-bookmaker comparison capability (RESOLVED)
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Resolution:** Fixed 2026-02-10 (Phase 66-67 implementation) - Full comparison mode implemented with toggle, `useMultiOddsHistory` hook, multi-bookmaker chart rendering, and outcome selector.
+
+### BUG-011: Odds tab redundantly shows margin line (RESOLVED)
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Resolution:** Fixed 2026-02-10 - `OddsLineChart` now called with `showMargin={false}` in history dialog Odds tab (line 311).
+
+### BUG-010: Competitor odds history not working (RESOLVED)
+**Discovered:** Phase 66 UAT - 2026-02-08
+**Resolution:** Fixed 2026-02-10 - Backend `src/api/routes/history.py` now queries `CompetitorOddsSnapshot` and `CompetitorMarketOdds` tables for competitor bookmakers (sportybet, bet9ja).
 
 ### BUG-009: /api/scrape/stream returns 422 instead of 404 (RESOLVED)
 **Discovered:** Post-Phase 59 verification - 2026-02-06
@@ -125,6 +95,10 @@ Entire architecture designed for single-bookmaker viewing:
 ---
 
 ## Closed Enhancements
+
+### ISS-005: Tournament detail page with margin timeline (RESOLVED)
+**Discovered:** Phase 84.1 UAT - 2026-02-10
+**Resolution:** Fixed 2026-02-10 (Phase 84.2-01) - Added `/historical-analysis/:tournamentId` route with TournamentDetailPage component. useTournamentMarkets hook extracts ALL unique markets with avg/min/max margin and marginHistory. Market cards grid with timeline chart on card click.
 
 ### ISS-001: SportyBet/Bet9ja scraping not implemented (RESOLVED)
 **Resolution:** Fixed in Phase 6.1 - Cross-platform scraping implemented
