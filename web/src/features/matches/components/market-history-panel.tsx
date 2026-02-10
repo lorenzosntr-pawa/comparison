@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -99,14 +99,40 @@ export function MarketHistoryPanel({
     return data.findIndex((d) => d.time === lockedTime)
   }
 
-  // Handle chart click - toggle lock at clicked time
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChartClick = (data: Record<string, any>) => {
-    const time = data.activePayload?.[0]?.payload?.time as string | undefined
-    if (time) {
-      setLockedTime((prev) => (prev === time ? null : time))
-    }
-  }
+  // Track last click time to debounce rapid clicks
+  const lastClickRef = useRef<number>(0)
+
+  // Create click handler for a specific outcome's chart
+  // Needs chartData to find time when activePayload is not available
+  const createChartClickHandler = useCallback(
+    (outcomeChartData: ChartDataPoint[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (data: Record<string, any>) => {
+        // Debounce: ignore clicks within 100ms of last click
+        const now = Date.now()
+        if (now - lastClickRef.current < 100) {
+          return
+        }
+        lastClickRef.current = now
+
+        // Try to get time from activePayload first
+        let time = data.activePayload?.[0]?.payload?.time as string | undefined
+
+        // Fallback: if activeTooltipIndex is available, get time from chartData
+        if (!time && typeof data.activeTooltipIndex === 'number') {
+          const idx = data.activeTooltipIndex
+          if (idx >= 0 && idx < outcomeChartData.length) {
+            time = outcomeChartData[idx].time
+          }
+        }
+
+        if (time) {
+          setLockedTime((prev) => (prev === time ? null : time))
+        }
+      }
+    },
+    []
+  )
 
   // Call onLockChange when lock state changes
   useEffect(() => {
@@ -135,7 +161,7 @@ export function MarketHistoryPanel({
               <LineChart
                 data={chartDataByOutcome[outcomeName] || []}
                 margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                onClick={handleChartClick}
+                onClick={createChartClickHandler(chartDataByOutcome[outcomeName] || [])}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
