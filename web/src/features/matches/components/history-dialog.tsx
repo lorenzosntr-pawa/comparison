@@ -62,6 +62,7 @@ export interface HistoryDialogProps {
   onOpenChange: (open: boolean) => void
   eventId: number
   marketId: string
+  line?: number | null
   bookmakerSlug: string
   marketName: string
   bookmakerName: string
@@ -74,6 +75,7 @@ export function HistoryDialog({
   onOpenChange,
   eventId,
   marketId,
+  line,
   bookmakerSlug,
   marketName,
   bookmakerName,
@@ -117,6 +119,7 @@ export function HistoryDialog({
     eventId,
     marketId,
     bookmakerSlug,
+    line,
     enabled: open && activeTab === 'odds' && !comparisonMode,
   })
 
@@ -124,6 +127,7 @@ export function HistoryDialog({
     eventId,
     marketId,
     bookmakerSlug,
+    line,
     enabled: open && activeTab === 'margin' && !comparisonMode,
   })
 
@@ -132,6 +136,7 @@ export function HistoryDialog({
     eventId,
     marketId,
     bookmakerSlugs: selectedBookmakers,
+    line,
     enabled: open && activeTab === 'odds' && comparisonMode && selectedBookmakers.length > 0,
   })
 
@@ -139,6 +144,7 @@ export function HistoryDialog({
     eventId,
     marketId,
     bookmakerSlugs: selectedBookmakers,
+    line,
     enabled: open && activeTab === 'margin' && comparisonMode && selectedBookmakers.length > 0,
   })
 
@@ -153,11 +159,16 @@ export function HistoryDialog({
     }
   }
 
+  // Include line value in market display name when present
+  const marketDisplayName = line != null
+    ? `${marketName} ${line}`
+    : marketName
+
   const dialogTitle = comparisonMode
     ? fullMarketView
-      ? `${marketName} - Full Market View`
-      : `${marketName} - Compare Bookmakers`
-    : `${marketName} - ${bookmakerName}`
+      ? `${marketDisplayName} - Full Market View`
+      : `${marketDisplayName} - Compare Bookmakers`
+    : `${marketDisplayName} - ${bookmakerName}`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
