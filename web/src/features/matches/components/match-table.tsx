@@ -35,6 +35,7 @@ const BOOKMAKER_NAMES: Record<string, string> = {
 interface HistoryDialogState {
   eventId: number
   marketId: string
+  line: number | null
   bookmakerSlug: string
   marketName: string
   bookmakerName: string
@@ -577,6 +578,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                       setHistoryDialog({
                                         eventId: event.id,
                                         marketId,
+                                        line: null, // Inline markets use fixed configurations
                                         bookmakerSlug,
                                         marketName: MARKET_CONFIG[marketId].label,
                                         bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
@@ -618,6 +620,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                   setHistoryDialog({
                                     eventId: event.id,
                                     marketId,
+                                    line: null, // Inline markets use fixed configurations
                                     bookmakerSlug,
                                     marketName: MARKET_CONFIG[marketId].label,
                                     bookmakerName: BOOKMAKER_NAMES[bookmakerSlug] ?? bookmakerSlug,
@@ -642,6 +645,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         onOpenChange={(open) => !open && setHistoryDialog(null)}
         eventId={historyDialog?.eventId ?? 0}
         marketId={historyDialog?.marketId ?? ''}
+        line={historyDialog?.line}
         bookmakerSlug={historyDialog?.bookmakerSlug ?? ''}
         marketName={historyDialog?.marketName ?? ''}
         bookmakerName={historyDialog?.bookmakerName ?? ''}
