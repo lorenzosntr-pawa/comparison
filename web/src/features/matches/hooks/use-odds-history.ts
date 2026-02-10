@@ -46,6 +46,8 @@ export interface UseOddsHistoryParams {
   fromTime?: string
   /** ISO timestamp for end of time range (optional) */
   toTime?: string
+  /** Line value for specifier markets (e.g., 2.5 for Over/Under) */
+  line?: number | null
   /** Set to false to disable the query (default: true) */
   enabled?: boolean
 }
@@ -81,10 +83,11 @@ export function useOddsHistory({
   bookmakerSlug,
   fromTime,
   toTime,
+  line,
   enabled = true,
 }: UseOddsHistoryParams) {
   return useQuery({
-    queryKey: ['odds-history', eventId, marketId, bookmakerSlug, fromTime, toTime],
+    queryKey: ['odds-history', eventId, marketId, bookmakerSlug, fromTime, toTime, line],
     queryFn: () =>
       api.getOddsHistory({
         eventId,
@@ -92,6 +95,7 @@ export function useOddsHistory({
         bookmakerSlug,
         fromTime,
         toTime,
+        line,
       }),
     enabled: enabled && !!eventId && !!marketId && !!bookmakerSlug,
     staleTime: 60000, // 1 minute - historical data changes slowly

@@ -49,6 +49,8 @@ export interface UseMultiMarginHistoryParams {
   fromTime?: string
   /** ISO timestamp for end of time range (optional) */
   toTime?: string
+  /** Line value for specifier markets (e.g., 2.5 for Over/Under) */
+  line?: number | null
   /** Set to false to disable all queries (default: true) */
   enabled?: boolean
 }
@@ -102,11 +104,12 @@ export function useMultiMarginHistory({
   bookmakerSlugs,
   fromTime,
   toTime,
+  line,
   enabled = true,
 }: UseMultiMarginHistoryParams) {
   const queries = useQueries({
     queries: bookmakerSlugs.map((bookmakerSlug) => ({
-      queryKey: ['margin-history', eventId, marketId, bookmakerSlug, fromTime, toTime],
+      queryKey: ['margin-history', eventId, marketId, bookmakerSlug, fromTime, toTime, line],
       queryFn: () =>
         api.getMarginHistory({
           eventId,
@@ -114,6 +117,7 @@ export function useMultiMarginHistory({
           bookmakerSlug,
           fromTime,
           toTime,
+          line,
         }),
       enabled: enabled && !!eventId && !!marketId && bookmakerSlugs.length > 0,
       staleTime: 60000, // 1 minute
