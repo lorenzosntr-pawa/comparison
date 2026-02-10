@@ -209,6 +209,10 @@ async def get_odds_history(
         default=None,
         description="End of time range (inclusive)",
     ),
+    line: float | None = Query(
+        default=None,
+        description="Filter by line value for specifier markets (e.g., 2.5 for Over/Under 2.5)",
+    ),
 ) -> OddsHistoryResponse:
     """Get odds time-series for a specific market.
 
@@ -223,6 +227,7 @@ async def get_odds_history(
         bookmaker_slug: Required bookmaker slug (betpawa, sportybet, bet9ja).
         from_time: Optional start of time range (inclusive).
         to_time: Optional end of time range (inclusive).
+        line: Optional line value for specifier markets (e.g., 2.5 for Over/Under).
 
     Returns:
         OddsHistoryResponse with chronological odds history and margin data.
@@ -253,6 +258,10 @@ async def get_odds_history(
             .where(CompetitorMarketOdds.betpawa_market_id == market_id)
         )
 
+        # Apply line filter for specifier markets
+        if line is not None:
+            query = query.where(CompetitorMarketOdds.line == line)
+
         # Apply time filters (DB stores naive UTC)
         if from_time:
             from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
@@ -273,6 +282,10 @@ async def get_odds_history(
             .where(MarketOdds.betpawa_market_id == market_id)
         )
 
+        # Apply line filter for specifier markets
+        if line is not None:
+            query = query.where(MarketOdds.line == line)
+
         # Apply time filters (DB stores naive UTC)
         if from_time:
             from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
@@ -290,7 +303,7 @@ async def get_odds_history(
     # Build history points
     history = []
     market_name = None
-    line = None
+    result_line = None
 
     for row in rows:
         snapshot = row[0]  # OddsSnapshot or CompetitorOddsSnapshot
@@ -299,7 +312,7 @@ async def get_odds_history(
         # Capture market metadata from first row
         if market_name is None:
             market_name = market.betpawa_market_name
-            line = market.line
+            result_line = market.line
 
         # Parse outcomes from JSONB
         outcomes = []
@@ -336,7 +349,7 @@ async def get_odds_history(
         bookmaker_name=bookmaker.name,
         market_id=market_id,
         market_name=market_name or market_id,
-        line=line,
+        line=result_line,
         history=history,
     )
 
@@ -358,6 +371,10 @@ async def get_margin_history(
         default=None,
         description="End of time range (inclusive)",
     ),
+    line: float | None = Query(
+        default=None,
+        description="Filter by line value for specifier markets (e.g., 2.5 for Over/Under 2.5)",
+    ),
 ) -> MarginHistoryResponse:
     """Get margin-only time-series for a specific market.
 
@@ -372,6 +389,7 @@ async def get_margin_history(
         bookmaker_slug: Required bookmaker slug (betpawa, sportybet, bet9ja).
         from_time: Optional start of time range (inclusive).
         to_time: Optional end of time range (inclusive).
+        line: Optional line value for specifier markets (e.g., 2.5 for Over/Under).
 
     Returns:
         MarginHistoryResponse with chronological margin data only.
@@ -401,6 +419,10 @@ async def get_margin_history(
             .where(CompetitorMarketOdds.betpawa_market_id == market_id)
         )
 
+        # Apply line filter for specifier markets
+        if line is not None:
+            query = query.where(CompetitorMarketOdds.line == line)
+
         # Apply time filters (DB stores naive UTC)
         if from_time:
             from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
@@ -421,6 +443,10 @@ async def get_margin_history(
             .where(MarketOdds.betpawa_market_id == market_id)
         )
 
+        # Apply line filter for specifier markets
+        if line is not None:
+            query = query.where(MarketOdds.line == line)
+
         # Apply time filters (DB stores naive UTC)
         if from_time:
             from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
@@ -438,7 +464,7 @@ async def get_margin_history(
     # Build history points (margin only)
     history = []
     market_name = None
-    line = None
+    result_line = None
 
     for row in rows:
         snapshot = row[0]  # OddsSnapshot or CompetitorOddsSnapshot
@@ -447,7 +473,7 @@ async def get_margin_history(
         # Capture market metadata from first row
         if market_name is None:
             market_name = market.betpawa_market_name
-            line = market.line
+            result_line = market.line
 
         # Calculate margin
         margin = _calculate_margin_from_outcomes(market.outcomes if isinstance(market.outcomes, list) else [])
@@ -474,6 +500,6 @@ async def get_margin_history(
         bookmaker_name=bookmaker.name,
         market_id=market_id,
         market_name=market_name or market_id,
-        line=line,
+        line=result_line,
         history=history,
     )
