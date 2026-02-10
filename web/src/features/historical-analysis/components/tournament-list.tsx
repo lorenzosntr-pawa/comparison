@@ -229,12 +229,9 @@ function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
         </div>
 
         {/* Metrics row */}
-        <div className="mt-3 space-y-2">
+        <div className="mt-3">
           {/* Per-market margin breakdown */}
           <MarketBreakdown marginsByMarket={tournament.marginsByMarket} />
-
-          {/* Coverage bar */}
-          <CoverageBar coverageByBookmaker={tournament.coverageByBookmaker} />
         </div>
       </CardContent>
     </Card>
