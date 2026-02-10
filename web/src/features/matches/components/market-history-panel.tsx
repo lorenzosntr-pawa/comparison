@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { format } from 'date-fns'
 import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
+import { ComparisonTable } from './comparison-table'
 
 // Color palette for bookmakers (same as odds-line-chart for consistency)
 const BOOKMAKER_COLORS: Record<string, string> = {
@@ -265,7 +266,7 @@ export function MarketHistoryPanel({
       </div>
 
       {/* Locked comparison panel */}
-      {isLocked && lockedTime && (
+      {isLocked && lockedTime && multiData && (
         <div className="mt-3 p-3 border rounded-lg bg-muted/50">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium">
@@ -279,50 +280,33 @@ export function MarketHistoryPanel({
             </button>
           </div>
 
-          {/* Comparison table: outcomes as rows, bookmakers as columns */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-1 pr-4 font-medium">Outcome</th>
-                  {bookmakerSlugs.map((slug) => (
-                    <th key={slug} className="text-right py-1 px-2 font-medium">
-                      <div className="flex items-center justify-end gap-1">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: BOOKMAKER_COLORS[slug] || '#888' }}
-                        />
-                        {multiData[slug]?.bookmakerName || slug}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {outcomeNames.map((outcomeName) => {
-                  const chartData = chartDataByOutcome[outcomeName] || []
-                  const idx = getLockedIndex(chartData)
-                  const lockedPoint = idx !== null && idx >= 0 ? chartData[idx] : null
+          {/* Comparison table with best/worst highlighting */}
+          <ComparisonTable
+            lockedData={{}}
+            outcomeNames={outcomeNames}
+            bookmakerSlugs={bookmakerSlugs}
+            bookmakerNames={Object.fromEntries(
+              Object.entries(multiData).map(([slug, data]) => [slug, data.bookmakerName])
+            )}
+            mode="comparison"
+            showMargin={false}
+            oddsDataByOutcome={(() => {
+              // Build odds data by outcome from chartDataByOutcome at locked time
+              const result: Record<string, Record<string, number | null>> = {}
+              outcomeNames.forEach((outcomeName) => {
+                const chartData = chartDataByOutcome[outcomeName] || []
+                const idx = getLockedIndex(chartData)
+                const lockedPoint = idx !== null && idx >= 0 ? chartData[idx] : null
 
-                  return (
-                    <tr key={outcomeName} className="border-b last:border-0">
-                      <td className="py-1 pr-4 text-muted-foreground">{outcomeName}</td>
-                      {bookmakerSlugs.map((slug) => {
-                        const value = lockedPoint?.[slug]
-                        return (
-                          <td key={slug} className="text-right py-1 px-2">
-                            <strong>
-                              {typeof value === 'number' ? value.toFixed(2) : '-'}
-                            </strong>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                result[outcomeName] = {}
+                bookmakerSlugs.forEach((slug) => {
+                  const value = lockedPoint?.[slug]
+                  result[outcomeName][slug] = typeof value === 'number' ? value : null
+                })
+              })
+              return result
+            })()}
+          />
         </div>
       )}
     </div>

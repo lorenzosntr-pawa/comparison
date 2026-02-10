@@ -16,6 +16,8 @@ interface ComparisonTableProps {
   showMargin?: boolean
   /** Margin data keyed by bookmaker slug (for comparison mode) */
   marginData?: Record<string, number | null>
+  /** For multi-outcome comparison: outcome name -> { bookmaker slug -> odds } */
+  oddsDataByOutcome?: Record<string, Record<string, number | null>>
 }
 
 /**
@@ -36,6 +38,7 @@ export function ComparisonTable({
   mode,
   showMargin = false,
   marginData,
+  oddsDataByOutcome,
 }: ComparisonTableProps) {
   // Order bookmakers: betpawa first, then alphabetically
   const orderedSlugs = useMemo(() => {
@@ -47,8 +50,14 @@ export function ComparisonTable({
     return sorted
   }, [bookmakerSlugs])
 
-  // Helper to get odds value from locked data
-  const getOddsValue = (key: string): number | null => {
+  // Helper to get odds value from locked data (single outcome) or oddsDataByOutcome (multi-outcome)
+  const getOddsValue = (key: string, outcomeName?: string): number | null => {
+    // If oddsDataByOutcome is provided and outcomeName is specified, use it
+    if (oddsDataByOutcome && outcomeName) {
+      const value = oddsDataByOutcome[outcomeName]?.[key]
+      return typeof value === 'number' ? value : null
+    }
+    // Otherwise fall back to lockedData (single outcome mode)
     const value = lockedData[key]
     return typeof value === 'number' ? value : null
   }
@@ -58,9 +67,9 @@ export function ComparisonTable({
     const values: { slug: string; odds: number }[] = []
 
     if (mode === 'comparison') {
-      // In comparison mode, lockedData keys are bookmaker slugs
+      // In comparison mode, get odds for this outcome from each bookmaker
       orderedSlugs.forEach((slug) => {
-        const odds = getOddsValue(slug)
+        const odds = getOddsValue(slug, outcomeName)
         if (odds !== null) {
           values.push({ slug, odds })
         }
@@ -247,7 +256,6 @@ export function ComparisonTable({
         </thead>
         <tbody>
           {outcomeNames.map((outcomeName) => {
-            // For now we only have one outcome's data in the locked point
             // Each row shows odds for that outcome from each bookmaker
             const stats = getOutcomeStats(outcomeName)
 
@@ -257,7 +265,7 @@ export function ComparisonTable({
                   {outcomeName}
                 </td>
                 {orderedSlugs.map((slug) => {
-                  const odds = getOddsValue(slug)
+                  const odds = getOddsValue(slug, outcomeName)
                   const isBest = stats.bestSlug === slug
                   const isBetpawa = slug === 'betpawa'
                   const cellStyle = getOddsCellStyle(odds, isBest, stats.betpawaOdds, isBetpawa)

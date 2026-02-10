@@ -14,6 +14,7 @@ import { useChartLock, type ChartClickData } from '../hooks/use-chart-lock'
 import { format } from 'date-fns'
 import type { OddsHistoryPoint } from '@/types/api'
 import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
+import { ComparisonTable } from './comparison-table'
 
 // Color palette for outcome lines (up to 4 outcomes typical)
 const OUTCOME_COLORS = ['#3b82f6', '#22c55e', '#f97316', '#8b5cf6']
@@ -337,44 +338,27 @@ export function OddsLineChart({
               Unlock
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {comparisonMode ? (
-              // Comparison mode: show each bookmaker's value
-              bookmakerSlugs.map((slug) => {
-                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
-                const value = lockedPoint[slug]
-                return (
-                  <div key={slug} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: BOOKMAKER_COLORS[slug] || '#888' }}
-                    />
-                    <span className="text-sm">
-                      {multiData?.[slug]?.bookmakerName || slug}:{' '}
-                      <strong>{typeof value === 'number' ? value.toFixed(2) : '-'}</strong>
-                    </span>
-                  </div>
-                )
-              })
-            ) : (
-              // Single bookmaker mode: show each outcome's value
-              outcomeNames.map((name, index) => {
-                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
-                const value = lockedPoint[name]
-                return (
-                  <div key={name} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: OUTCOME_COLORS[index % OUTCOME_COLORS.length] }}
-                    />
-                    <span className="text-sm">
-                      {name}: <strong>{typeof value === 'number' ? value.toFixed(2) : '-'}</strong>
-                    </span>
-                  </div>
-                )
-              })
-            )}
-          </div>
+          {comparisonMode && multiData ? (
+            <ComparisonTable
+              lockedData={chartData[lockedIndex] as Record<string, unknown>}
+              outcomeNames={selectedOutcome ? [selectedOutcome] : []}
+              bookmakerSlugs={bookmakerSlugs}
+              bookmakerNames={Object.fromEntries(
+                Object.entries(multiData).map(([slug, data]) => [slug, data.bookmakerName])
+              )}
+              mode="comparison"
+              showMargin={false}
+            />
+          ) : (
+            <ComparisonTable
+              lockedData={chartData[lockedIndex] as Record<string, unknown>}
+              outcomeNames={outcomeNames}
+              bookmakerSlugs={['betpawa']}
+              bookmakerNames={{ betpawa: 'Betpawa' }}
+              mode="single"
+              showMargin={showMargin}
+            />
+          )}
         </div>
       )}
     </div>

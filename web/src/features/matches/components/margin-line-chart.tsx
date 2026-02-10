@@ -14,6 +14,7 @@ import { useChartLock, type ChartClickData } from '../hooks/use-chart-lock'
 import { format } from 'date-fns'
 import type { MarginHistoryPoint } from '@/types/api'
 import type { MultiMarginHistoryData } from '../hooks/use-multi-margin-history'
+import { ComparisonTable } from './comparison-table'
 
 // Color palette for bookmakers in comparison mode
 const BOOKMAKER_COLORS: Record<string, string> = {
@@ -271,49 +272,47 @@ export function MarginLineChart({
               Unlock
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {comparisonMode ? (
-              // Comparison mode: show each bookmaker's margin
-              bookmakerSlugs.map((slug) => {
-                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
-                const value = lockedPoint[slug]
-                return (
-                  <div key={slug} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: BOOKMAKER_COLORS[slug] || '#888' }}
-                    />
-                    <span className="text-sm">
-                      {multiData?.[slug]?.bookmakerName || slug}:{' '}
-                      <strong>{typeof value === 'number' ? `${value.toFixed(2)}%` : '-'}</strong>
-                    </span>
-                  </div>
-                )
-              })
-            ) : (
-              // Single bookmaker mode: show margin value
-              (() => {
-                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
-                const marginValue = lockedPoint.margin
-                return (
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: '#3b82f6' }}
-                    />
-                    <span className="text-sm">
-                      Margin:{' '}
-                      <strong>
-                        {typeof marginValue === 'number'
-                          ? `${marginValue.toFixed(2)}%`
-                          : '-'}
-                      </strong>
-                    </span>
-                  </div>
-                )
-              })()
-            )}
-          </div>
+          {comparisonMode && multiData ? (
+            <ComparisonTable
+              lockedData={{}}
+              outcomeNames={[]}
+              bookmakerSlugs={bookmakerSlugs}
+              bookmakerNames={Object.fromEntries(
+                Object.entries(multiData).map(([slug, data]) => [slug, data.bookmakerName])
+              )}
+              mode="comparison"
+              showMargin={true}
+              marginData={Object.fromEntries(
+                bookmakerSlugs.map((slug) => {
+                  const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
+                  const value = lockedPoint[slug]
+                  return [slug, typeof value === 'number' ? value : null]
+                })
+              )}
+            />
+          ) : (
+            // Single bookmaker mode: show margin value
+            (() => {
+              const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
+              const marginValue = lockedPoint.margin
+              return (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: '#3b82f6' }}
+                  />
+                  <span className="text-sm">
+                    Margin:{' '}
+                    <strong>
+                      {typeof marginValue === 'number'
+                        ? `${marginValue.toFixed(2)}%`
+                        : '-'}
+                    </strong>
+                  </span>
+                </div>
+              )
+            })()
+          )}
         </div>
       )}
     </div>
