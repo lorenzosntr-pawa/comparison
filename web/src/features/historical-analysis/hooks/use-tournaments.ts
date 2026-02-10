@@ -140,18 +140,31 @@ export function useTournaments(dateRange: DateRange) {
   return useQuery({
     queryKey: ['historical-tournaments', kickoffFrom, kickoffTo],
     queryFn: async () => {
-      // Fetch all events in the date range (large page size to get all)
-      const response = await api.getEvents({
-        page: 1,
-        page_size: 1000,
-        kickoff_from: kickoffFrom,
-        kickoff_to: kickoffTo,
-      })
+      // Fetch all events in the date range using pagination (API max is 100)
+      const pageSize = 100
+      let allEvents: MatchedEvent[] = []
+      let page = 1
+
+      while (true) {
+        const response = await api.getEvents({
+          page,
+          page_size: pageSize,
+          kickoff_from: kickoffFrom,
+          kickoff_to: kickoffTo,
+        })
+
+        allEvents = allEvents.concat(response.events)
+
+        // If we got fewer events than requested, we've reached the end
+        if (response.events.length < pageSize) break
+
+        page++
+      }
 
       // Extract unique tournaments with event counts and accumulate metrics data
       const tournamentMap = new Map<number, TournamentAccumulator>()
 
-      for (const event of response.events) {
+      for (const event of allEvents) {
         let accumulator = tournamentMap.get(event.tournament_id)
 
         if (!accumulator) {
