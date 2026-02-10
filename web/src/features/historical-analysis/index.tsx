@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { subDays } from 'date-fns'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FilterBar, type DateRange } from './components'
+import { FilterBar, TournamentList, type DateRange } from './components'
+import { useTournaments } from './hooks'
 
 export function HistoricalAnalysisPage() {
   // Default to last 7 days
@@ -13,22 +13,24 @@ export function HistoricalAnalysisPage() {
     return { from, to: today }
   })
 
+  const { data: tournaments, isPending, error } = useTournaments(dateRange)
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Historical Analysis</h1>
 
       <FilterBar dateRange={dateRange} onDateRangeChange={setDateRange} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tournament Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Tournament analysis coming in Phase 84
-          </p>
-        </CardContent>
-      </Card>
+      {error && (
+        <div className="p-4 text-red-500 bg-red-50 rounded-md">
+          Failed to load tournaments: {error.message}
+        </div>
+      )}
+
+      <TournamentList
+        tournaments={tournaments ?? []}
+        isLoading={isPending}
+      />
     </div>
   )
 }
