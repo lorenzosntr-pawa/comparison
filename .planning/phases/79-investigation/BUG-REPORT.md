@@ -402,3 +402,11 @@ Same updates.
 ## Priority
 
 **HIGH** - This bug makes historical charts for specifier markets completely unusable. These are frequently viewed markets (Over/Under goals, Asian Handicap) and the broken visualization undermines user trust in the platform.
+
+---
+
+## Investigation Complete
+
+**Investigation Date:** 2026-02-10
+**Ready for:** Phase 80 - Specifier Bug Fix
+**Status:** Root cause identified, fix approach documented
