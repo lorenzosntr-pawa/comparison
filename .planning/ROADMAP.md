@@ -100,12 +100,13 @@ Plans:
 **Goal**: Include started events, per-market margin breakdown, market-level grouping
 **Depends on**: Phase 84
 **Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
+**Plans**: 1/1 complete + 1 FIX
 **Addresses**: BUG-013, BUG-014, BUG-015
 **Completed**: 2026-02-10
 
 Plans:
 - [x] 84.1-01: Multi-market metrics (1X2, O/U 2.5, BTTS, DC) and include_started fix
+- [x] 84.1-01-FIX: Simplify tournament card display (UAT-001 through UAT-005)
 
 #### Phase 85: Time-to-Kickoff Charts
 

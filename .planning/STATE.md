@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 84.1 of 88 (Fix Tournament Metrics Design)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-10 — Completed 84.1-01-PLAN.md
+Plan: 1 of 1 in current phase + 1 FIX
+Status: Phase complete (UAT fixes applied)
+Last activity: 2026-02-10 — Completed 84.1-01-FIX.md
 
 Progress: █████░░░░░ 52%
 
@@ -223,6 +223,7 @@ Progress: █████░░░░░ 52%
 - **Pagination loop for API with limits** - fetch all pages until response.events.length < pageSize; respects API maximum page_size of 100 (v2.4 Phase 84-FIX)
 - **Per-market accumulator with Record<marketId, data> structure** - keyed by market ID (3743/5000/3795/4693) for 1X2/OU/BTTS/DC; each entry has betpawaMargins[], competitorMargins[], eventMargins[] (v2.4 Phase 84.1)
 - **TRACKED_MARKETS constant for shared market configuration** - exported from hooks for reuse in components; array of { id, label } for consistent iteration (v2.4 Phase 84.1)
+- **Simplify over explain pattern** - when UX confuses users, remove complexity rather than add tooltips/labels; less is more (v2.4 Phase 84.1-FIX)
 
 ### Key Decisions
 
@@ -307,6 +308,6 @@ Progress: █████░░░░░ 52%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 84.1 (Fix Tournament Metrics Design)
+Stopped at: Completed Phase 84.1 FIX (UAT issues resolved)
 Resume file: None
-Next action: `/gsd:plan-phase 85` to plan Time-to-Kickoff Charts
+Next action: `/gsd:verify-work 84.1` to re-verify, then `/gsd:plan-phase 85`
