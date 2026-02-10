@@ -442,6 +442,7 @@ export const api = {
    * @param params.bookmakerSlug - The bookmaker slug
    * @param params.fromTime - Optional start time filter (ISO string)
    * @param params.toTime - Optional end time filter (ISO string)
+   * @param params.line - Optional line value for specifier markets (e.g., 2.5 for Over/Under)
    * @returns Promise resolving to odds history timeline
    */
   getOddsHistory: (params: {
@@ -450,11 +451,13 @@ export const api = {
     bookmakerSlug: string
     fromTime?: string
     toTime?: string
+    line?: number | null
   }) => {
     const searchParams = new URLSearchParams()
     searchParams.set('bookmaker_slug', params.bookmakerSlug)
     if (params.fromTime) searchParams.set('from_time', params.fromTime)
     if (params.toTime) searchParams.set('to_time', params.toTime)
+    if (params.line != null) searchParams.set('line', params.line.toString())
     return fetchJson<OddsHistoryResponse>(
       `/events/${params.eventId}/markets/${encodeURIComponent(params.marketId)}/history?${searchParams}`
     )
@@ -469,6 +472,7 @@ export const api = {
    * @param params.bookmakerSlug - The bookmaker slug
    * @param params.fromTime - Optional start time filter (ISO string)
    * @param params.toTime - Optional end time filter (ISO string)
+   * @param params.line - Optional line value for specifier markets (e.g., 2.5 for Over/Under)
    * @returns Promise resolving to margin history timeline
    */
   getMarginHistory: (params: {
@@ -477,11 +481,13 @@ export const api = {
     bookmakerSlug: string
     fromTime?: string
     toTime?: string
+    line?: number | null
   }) => {
     const searchParams = new URLSearchParams()
     searchParams.set('bookmaker_slug', params.bookmakerSlug)
     if (params.fromTime) searchParams.set('from_time', params.fromTime)
     if (params.toTime) searchParams.set('to_time', params.toTime)
+    if (params.line != null) searchParams.set('line', params.line.toString())
     return fetchJson<MarginHistoryResponse>(
       `/events/${params.eventId}/markets/${encodeURIComponent(params.marketId)}/margin-history?${searchParams}`
     )
