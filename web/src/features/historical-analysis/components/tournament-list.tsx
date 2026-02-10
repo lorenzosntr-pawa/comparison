@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { TournamentWithCount } from '../hooks'
+import { TRACKED_MARKETS, type TournamentWithCount, type MarginMetrics } from '../hooks'
 
 // Country flag emoji mapping (basic set for common countries)
 const countryFlags: Record<string, string> = {
@@ -119,7 +119,7 @@ function CoverageBar({
 }
 
 /**
- * Renders a margin badge with comparison coloring.
+ * Renders a margin badge with comparison coloring for a single market.
  */
 function MarginBadge({
   avgMargin,
@@ -131,11 +131,7 @@ function MarginBadge({
   trend: 'up' | 'down' | 'stable' | null
 }) {
   if (avgMargin === null) {
-    return (
-      <span className="text-sm text-muted-foreground flex items-center gap-1">
-        BP: —
-      </span>
-    )
+    return <span className="text-muted-foreground">—</span>
   }
 
   // Determine color based on comparison
@@ -153,16 +149,56 @@ function MarginBadge({
     competitorAvgMargin !== null ? avgMargin - competitorAvgMargin : null
 
   return (
-    <span className={`text-sm font-medium flex items-center gap-1 ${colorClass}`}>
-      <span>BP: {avgMargin.toFixed(1)}%</span>
+    <span className={`font-medium flex items-center gap-1 ${colorClass}`}>
+      <span>{avgMargin.toFixed(1)}%</span>
       {delta !== null && (
         <span className="text-xs opacity-75">
           ({delta > 0 ? '+' : ''}
-          {delta.toFixed(1)}%)
+          {delta.toFixed(1)})
         </span>
       )}
       <TrendIndicator trend={trend} />
     </span>
+  )
+}
+
+/**
+ * Renders a per-market breakdown grid showing metrics for each tracked market.
+ */
+function MarketBreakdown({
+  marginsByMarket,
+}: {
+  marginsByMarket: Record<string, MarginMetrics>
+}) {
+  // Check if any market has data
+  const hasAnyData = TRACKED_MARKETS.some(
+    (market) => marginsByMarket[market.id]?.avgMargin !== null
+  )
+
+  if (!hasAnyData) {
+    return (
+      <span className="text-sm text-muted-foreground">No margin data</span>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+      {TRACKED_MARKETS.map((market) => {
+        const metrics = marginsByMarket[market.id]
+        if (!metrics?.avgMargin) return null // Skip markets with no data
+
+        return (
+          <div key={market.id} className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground">{market.label}:</span>
+            <MarginBadge
+              avgMargin={metrics.avgMargin}
+              competitorAvgMargin={metrics.competitorAvgMargin}
+              trend={metrics.trend}
+            />
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -194,12 +230,8 @@ function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
 
         {/* Metrics row */}
         <div className="mt-3 space-y-2">
-          {/* Margin with trend */}
-          <MarginBadge
-            avgMargin={tournament.avgMargin}
-            competitorAvgMargin={tournament.competitorAvgMargin}
-            trend={tournament.trend}
-          />
+          {/* Per-market margin breakdown */}
+          <MarketBreakdown marginsByMarket={tournament.marginsByMarket} />
 
           {/* Coverage bar */}
           <CoverageBar coverageByBookmaker={tournament.coverageByBookmaker} />
