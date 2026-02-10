@@ -42,10 +42,10 @@ Plans:
 **Goal**: Fix historical data for markets with specifiers (Over/Under, Handicap)
 **Depends on**: Phase 79
 **Research**: Unlikely (internal patterns)
-**Plans**: 2
+**Plans**: 1/2 complete
 
 Plans:
-- [ ] 80-01: Backend API and frontend data layer (line parameter)
+- [x] 80-01: Backend API and frontend data layer (line parameter)
 - [ ] 80-02: Frontend components (pass line through click handlers)
 
 #### Phase 81: Interactive Chart
@@ -401,7 +401,7 @@ Plans:
 | 78. Type Annotations & Error Handling | v2.3 | 1/1 | Complete | 2026-02-09 |
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
 | 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
-| 80. Specifier Bug Fix | v2.4 | 0/2 | Not started | - |
+| 80. Specifier Bug Fix | v2.4 | 1/2 | In progress | - |
 | 81. Interactive Chart | v2.4 | 0/? | Not started | - |
 | 82. Comparison Table | v2.4 | 0/? | Not started | - |
 | 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
