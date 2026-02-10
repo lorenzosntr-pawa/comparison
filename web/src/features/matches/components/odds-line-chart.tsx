@@ -274,13 +274,58 @@ export function OddsLineChart({
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Unlock indicator */}
-      {isLocked && (
-        <div
-          className="text-xs text-muted-foreground text-center mt-1 cursor-pointer hover:text-foreground"
-          onClick={clearLock}
-        >
-          Click chart or here to unlock
+      {/* Locked comparison panel */}
+      {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
+        <div className="mt-3 p-3 border rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">
+              Locked at {format(new Date(chartData[lockedIndex].time as string), 'MMM d, HH:mm')}
+            </span>
+            <button
+              onClick={clearLock}
+              className="text-xs text-muted-foreground hover:text-foreground underline"
+            >
+              Unlock
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {comparisonMode ? (
+              // Comparison mode: show each bookmaker's value
+              bookmakerSlugs.map((slug) => {
+                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
+                const value = lockedPoint[slug]
+                return (
+                  <div key={slug} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: BOOKMAKER_COLORS[slug] || '#888' }}
+                    />
+                    <span className="text-sm">
+                      {multiData?.[slug]?.bookmakerName || slug}:{' '}
+                      <strong>{typeof value === 'number' ? value.toFixed(2) : '-'}</strong>
+                    </span>
+                  </div>
+                )
+              })
+            ) : (
+              // Single bookmaker mode: show each outcome's value
+              outcomeNames.map((name, index) => {
+                const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
+                const value = lockedPoint[name]
+                return (
+                  <div key={name} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: OUTCOME_COLORS[index % OUTCOME_COLORS.length] }}
+                    />
+                    <span className="text-sm">
+                      {name}: <strong>{typeof value === 'number' ? value.toFixed(2) : '-'}</strong>
+                    </span>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       )}
     </div>

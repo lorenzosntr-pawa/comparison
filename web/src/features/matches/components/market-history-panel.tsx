@@ -222,13 +222,65 @@ export function MarketHistoryPanel({
         ))}
       </div>
 
-      {/* Unlock indicator */}
+      {/* Locked comparison panel */}
       {isLocked && lockedTime && (
-        <div
-          className="text-xs text-muted-foreground text-center cursor-pointer hover:text-foreground"
-          onClick={() => setLockedTime(null)}
-        >
-          Locked at {format(new Date(lockedTime), 'MMM d, HH:mm')} — Click to unlock
+        <div className="mt-3 p-3 border rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium">
+              Locked at {format(new Date(lockedTime), 'MMM d, HH:mm')}
+            </span>
+            <button
+              onClick={() => setLockedTime(null)}
+              className="text-xs text-muted-foreground hover:text-foreground underline"
+            >
+              Unlock
+            </button>
+          </div>
+
+          {/* Comparison table: outcomes as rows, bookmakers as columns */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-1 pr-4 font-medium">Outcome</th>
+                  {bookmakerSlugs.map((slug) => (
+                    <th key={slug} className="text-right py-1 px-2 font-medium">
+                      <div className="flex items-center justify-end gap-1">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: BOOKMAKER_COLORS[slug] || '#888' }}
+                        />
+                        {multiData[slug]?.bookmakerName || slug}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {outcomeNames.map((outcomeName) => {
+                  const chartData = chartDataByOutcome[outcomeName] || []
+                  const idx = getLockedIndex(chartData)
+                  const lockedPoint = idx !== null && idx >= 0 ? chartData[idx] : null
+
+                  return (
+                    <tr key={outcomeName} className="border-b last:border-0">
+                      <td className="py-1 pr-4 text-muted-foreground">{outcomeName}</td>
+                      {bookmakerSlugs.map((slug) => {
+                        const value = lockedPoint?.[slug]
+                        return (
+                          <td key={slug} className="text-right py-1 px-2">
+                            <strong>
+                              {typeof value === 'number' ? value.toFixed(2) : '-'}
+                            </strong>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
