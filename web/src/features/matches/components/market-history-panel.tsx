@@ -100,10 +100,9 @@ export function MarketHistoryPanel({
   }
 
   // Handle chart click - toggle lock at clicked time
-  const handleChartClick = (data: {
-    activePayload?: Array<{ payload: { time: string } }>
-  }) => {
-    const time = data.activePayload?.[0]?.payload?.time
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleChartClick = (data: Record<string, any>) => {
+    const time = data.activePayload?.[0]?.payload?.time as string | undefined
     if (time) {
       setLockedTime((prev) => (prev === time ? null : time))
     }

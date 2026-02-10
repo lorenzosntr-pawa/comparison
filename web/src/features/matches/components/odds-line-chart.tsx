@@ -266,7 +266,7 @@ export function OddsLineChart({
           {/* Lock indicator line */}
           {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
             <ReferenceLine
-              x={chartData[lockedIndex]?.timeLabel}
+              x={chartData[lockedIndex].timeLabel as string}
               stroke="hsl(var(--primary))"
               strokeWidth={2}
             />

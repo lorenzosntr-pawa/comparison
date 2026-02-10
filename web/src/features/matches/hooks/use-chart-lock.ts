@@ -12,15 +12,16 @@ export interface ChartLockState {
   isLocked: boolean
 }
 
+/** Recharts chart click event data (simplified type compatible with CategoricalChartFunc) */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ChartClickData = Record<string, any>
+
 /**
  * Return type for useChartLock hook.
  */
 export interface UseChartLockReturn extends ChartLockState {
   /** Handle chart click to toggle lock state */
-  handleChartClick: (data: {
-    activePayload?: Array<{ payload: { time: string } }>
-    activeTooltipIndex?: number
-  }) => void
+  handleChartClick: (data: ChartClickData) => void
   /** Clear the lock state */
   clearLock: () => void
 }
@@ -39,12 +40,9 @@ export function useChartLock(): UseChartLockReturn {
   const isLocked = lockedTime !== null
 
   const handleChartClick = useCallback(
-    (data: {
-      activePayload?: Array<{ payload: { time: string } }>
-      activeTooltipIndex?: number
-    }) => {
-      const time = data.activePayload?.[0]?.payload?.time
-      const index = data.activeTooltipIndex ?? null
+    (data: ChartClickData) => {
+      const time = data.activePayload?.[0]?.payload?.time as string | undefined
+      const index = (data.activeTooltipIndex as number | null | undefined) ?? null
 
       if (!time) {
         // Clicked outside of data area
