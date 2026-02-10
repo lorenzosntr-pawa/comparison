@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 84 of 88 (Tournament Summary Metrics)
+Phase: 84.1 of 88 (Fix Tournament Metrics Design)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-10 — Completed 84-01 (Tournament Summary Metrics)
+Last activity: 2026-02-10 — Completed 84.1-01-PLAN.md
 
-Progress: █████░░░░░ 50%
+Progress: █████░░░░░ 52%
 
 ## Milestones
 
@@ -221,6 +221,8 @@ Progress: █████░░░░░ 50%
 - **First-half vs second-half trend calculation** - compare average margin of first half of events to second half; 0.5% threshold, minimum 4 events for meaningful comparison (v2.4 Phase 84)
 - **Coverage bar with proportional bookmaker segments** - horizontal bar with colored segments (blue/green/orange) proportional to coverage %, tooltip shows exact percentages (v2.4 Phase 84)
 - **Pagination loop for API with limits** - fetch all pages until response.events.length < pageSize; respects API maximum page_size of 100 (v2.4 Phase 84-FIX)
+- **Per-market accumulator with Record<marketId, data> structure** - keyed by market ID (3743/5000/3795/4693) for 1X2/OU/BTTS/DC; each entry has betpawaMargins[], competitorMargins[], eventMargins[] (v2.4 Phase 84.1)
+- **TRACKED_MARKETS constant for shared market configuration** - exported from hooks for reuse in components; array of { id, label } for consistent iteration (v2.4 Phase 84.1)
 
 ### Key Decisions
 
@@ -300,10 +302,11 @@ Progress: █████░░░░░ 50%
 - v2.3 Code Quality & Reliability shipped 2026-02-09 with 7 phases (11 plans)
 - v2.3 archived to .planning/milestones/v2.3-ROADMAP.md
 - Milestone v2.4 created: Historical Analytics, 10 phases (Phase 79-88)
+- Phase 84.1 inserted after Phase 84: Fix Tournament Metrics Design (URGENT) - BUG-013/014/015
 
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 84-01-FIX (UAT pagination fix)
+Stopped at: Completed Phase 84.1 (Fix Tournament Metrics Design)
 Resume file: None
-Next action: `/gsd:verify-work 84` to re-verify Phase 84 features
+Next action: `/gsd:plan-phase 85` to plan Time-to-Kickoff Charts

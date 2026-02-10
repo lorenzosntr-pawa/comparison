@@ -95,6 +95,18 @@ Plans:
 - [x] 84-01: Extend useTournaments hook with metrics, add display to tournament cards
 - [x] 84-01-FIX: Fix page_size validation error (UAT-001) with pagination loop
 
+#### Phase 84.1: Fix Tournament Metrics Design (INSERTED) ✓
+
+**Goal**: Include started events, per-market margin breakdown, market-level grouping
+**Depends on**: Phase 84
+**Research**: Unlikely (internal patterns)
+**Plans**: 1/1 complete
+**Addresses**: BUG-013, BUG-014, BUG-015
+**Completed**: 2026-02-10
+
+Plans:
+- [x] 84.1-01: Multi-market metrics (1X2, O/U 2.5, BTTS, DC) and include_started fix
+
 #### Phase 85: Time-to-Kickoff Charts
 
 **Goal**: Market type grouping with aggregate vs individual event toggle
@@ -413,6 +425,7 @@ Plans:
 | 82. Comparison Table | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 83. Historical Analysis Page Foundation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84. Tournament Summary Metrics | v2.4 | 1/1 | Complete | 2026-02-10 |
+| 84.1 Fix Tournament Metrics Design (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
