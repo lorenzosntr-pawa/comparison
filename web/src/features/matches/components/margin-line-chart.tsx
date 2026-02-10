@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -10,6 +10,7 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts'
+import { useChartLock } from '../hooks/use-chart-lock'
 import { format } from 'date-fns'
 import type { MarginHistoryPoint } from '@/types/api'
 import type { MultiMarginHistoryData } from '../hooks/use-multi-margin-history'
@@ -28,6 +29,7 @@ interface MarginLineChartProps {
   height?: number
   referenceValue?: number // Optional reference line (e.g., competitor margin)
   referenceLabel?: string
+  onLockChange?: (lockedTime: string | null, lockedData: Record<string, unknown> | null) => void
 }
 
 export function MarginLineChart({
@@ -37,7 +39,10 @@ export function MarginLineChart({
   height = 200,
   referenceValue,
   referenceLabel,
+  onLockChange,
 }: MarginLineChartProps) {
+  // Chart lock state
+  const { lockedTime, lockedIndex, isLocked, handleChartClick, clearLock } = useChartLock()
   const chartData = useMemo(() => {
     if (comparisonMode && multiData) {
       // Comparison mode: merge all bookmaker data on a time axis
@@ -82,6 +87,14 @@ export function MarginLineChart({
     return []
   }, [multiData, comparisonMode])
 
+  // Call onLockChange when lock state changes
+  useEffect(() => {
+    if (onLockChange) {
+      const lockedData = isLocked && lockedIndex !== null ? chartData[lockedIndex] : null
+      onLockChange(lockedTime, lockedData as Record<string, unknown> | null)
+    }
+  }, [lockedTime, lockedIndex, isLocked, chartData, onLockChange])
+
   // Check for empty data
   const isEmpty = comparisonMode
     ? !multiData || Object.keys(multiData).length === 0
@@ -96,8 +109,13 @@ export function MarginLineChart({
   }
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+    <div>
+      <ResponsiveContainer width="100%" height={height}>
+        <LineChart
+          data={chartData}
+          margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+          onClick={handleChartClick}
+        >
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis
           dataKey="timeLabel"
@@ -179,7 +197,27 @@ export function MarginLineChart({
             }}
           />
         )}
-      </LineChart>
-    </ResponsiveContainer>
+
+        {/* Lock indicator line */}
+        {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
+          <ReferenceLine
+            x={chartData[lockedIndex]?.timeLabel}
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+          />
+        )}
+        </LineChart>
+      </ResponsiveContainer>
+
+      {/* Unlock indicator */}
+      {isLocked && (
+        <div
+          className="text-xs text-muted-foreground text-center mt-1 cursor-pointer hover:text-foreground"
+          onClick={clearLock}
+        >
+          Click chart or here to unlock
+        </div>
+      )}
+    </div>
   )
 }

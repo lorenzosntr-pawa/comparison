@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -8,7 +8,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceLine,
 } from 'recharts'
+import { useChartLock } from '../hooks/use-chart-lock'
 import { format } from 'date-fns'
 import type { OddsHistoryPoint } from '@/types/api'
 import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
@@ -29,6 +31,7 @@ interface OddsLineChartProps {
   comparisonMode?: boolean
   height?: number
   showMargin?: boolean
+  onLockChange?: (lockedTime: string | null, lockedData: Record<string, unknown> | null) => void
 }
 
 export function OddsLineChart({
@@ -37,7 +40,10 @@ export function OddsLineChart({
   comparisonMode = false,
   height = 300,
   showMargin = false,
+  onLockChange,
 }: OddsLineChartProps) {
+  // Chart lock state
+  const { lockedTime, lockedIndex, isLocked, handleChartClick, clearLock } = useChartLock()
   // In comparison mode, we show one outcome at a time with a selector
   const [selectedOutcome, setSelectedOutcome] = useState<string | null>(null)
 
@@ -120,6 +126,14 @@ export function OddsLineChart({
     return []
   }, [multiData, comparisonMode])
 
+  // Call onLockChange when lock state changes
+  useEffect(() => {
+    if (onLockChange) {
+      const lockedData = isLocked && lockedIndex !== null ? chartData[lockedIndex] : null
+      onLockChange(lockedTime, lockedData as Record<string, unknown> | null)
+    }
+  }, [lockedTime, lockedIndex, isLocked, chartData, onLockChange])
+
   // Check for empty data
   const isEmpty = comparisonMode
     ? !multiData || Object.keys(multiData).length === 0
@@ -158,7 +172,11 @@ export function OddsLineChart({
       )}
 
       <ResponsiveContainer width="100%" height={height}>
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+        <LineChart
+          data={chartData}
+          margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+          onClick={handleChartClick}
+        >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis
             dataKey="timeLabel"
@@ -244,8 +262,27 @@ export function OddsLineChart({
               )}
             </>
           )}
+
+          {/* Lock indicator line */}
+          {isLocked && lockedIndex !== null && chartData[lockedIndex] && (
+            <ReferenceLine
+              x={chartData[lockedIndex]?.timeLabel}
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
+
+      {/* Unlock indicator */}
+      {isLocked && (
+        <div
+          className="text-xs text-muted-foreground text-center mt-1 cursor-pointer hover:text-foreground"
+          onClick={clearLock}
+        >
+          Click chart or here to unlock
+        </div>
+      )}
     </div>
   )
 }
