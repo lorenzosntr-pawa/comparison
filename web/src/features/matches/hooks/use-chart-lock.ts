@@ -59,47 +59,69 @@ export function useChartLock(): UseChartLockReturn {
 
   const handleChartClick = useCallback(
     (data: ChartClickData, chartData?: ChartDataPoint[]) => {
+      console.log('[useChartLock] handleChartClick called', {
+        dataKeys: Object.keys(data),
+        activePayload: data.activePayload,
+        activeTooltipIndex: data.activeTooltipIndex,
+        chartDataLength: chartData?.length,
+      })
+
       // Debounce: ignore clicks within 100ms of last click
       const now = Date.now()
       if (now - lastClickRef.current < 100) {
+        console.log('[useChartLock] Debounced - ignoring click')
         return
       }
       lastClickRef.current = now
 
-      // Extract time from recharts payload
-      const time = data.activePayload?.[0]?.payload?.time as string | undefined
-
-      if (time === undefined) {
-        // Clicked outside of data area
-        return
-      }
-
-      // Try to get index from activeTooltipIndex first (may not always be provided by recharts)
-      let index: number | null = typeof data.activeTooltipIndex === 'number'
-        ? data.activeTooltipIndex
-        : null
-
-      // Fallback: find index by matching time in chartData
-      if (index === null && chartData) {
-        const foundIndex = chartData.findIndex((point) => point.time === time)
-        if (foundIndex >= 0) {
-          index = foundIndex
+      // Get index from activeTooltipIndex (recharts may provide as string or number)
+      let index: number | null = null
+      if (data.activeTooltipIndex !== undefined && data.activeTooltipIndex !== null) {
+        const parsed = typeof data.activeTooltipIndex === 'number'
+          ? data.activeTooltipIndex
+          : parseInt(String(data.activeTooltipIndex), 10)
+        if (!isNaN(parsed)) {
+          index = parsed
         }
       }
 
+      console.log('[useChartLock] Parsed index:', index)
+
       if (index === null) {
-        // Could not determine index
+        console.log('[useChartLock] No valid index - clicked outside data area')
         return
       }
+
+      // Get time from chartData using the index
+      let time: string | undefined
+      if (chartData && index >= 0 && index < chartData.length) {
+        time = chartData[index].time
+      }
+
+      // Fallback: try activePayload if available
+      if (!time) {
+        time = data.activePayload?.[0]?.payload?.time as string | undefined
+      }
+
+      if (!time) {
+        console.log('[useChartLock] No time found for index', index)
+        return
+      }
+
+      console.log('[useChartLock] Got time from chartData:', time)
+
+      console.log('[useChartLock] Processing click', { time, index, currentLockedIndex: lockedIndexRef.current })
 
       // Use index comparison for toggle (more reliable than time string comparison)
       if (lockedIndexRef.current === index) {
         // Clicking same index unlocks
+        console.log('[useChartLock] Unlocking - same index clicked')
         setLockedTime(null)
         setLockedIndex(null)
         lockedIndexRef.current = null
       } else {
         // Lock at new position
+        console.log('[useChartLock] Locking at', { time, index })
         setLockedTime(time)
         setLockedIndex(index)
         lockedIndexRef.current = index
