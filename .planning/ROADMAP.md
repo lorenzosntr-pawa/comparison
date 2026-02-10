@@ -31,10 +31,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Root cause analysis for specifier bug in historical data
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal debugging)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 79-01: TBD (run /gsd:plan-phase 79 to break down)
+- [ ] 79-01: SQL verification and bug report documentation
 
 #### Phase 80: Specifier Bug Fix
 
