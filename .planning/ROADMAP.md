@@ -20,6 +20,112 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
+- 🚧 **v2.4 Historical Analytics** — Phases 79-88 (in progress)
+
+### 🚧 v2.4 Historical Analytics (In Progress)
+
+**Milestone Goal:** Enable traders to analyze historical margin patterns across tournaments and market types, with accurate specifier handling and interactive chart exploration.
+
+#### Phase 79: Investigation
+
+**Goal**: Root cause analysis for specifier bug in historical data
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal debugging)
+**Plans**: TBD
+
+Plans:
+- [ ] 79-01: TBD (run /gsd:plan-phase 79 to break down)
+
+#### Phase 80: Specifier Bug Fix
+
+**Goal**: Fix historical data for markets with specifiers (Over/Under, Handicap)
+**Depends on**: Phase 79
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 80-01: TBD
+
+#### Phase 81: Interactive Chart
+
+**Goal**: Add hover tooltip and click-to-lock crosshair interactions to charts
+**Depends on**: Phase 80
+**Research**: Unlikely (recharts already integrated)
+**Plans**: TBD
+
+Plans:
+- [ ] 81-01: TBD
+
+#### Phase 82: Comparison Table
+
+**Goal**: Locked timestamp comparison display for multi-bookmaker analysis
+**Depends on**: Phase 81
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 82-01: TBD
+
+#### Phase 83: Historical Analysis Page Foundation
+
+**Goal**: New page with route, navigation, filter bar, and tournament list
+**Depends on**: Phase 82
+**Research**: Unlikely (established React patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 83-01: TBD
+
+#### Phase 84: Tournament Summary Metrics
+
+**Goal**: Event count, avg margin, coverage stats, and trend indicators
+**Depends on**: Phase 83
+**Research**: Unlikely (SQL aggregation, established patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 84-01: TBD
+
+#### Phase 85: Time-to-Kickoff Charts
+
+**Goal**: Market type grouping with aggregate vs individual event toggle
+**Depends on**: Phase 84
+**Research**: Unlikely (recharts already in codebase)
+**Plans**: TBD
+
+Plans:
+- [ ] 85-01: TBD
+
+#### Phase 86: Betpawa vs Competitor Comparison
+
+**Goal**: Overlay lines and difference chart toggle for margin comparison
+**Depends on**: Phase 85
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 86-01: TBD
+
+#### Phase 87: Market Coverage & Export
+
+**Goal**: Summary table and CSV/screenshot export functionality
+**Depends on**: Phase 86
+**Research**: Likely (export libraries)
+**Research topics**: file-saver for CSV, html2canvas or similar for chart screenshots
+**Plans**: TBD
+
+Plans:
+- [ ] 87-01: TBD
+
+#### Phase 88: Polish & Integration
+
+**Goal**: UX refinements, edge cases, final testing
+**Depends on**: Phase 87
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 88-01: TBD
 
 ## Completed Milestones
 
@@ -292,3 +398,13 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 77. Documentation (Frontend) + README | v2.3 | 3/3 | Complete | 2026-02-09 |
 | 78. Type Annotations & Error Handling | v2.3 | 1/1 | Complete | 2026-02-09 |
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
+| 79. Investigation | v2.4 | 0/? | Not started | - |
+| 80. Specifier Bug Fix | v2.4 | 0/? | Not started | - |
+| 81. Interactive Chart | v2.4 | 0/? | Not started | - |
+| 82. Comparison Table | v2.4 | 0/? | Not started | - |
+| 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
+| 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |
+| 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
+| 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
+| 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
+| 88. Polish & Integration | v2.4 | 0/? | Not started | - |
