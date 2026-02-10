@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from 'recharts'
 import { format } from 'date-fns'
 import type { MultiOddsHistoryData } from '../hooks/use-multi-odds-history'
@@ -21,6 +22,7 @@ const BOOKMAKER_COLORS: Record<string, string> = {
 interface MarketHistoryPanelProps {
   multiData?: MultiOddsHistoryData
   height?: number
+  onLockChange?: (lockedTime: string | null) => void
 }
 
 interface ChartDataPoint {
@@ -32,7 +34,11 @@ interface ChartDataPoint {
 export function MarketHistoryPanel({
   multiData,
   height = 180,
+  onLockChange,
 }: MarketHistoryPanelProps) {
+  // Shared lock state for synchronized crosshairs across all mini-charts
+  const [lockedTime, setLockedTime] = useState<string | null>(null)
+  const isLocked = lockedTime !== null
   // Extract all unique outcome names from the data
   const outcomeNames = useMemo(() => {
     if (!multiData) return []
@@ -87,6 +93,29 @@ export function MarketHistoryPanel({
     return result
   }, [multiData, outcomeNames])
 
+  // Get locked index for a specific outcome's chart data
+  const getLockedIndex = (data: ChartDataPoint[]) => {
+    if (!lockedTime) return null
+    return data.findIndex((d) => d.time === lockedTime)
+  }
+
+  // Handle chart click - toggle lock at clicked time
+  const handleChartClick = (data: {
+    activePayload?: Array<{ payload: { time: string } }>
+  }) => {
+    const time = data.activePayload?.[0]?.payload?.time
+    if (time) {
+      setLockedTime((prev) => (prev === time ? null : time))
+    }
+  }
+
+  // Call onLockChange when lock state changes
+  useEffect(() => {
+    if (onLockChange) {
+      onLockChange(lockedTime)
+    }
+  }, [lockedTime, onLockChange])
+
   // Check for empty data
   if (!multiData || Object.keys(multiData).length === 0 || outcomeNames.length === 0) {
     return (
@@ -107,6 +136,7 @@ export function MarketHistoryPanel({
               <LineChart
                 data={chartDataByOutcome[outcomeName] || []}
                 margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                onClick={handleChartClick}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
@@ -157,6 +187,21 @@ export function MarketHistoryPanel({
                     isAnimationActive={false}
                   />
                 ))}
+
+                {/* Synchronized lock indicator line */}
+                {isLocked && (() => {
+                  const idx = getLockedIndex(chartDataByOutcome[outcomeName] || [])
+                  if (idx === null || idx < 0) return null
+                  const chartData = chartDataByOutcome[outcomeName]
+                  if (!chartData || !chartData[idx]) return null
+                  return (
+                    <ReferenceLine
+                      x={chartData[idx].timeLabel}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                    />
+                  )
+                })()}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -177,6 +222,16 @@ export function MarketHistoryPanel({
           </div>
         ))}
       </div>
+
+      {/* Unlock indicator */}
+      {isLocked && lockedTime && (
+        <div
+          className="text-xs text-muted-foreground text-center cursor-pointer hover:text-foreground"
+          onClick={() => setLockedTime(null)}
+        >
+          Locked at {format(new Date(lockedTime), 'MMM d, HH:mm')} — Click to unlock
+        </div>
+      )}
     </div>
   )
 }
