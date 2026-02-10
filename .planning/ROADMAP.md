@@ -49,15 +49,16 @@ Plans:
 - [x] 80-01: Backend API and frontend data layer (line parameter)
 - [x] 80-02: Frontend components (pass line through click handlers)
 
-#### Phase 81: Interactive Chart
+#### Phase 81: Interactive Chart ✓
 
 **Goal**: Add hover tooltip and click-to-lock crosshair interactions to charts
 **Depends on**: Phase 80
 **Research**: Unlikely (recharts already integrated)
-**Plans**: TBD
+**Plans**: 1/1 complete
+**Completed**: 2026-02-10
 
 Plans:
-- [ ] 81-01: TBD
+- [x] 81-01: Click-to-lock crosshair with comparison panel
 
 #### Phase 82: Comparison Table
 
@@ -403,7 +404,7 @@ Plans:
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
 | 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 80. Specifier Bug Fix | v2.4 | 2/2 | Complete | 2026-02-10 |
-| 81. Interactive Chart | v2.4 | 0/? | Not started | - |
+| 81. Interactive Chart | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 82. Comparison Table | v2.4 | 0/? | Not started | - |
 | 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
 | 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |
