@@ -296,6 +296,6 @@ Progress: █░░░░░░░░░ 10%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 79-01-PLAN.md (Phase 79 complete)
+Stopped at: Planned Phase 80 (2 plans created)
 Resume file: None
-Next action: Use `/gsd:plan-phase 80` to plan Specifier Bug Fix phase
+Next action: Use `/gsd:execute-plan .planning/phases/80-specifier-bug-fix/80-01-PLAN.md` to fix backend and data layer
