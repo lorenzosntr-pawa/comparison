@@ -220,6 +220,7 @@ Progress: █████░░░░░ 50%
 - **TournamentAccumulator pattern** - aggregate multiple metrics (margins, coverage counts, event list) during single iteration over events, then compute averages/trends from accumulated data (v2.4 Phase 84)
 - **First-half vs second-half trend calculation** - compare average margin of first half of events to second half; 0.5% threshold, minimum 4 events for meaningful comparison (v2.4 Phase 84)
 - **Coverage bar with proportional bookmaker segments** - horizontal bar with colored segments (blue/green/orange) proportional to coverage %, tooltip shows exact percentages (v2.4 Phase 84)
+- **Pagination loop for API with limits** - fetch all pages until response.events.length < pageSize; respects API maximum page_size of 100 (v2.4 Phase 84-FIX)
 
 ### Key Decisions
 
@@ -303,6 +304,6 @@ Progress: █████░░░░░ 50%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 84 (Tournament Summary Metrics)
+Stopped at: Completed 84-01-FIX (UAT pagination fix)
 Resume file: None
-Next action: `/gsd:plan-phase 85` to create Time-to-Kickoff Charts plan
+Next action: `/gsd:verify-work 84` to re-verify Phase 84 features

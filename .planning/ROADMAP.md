@@ -88,11 +88,12 @@ Plans:
 **Goal**: Event count, avg margin, coverage stats, and trend indicators
 **Depends on**: Phase 83
 **Research**: Unlikely (SQL aggregation, established patterns)
-**Plans**: 1/1 complete
+**Plans**: 1/1 complete + 1 FIX
 **Completed**: 2026-02-10
 
 Plans:
 - [x] 84-01: Extend useTournaments hook with metrics, add display to tournament cards
+- [x] 84-01-FIX: Fix page_size validation error (UAT-001) with pagination loop
 
 #### Phase 85: Time-to-Kickoff Charts
 
