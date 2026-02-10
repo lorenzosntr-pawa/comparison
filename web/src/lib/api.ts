@@ -207,6 +207,7 @@ export const api = {
    * @param params.kickoff_to - Filter by maximum kickoff time (ISO string)
    * @param params.search - Search string for event/team names
    * @param params.availability - Filter by platform availability
+   * @param params.include_started - Whether to include already-started events
    * @returns Promise resolving to paginated event list
    */
   getEvents: (params?: {
@@ -219,6 +220,7 @@ export const api = {
     kickoff_to?: string
     search?: string
     availability?: 'betpawa' | 'competitor'
+    include_started?: boolean
   }) => {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -241,6 +243,8 @@ export const api = {
     if (params?.search) searchParams.set('search', params.search)
     if (params?.availability)
       searchParams.set('availability', params.availability)
+    if (params?.include_started)
+      searchParams.set('include_started', 'true')
     const query = searchParams.toString()
     return fetchJson<MatchedEventList>(`/events${query ? `?${query}` : ''}`)
   },

@@ -1,2 +1,7 @@
 // Barrel export for historical-analysis hooks
-export { useTournaments, type TournamentWithCount } from './use-tournaments'
+export {
+  useTournaments,
+  TRACKED_MARKETS,
+  type TournamentWithCount,
+  type MarginMetrics,
+} from './use-tournaments'

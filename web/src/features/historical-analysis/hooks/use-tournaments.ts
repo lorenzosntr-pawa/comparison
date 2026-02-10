@@ -17,8 +17,28 @@ const BETPAWA_SLUG = 'betpawa'
 const COMPETITOR_SLUGS = ['sportybet', 'bet9ja']
 const ALL_BOOKMAKER_SLUGS = [BETPAWA_SLUG, ...COMPETITOR_SLUGS]
 
-/** Market ID for 1X2 (match result) */
-const MARKET_1X2_ID = '3743'
+/**
+ * Tracked markets for historical analysis.
+ * Market IDs from use-column-settings.ts
+ */
+export const TRACKED_MARKETS = [
+  { id: '3743', label: '1X2' },
+  { id: '5000', label: 'O/U 2.5' },
+  { id: '3795', label: 'BTTS' },
+  { id: '4693', label: 'DC' },
+] as const
+
+/**
+ * Margin metrics for a single market type.
+ */
+export interface MarginMetrics {
+  /** Average Betpawa margin for this market, or null if no data */
+  avgMargin: number | null
+  /** Average best competitor margin (lowest of sportybet/bet9ja), or null if no data */
+  competitorAvgMargin: number | null
+  /** Margin trend indicator, or null if insufficient data */
+  trend: 'up' | 'down' | 'stable' | null
+}
 
 /**
  * Tournament with event count and metrics for historical analysis.
@@ -32,14 +52,19 @@ export interface TournamentWithCount {
   country: string | null
   /** Number of events in the date range */
   eventCount: number
-  /** Average Betpawa 1X2 margin for the tournament, or null if no data */
-  avgMargin: number | null
-  /** Average best competitor 1X2 margin (lowest of sportybet/bet9ja), or null if no data */
-  competitorAvgMargin: number | null
+  /** Margin metrics by market ID (e.g., '3743' for 1X2) */
+  marginsByMarket: Record<string, MarginMetrics>
   /** Coverage percentage by bookmaker (0-100) */
   coverageByBookmaker: Record<string, number>
-  /** Margin trend indicator, or null if insufficient data */
-  trend: 'up' | 'down' | 'stable' | null
+}
+
+/**
+ * Per-market accumulator data during extraction.
+ */
+interface MarketAccumulatorData {
+  betpawaMargins: number[]
+  competitorMargins: number[]
+  eventMargins: { kickoff: string; margin: number }[]
 }
 
 /**
@@ -50,42 +75,44 @@ interface TournamentAccumulator {
   name: string
   country: string | null
   eventCount: number
-  betpawaMargins: number[]
-  competitorMargins: number[]
+  /** Per-market margin data keyed by market ID */
+  marginData: Record<string, MarketAccumulatorData>
   coverageCounts: Record<string, number>
-  /** Events with kickoff and margin for trend calculation */
-  eventMargins: { kickoff: string; margin: number }[]
 }
 
 /**
- * Extract the 1X2 margin for a specific bookmaker from an event.
+ * Extract the margin for a specific bookmaker and market from an event.
  * @param event - The matched event
  * @param bookmakerSlug - The bookmaker to extract margin from
- * @returns The 1X2 margin or null if not available
+ * @param marketId - The market ID to extract margin for
+ * @returns The margin or null if not available
  */
-function extractBookmaker1X2Margin(
+function extractBookmakerMargin(
   event: MatchedEvent,
-  bookmakerSlug: string
+  bookmakerSlug: string,
+  marketId: string
 ): number | null {
   const bookmaker = event.bookmakers.find(
     (b) => b.bookmaker_slug === bookmakerSlug && b.has_odds
   )
   if (!bookmaker) return null
 
-  const market1X2 = bookmaker.inline_odds.find(
-    (odds) => odds.market_id === MARKET_1X2_ID
-  )
-  return market1X2?.margin ?? null
+  const market = bookmaker.inline_odds.find((odds) => odds.market_id === marketId)
+  return market?.margin ?? null
 }
 
 /**
- * Get the best (lowest) competitor margin from an event.
+ * Get the best (lowest) competitor margin from an event for a specific market.
  * @param event - The matched event
+ * @param marketId - The market ID to extract margin for
  * @returns The lowest competitor margin or null if none available
  */
-function getBestCompetitorMargin(event: MatchedEvent): number | null {
+function getBestCompetitorMargin(
+  event: MatchedEvent,
+  marketId: string
+): number | null {
   const margins = COMPETITOR_SLUGS.map((slug) =>
-    extractBookmaker1X2Margin(event, slug)
+    extractBookmakerMargin(event, slug, marketId)
   ).filter((m): m is number => m !== null)
 
   if (margins.length === 0) return null
@@ -128,6 +155,17 @@ function calculateTrend(
 }
 
 /**
+ * Create an empty market accumulator data structure.
+ */
+function createEmptyMarketData(): MarketAccumulatorData {
+  return {
+    betpawaMargins: [],
+    competitorMargins: [],
+    eventMargins: [],
+  }
+}
+
+/**
  * Fetches tournaments with event counts and metrics for a date range.
  *
  * @param dateRange - The date range to query
@@ -151,6 +189,7 @@ export function useTournaments(dateRange: DateRange) {
           page_size: pageSize,
           kickoff_from: kickoffFrom,
           kickoff_to: kickoffTo,
+          include_started: true, // BUG-013 fix: include completed matches
         })
 
         allEvents = allEvents.concat(response.events)
@@ -173,10 +212,12 @@ export function useTournaments(dateRange: DateRange) {
             name: event.tournament_name,
             country: event.tournament_country,
             eventCount: 0,
-            betpawaMargins: [],
-            competitorMargins: [],
+            marginData: {},
             coverageCounts: {},
-            eventMargins: [],
+          }
+          // Initialize margin data for all tracked markets
+          for (const market of TRACKED_MARKETS) {
+            accumulator.marginData[market.id] = createEmptyMarketData()
           }
           // Initialize coverage counts for all bookmakers
           for (const slug of ALL_BOOKMAKER_SLUGS) {
@@ -187,23 +228,32 @@ export function useTournaments(dateRange: DateRange) {
 
         accumulator.eventCount++
 
-        // Extract Betpawa 1X2 margin
-        const betpawaMargin = extractBookmaker1X2Margin(event, BETPAWA_SLUG)
-        if (betpawaMargin !== null) {
-          accumulator.betpawaMargins.push(betpawaMargin)
-          accumulator.eventMargins.push({
-            kickoff: event.kickoff,
-            margin: betpawaMargin,
-          })
+        // Extract margins for each tracked market
+        for (const market of TRACKED_MARKETS) {
+          const marketData = accumulator.marginData[market.id]
+
+          // Extract Betpawa margin for this market
+          const betpawaMargin = extractBookmakerMargin(
+            event,
+            BETPAWA_SLUG,
+            market.id
+          )
+          if (betpawaMargin !== null) {
+            marketData.betpawaMargins.push(betpawaMargin)
+            marketData.eventMargins.push({
+              kickoff: event.kickoff,
+              margin: betpawaMargin,
+            })
+          }
+
+          // Extract best competitor margin for this market
+          const competitorMargin = getBestCompetitorMargin(event, market.id)
+          if (competitorMargin !== null) {
+            marketData.competitorMargins.push(competitorMargin)
+          }
         }
 
-        // Extract best competitor margin
-        const competitorMargin = getBestCompetitorMargin(event)
-        if (competitorMargin !== null) {
-          accumulator.competitorMargins.push(competitorMargin)
-        }
-
-        // Track coverage per bookmaker
+        // Track coverage per bookmaker (event-level, not market-level)
         for (const bookmaker of event.bookmakers) {
           if (
             ALL_BOOKMAKER_SLUGS.includes(bookmaker.bookmaker_slug) &&
@@ -218,18 +268,32 @@ export function useTournaments(dateRange: DateRange) {
       const tournaments: TournamentWithCount[] = []
 
       for (const acc of tournamentMap.values()) {
-        // Calculate average margins
-        const avgMargin =
-          acc.betpawaMargins.length > 0
-            ? acc.betpawaMargins.reduce((sum, m) => sum + m, 0) /
-              acc.betpawaMargins.length
-            : null
+        // Calculate margin metrics for each market
+        const marginsByMarket: Record<string, MarginMetrics> = {}
 
-        const competitorAvgMargin =
-          acc.competitorMargins.length > 0
-            ? acc.competitorMargins.reduce((sum, m) => sum + m, 0) /
-              acc.competitorMargins.length
-            : null
+        for (const market of TRACKED_MARKETS) {
+          const marketData = acc.marginData[market.id]
+
+          const avgMargin =
+            marketData.betpawaMargins.length > 0
+              ? marketData.betpawaMargins.reduce((sum, m) => sum + m, 0) /
+                marketData.betpawaMargins.length
+              : null
+
+          const competitorAvgMargin =
+            marketData.competitorMargins.length > 0
+              ? marketData.competitorMargins.reduce((sum, m) => sum + m, 0) /
+                marketData.competitorMargins.length
+              : null
+
+          const trend = calculateTrend(marketData.eventMargins)
+
+          marginsByMarket[market.id] = {
+            avgMargin,
+            competitorAvgMargin,
+            trend,
+          }
+        }
 
         // Calculate coverage percentages
         const coverageByBookmaker: Record<string, number> = {}
@@ -240,27 +304,25 @@ export function useTournaments(dateRange: DateRange) {
               : 0
         }
 
-        // Calculate trend
-        const trend = calculateTrend(acc.eventMargins)
-
         tournaments.push({
           id: acc.id,
           name: acc.name,
           country: acc.country,
           eventCount: acc.eventCount,
-          avgMargin,
-          competitorAvgMargin,
+          marginsByMarket,
           coverageByBookmaker,
-          trend,
         })
       }
 
-      // Sort by Betpawa avgMargin ascending (best first), null values last
+      // Sort by 1X2 avgMargin ascending (best first), null values last
+      const market1X2Id = TRACKED_MARKETS[0].id
       return tournaments.sort((a, b) => {
-        if (a.avgMargin === null && b.avgMargin === null) return 0
-        if (a.avgMargin === null) return 1
-        if (b.avgMargin === null) return -1
-        return a.avgMargin - b.avgMargin
+        const aMargin = a.marginsByMarket[market1X2Id]?.avgMargin
+        const bMargin = b.marginsByMarket[market1X2Id]?.avgMargin
+        if (aMargin === null && bMargin === null) return 0
+        if (aMargin === null) return 1
+        if (bMargin === null) return -1
+        return aMargin - bMargin
       })
     },
     enabled: Boolean(kickoffFrom && kickoffTo),
