@@ -26,15 +26,16 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Enable traders to analyze historical margin patterns across tournaments and market types, with accurate specifier handling and interactive chart exploration.
 
-#### Phase 79: Investigation
+#### Phase 79: Investigation ✓
 
 **Goal**: Root cause analysis for specifier bug in historical data
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal debugging)
-**Plans**: 1
+**Plans**: 1/1 complete
+**Completed**: 2026-02-10
 
 Plans:
-- [ ] 79-01: SQL verification and bug report documentation
+- [x] 79-01: SQL verification and bug report documentation
 
 #### Phase 80: Specifier Bug Fix
 
@@ -398,7 +399,7 @@ Plans:
 | 77. Documentation (Frontend) + README | v2.3 | 3/3 | Complete | 2026-02-09 |
 | 78. Type Annotations & Error Handling | v2.3 | 1/1 | Complete | 2026-02-09 |
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
-| 79. Investigation | v2.4 | 0/? | Not started | - |
+| 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 80. Specifier Bug Fix | v2.4 | 0/? | Not started | - |
 | 81. Interactive Chart | v2.4 | 0/? | Not started | - |
 | 82. Comparison Table | v2.4 | 0/? | Not started | - |
