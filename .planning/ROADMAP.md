@@ -54,11 +54,12 @@ Plans:
 **Goal**: Add hover tooltip and click-to-lock crosshair interactions to charts
 **Depends on**: Phase 80
 **Research**: Unlikely (recharts already integrated)
-**Plans**: 1/1 complete
+**Plans**: 1/1 complete + 1 FIX
 **Completed**: 2026-02-10
 
 Plans:
 - [x] 81-01: Click-to-lock crosshair with comparison panel
+- [x] 81-01-FIX: Fix click-to-lock not persisting (debounce, refs, index comparison)
 
 #### Phase 82: Comparison Table
 
@@ -404,7 +405,7 @@ Plans:
 | **v2.3 SHIPPED** | | | **2026-02-09** | |
 | 79. Investigation | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 80. Specifier Bug Fix | v2.4 | 2/2 | Complete | 2026-02-10 |
-| 81. Interactive Chart | v2.4 | 1/1 | Complete | 2026-02-10 |
+| 81. Interactive Chart | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-10 |
 | 82. Comparison Table | v2.4 | 0/? | Not started | - |
 | 83. Historical Analysis Page Foundation | v2.4 | 0/? | Not started | - |
 | 84. Tournament Summary Metrics | v2.4 | 0/? | Not started | - |

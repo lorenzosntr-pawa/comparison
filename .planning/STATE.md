@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 Phase: 81 of 88 (Interactive Chart)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-10 — Completed 81-01 (click-to-lock crosshair with comparison panel)
+Last activity: 2026-02-10 — Completed 81-01-FIX (click-to-lock bug fix)
 
 Progress: ███░░░░░░░ 30%
 
@@ -37,7 +37,7 @@ Progress: ███░░░░░░░ 30%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 156 (91 original + 12 FIX + 9 v1.8 + 10 v1.9 + 17 v2.0 + 17 additional)
+- Total plans completed: 157 (91 original + 13 FIX + 9 v1.8 + 10 v1.9 + 17 v2.0 + 17 additional)
 - Average duration: 6 min
 - Total execution time: ~12 hours
 
@@ -213,6 +213,8 @@ Progress: ███░░░░░░░ 30%
 - **Compound boolean for observing state** - `isObserving` requires both `activeScrapeId !== null` AND `ws.isConnected`; connection alone insufficient (v2.3 Phase 72)
 - **wasConnectedRef pattern for reconnection detection** - track first connection via ref, fire onReconnect only on disconnected→connected transition (v2.3 Phase 73)
 - **Stable connection timeout before retry reset** - delay 30s before resetting retry counter to prevent premature reset on flaky networks (v2.3 Phase 73)
+- **Ref-based state for stable callbacks** - use useRef to track state in useCallback handlers to avoid stale closures and allow empty dependency arrays (v2.4 Phase 81)
+- **Click handler debounce** - ignore clicks within 100ms of last click to prevent rapid double-fire issues (v2.4 Phase 81)
 
 ### Key Decisions
 
@@ -296,6 +298,6 @@ Progress: ███░░░░░░░ 30%
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 81 (Interactive Chart)
+Stopped at: Completed 81-01-FIX (click-to-lock bug fix)
 Resume file: None
 Next action: Continue to `/gsd:plan-phase 82` (Comparison Table)
