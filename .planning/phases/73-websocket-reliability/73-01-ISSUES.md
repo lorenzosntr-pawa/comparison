@@ -6,7 +6,21 @@
 
 ## Open Issues
 
-[None]
+### UAT-002: React key warning - duplicate keys '0-1'
+
+**Discovered:** 2026-02-09
+**Phase/Plan:** 73-01 (observed during testing, likely pre-existing)
+**Severity:** Cosmetic
+**Feature:** Dashboard/odds table rendering
+**Description:** Console warning: "Encountered two children with the same key, `0-1`. Keys should be unique so that components maintain their identity across updates." Warning appears multiple times during initial page load.
+**Expected:** No React key warnings in console
+**Actual:** Warning appears 8+ times, though no visible UI issues
+**Repro:**
+1. Open browser dev tools console
+2. Navigate to dashboard
+3. Observe console warnings about duplicate keys
+
+**Note:** This is likely a pre-existing issue not introduced by Phase 73. Recommend addressing during Phase 75 (Dead Code Audit - Frontend) as part of code quality improvements.
 
 ## Resolved Issues
 
