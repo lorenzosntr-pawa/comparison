@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 86 of 88 (Betpawa vs Competitor Comparison)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-11 — Completed 86-03-PLAN.md
+Phase: 87 of 88 (Market Coverage & Export)
+Plan: 0 of ? in current phase
+Status: Not started
+Last activity: 2026-02-11 — Completed 86-04-PLAN.md (Phase 86 complete)
 
-Progress: ██████░░░░ 66%
+Progress: ███████░░░ 75%
 
 ## Milestones
 
@@ -232,6 +232,8 @@ Progress: ██████░░░░ 66%
 - **CompetitiveBadge for margin comparison** - green/red badge showing +/- difference vs best competitor, shown only for primary market (1X2) (v2.4 Phase 86)
 - **Dialog-specific filter state pattern** - dialog maintains own state for bookmaker filter, resets on open; independent from page-level filter (v2.4 Phase 86)
 - **MergedDataPoint for multi-bookmaker charts** - merge hoursToKickoff data with 1 decimal precision, each bookmaker as optional key (v2.4 Phase 86)
+- **DifferenceBarChart for margin gap visualization** - bar chart showing Betpawa minus competitor per time bucket, green=Betpawa better, red=competitor better (v2.4 Phase 86)
+- **calculateBucketStats helper** - convert timeline points to bucket statistics on-demand in dialog component (v2.4 Phase 86)
 
 ### Key Decisions
 
@@ -318,6 +320,6 @@ Progress: ██████░░░░ 66%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 86-02-FIX.md (UAT issue fixes for multi-bookmaker MarketCard)
+Stopped at: Completed Phase 86 (Betpawa vs Competitor Comparison) - all 4 plans complete
 Resume file: None
-Next action: `/gsd:verify-work 86-02` or `/gsd:execute-plan .planning/phases/86-betpawa-vs-competitor-comparison/86-04-PLAN.md`
+Next action: `/gsd:plan-phase 87` to create plan for Market Coverage & Export
