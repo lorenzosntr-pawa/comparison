@@ -51,6 +51,12 @@ class CachedMarket:
     ``_build_inline_odds()`` and ``_build_competitor_inline_odds()`` in
     ``src/api/routes/events.py`` can consume CachedSnapshot.markets without
     any code changes.
+
+    Availability Tracking:
+        The ``unavailable_at`` field tracks when a market became unavailable
+        (disappeared from bookmaker). NULL means available, timestamp means
+        unavailable since that time. Use the ``is_available`` property for
+        convenient boolean access.
     """
 
     betpawa_market_id: str
@@ -61,6 +67,12 @@ class CachedMarket:
     handicap_away: float | None
     outcomes: list[dict]  # [{name, odds, is_active}, ...]
     market_groups: list[str] | None
+    unavailable_at: datetime | None = None
+
+    @property
+    def is_available(self) -> bool:
+        """Return True if market is currently available (not marked unavailable)."""
+        return self.unavailable_at is None
 
 
 @dataclass(frozen=True)

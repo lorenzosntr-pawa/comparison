@@ -94,6 +94,7 @@ def snapshot_to_cached_from_data(
                 handicap_away=m.handicap_away,
                 outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
                 market_groups=m.market_groups,
+                unavailable_at=getattr(m, "unavailable_at", None),
             )
         )
 
@@ -148,6 +149,7 @@ def snapshot_to_cached_from_models(
                 handicap_away=getattr(m, "handicap_away", None),
                 outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
                 market_groups=getattr(m, "market_groups", None),
+                unavailable_at=getattr(m, "unavailable_at", None),
             )
         )
 
@@ -205,6 +207,7 @@ def snapshot_to_cached(
                 handicap_away=m.handicap_away,
                 outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
                 market_groups=m.market_groups,
+                unavailable_at=getattr(m, "unavailable_at", None),
             )
         )
 
