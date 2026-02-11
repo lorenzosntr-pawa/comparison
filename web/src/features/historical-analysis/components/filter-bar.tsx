@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calendar } from 'lucide-react'
 import { format, subDays } from 'date-fns'
+import { BookmakerFilter } from './bookmaker-filter'
 
 export interface DateRange {
   from?: Date
@@ -11,6 +12,8 @@ export interface DateRange {
 interface FilterBarProps {
   dateRange: DateRange
   onDateRangeChange: (range: DateRange) => void
+  selectedBookmakers: string[]
+  onBookmakersChange: (selected: string[]) => void
 }
 
 function formatDateForInput(date: Date | undefined): string {
@@ -23,7 +26,12 @@ function formatDateForDisplay(date: Date | undefined): string {
   return format(date, 'MMM d, yyyy')
 }
 
-export function FilterBar({ dateRange, onDateRangeChange }: FilterBarProps) {
+export function FilterBar({
+  dateRange,
+  onDateRangeChange,
+  selectedBookmakers,
+  onBookmakersChange,
+}: FilterBarProps) {
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     const date = value ? new Date(value + 'T00:00:00') : undefined
@@ -106,6 +114,12 @@ export function FilterBar({ dateRange, onDateRangeChange }: FilterBarProps) {
           />
         </div>
       </div>
+
+      {/* Bookmaker filter */}
+      <BookmakerFilter
+        selected={selectedBookmakers}
+        onChange={onBookmakersChange}
+      />
 
       {/* Selected range display */}
       {dateRange.from && dateRange.to && (

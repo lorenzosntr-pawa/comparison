@@ -27,6 +27,7 @@ const countryFlags: Record<string, string> = {
 interface TournamentListProps {
   tournaments: TournamentWithCount[]
   isLoading: boolean
+  selectedBookmakers: string[]
 }
 
 /**
@@ -79,9 +80,13 @@ function DeltaDisplay({ delta }: { delta: number }) {
  */
 function MarketBreakdown({
   marginsByMarket,
+  selectedBookmakers: _selectedBookmakers,
 }: {
   marginsByMarket: Record<string, MarginMetrics>
+  selectedBookmakers: string[]
 }) {
+  // Note: _selectedBookmakers will be used in Task 3 for multi-column display
+  void _selectedBookmakers
   // Check if any market has data
   const hasAnyData = TRACKED_MARKETS.some(
     (market) => marginsByMarket[market.id]?.avgMargin !== null
@@ -125,7 +130,13 @@ function MarketBreakdown({
   )
 }
 
-function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
+function TournamentCard({
+  tournament,
+  selectedBookmakers,
+}: {
+  tournament: TournamentWithCount
+  selectedBookmakers: string[]
+}) {
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
@@ -152,7 +163,10 @@ function TournamentCard({ tournament }: { tournament: TournamentWithCount }) {
         {/* Metrics row */}
         <div className="mt-3">
           {/* Per-market margin breakdown */}
-          <MarketBreakdown marginsByMarket={tournament.marginsByMarket} />
+          <MarketBreakdown
+            marginsByMarket={tournament.marginsByMarket}
+            selectedBookmakers={selectedBookmakers}
+          />
         </div>
 
         {/* View Details button */}
@@ -187,7 +201,11 @@ function SkeletonCard() {
   )
 }
 
-export function TournamentList({ tournaments, isLoading }: TournamentListProps) {
+export function TournamentList({
+  tournaments,
+  isLoading,
+  selectedBookmakers,
+}: TournamentListProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -213,7 +231,11 @@ export function TournamentList({ tournaments, isLoading }: TournamentListProps) 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {tournaments.map((tournament) => (
-        <TournamentCard key={tournament.id} tournament={tournament} />
+        <TournamentCard
+          key={tournament.id}
+          tournament={tournament}
+          selectedBookmakers={selectedBookmakers}
+        />
       ))}
     </div>
   )
