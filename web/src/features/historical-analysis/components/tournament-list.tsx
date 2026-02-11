@@ -51,6 +51,30 @@ function MarginBadge({
 }
 
 /**
+ * Format margin delta with sign and color.
+ */
+function DeltaDisplay({ delta }: { delta: number }) {
+  // Color: green if negative (improved), red if positive (worsened), muted if ~zero
+  const isImproved = delta < -0.1
+  const isWorsened = delta > 0.1
+  const sign = delta > 0 ? '+' : ''
+
+  return (
+    <span
+      className={
+        isImproved
+          ? 'text-green-600 dark:text-green-400'
+          : isWorsened
+            ? 'text-red-600 dark:text-red-400'
+            : 'text-muted-foreground'
+      }
+    >
+      ({sign}{delta.toFixed(1)}%)
+    </span>
+  )
+}
+
+/**
  * Renders a per-market breakdown grid showing metrics for each tracked market.
  */
 function MarketBreakdown({
@@ -70,15 +94,30 @@ function MarketBreakdown({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
       {TRACKED_MARKETS.map((market) => {
         const metrics = marginsByMarket[market.id]
         if (!metrics?.avgMargin) return null // Skip markets with no data
 
+        const hasOpeningClosing =
+          metrics.openingMargin !== null &&
+          metrics.closingMargin !== null &&
+          metrics.marginDelta !== null
+
         return (
-          <div key={market.id} className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground">{market.label}:</span>
-            <MarginBadge avgMargin={metrics.avgMargin} />
+          <div key={market.id} className="space-y-0.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground">{market.label}:</span>
+              <MarginBadge avgMargin={metrics.avgMargin} />
+            </div>
+            {hasOpeningClosing && (
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <span>
+                  {metrics.openingMargin!.toFixed(1)}% → {metrics.closingMargin!.toFixed(1)}%
+                </span>
+                <DeltaDisplay delta={metrics.marginDelta!} />
+              </div>
+            )}
           </div>
         )
       })}
