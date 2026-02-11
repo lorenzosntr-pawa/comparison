@@ -28,8 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { TimeToKickoffChart } from './time-to-kickoff-chart'
+import { BookmakerFilter, BOOKMAKER_COLORS } from './bookmaker-filter'
 import type { TournamentMarket, BucketStats } from '../hooks/use-tournament-markets'
+
+/** View mode for the timeline chart */
+type ViewMode = 'overlay' | 'difference'
 
 /**
  * Props for TimelineDialog component.
@@ -182,6 +187,16 @@ export function TimelineDialog({
   // For multi-market mode, track selected market
   const [selectedMarketKey, setSelectedMarketKey] = useState<string | null>(null)
 
+  // Dialog-specific bookmaker selection (independent from page filter)
+  const [dialogBookmakers, setDialogBookmakers] = useState<string[]>([
+    'betpawa',
+    'sportybet',
+    'bet9ja',
+  ])
+
+  // View mode: overlay shows multiple lines, difference shows gap chart
+  const [viewMode, setViewMode] = useState<ViewMode>('overlay')
+
   // Determine effective market to display
   const effectiveMarket = useMemo(() => {
     // Multi-market mode
@@ -199,10 +214,12 @@ export function TimelineDialog({
     return market
   }, [market, allMarkets, selectedMarketKey])
 
-  // Reset selection when dialog opens
+  // Reset selection and state when dialog opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       setSelectedMarketKey(null)
+      setDialogBookmakers(['betpawa', 'sportybet', 'bet9ja'])
+      setViewMode('overlay')
     }
     onOpenChange(newOpen)
   }
@@ -221,6 +238,37 @@ export function TimelineDialog({
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
+
+        {/* Bookmaker filter and view mode controls */}
+        <div className="flex flex-wrap items-end justify-between gap-4 py-3 border-b">
+          <BookmakerFilter
+            selected={dialogBookmakers}
+            onChange={setDialogBookmakers}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              View
+            </label>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={viewMode === 'overlay' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('overlay')}
+                className="h-9 px-3 text-xs"
+              >
+                Overlay
+              </Button>
+              <Button
+                variant={viewMode === 'difference' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('difference')}
+                className="h-9 px-3 text-xs"
+              >
+                Difference
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Multi-market mode: market selector */}
         {isMultiMarketMode && allMarkets && (
@@ -261,11 +309,19 @@ export function TimelineDialog({
               <h3 className="text-sm font-medium mb-3 text-muted-foreground">
                 Margin Over Time (Hours to Kickoff)
               </h3>
-              <TimeToKickoffChart
-                data={effectiveMarket.timeToKickoffHistory}
-                height={300}
-                showBucketZones={true}
-              />
+              {viewMode === 'overlay' ? (
+                <TimeToKickoffChart
+                  data={effectiveMarket.timeToKickoffHistory}
+                  competitorData={effectiveMarket.competitorTimelineData}
+                  selectedBookmakers={dialogBookmakers}
+                  height={300}
+                  showBucketZones={true}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground bg-muted/30 rounded-md">
+                  Difference view coming soon (86-04)
+                </div>
+              )}
             </div>
           </div>
         ) : (
