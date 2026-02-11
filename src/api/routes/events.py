@@ -168,6 +168,10 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                 except (ZeroDivisionError, TypeError):
                     pass
 
+            # Extract availability from market (CachedMarket or MarketOdds)
+            unavailable_at = getattr(market, "unavailable_at", None)
+            available = unavailable_at is None
+
             # Always append market (even if outcomes empty/margin null)
             # This ensures consistency with event detail endpoint
             inline_odds.append(
@@ -177,6 +181,8 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                     line=market.line,
                     outcomes=outcomes,
                     margin=margin,
+                    available=available,
+                    unavailable_since=unavailable_at,
                 )
             )
 
@@ -410,6 +416,10 @@ def _build_competitor_inline_odds(
                 except (ZeroDivisionError, TypeError):
                     pass
 
+            # Extract availability from market (CachedMarket or CompetitorMarketOdds)
+            unavailable_at = getattr(market, "unavailable_at", None)
+            available = unavailable_at is None
+
             # Always append market (even if outcomes empty/margin null)
             # This ensures consistency with event detail endpoint
             inline_odds.append(
@@ -419,6 +429,8 @@ def _build_competitor_inline_odds(
                     line=market.line,
                     outcomes=outcomes,
                     margin=margin,
+                    available=available,
+                    unavailable_since=unavailable_at,
                 )
             )
 
@@ -574,6 +586,10 @@ def _build_market_detail(market: MarketOdds) -> MarketOddsDetail:
 
     margin = _calculate_margin(outcomes)
 
+    # Extract availability from market (MarketOdds ORM model)
+    unavailable_at = getattr(market, "unavailable_at", None)
+    available = unavailable_at is None
+
     return MarketOddsDetail(
         betpawa_market_id=market.betpawa_market_id,
         betpawa_market_name=market.betpawa_market_name,
@@ -581,6 +597,8 @@ def _build_market_detail(market: MarketOdds) -> MarketOddsDetail:
         outcomes=outcomes,
         margin=margin,
         market_groups=market.market_groups,
+        available=available,
+        unavailable_since=unavailable_at,
     )
 
 
@@ -653,6 +671,10 @@ def _build_competitor_market_detail(market: CompetitorMarketOdds) -> MarketOddsD
 
     margin = _calculate_margin(outcomes)
 
+    # Extract availability from market (CompetitorMarketOdds ORM model)
+    unavailable_at = getattr(market, "unavailable_at", None)
+    available = unavailable_at is None
+
     return MarketOddsDetail(
         betpawa_market_id=market.betpawa_market_id,
         betpawa_market_name=market.betpawa_market_name,
@@ -660,6 +682,8 @@ def _build_competitor_market_detail(market: CompetitorMarketOdds) -> MarketOddsD
         outcomes=outcomes,
         margin=margin,
         market_groups=market.market_groups,
+        available=available,
+        unavailable_since=unavailable_at,
     )
 
 
