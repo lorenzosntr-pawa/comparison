@@ -64,6 +64,10 @@ export interface MarketMarginStats {
   maxMargin: number
   /** Number of events with data */
   eventCount: number
+  /** First recorded margin (earliest snapshot) */
+  openingMargin?: number
+  /** Last recorded margin (closest to kickoff) */
+  closingMargin?: number
 }
 
 /**
@@ -389,16 +393,26 @@ export function useTournamentMarkets(
           })
           .filter((s) => s.pointCount > 0) // Only include buckets with data
 
-        // Compute competitor margin stats
+        // Compute competitor margin stats with opening/closing
         const competitorMargins: Record<string, MarketMarginStats | null> = {}
         for (const slug of COMPETITOR_SLUGS) {
           const margins = acc.competitorMargins[slug] || []
+          const timeline = acc.competitorTimelineData[slug] || []
           if (margins.length > 0) {
+            // Sort competitor timeline to get opening/closing
+            const sortedTimeline = [...timeline].sort(
+              (a, b) => a.hoursToKickoff - b.hoursToKickoff
+            )
+            const openingMargin = sortedTimeline.length > 0 ? sortedTimeline[0].margin : undefined
+            const closingMargin = sortedTimeline.length > 0 ? sortedTimeline[sortedTimeline.length - 1].margin : undefined
+
             competitorMargins[slug] = {
               avgMargin: margins.reduce((s, m) => s + m, 0) / margins.length,
               minMargin: Math.min(...margins),
               maxMargin: Math.max(...margins),
               eventCount: margins.length,
+              openingMargin,
+              closingMargin,
             }
           } else {
             competitorMargins[slug] = null
