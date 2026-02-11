@@ -72,10 +72,10 @@ Plans:
 **Goal**: Same styling applied to Event Details page for consistency
 **Depends on**: Phase 90
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 91-01: TBD
+- [x] 91-01: OddsBadge availability styling — 2026-02-11
 
 #### Phase 92: History Charts
 
@@ -394,5 +394,5 @@ Plans:
 | 88. Backend Availability Tracking | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 89. API & Cache Changes | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 90. Odds Comparison UI | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 91. Event Details UI | v2.5 | 0/? | Not started | - |
+| 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 92. History Charts | v2.5 | 0/? | Not started | - |

@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 90 of 92 (Odds Comparison UI)
+Phase: 91 of 92 (Event Details UI)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-11 — Completed 90-01-PLAN.md
+Last activity: 2026-02-11 — Completed 91-01-PLAN.md
 
-Progress: ████░░░░░░ 67%
+Progress: █████░░░░░ 83%
 
 ## Milestones
 
@@ -238,6 +238,7 @@ Progress: ████░░░░░░ 67%
 - **Availability extraction pattern** - `unavailable_at = getattr(market, 'unavailable_at', None); available = unavailable_at is None` for safe access across cache/DB paths (v2.5 Phase 89)
 - **Three-state availability rendering** - available (normal odds), unavailable (strikethrough dash + tooltip), never_offered (plain dash); getMarketAvailabilityState centralizes logic (v2.5 Phase 90)
 - **OutcomeOddsResult pattern** - getOutcomeOdds returns { odds, available, unavailableSince } object for single function call per cell efficiency (v2.5 Phase 90)
+- **OutcomeDisplay availability extension** - extend existing display interface with available/unavailableSince fields for prop drilling to OddsBadge (v2.5 Phase 91)
 
 ### Key Decisions
 
@@ -328,6 +329,6 @@ Progress: ████░░░░░░ 67%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 90 (Odds Comparison UI)
+Stopped at: Completed Phase 91 (Event Details UI)
 Resume file: None
-Next action: `/gsd:plan-phase 91` to plan Event Details UI
+Next action: `/gsd:plan-phase 92` to plan History Charts
