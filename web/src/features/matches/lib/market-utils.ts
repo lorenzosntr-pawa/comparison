@@ -13,7 +13,7 @@
  * - Market odds availability checking
  */
 
-import type { BookmakerMarketData, MarketOddsDetail } from '@/types/api'
+import type { BookmakerMarketData, MarketOddsDetail, InlineOdds } from '@/types/api'
 
 /**
  * Formats an ISO timestamp as human-readable relative time.
@@ -174,4 +174,79 @@ export function marketHasOdds(market: MarketOddsDetail): boolean {
     market.outcomes.length > 0 &&
     market.outcomes.some((o) => o.is_active && o.odds > 0)
   )
+}
+
+/**
+ * Formats an ISO timestamp as human-readable "Unavailable since" text.
+ *
+ * @description Converts timestamps to concise format for tooltip display,
+ * e.g., "Unavailable since Jan 15, 10:30 AM"
+ *
+ * @param isoTimestamp - ISO timestamp string when market became unavailable
+ * @returns Formatted string for tooltip display
+ *
+ * @example
+ * ```typescript
+ * formatUnavailableSince('2024-01-15T10:30:00Z') // "Unavailable since Jan 15, 10:30 AM"
+ * ```
+ */
+export function formatUnavailableSince(isoTimestamp: string): string {
+  // Ensure timestamp is parsed as UTC
+  const normalized = isoTimestamp.endsWith('Z') ? isoTimestamp : isoTimestamp + 'Z'
+  const date = new Date(normalized)
+
+  // Use locale-aware formatting for concise tooltip display
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date)
+
+  return `Unavailable since ${formatted}`
+}
+
+/**
+ * Market availability state for UI rendering.
+ *
+ * - 'available': Market is currently offered with odds
+ * - 'unavailable': Market was previously offered but became unavailable
+ * - 'never_offered': Market was never offered by this bookmaker
+ */
+export type MarketAvailabilityState = 'available' | 'unavailable' | 'never_offered'
+
+/**
+ * Determines the availability state of a market.
+ *
+ * @description Centralizes the three-state logic for market availability,
+ * enabling consistent rendering across UI components.
+ *
+ * @param market - InlineOdds object, or null/undefined if market not in response
+ * @returns The availability state for UI rendering
+ *
+ * @example
+ * ```typescript
+ * getMarketAvailabilityState(null)                           // 'never_offered'
+ * getMarketAvailabilityState(undefined)                      // 'never_offered'
+ * getMarketAvailabilityState({ available: false, ... })      // 'unavailable'
+ * getMarketAvailabilityState({ available: true, ... })       // 'available'
+ * getMarketAvailabilityState({ ... })                        // 'available' (default)
+ * ```
+ */
+export function getMarketAvailabilityState(
+  market: InlineOdds | null | undefined
+): MarketAvailabilityState {
+  // Market not in response at all = never offered
+  if (market === null || market === undefined) {
+    return 'never_offered'
+  }
+
+  // Market explicitly marked as unavailable
+  if (market.available === false) {
+    return 'unavailable'
+  }
+
+  // Available (explicit true or undefined defaults to available)
+  return 'available'
 }
