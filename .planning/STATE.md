@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 86 of 88 (Betpawa vs Competitor Comparison)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-11 — Completed 86-02-PLAN.md
+Last activity: 2026-02-11 — Completed 86-03-PLAN.md
 
-Progress: ██████░░░░ 64%
+Progress: ██████░░░░ 66%
 
 ## Milestones
 
@@ -230,6 +230,8 @@ Progress: ██████░░░░ 64%
 - **TRACKED_MARKET_IDS Set for card display** - only show opening/closing margin for main 4 markets (1X2, O/U 2.5, BTTS, DC) to reduce visual noise on cards (v2.4 Phase 85)
 - **BOOKMAKER_COLORS constant for brand styling** - exported from bookmaker-filter.tsx for consistent blue/green/orange bookmaker indicators (v2.4 Phase 86)
 - **CompetitiveBadge for margin comparison** - green/red badge showing +/- difference vs best competitor, shown only for primary market (1X2) (v2.4 Phase 86)
+- **Dialog-specific filter state pattern** - dialog maintains own state for bookmaker filter, resets on open; independent from page-level filter (v2.4 Phase 86)
+- **MergedDataPoint for multi-bookmaker charts** - merge hoursToKickoff data with 1 decimal precision, each bookmaker as optional key (v2.4 Phase 86)
 
 ### Key Decisions
 
@@ -316,6 +318,6 @@ Progress: ██████░░░░ 64%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 86-02-PLAN.md (multi-bookmaker margin display in MarketCard)
+Stopped at: Completed 86-03-PLAN.md (multi-bookmaker chart overlay)
 Resume file: None
-Next action: `/gsd:execute-plan .planning/phases/86-betpawa-vs-competitor-comparison/86-03-PLAN.md`
+Next action: `/gsd:execute-plan .planning/phases/86-betpawa-vs-competitor-comparison/86-04-PLAN.md`
