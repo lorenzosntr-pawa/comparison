@@ -309,10 +309,11 @@ Progress: ██████░░░░ 60%
 - Milestone v2.4 created: Historical Analytics, 10 phases (Phase 79-88)
 - Phase 84.1 inserted after Phase 84: Fix Tournament Metrics Design (URGENT) - BUG-013/014/015
 - Phase 84.2 inserted after Phase 84.1: Tournament Detail Page - ISS-005 (user requested feature)
+- Phase 85.1 inserted after Phase 85: Historical Analysis Card Margins - add opening/closing margins per market to cards, fix margin inconsistencies (URGENT)
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 85-02-PLAN.md (TimelineDialog & page integration)
+Stopped at: Created 85.1-01-PLAN.md (Historical Analysis Card Margins)
 Resume file: None
-Next action: `/gsd:plan-phase 86` (Betpawa vs Competitor Comparison)
+Next action: `/gsd:execute-plan .planning/phases/85.1-historical-analysis-card-margins/85.1-01-PLAN.md`

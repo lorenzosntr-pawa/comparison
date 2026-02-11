@@ -133,6 +133,17 @@ Plans:
 - [x] 85-01: Time-to-kickoff data & chart component
 - [x] 85-02: TimelineDialog & page integration
 
+#### Phase 85.1: Historical Analysis Card Margins (INSERTED)
+
+**Goal**: Add opening/closing margins per market to historical analysis cards, fix margin inconsistencies
+**Depends on**: Phase 85
+**Research**: Unlikely (internal patterns)
+**Addresses**: Margin discrepancy between Historical Analysis page and Tournament Details page
+**Plans**: 0/1 complete
+
+Plans:
+- [ ] 85.1-01: Add opening/closing margins to MarginMetrics and update tournament card display
+
 #### Phase 86: Betpawa vs Competitor Comparison
 
 **Goal**: Overlay lines and difference chart toggle for margin comparison
@@ -444,6 +455,7 @@ Plans:
 | 84.1 Fix Tournament Metrics Design (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.2 Tournament Detail Page (INSERTED) | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-11 |
 | 85. Time-to-Kickoff Charts | v2.4 | 2/2 | Complete | 2026-02-11 |
+| 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 0/1 | Planned | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
 | 88. Polish & Integration | v2.4 | 0/? | Not started | - |
