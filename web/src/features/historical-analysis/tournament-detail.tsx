@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, LineChart } from 'lucide-react'
 import { useTournamentMarkets, type TournamentMarket } from './hooks'
 import { TRACKED_MARKETS } from './hooks/use-tournaments'
-import { TimelineDialog } from './components'
+import { TimelineDialog, BookmakerFilter } from './components'
 
 /**
  * Fuzzy subsequence matching - query chars appear in target in order.
@@ -50,11 +50,15 @@ function isTrackedMarket(marketId: string): boolean {
  */
 function MarketCard({
   market,
+  selectedBookmakers: _selectedBookmakers,
   onTimelineClick,
 }: {
   market: TournamentMarket
+  selectedBookmakers: string[]
   onTimelineClick: () => void
 }) {
+  // selectedBookmakers will be used in Task 3 for multi-column display
+  void _selectedBookmakers
   const displayName = market.line !== null
     ? `${market.name} ${market.line}`
     : market.name
@@ -151,6 +155,7 @@ export function TournamentDetailPage() {
 
   const { data, isPending, error } = useTournamentMarkets(parsedId)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedBookmakers, setSelectedBookmakers] = useState(['betpawa', 'sportybet', 'bet9ja'])
 
   // Timeline dialog state
   const [timelineOpen, setTimelineOpen] = useState(false)
@@ -257,7 +262,7 @@ export function TournamentDetailPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <Link to="/historical-analysis">
             <Button variant="ghost" size="sm">
@@ -273,13 +278,21 @@ export function TournamentDetailPage() {
           </div>
         </div>
 
-        {/* Page-level timeline button */}
-        {markets.length > 0 && (
-          <Button variant="outline" onClick={handleViewAllTimelines}>
-            <LineChart className="h-4 w-4 mr-2" />
-            View All Timelines
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Bookmaker filter */}
+          <BookmakerFilter
+            selected={selectedBookmakers}
+            onChange={setSelectedBookmakers}
+          />
+
+          {/* Page-level timeline button */}
+          {markets.length > 0 && (
+            <Button variant="outline" onClick={handleViewAllTimelines}>
+              <LineChart className="h-4 w-4 mr-2" />
+              View All Timelines
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Search filter */}
@@ -314,6 +327,7 @@ export function TournamentDetailPage() {
               <MarketCard
                 key={key}
                 market={market}
+                selectedBookmakers={selectedBookmakers}
                 onTimelineClick={() => handleMarketTimelineClick(market)}
               />
             )
