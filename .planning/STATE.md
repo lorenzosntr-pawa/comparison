@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 85 of 88 (Time-to-Kickoff Charts)
-Plan: 1 of 1 in current phase
-Status: In progress
-Last activity: 2026-02-11 — Completed 85-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-11 — Completed 85-02-PLAN.md
 
-Progress: █████░░░░░ 56%
+Progress: ██████░░░░ 60%
 
 ## Milestones
 
@@ -226,6 +226,8 @@ Progress: █████░░░░░ 56%
 - **Simplify over explain pattern** - when UX confuses users, remove complexity rather than add tooltips/labels; less is more (v2.4 Phase 84.1-FIX)
 - **getMarketKey(id, line) pattern** - unique market identification using id:line combination to distinguish Over 2.5 from Over 1.5 etc.; markets without specifiers use id only (v2.4 Phase 84.2)
 - **useTournamentMarkets hook** - extracts ALL unique markets from tournament events (not just tracked 4); computes avg/min/max margin and marginHistory for timeline charts (v2.4 Phase 84.2)
+- **Dialog-based timeline pattern** - on-demand timeline visualization in dialog instead of inline chart; keeps main page cleaner while providing detailed stats, bucket breakdown, and chart (v2.4 Phase 85)
+- **TRACKED_MARKET_IDS Set for card display** - only show opening/closing margin for main 4 markets (1X2, O/U 2.5, BTTS, DC) to reduce visual noise on cards (v2.4 Phase 85)
 
 ### Key Decisions
 
@@ -311,6 +313,6 @@ Progress: █████░░░░░ 56%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 85-01-PLAN.md (time-to-kickoff data & chart component)
+Stopped at: Completed 85-02-PLAN.md (TimelineDialog & page integration)
 Resume file: None
-Next action: Check remaining plans for Phase 85 or `/gsd:plan-phase 86` (Betpawa vs competitor)
+Next action: `/gsd:plan-phase 86` (Betpawa vs Competitor Comparison)

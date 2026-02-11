@@ -121,15 +121,17 @@ Plans:
 - [x] 84.2-01: Route, data hook, TournamentDetailPage with market cards and timeline chart
 - [x] 84.2-01-FIX: Fetch ALL markets via event detail endpoint (was only showing 4 main markets)
 
-#### Phase 85: Time-to-Kickoff Charts
+#### Phase 85: Time-to-Kickoff Charts ✓
 
 **Goal**: Market type grouping with aggregate vs individual event toggle
 **Depends on**: Phase 84
 **Research**: Unlikely (recharts already in codebase)
-**Plans**: 1/? in progress
+**Plans**: 2/2 complete
+**Completed**: 2026-02-11
 
 Plans:
 - [x] 85-01: Time-to-kickoff data & chart component
+- [x] 85-02: TimelineDialog & page integration
 
 #### Phase 86: Betpawa vs Competitor Comparison
 
@@ -441,7 +443,7 @@ Plans:
 | 84. Tournament Summary Metrics | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.1 Fix Tournament Metrics Design (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.2 Tournament Detail Page (INSERTED) | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-11 |
-| 85. Time-to-Kickoff Charts | v2.4 | 1/? | In progress | - |
+| 85. Time-to-Kickoff Charts | v2.4 | 2/2 | Complete | 2026-02-11 |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
 | 88. Polish & Integration | v2.4 | 0/? | Not started | - |
