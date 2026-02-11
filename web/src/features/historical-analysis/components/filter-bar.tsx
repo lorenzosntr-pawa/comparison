@@ -87,6 +87,12 @@ export function FilterBar({
         </div>
       </div>
 
+      {/* Bookmaker filter */}
+      <BookmakerFilter
+        selected={selectedBookmakers}
+        onChange={onBookmakersChange}
+      />
+
       {/* From date */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground">From</label>
@@ -114,12 +120,6 @@ export function FilterBar({
           />
         </div>
       </div>
-
-      {/* Bookmaker filter */}
-      <BookmakerFilter
-        selected={selectedBookmakers}
-        onChange={onBookmakersChange}
-      />
 
       {/* Selected range display */}
       {dateRange.from && dateRange.to && (

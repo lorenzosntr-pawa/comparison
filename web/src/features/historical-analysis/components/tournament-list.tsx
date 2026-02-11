@@ -89,6 +89,7 @@ function CompetitiveBadge({
 /**
  * Renders a per-market breakdown table showing Betpawa vs Best Competitor columns.
  * Shows competitive indicator badge for 1X2 market.
+ * Always shows Best Comp. column (competitor data is always present).
  */
 function MarketBreakdown({
   marginsByMarket,
@@ -97,6 +98,19 @@ function MarketBreakdown({
   marginsByMarket: Record<string, MarginMetrics>
   selectedBookmakers: string[]
 }) {
+  // Determine competitor column header based on selection
+  const selectedCompetitors = selectedBookmakers.filter(b => b !== 'betpawa')
+  const competitorCount = selectedCompetitors.length
+
+  // Determine header text
+  let competitorHeader = 'Best Comp.'
+  if (competitorCount === 1) {
+    // Show specific competitor name
+    const competitor = selectedCompetitors[0]
+    competitorHeader = competitor === 'sportybet' ? 'SportyBet' : 'Bet9ja'
+  } else if (competitorCount === 0) {
+    competitorHeader = '' // Will hide column
+  }
   // Check if any market has data
   const hasAnyData = TRACKED_MARKETS.some(
     (market) => marginsByMarket[market.id]?.avgMargin !== null
@@ -107,9 +121,6 @@ function MarketBreakdown({
       <span className="text-sm text-muted-foreground">No margin data</span>
     )
   }
-
-  // Check if competitors are selected (any non-betpawa bookmaker)
-  const hasCompetitors = selectedBookmakers.some((b) => b !== 'betpawa')
 
   return (
     <div className="text-sm">
@@ -123,8 +134,8 @@ function MarketBreakdown({
           />
           Betpawa
         </span>
-        {hasCompetitors && (
-          <span className="w-20 text-right">Best Comp.</span>
+        {competitorCount > 0 && (
+          <span className="w-20 text-right">{competitorHeader}</span>
         )}
       </div>
 
@@ -133,10 +144,9 @@ function MarketBreakdown({
         const metrics = marginsByMarket[market.id]
         if (!metrics?.avgMargin) return null // Skip markets with no data
 
-        const is1X2 = market.id === '3743'
+        // Show badge on all markets when competitors are selected
         const showCompetitiveBadge =
-          is1X2 &&
-          hasCompetitors &&
+          competitorCount > 0 &&
           metrics.competitorAvgMargin !== null &&
           metrics.competitorAvgMargin > 0
 
@@ -157,7 +167,7 @@ function MarketBreakdown({
             <span className="w-16 text-right font-medium">
               <MarginBadge avgMargin={metrics.avgMargin} />
             </span>
-            {hasCompetitors && (
+            {competitorCount > 0 && (
               <span className="w-20 text-right">
                 <MarginBadge avgMargin={metrics.competitorAvgMargin} />
               </span>

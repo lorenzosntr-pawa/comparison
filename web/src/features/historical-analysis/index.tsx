@@ -5,9 +5,6 @@ import { useTournaments } from './hooks'
 
 export { TournamentDetailPage } from './tournament-detail'
 
-/** Default bookmakers: all enabled */
-const DEFAULT_BOOKMAKERS = ['betpawa', 'sportybet', 'bet9ja']
-
 export function HistoricalAnalysisPage() {
   // Default to last 7 days
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -18,8 +15,12 @@ export function HistoricalAnalysisPage() {
     return { from, to: today }
   })
 
-  // Bookmaker selection state (all enabled by default)
-  const [selectedBookmakers, setSelectedBookmakers] = useState<string[]>(DEFAULT_BOOKMAKERS)
+  // Bookmaker filter state - all selected by default
+  const [selectedBookmakers, setSelectedBookmakers] = useState([
+    'betpawa',
+    'sportybet',
+    'bet9ja',
+  ])
 
   const { data: tournaments, isPending, error } = useTournaments(dateRange)
 
