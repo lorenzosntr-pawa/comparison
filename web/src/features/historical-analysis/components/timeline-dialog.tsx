@@ -31,7 +31,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { TimeToKickoffChart } from './time-to-kickoff-chart'
 import { BookmakerFilter } from './bookmaker-filter'
-import type { TournamentMarket, BucketStats } from '../hooks/use-tournament-markets'
+import { DifferenceBarChart } from './difference-bar-chart'
+import type { TournamentMarket, BucketStats, TimeToKickoffPoint, TimeBucket } from '../hooks/use-tournament-markets'
 
 /** View mode for the timeline chart */
 type ViewMode = 'overlay' | 'difference'
@@ -68,6 +69,47 @@ function formatBucketLabel(bucket: string): string {
     default:
       return bucket
   }
+}
+
+/**
+ * Determine which time bucket a hoursToKickoff value falls into.
+ */
+function getTimeBucket(hoursToKickoff: number): TimeBucket {
+  if (hoursToKickoff <= -168) return '7d+'
+  if (hoursToKickoff <= -72) return '3-7d'
+  if (hoursToKickoff <= -24) return '24-72h'
+  return '<24h'
+}
+
+/**
+ * Calculate bucket statistics from time-to-kickoff points.
+ */
+function calculateBucketStats(points: TimeToKickoffPoint[]): BucketStats[] {
+  const bucketData: Record<TimeBucket, number[]> = {
+    '7d+': [],
+    '3-7d': [],
+    '24-72h': [],
+    '<24h': [],
+  }
+
+  for (const point of points) {
+    const bucket = getTimeBucket(point.hoursToKickoff)
+    bucketData[bucket].push(point.margin)
+  }
+
+  return (['7d+', '3-7d', '24-72h', '<24h'] as TimeBucket[])
+    .map((bucket) => {
+      const margins = bucketData[bucket]
+      return {
+        bucket,
+        avgMargin:
+          margins.length > 0
+            ? margins.reduce((s, m) => s + m, 0) / margins.length
+            : 0,
+        pointCount: margins.length,
+      }
+    })
+    .filter((s) => s.pointCount > 0)
 }
 
 /**
@@ -318,9 +360,15 @@ export function TimelineDialog({
                   showBucketZones={true}
                 />
               ) : (
-                <div className="flex items-center justify-center h-[300px] text-muted-foreground bg-muted/30 rounded-md">
-                  Difference view coming soon (86-04)
-                </div>
+                <DifferenceBarChart
+                  betpawaBuckets={effectiveMarket.bucketStats}
+                  competitorBuckets={Object.fromEntries(
+                    Object.entries(effectiveMarket.competitorTimelineData)
+                      .filter(([slug]) => dialogBookmakers.includes(slug))
+                      .map(([slug, points]) => [slug, calculateBucketStats(points)])
+                  )}
+                  height={280}
+                />
               )}
             </div>
           </div>
