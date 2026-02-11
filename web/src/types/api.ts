@@ -667,6 +667,10 @@ export interface OddsHistoryPoint {
   outcomes: OutcomeOdds[]
   /** Calculated margin at this point, or null if not calculable */
   margin: number | null
+  /** Whether the market was available at this point (default true) */
+  available?: boolean
+  /** ISO timestamp when market became unavailable, or null if available */
+  unavailable_at?: string | null
 }
 
 /**
@@ -701,6 +705,10 @@ export interface MarginHistoryPoint {
   captured_at: string
   /** Margin percentage at this point, or null if not calculable */
   margin: number | null
+  /** Whether the market was available at this point (default true) */
+  available?: boolean
+  /** ISO timestamp when market became unavailable, or null if available */
+  unavailable_at?: string | null
 }
 
 /**
