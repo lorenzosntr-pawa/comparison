@@ -39,13 +39,13 @@ Plans:
 
 #### Phase 88: Backend Availability Tracking
 
-**Goal**: Implement detection logic in scraping pipeline, storage with `available` flag
+**Goal**: Implement detection logic in scraping pipeline, storage with `unavailable_at` timestamp
 **Depends on**: Phase 87
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 88-01: TBD
+- [x] 88-01: Schema, cache, and detection integration — 2026-02-11
 
 #### Phase 89: API & Cache Changes
 
@@ -391,7 +391,7 @@ Plans:
 | 86. Betpawa vs Competitor Comparison | v2.4 | 4/4 | Complete | 2026-02-11 |
 | **v2.4 SHIPPED** | | | **2026-02-11** | |
 | 87. Investigation & Schema Design | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 88. Backend Availability Tracking | v2.5 | 0/? | Not started | - |
+| 88. Backend Availability Tracking | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 89. API & Cache Changes | v2.5 | 0/? | Not started | - |
 | 90. Odds Comparison UI | v2.5 | 0/? | Not started | - |
 | 91. Event Details UI | v2.5 | 0/? | Not started | - |
