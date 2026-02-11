@@ -16,8 +16,10 @@ import {
   ResponsiveContainer,
   ReferenceArea,
   ReferenceLine,
+  Legend,
 } from 'recharts'
 import type { TimeToKickoffPoint } from '../hooks/use-tournament-markets'
+import { BOOKMAKER_COLORS } from './bookmaker-filter'
 
 /**
  * Format hours-to-kickoff for display.
@@ -57,12 +59,31 @@ const BUCKET_COLORS = {
 }
 
 interface TimeToKickoffChartProps {
-  /** Margin data points with hoursToKickoff */
+  /** Margin data points with hoursToKickoff (Betpawa data) */
   data: TimeToKickoffPoint[]
+  /** Competitor data keyed by bookmaker slug */
+  competitorData?: Record<string, TimeToKickoffPoint[]>
+  /** Which bookmakers to show (when in overlay mode) */
+  selectedBookmakers?: string[]
   /** Chart height in pixels */
   height?: number
   /** Whether to show time bucket zones as shaded areas */
   showBucketZones?: boolean
+}
+
+/** Bookmaker display labels */
+const BOOKMAKER_LABELS: Record<string, string> = {
+  betpawa: 'Betpawa',
+  sportybet: 'SportyBet',
+  bet9ja: 'Bet9ja',
+}
+
+/** Merged data point for multi-bookmaker chart */
+interface MergedDataPoint {
+  hoursToKickoff: number
+  betpawa?: number
+  sportybet?: number
+  bet9ja?: number
 }
 
 /**
@@ -73,9 +94,14 @@ interface TimeToKickoffChartProps {
  */
 export function TimeToKickoffChart({
   data,
+  competitorData,
+  selectedBookmakers,
   height = 200,
   showBucketZones = true,
 }: TimeToKickoffChartProps) {
+  // Check if we're in multi-bookmaker mode
+  const isMultiBookmakerMode = Boolean(competitorData && selectedBookmakers)
+
   if (!data.length) {
     return (
       <div
@@ -87,18 +113,67 @@ export function TimeToKickoffChart({
     )
   }
 
-  // Calculate domain from data
-  const minHours = Math.min(...data.map((d) => d.hoursToKickoff))
-  const maxHours = Math.max(...data.map((d) => d.hoursToKickoff), 0)
+  // For multi-bookmaker mode, merge all data points
+  let chartData: MergedDataPoint[]
+  let minHours: number
+  let maxHours: number
 
-  // Prepare chart data sorted by hoursToKickoff
-  const chartData = [...data]
-    .sort((a, b) => a.hoursToKickoff - b.hoursToKickoff)
-    .map((point) => ({
-      ...point,
-      // Round for cleaner display
-      hoursLabel: formatHoursToKickoff(point.hoursToKickoff),
-    }))
+  if (isMultiBookmakerMode && competitorData && selectedBookmakers) {
+    // Collect all unique hoursToKickoff values from all bookmakers
+    const hoursSet = new Set<number>()
+    const betpawaByHour = new Map<number, number>()
+    const competitorsByHour: Record<string, Map<number, number>> = {}
+
+    // Index Betpawa data by hours
+    for (const point of data) {
+      const h = Math.round(point.hoursToKickoff * 10) / 10 // Round to 1 decimal
+      hoursSet.add(h)
+      betpawaByHour.set(h, point.margin)
+    }
+
+    // Index competitor data by hours
+    for (const [slug, points] of Object.entries(competitorData)) {
+      competitorsByHour[slug] = new Map()
+      for (const point of points) {
+        const h = Math.round(point.hoursToKickoff * 10) / 10
+        hoursSet.add(h)
+        competitorsByHour[slug].set(h, point.margin)
+      }
+    }
+
+    // Build merged data array
+    const sortedHours = Array.from(hoursSet).sort((a, b) => a - b)
+    chartData = sortedHours.map((h) => {
+      const point: MergedDataPoint = { hoursToKickoff: h }
+      if (selectedBookmakers.includes('betpawa')) {
+        point.betpawa = betpawaByHour.get(h)
+      }
+      if (selectedBookmakers.includes('sportybet') && competitorsByHour.sportybet) {
+        point.sportybet = competitorsByHour.sportybet.get(h)
+      }
+      if (selectedBookmakers.includes('bet9ja') && competitorsByHour.bet9ja) {
+        point.bet9ja = competitorsByHour.bet9ja.get(h)
+      }
+      return point
+    })
+
+    minHours = Math.min(...sortedHours)
+    maxHours = Math.max(...sortedHours, 0)
+  } else {
+    // Single bookmaker mode (original behavior)
+    minHours = Math.min(...data.map((d) => d.hoursToKickoff))
+    maxHours = Math.max(...data.map((d) => d.hoursToKickoff), 0)
+
+    chartData = [...data]
+      .sort((a, b) => a.hoursToKickoff - b.hoursToKickoff)
+      .map((point) => ({
+        hoursToKickoff: point.hoursToKickoff,
+        betpawa: point.margin,
+      }))
+  }
+
+  // Determine which bookmakers to render
+  const bookmakersToShow = selectedBookmakers || ['betpawa']
 
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -205,23 +280,64 @@ export function TimeToKickoffChart({
             fontSize: '12px',
           }}
           labelFormatter={(value) => formatHoursToKickoff(value as number)}
-          formatter={(value) => [
-            typeof value === 'number' ? `${value.toFixed(2)}%` : '-',
-            'Margin',
-          ]}
+          formatter={(value, name) => {
+            if (typeof value !== 'number') return ['-', name]
+            const label = BOOKMAKER_LABELS[name as string] || name
+            return [`${value.toFixed(2)}%`, label]
+          }}
           cursor={{ strokeDasharray: '3 3' }}
           isAnimationActive={false}
         />
 
-        <Line
-          type="monotone"
-          dataKey="margin"
-          stroke="#3b82f6"
-          strokeWidth={2}
-          dot={false}
-          activeDot={{ r: 4 }}
-          isAnimationActive={false}
-        />
+        {/* Render a line for each selected bookmaker */}
+        {bookmakersToShow.includes('betpawa') && (
+          <Line
+            type="monotone"
+            dataKey="betpawa"
+            name="betpawa"
+            stroke={BOOKMAKER_COLORS.betpawa}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 4 }}
+            isAnimationActive={false}
+            connectNulls
+          />
+        )}
+        {bookmakersToShow.includes('sportybet') && isMultiBookmakerMode && (
+          <Line
+            type="monotone"
+            dataKey="sportybet"
+            name="sportybet"
+            stroke={BOOKMAKER_COLORS.sportybet}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 4 }}
+            isAnimationActive={false}
+            connectNulls
+          />
+        )}
+        {bookmakersToShow.includes('bet9ja') && isMultiBookmakerMode && (
+          <Line
+            type="monotone"
+            dataKey="bet9ja"
+            name="bet9ja"
+            stroke={BOOKMAKER_COLORS.bet9ja}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 4 }}
+            isAnimationActive={false}
+            connectNulls
+          />
+        )}
+
+        {/* Legend when showing multiple bookmakers */}
+        {isMultiBookmakerMode && bookmakersToShow.length > 1 && (
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            formatter={(value) => BOOKMAKER_LABELS[value] || value}
+          />
+        )}
       </LineChart>
     </ResponsiveContainer>
   )

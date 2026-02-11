@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { TimeToKickoffChart } from './time-to-kickoff-chart'
-import { BookmakerFilter, BOOKMAKER_COLORS } from './bookmaker-filter'
+import { BookmakerFilter } from './bookmaker-filter'
 import type { TournamentMarket, BucketStats } from '../hooks/use-tournament-markets'
 
 /** View mode for the timeline chart */
