@@ -4,15 +4,19 @@
  * @module use-tournament-markets
  * @description Fetches events for a tournament and computes per-market statistics
  * including average, min, max margin and margin history timeline for charts.
+ * Fetches full event details to get ALL markets (not just inline summary).
  */
 
 import { useQuery } from '@tanstack/react-query'
 import { subDays } from 'date-fns'
 import { api } from '@/lib/api'
 import type { DateRange } from '../components'
-import type { MatchedEvent } from '@/types/api'
+import type { MatchedEvent, EventDetailResponse } from '@/types/api'
 
 const BETPAWA_SLUG = 'betpawa'
+
+/** Concurrency limit for fetching event details */
+const CONCURRENT_FETCHES = 5
 
 /**
  * Single margin data point for timeline charts.
@@ -144,27 +148,43 @@ export function useTournamentMarkets(
         eventCount: tournamentEvents.length,
       }
 
-      // Accumulate market data
+      // Fetch full event details in batches to get ALL markets
+      // (inline_odds only contains summary markets, markets_by_bookmaker has all)
+      const eventDetails: EventDetailResponse[] = []
+
+      for (let i = 0; i < tournamentEvents.length; i += CONCURRENT_FETCHES) {
+        const batch = tournamentEvents.slice(i, i + CONCURRENT_FETCHES)
+        const results = await Promise.all(
+          batch.map((event) =>
+            api.getEventDetail(event.id).catch(() => null)
+          )
+        )
+        eventDetails.push(
+          ...results.filter((r): r is EventDetailResponse => r !== null)
+        )
+      }
+
+      // Accumulate market data from full event details
       const marketMap = new Map<string, MarketAccumulator>()
 
-      for (const event of tournamentEvents) {
-        // Find Betpawa bookmaker data
-        const betpawa = event.bookmakers.find(
-          (b) => b.bookmaker_slug === BETPAWA_SLUG && b.has_odds
+      for (const eventDetail of eventDetails) {
+        // Find Betpawa in markets_by_bookmaker
+        const betpawaData = eventDetail.markets_by_bookmaker.find(
+          (b) => b.bookmaker_slug === BETPAWA_SLUG
         )
-        if (!betpawa) continue
+        if (!betpawaData) continue
 
-        // Extract all markets from Betpawa's inline_odds
-        for (const market of betpawa.inline_odds) {
+        // Extract ALL markets from Betpawa's full market list
+        for (const market of betpawaData.markets) {
           if (market.margin === null || market.margin < 0) continue
 
-          const key = getMarketKey(market.market_id, market.line)
+          const key = getMarketKey(market.betpawa_market_id, market.line)
           let acc = marketMap.get(key)
 
           if (!acc) {
             acc = {
-              id: market.market_id,
-              name: market.market_name,
+              id: market.betpawa_market_id,
+              name: market.betpawa_market_name,
               line: market.line,
               margins: [],
               marginHistory: [],
@@ -174,7 +194,7 @@ export function useTournamentMarkets(
 
           acc.margins.push(market.margin)
           acc.marginHistory.push({
-            capturedAt: betpawa.snapshot_time || event.kickoff,
+            capturedAt: betpawaData.snapshot_time || eventDetail.kickoff,
             margin: market.margin,
           })
         }
@@ -215,7 +235,7 @@ export function useTournamentMarkets(
       return { markets, tournament }
     },
     enabled: Boolean(tournamentId && kickoffFrom && kickoffTo),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes (longer since we fetch many event details)
+    gcTime: 15 * 60 * 1000, // 15 minutes
   })
 }
