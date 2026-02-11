@@ -32,10 +32,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Analyze current data flow and design availability storage approach
 **Depends on**: v2.4 complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 87-01: TBD (run /gsd:plan-phase 87 to break down)
+- [x] 87-01: Investigate patterns and design schema — 2026-02-11
 
 #### Phase 88: Backend Availability Tracking
 
@@ -390,7 +390,7 @@ Plans:
 | 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-11 |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 4/4 | Complete | 2026-02-11 |
 | **v2.4 SHIPPED** | | | **2026-02-11** | |
-| 87. Investigation & Schema Design | v2.5 | 0/? | Not started | - |
+| 87. Investigation & Schema Design | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 88. Backend Availability Tracking | v2.5 | 0/? | Not started | - |
 | 89. API & Cache Changes | v2.5 | 0/? | Not started | - |
 | 90. Odds Comparison UI | v2.5 | 0/? | Not started | - |

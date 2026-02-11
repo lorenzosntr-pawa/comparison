@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 87 of 92 (Investigation & Schema Design)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-11 — Milestone v2.5 created
+Plan: 1 of 1 complete
+Status: Phase complete
+Last activity: 2026-02-11 — Completed 87-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 17%
 
 ## Milestones
 
@@ -284,6 +284,7 @@ Progress: ░░░░░░░░░░ 0%
 - No major schema changes required — current architecture with odds_snapshots + market_odds already stores history (v2.1 Phase 60)
 - Storage budget: 500 events × 90 days = ~139 GB (acceptable with partitioning) (v2.1 Phase 60)
 - Phase 61 SKIPPED — existing `odds_retention_days` setting already provides configurable retention (v2.1)
+- Availability tracking via unavailable_at timestamp (not boolean, not separate table) — cache-level detection comparing previous state to new scrape (v2.5 Phase 87)
 
 ### Blockers/Concerns
 
@@ -324,6 +325,6 @@ Progress: ░░░░░░░░░░ 0%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Milestone v2.5 initialization
+Stopped at: Completed Phase 87 (Investigation & Schema Design)
 Resume file: None
-Next action: `/gsd:plan-phase 87` to plan first phase
+Next action: `/gsd:plan-phase 88` to plan Backend Availability Tracking
