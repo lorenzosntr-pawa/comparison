@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TRACKED_MARKETS, type TournamentWithCount, type MarginMetrics } from '../hooks'
+import { BOOKMAKER_COLORS } from './bookmaker-filter'
 
 // Country flag emoji mapping (basic set for common countries)
 const countryFlags: Record<string, string> = {
@@ -52,41 +53,50 @@ function MarginBadge({
 }
 
 /**
- * Format margin delta with sign and color.
+ * Competitive indicator badge showing +/- vs best competitor.
+ * Green if Betpawa is better (lower), red if worse (higher).
  */
-function DeltaDisplay({ delta }: { delta: number }) {
-  // Color: green if negative (improved), red if positive (worsened), muted if ~zero
-  const isImproved = delta < -0.1
-  const isWorsened = delta > 0.1
-  const sign = delta > 0 ? '+' : ''
+function CompetitiveBadge({
+  betpawaMargin,
+  competitorMargin,
+}: {
+  betpawaMargin: number
+  competitorMargin: number
+}) {
+  const diff = betpawaMargin - competitorMargin
+  const absDiff = Math.abs(diff)
+
+  // Don't show badge for negligible differences
+  if (absDiff < 0.1) return null
+
+  const isBetter = diff < 0
+  const sign = diff > 0 ? '+' : ''
 
   return (
-    <span
-      className={
-        isImproved
-          ? 'text-green-600 dark:text-green-400'
-          : isWorsened
-            ? 'text-red-600 dark:text-red-400'
-            : 'text-muted-foreground'
-      }
+    <Badge
+      variant="secondary"
+      className={`ml-1 text-[10px] px-1 py-0 ${
+        isBetter
+          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+      }`}
     >
-      ({sign}{delta.toFixed(1)}%)
-    </span>
+      {sign}{diff.toFixed(1)}%
+    </Badge>
   )
 }
 
 /**
- * Renders a per-market breakdown grid showing metrics for each tracked market.
+ * Renders a per-market breakdown table showing Betpawa vs Best Competitor columns.
+ * Shows competitive indicator badge for 1X2 market.
  */
 function MarketBreakdown({
   marginsByMarket,
-  selectedBookmakers: _selectedBookmakers,
+  selectedBookmakers,
 }: {
   marginsByMarket: Record<string, MarginMetrics>
   selectedBookmakers: string[]
 }) {
-  // Note: _selectedBookmakers will be used in Task 3 for multi-column display
-  void _selectedBookmakers
   // Check if any market has data
   const hasAnyData = TRACKED_MARKETS.some(
     (market) => marginsByMarket[market.id]?.avgMargin !== null
@@ -98,30 +108,59 @@ function MarketBreakdown({
     )
   }
 
+  // Check if competitors are selected (any non-betpawa bookmaker)
+  const hasCompetitors = selectedBookmakers.some((b) => b !== 'betpawa')
+
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+    <div className="text-sm">
+      {/* Header row */}
+      <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground border-b pb-1">
+        <span className="flex-1">Market</span>
+        <span className="w-16 text-right flex items-center justify-end gap-1">
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: BOOKMAKER_COLORS.betpawa }}
+          />
+          Betpawa
+        </span>
+        {hasCompetitors && (
+          <span className="w-20 text-right">Best Comp.</span>
+        )}
+      </div>
+
+      {/* Data rows */}
       {TRACKED_MARKETS.map((market) => {
         const metrics = marginsByMarket[market.id]
         if (!metrics?.avgMargin) return null // Skip markets with no data
 
-        const hasOpeningClosing =
-          metrics.openingMargin !== null &&
-          metrics.closingMargin !== null &&
-          metrics.marginDelta !== null
+        const is1X2 = market.id === '3743'
+        const showCompetitiveBadge =
+          is1X2 &&
+          hasCompetitors &&
+          metrics.competitorAvgMargin !== null &&
+          metrics.competitorAvgMargin > 0
 
         return (
-          <div key={market.id} className="space-y-0.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-muted-foreground">{market.label}:</span>
+          <div
+            key={market.id}
+            className="flex items-center gap-2 py-0.5"
+          >
+            <span className="flex-1 text-muted-foreground">
+              {market.label}
+              {showCompetitiveBadge && (
+                <CompetitiveBadge
+                  betpawaMargin={metrics.avgMargin!}
+                  competitorMargin={metrics.competitorAvgMargin!}
+                />
+              )}
+            </span>
+            <span className="w-16 text-right font-medium">
               <MarginBadge avgMargin={metrics.avgMargin} />
-            </div>
-            {hasOpeningClosing && (
-              <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <span>
-                  {metrics.openingMargin!.toFixed(1)}% → {metrics.closingMargin!.toFixed(1)}%
-                </span>
-                <DeltaDisplay delta={metrics.marginDelta!} />
-              </div>
+            </span>
+            {hasCompetitors && (
+              <span className="w-20 text-right">
+                <MarginBadge avgMargin={metrics.competitorAvgMargin} />
+              </span>
             )}
           </div>
         )
