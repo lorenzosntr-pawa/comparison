@@ -53,6 +53,20 @@ export interface BucketStats {
 }
 
 /**
+ * Margin statistics for a bookmaker (used for competitor data).
+ */
+export interface MarketMarginStats {
+  /** Average margin across all events */
+  avgMargin: number
+  /** Minimum margin observed */
+  minMargin: number
+  /** Maximum margin observed */
+  maxMargin: number
+  /** Number of events with data */
+  eventCount: number
+}
+
+/**
  * Market statistics for a tournament.
  */
 export interface TournamentMarket {
@@ -82,6 +96,8 @@ export interface TournamentMarket {
   timeToKickoffHistory: TimeToKickoffPoint[]
   /** Statistics per time bucket */
   bucketStats: BucketStats[]
+  /** Competitor margin stats keyed by bookmaker slug (e.g., sportybet, bet9ja) */
+  competitorMargins: Record<string, MarketMarginStats | null>
 }
 
 /**
@@ -104,7 +120,12 @@ interface MarketAccumulator {
   margins: number[]
   marginHistory: MarginHistoryPoint[]
   timeToKickoffHistory: TimeToKickoffPoint[]
+  /** Competitor margins keyed by bookmaker slug */
+  competitorMargins: Record<string, number[]>
 }
+
+/** Competitor bookmaker slugs to track */
+const COMPETITOR_SLUGS = ['sportybet', 'bet9ja']
 
 /**
  * Determine which time bucket a hoursToKickoff value falls into.
@@ -245,6 +266,7 @@ export function useTournamentMarkets(
               margins: [],
               marginHistory: [],
               timeToKickoffHistory: [],
+              competitorMargins: {},
             }
             marketMap.set(key, acc)
           }
@@ -259,6 +281,30 @@ export function useTournamentMarkets(
             margin: market.margin,
             eventId: eventDetail.id,
           })
+        }
+
+        // Extract competitor margin data for matching markets
+        for (const competitorSlug of COMPETITOR_SLUGS) {
+          const competitorData = eventDetail.markets_by_bookmaker.find(
+            (b) => b.bookmaker_slug === competitorSlug
+          )
+          if (!competitorData) continue
+
+          // For each competitor market, find matching Betpawa market by market_id + line
+          for (const compMarket of competitorData.markets) {
+            if (compMarket.margin === null || compMarket.margin < 0) continue
+
+            const key = getMarketKey(compMarket.betpawa_market_id, compMarket.line)
+            const acc = marketMap.get(key)
+
+            // Only add competitor data for markets we're already tracking (from Betpawa)
+            if (acc) {
+              if (!acc.competitorMargins[competitorSlug]) {
+                acc.competitorMargins[competitorSlug] = []
+              }
+              acc.competitorMargins[competitorSlug].push(compMarket.margin)
+            }
+          }
         }
       }
 
@@ -322,6 +368,22 @@ export function useTournamentMarkets(
           })
           .filter((s) => s.pointCount > 0) // Only include buckets with data
 
+        // Compute competitor margin stats
+        const competitorMargins: Record<string, MarketMarginStats | null> = {}
+        for (const slug of COMPETITOR_SLUGS) {
+          const margins = acc.competitorMargins[slug] || []
+          if (margins.length > 0) {
+            competitorMargins[slug] = {
+              avgMargin: margins.reduce((s, m) => s + m, 0) / margins.length,
+              minMargin: Math.min(...margins),
+              maxMargin: Math.max(...margins),
+              eventCount: margins.length,
+            }
+          } else {
+            competitorMargins[slug] = null
+          }
+        }
+
         markets.push({
           id: acc.id,
           name: acc.name,
@@ -336,6 +398,7 @@ export function useTournamentMarkets(
           marginDelta,
           timeToKickoffHistory: sortedTimeToKickoff,
           bucketStats,
+          competitorMargins,
         })
       }
 

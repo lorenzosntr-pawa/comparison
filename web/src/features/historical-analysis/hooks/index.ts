@@ -11,4 +11,5 @@ export {
   type TournamentMarket,
   type TournamentInfo,
   type MarginHistoryPoint as TournamentMarginHistoryPoint,
+  type MarketMarginStats,
 } from './use-tournament-markets'
