@@ -122,6 +122,9 @@ class MarketOdds(Base):
     handicap_away: Mapped[float | None] = mapped_column(nullable=True)
     outcomes: Mapped[dict] = mapped_column(JSON)
     market_groups: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    unavailable_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relationships
     snapshot: Mapped["OddsSnapshot"] = relationship(back_populates="markets")
