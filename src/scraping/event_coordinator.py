@@ -65,7 +65,7 @@ from src.market_mapping.types.sportybet import SportybetMarket
 from src.scraping.schemas.coordinator import EventTarget, ScrapeBatch, ScrapeStatus
 
 if TYPE_CHECKING:
-    from src.caching.odds_cache import OddsCache
+    from src.caching.odds_cache import CachedMarket, OddsCache
     from src.db.models.settings import Settings
     from src.scraping.clients.bet9ja import Bet9jaClient
     from src.scraping.clients.betpawa import BetPawaClient
@@ -1449,7 +1449,7 @@ class EventCoordinator:
             for betpawa_eid, source_val, _mkt in changed_comp:
                 changed_comp_keys.add((betpawa_eid, source_val))
 
-            # 3. Update cache immediately for ALL data (changed + unchanged)
+            # 3. Detect availability changes and update cache
             cache_update_start = time.perf_counter()
             cache_updated = 0
             now_naive = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -1464,6 +1464,15 @@ class EventCoordinator:
 
             # Reverse map: event_id -> sr_id
             eid_to_sr: dict[int, str] = {v: k for k, v in event_id_map.items()}
+
+            # Detect and log availability changes before cache update
+            availability_stats = self._detect_and_log_availability_changes(
+                bp_write_data=bp_write_data,
+                comp_write_data=comp_write_data,
+                comp_meta=comp_meta,
+                event_id_map=event_id_map,
+                timestamp=now_naive,
+            )
 
             for idx, swd in enumerate(bp_write_data):
                 try:
@@ -1643,6 +1652,7 @@ class EventCoordinator:
             if self._odds_cache is not None:
                 cache_update_start = time.perf_counter()
                 cache_updated = 0
+                now_naive = datetime.now(timezone.utc).replace(tzinfo=None)
 
                 # Build kickoff lookup from batch events: sr_id -> kickoff (naive UTC)
                 kickoff_by_sr: dict[str, datetime] = {}
@@ -1661,6 +1671,15 @@ class EventCoordinator:
                 comp_eid_to_sr: dict[int, tuple[str, str]] = {
                     v: k for k, v in competitor_event_map.items()
                 }
+
+                # Detect and log availability changes before cache update (sync path)
+                self._detect_and_log_availability_changes_sync(
+                    betpawa_snapshots=betpawa_snapshots,
+                    competitor_snapshots=competitor_snapshots,
+                    comp_eid_to_sr=comp_eid_to_sr,
+                    event_id_map=event_id_map,
+                    timestamp=now_naive,
+                )
 
                 from src.caching.warmup import snapshot_to_cached_from_models
 
@@ -2289,6 +2308,249 @@ class EventCoordinator:
             bookmaker_id=bookmaker_id,
             external_event_id=external_event_id,
         )
+
+    def _detect_and_log_availability_changes(
+        self,
+        bp_write_data: list,
+        comp_write_data: list,
+        comp_meta: list[tuple[str, str, int]],
+        event_id_map: dict[str, int],
+        timestamp: datetime,
+    ) -> dict:
+        """Detect and log availability changes before cache update (async path).
+
+        Compares previous cache state to new scrape results for each event/bookmaker
+        combination. Logs changes for observability. Phase 89 will handle persisting
+        availability to DB during snapshot creation.
+
+        Args:
+            bp_write_data: List of SnapshotWriteData for BetPawa snapshots.
+            comp_write_data: List of CompetitorSnapshotWriteData for competitor snapshots.
+            comp_meta: List of (sr_id, source_value, competitor_event_id) tuples.
+            event_id_map: Dict mapping SR ID to BetPawa event ID.
+            timestamp: Current timestamp for unavailable_at.
+
+        Returns:
+            Dict with availability change statistics.
+        """
+        from src.caching.availability_detection import (
+            detect_availability_changes,
+            get_market_key,
+        )
+
+        if self._odds_cache is None:
+            return {"total_became_unavailable": 0, "total_became_available": 0}
+
+        total_became_unavailable = 0
+        total_became_available = 0
+
+        # Check BetPawa snapshots
+        for swd in bp_write_data:
+            existing = self._odds_cache.get_betpawa_snapshot(swd.event_id)
+            if not existing:
+                continue
+
+            cached_snap = existing.get(swd.bookmaker_id)
+            if not cached_snap:
+                continue
+
+            # Build market key -> CachedMarket lookup from cache
+            previous_markets = {
+                get_market_key(m): m
+                for m in cached_snap.markets
+            }
+
+            # Build new market data list from SnapshotWriteData
+            new_market_data = [
+                {
+                    "betpawa_market_id": m.betpawa_market_id,
+                    "line": m.line,
+                }
+                for m in swd.markets
+            ]
+
+            became_unavailable, became_available, _disappeared = detect_availability_changes(
+                previous_markets=previous_markets,
+                new_market_data=new_market_data,
+                timestamp=timestamp,
+            )
+
+            total_became_unavailable += len(became_unavailable)
+            total_became_available += len(became_available)
+
+        # Check competitor snapshots
+        for idx, cswd in enumerate(comp_write_data):
+            sr_id_val, source_value, _comp_eid = comp_meta[idx]
+            betpawa_eid = event_id_map.get(sr_id_val)
+            if not betpawa_eid:
+                continue
+
+            existing = self._odds_cache.get_competitor_snapshot(betpawa_eid)
+            if not existing:
+                continue
+
+            cached_snap = existing.get(source_value)
+            if not cached_snap:
+                continue
+
+            # Build market key -> CachedMarket lookup from cache
+            previous_markets = {
+                get_market_key(m): m
+                for m in cached_snap.markets
+            }
+
+            # Build new market data list from CompetitorSnapshotWriteData
+            new_market_data = [
+                {
+                    "betpawa_market_id": m.betpawa_market_id,
+                    "line": m.line,
+                }
+                for m in cswd.markets
+            ]
+
+            became_unavailable, became_available, _disappeared = detect_availability_changes(
+                previous_markets=previous_markets,
+                new_market_data=new_market_data,
+                timestamp=timestamp,
+            )
+
+            total_became_unavailable += len(became_unavailable)
+            total_became_available += len(became_available)
+
+        if total_became_unavailable > 0 or total_became_available > 0:
+            logger.info(
+                "availability_detection.batch_summary",
+                total_became_unavailable=total_became_unavailable,
+                total_became_available=total_became_available,
+            )
+
+        return {
+            "total_became_unavailable": total_became_unavailable,
+            "total_became_available": total_became_available,
+        }
+
+    def _detect_and_log_availability_changes_sync(
+        self,
+        betpawa_snapshots: list[tuple],
+        competitor_snapshots: list[tuple],
+        comp_eid_to_sr: dict[int, tuple[str, str]],
+        event_id_map: dict[str, int],
+        timestamp: datetime,
+    ) -> dict:
+        """Detect and log availability changes before cache update (sync path).
+
+        Similar to _detect_and_log_availability_changes but works with ORM
+        snapshot/market tuples instead of SnapshotWriteData DTOs.
+
+        Args:
+            betpawa_snapshots: List of (OddsSnapshot, list[MarketOdds]) tuples.
+            competitor_snapshots: List of (CompetitorOddsSnapshot, list[CompetitorMarketOdds]) tuples.
+            comp_eid_to_sr: Dict mapping competitor_event_id to (sr_id, source_value).
+            event_id_map: Dict mapping SR ID to BetPawa event ID.
+            timestamp: Current timestamp for unavailable_at.
+
+        Returns:
+            Dict with availability change statistics.
+        """
+        from src.caching.availability_detection import (
+            detect_availability_changes,
+            get_market_key,
+        )
+
+        if self._odds_cache is None:
+            return {"total_became_unavailable": 0, "total_became_available": 0}
+
+        total_became_unavailable = 0
+        total_became_available = 0
+
+        # Check BetPawa snapshots
+        for snapshot, markets in betpawa_snapshots:
+            existing = self._odds_cache.get_betpawa_snapshot(snapshot.event_id)
+            if not existing:
+                continue
+
+            cached_snap = existing.get(snapshot.bookmaker_id)
+            if not cached_snap:
+                continue
+
+            # Build market key -> CachedMarket lookup from cache
+            previous_markets = {
+                get_market_key(m): m
+                for m in cached_snap.markets
+            }
+
+            # Build new market data list from ORM objects
+            new_market_data = [
+                {
+                    "betpawa_market_id": m.betpawa_market_id,
+                    "line": m.line,
+                }
+                for m in markets
+            ]
+
+            became_unavailable, became_available, _disappeared = detect_availability_changes(
+                previous_markets=previous_markets,
+                new_market_data=new_market_data,
+                timestamp=timestamp,
+            )
+
+            total_became_unavailable += len(became_unavailable)
+            total_became_available += len(became_available)
+
+        # Check competitor snapshots
+        for snapshot, markets in competitor_snapshots:
+            comp_key = comp_eid_to_sr.get(snapshot.competitor_event_id)
+            if not comp_key:
+                continue
+
+            sr_id, source_value = comp_key
+            betpawa_event_id = event_id_map.get(sr_id)
+            if not betpawa_event_id:
+                continue
+
+            existing = self._odds_cache.get_competitor_snapshot(betpawa_event_id)
+            if not existing:
+                continue
+
+            cached_snap = existing.get(source_value)
+            if not cached_snap:
+                continue
+
+            # Build market key -> CachedMarket lookup from cache
+            previous_markets = {
+                get_market_key(m): m
+                for m in cached_snap.markets
+            }
+
+            # Build new market data list from ORM objects
+            new_market_data = [
+                {
+                    "betpawa_market_id": m.betpawa_market_id,
+                    "line": m.line,
+                }
+                for m in markets
+            ]
+
+            became_unavailable, became_available, _disappeared = detect_availability_changes(
+                previous_markets=previous_markets,
+                new_market_data=new_market_data,
+                timestamp=timestamp,
+            )
+
+            total_became_unavailable += len(became_unavailable)
+            total_became_available += len(became_available)
+
+        if total_became_unavailable > 0 or total_became_available > 0:
+            logger.info(
+                "availability_detection.batch_summary_sync",
+                total_became_unavailable=total_became_unavailable,
+                total_became_available=total_became_available,
+            )
+
+        return {
+            "total_became_unavailable": total_became_unavailable,
+            "total_became_available": total_became_available,
+        }
 
     def _parse_betpawa_markets(self, raw_data: dict) -> list[MarketOdds]:
         """Parse BetPawa raw response into MarketOdds records.
