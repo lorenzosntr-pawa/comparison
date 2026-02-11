@@ -11,9 +11,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, LineChart } from 'lucide-react'
-import { useTournamentMarkets, type TournamentMarket } from './hooks'
+import { useTournamentMarkets, type TournamentMarket, type MarketMarginStats } from './hooks'
 import { TRACKED_MARKETS } from './hooks/use-tournaments'
-import { TimelineDialog, BookmakerFilter } from './components'
+import { TimelineDialog, BookmakerFilter, BOOKMAKER_COLORS } from './components'
+
+/** Bookmaker display configuration */
+const BOOKMAKER_CONFIG = [
+  { slug: 'betpawa', label: 'Betpawa' },
+  { slug: 'sportybet', label: 'SportyBet' },
+  { slug: 'bet9ja', label: 'Bet9ja' },
+] as const
 
 /**
  * Fuzzy subsequence matching - query chars appear in target in order.
@@ -45,69 +52,202 @@ function isTrackedMarket(marketId: string): boolean {
 }
 
 /**
- * Market card displaying margin statistics.
+ * Competitive badge showing difference vs best competitor.
+ */
+function CompetitiveBadge({ betpawaMargin, competitorMargins }: {
+  betpawaMargin: number
+  competitorMargins: Record<string, MarketMarginStats | null>
+}) {
+  // Find best (lowest) competitor margin
+  let bestCompetitorMargin: number | null = null
+  for (const stats of Object.values(competitorMargins)) {
+    if (stats && (bestCompetitorMargin === null || stats.avgMargin < bestCompetitorMargin)) {
+      bestCompetitorMargin = stats.avgMargin
+    }
+  }
+
+  if (bestCompetitorMargin === null) return null
+
+  const diff = betpawaMargin - bestCompetitorMargin
+  if (Math.abs(diff) < 0.1) return null // Skip if essentially equal
+
+  const isWorse = diff > 0
+  const sign = isWorse ? '+' : ''
+  const colorClass = isWorse ? 'text-red-600' : 'text-green-600'
+
+  return (
+    <span className={`text-xs font-medium ${colorClass}`}>
+      ({sign}{diff.toFixed(1)}%)
+    </span>
+  )
+}
+
+/**
+ * Market card displaying margin statistics with multi-bookmaker columns.
  * Shows opening/closing delta for tracked markets.
  */
 function MarketCard({
   market,
-  selectedBookmakers: _selectedBookmakers,
+  selectedBookmakers,
   onTimelineClick,
 }: {
   market: TournamentMarket
   selectedBookmakers: string[]
   onTimelineClick: () => void
 }) {
-  // selectedBookmakers will be used in Task 3 for multi-column display
-  void _selectedBookmakers
   const displayName = market.line !== null
     ? `${market.name} ${market.line}`
     : market.name
 
   const isTracked = isTrackedMarket(market.id)
 
-  // Delta styling
+  // Delta styling for opening/closing
   const deltaColor =
     market.marginDelta < 0
-      ? 'text-green-600' // Margin improved (decreased)
+      ? 'text-green-600'
       : market.marginDelta > 0
-        ? 'text-red-600' // Margin worsened (increased)
+        ? 'text-red-600'
         : 'text-muted-foreground'
   const deltaSign = market.marginDelta > 0 ? '+' : ''
+
+  // Get visible bookmakers
+  const visibleBookmakers = BOOKMAKER_CONFIG.filter((b) =>
+    selectedBookmakers.includes(b.slug)
+  )
+
+  // Helper to get stats for a bookmaker
+  const getStats = (slug: string): MarketMarginStats | null => {
+    if (slug === 'betpawa') {
+      return {
+        avgMargin: market.avgMargin,
+        minMargin: market.minMargin,
+        maxMargin: market.maxMargin,
+        eventCount: market.eventCount,
+      }
+    }
+    return market.competitorMargins[slug] || null
+  }
+
+  // Check if we have any competitor data
+  const hasCompetitorData = Object.values(market.competitorMargins).some(
+    (s) => s !== null
+  )
+
+  // Single column mode: only Betpawa selected or no competitor data
+  const isSingleColumn = visibleBookmakers.length === 1 || !hasCompetitorData
 
   return (
     <Card className="hover:bg-muted/30 transition-colors">
       <CardContent className="p-4">
         <h3 className="font-medium truncate mb-2">{displayName}</h3>
 
-        <div className="space-y-1 text-sm">
-          {/* Show opening/closing for tracked markets */}
-          {isTracked && (
-            <div className="flex items-center gap-1 text-xs pb-1 border-b mb-1">
-              <span className="text-muted-foreground">Opening:</span>
-              <span>{market.openingMargin.toFixed(1)}%</span>
-              <span className="text-muted-foreground mx-0.5">→</span>
-              <span>{market.closingMargin.toFixed(1)}%</span>
-              <span className={`${deltaColor} ml-1`}>
-                ({deltaSign}{market.marginDelta.toFixed(1)}%)
-              </span>
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Avg margin:</span>
-            <span className="font-medium">{market.avgMargin.toFixed(1)}%</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Range:</span>
-            <span>
-              {market.minMargin.toFixed(1)}% - {market.maxMargin.toFixed(1)}%
+        {/* Show opening/closing for tracked markets */}
+        {isTracked && (
+          <div className="flex items-center gap-1 text-xs pb-2 border-b mb-2">
+            <span className="text-muted-foreground">Opening:</span>
+            <span>{market.openingMargin.toFixed(1)}%</span>
+            <span className="text-muted-foreground mx-0.5">-&gt;</span>
+            <span>{market.closingMargin.toFixed(1)}%</span>
+            <span className={`${deltaColor} ml-1`}>
+              ({deltaSign}{market.marginDelta.toFixed(1)}%)
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Events:</span>
-            <span>{market.eventCount}</span>
+        )}
+
+        {/* Multi-bookmaker table */}
+        {isSingleColumn ? (
+          // Single column layout (original)
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Avg margin:</span>
+              <span className="font-medium">{market.avgMargin.toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Range:</span>
+              <span>
+                {market.minMargin.toFixed(1)}% - {market.maxMargin.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Events:</span>
+              <span>{market.eventCount}</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          // Multi-column table layout
+          <div className="text-xs">
+            {/* Header row */}
+            <div className="grid gap-1 mb-1" style={{
+              gridTemplateColumns: `auto ${visibleBookmakers.map(() => '1fr').join(' ')}`
+            }}>
+              <div /> {/* Empty cell for row labels */}
+              {visibleBookmakers.map((b) => (
+                <div
+                  key={b.slug}
+                  className="text-center font-medium truncate"
+                  style={{ color: BOOKMAKER_COLORS[b.slug as keyof typeof BOOKMAKER_COLORS] }}
+                >
+                  {b.label}
+                </div>
+              ))}
+            </div>
+
+            {/* Avg margin row */}
+            <div className="grid gap-1 py-1 border-t" style={{
+              gridTemplateColumns: `auto ${visibleBookmakers.map(() => '1fr').join(' ')}`
+            }}>
+              <div className="text-muted-foreground flex items-center gap-1">
+                Avg margin
+                {selectedBookmakers.includes('betpawa') && (
+                  <CompetitiveBadge
+                    betpawaMargin={market.avgMargin}
+                    competitorMargins={market.competitorMargins}
+                  />
+                )}
+              </div>
+              {visibleBookmakers.map((b) => {
+                const stats = getStats(b.slug)
+                return (
+                  <div key={b.slug} className="text-center">
+                    {stats ? `${stats.avgMargin.toFixed(1)}%` : '—'}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Range row */}
+            <div className="grid gap-1 py-1 border-t" style={{
+              gridTemplateColumns: `auto ${visibleBookmakers.map(() => '1fr').join(' ')}`
+            }}>
+              <div className="text-muted-foreground">Range</div>
+              {visibleBookmakers.map((b) => {
+                const stats = getStats(b.slug)
+                return (
+                  <div key={b.slug} className="text-center">
+                    {stats
+                      ? `${stats.minMargin.toFixed(1)}-${stats.maxMargin.toFixed(1)}`
+                      : '—'}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Events row */}
+            <div className="grid gap-1 py-1 border-t" style={{
+              gridTemplateColumns: `auto ${visibleBookmakers.map(() => '1fr').join(' ')}`
+            }}>
+              <div className="text-muted-foreground">Events</div>
+              {visibleBookmakers.map((b) => {
+                const stats = getStats(b.slug)
+                return (
+                  <div key={b.slug} className="text-center">
+                    {stats ? stats.eventCount : '—'}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Timeline button */}
         <Button
