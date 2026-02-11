@@ -55,6 +55,8 @@ class InlineOdds(BaseModel):
     line: float | None = None
     outcomes: list[OutcomeOdds]
     margin: float | None = None
+    available: bool = True
+    unavailable_since: datetime | None = None
 
 
 class BookmakerOdds(BaseModel):
@@ -142,6 +144,8 @@ class MarketOddsDetail(BaseModel):
     outcomes: list[OutcomeDetail]
     margin: float | None = None  # Calculated: (sum(1/odds) - 1) * 100
     market_groups: list[str] | None = None  # Betpawa market tabs (popular, goals, etc.)
+    available: bool = True
+    unavailable_since: datetime | None = None
 
 
 class BookmakerMarketData(BaseModel):
