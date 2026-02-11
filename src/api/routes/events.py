@@ -154,9 +154,10 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                         outcomes.append(
                             OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
                         )
+
+            # Calculate margin if outcomes exist
+            margin = None
             if outcomes:
-                # Calculate margin: (sum(1/odds) - 1) * 100
-                margin = None
                 try:
                     total_implied_prob = sum(1.0 / o.odds for o in outcomes if o.odds > 0)
                     if total_implied_prob > 0:
@@ -164,15 +165,17 @@ def _build_inline_odds(snapshot: OddsSnapshot | None) -> list[InlineOdds]:
                 except (ZeroDivisionError, TypeError):
                     pass
 
-                inline_odds.append(
-                    InlineOdds(
-                        market_id=market.betpawa_market_id,
-                        market_name=market.betpawa_market_name,
-                        line=market.line,
-                        outcomes=outcomes,
-                        margin=margin,
-                    )
+            # Always append market (even if outcomes empty/margin null)
+            # This ensures consistency with event detail endpoint
+            inline_odds.append(
+                InlineOdds(
+                    market_id=market.betpawa_market_id,
+                    market_name=market.betpawa_market_name,
+                    line=market.line,
+                    outcomes=outcomes,
+                    margin=margin,
                 )
+            )
 
     return inline_odds
 
@@ -393,9 +396,10 @@ def _build_competitor_inline_odds(
                         outcomes.append(
                             OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
                         )
+
+            # Calculate margin if outcomes exist
+            margin = None
             if outcomes:
-                # Calculate margin: (sum(1/odds) - 1) * 100
-                margin = None
                 try:
                     total_implied_prob = sum(1.0 / o.odds for o in outcomes if o.odds > 0)
                     if total_implied_prob > 0:
@@ -403,15 +407,17 @@ def _build_competitor_inline_odds(
                 except (ZeroDivisionError, TypeError):
                     pass
 
-                inline_odds.append(
-                    InlineOdds(
-                        market_id=market.betpawa_market_id,
-                        market_name=market.betpawa_market_name,
-                        line=market.line,
-                        outcomes=outcomes,
-                        margin=margin,
-                    )
+            # Always append market (even if outcomes empty/margin null)
+            # This ensures consistency with event detail endpoint
+            inline_odds.append(
+                InlineOdds(
+                    market_id=market.betpawa_market_id,
+                    market_name=market.betpawa_market_name,
+                    line=market.line,
+                    outcomes=outcomes,
+                    margin=margin,
                 )
+            )
 
     return inline_odds
 
