@@ -20,77 +20,24 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
-- ✅ **v2.4 Historical Analytics** — Phases 79-86 (shipped 2026-02-11)
-- ✅ **v2.5 Odds Availability Tracking** — Phases 87-92 (shipped 2026-02-11)
-
-### ✅ v2.5 Odds Availability Tracking (Shipped 2026-02-11)
-
-**Milestone Goal:** Track when odds/events become unavailable, display appropriately with strikethrough styling, and capture availability transitions in history charts.
-
-#### Phase 87: Investigation & Schema Design
-
-**Goal**: Analyze current data flow and design availability storage approach
-**Depends on**: v2.4 complete
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 87-01: Investigate patterns and design schema — 2026-02-11
-
-#### Phase 88: Backend Availability Tracking
-
-**Goal**: Implement detection logic in scraping pipeline, storage with `unavailable_at` timestamp
-**Depends on**: Phase 87
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 88-01: Schema, cache, and detection integration — 2026-02-11
-
-#### Phase 89: API & Cache Changes
-
-**Goal**: Add availability state to API responses and cache updates
-**Depends on**: Phase 88
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 89-01: API availability endpoints — 2026-02-11
-
-#### Phase 90: Odds Comparison UI
-
-**Goal**: Strikethrough styling, "Unavailable since X" tooltips, dash for never_offered
-**Depends on**: Phase 89
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 90-01: OddsValue availability styling — 2026-02-11
-
-#### Phase 91: Event Details UI
-
-**Goal**: Same styling applied to Event Details page for consistency
-**Depends on**: Phase 90
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Plans:
-- [x] 91-01: OddsBadge availability styling — 2026-02-11
-
-#### Phase 92: History Charts
-
-**Goal**: Dotted/dashed lines for unavailable periods, availability transitions in dialog
-**Depends on**: Phase 91
-**Research**: Likely (custom recharts line styling)
-**Research topics**: recharts custom line segments, dashed line styling for gaps
-**Plans**: TBD
-
-Plans:
-- [x] 92-01: History charts availability visualization — 2026-02-11
+- ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
+- ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.5 Odds Availability Tracking (Phases 87-92) — SHIPPED 2026-02-11</summary>
+
+- [x] Phase 87: Investigation & Schema Design (1/1 plans) — 2026-02-11
+- [x] Phase 88: Backend Availability Tracking (1/1 plans) — 2026-02-11
+- [x] Phase 89: API & Cache Changes (1/1 plans) — 2026-02-11
+- [x] Phase 90: Odds Comparison UI (1/1 plans) — 2026-02-11
+- [x] Phase 91: Event Details UI (1/1 plans) — 2026-02-11
+- [x] Phase 92: History Charts (1/1 plans) — 2026-02-11
+
+</details>
 
 <details>
 <summary>✅ v2.4 Historical Analytics (Phases 79-86) — SHIPPED 2026-02-11</summary>

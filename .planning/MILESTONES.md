@@ -1,5 +1,65 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.5 Odds Availability Tracking (Shipped: 2026-02-11)
+
+**Delivered:** Track when odds/events become unavailable across platforms, display appropriately with strikethrough styling and tooltips, and visualize availability transitions in history charts.
+
+**Phases completed:** 87-92 (6 plans total)
+
+**Key accomplishments:**
+
+- Investigated availability patterns: 15-56% market presence over time, designed unavailable_at timestamp approach with cache-level detection
+- Backend availability tracking with schema migration, cache dataclass updates, and detection integrated into scraping pipeline
+- API availability responses with `available` and `unavailable_since` fields on all market objects
+- Odds Comparison UI with three-state display: normal odds, strikethrough dash with tooltip for unavailable, plain dash for never offered
+- Event Details UI with consistent availability patterns in OddsBadge component
+- History Charts with dashed line visualization for unavailable periods and "(unavailable)" tooltip suffix
+
+**Stats:**
+
+- 34 files changed
+- +3,184 / -136 lines (net +3,048)
+- 6 phases, 6 plans, 28 commits
+- Same day (2026-02-11, ~2 hours)
+- ~40,949 total LOC
+
+**Git range:** `ed69f41` → `949881f`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.6 features.
+
+---
+
+## v2.4 Historical Analytics (Shipped: 2026-02-11)
+
+**Delivered:** Historical Analysis page with tournament-level margin analytics, interactive charts, time-to-kickoff analysis, and multi-bookmaker competitive comparison views.
+
+**Phases completed:** 79-86 (19 plans total: 15 original + 4 FIX plans, including 84.1, 84.2, 85.1 decimal phases)
+
+**Key accomplishments:**
+
+- Fixed specifier bug in history API - now filters by market line parameter to prevent mixing Over 2.5 with Over 1.5 data
+- Historical Analysis page with date range filters, tournament list from events API, and drill-down navigation
+- Interactive OddsLineChart and MarginLineChart with click-through from tournament cards
+- Comparison table with best/worst highlighting (green for best odds, red for >3% worse than Betpawa)
+- Tournament detail page extracting ALL unique markets with avg/min/max margin stats and search
+- Time-to-kickoff charts with bucket breakdown dialog (24h+, 12-24h, 6-12h, etc.)
+- Opening vs closing margin comparison cards for primary markets (1X2, O/U 2.5, BTTS, DC)
+- Multi-bookmaker comparison with overlay charts and difference bar charts showing competitive advantage
+
+**Stats:**
+
+- 97 files changed
+- +11,858 / -177 lines (net +11,681)
+- 11 phases (8 original + 3 decimal), 19 plans, 37 commits
+- 2 days (2026-02-10 to 2026-02-11)
+- ~40,000 total LOC
+
+**Git range:** `1f1360a` → `032c39e`
+
+**What's next:** Use `/gsd:discuss-milestone` to plan v2.5 features.
+
+---
+
 ## v2.3 Code Quality & Reliability (Shipped: 2026-02-09)
 
 **Delivered:** Stabilized WebSocket implementation, removed 1,256 LOC of dead code, added comprehensive documentation across frontend and backend, and improved type safety with annotations and error handling.

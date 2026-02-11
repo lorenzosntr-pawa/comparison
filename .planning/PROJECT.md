@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.3 Code Quality & Reliability)
+## Current State (v2.5 Odds Availability Tracking)
 
-**Shipped:** 2026-02-09
+**Shipped:** 2026-02-11
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~40,000 lines of code (net after dead code removal)
+- ~40,949 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -69,6 +69,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **WebSocket reconnection callbacks** - automatic query invalidation on reconnect for fresh data
 - **Comprehensive documentation** - PEP 257 docstrings for backend, JSDoc for frontend
 - **README.md** - project overview, architecture, setup, API endpoints, development workflow
+- **Historical Analysis page** - tournament-level margin analytics with date range filters and drill-down
+- **Interactive timeline charts** - OddsLineChart and MarginLineChart with click-through navigation
+- **Tournament detail view** - ALL unique markets with avg/min/max margin stats and search
+- **Time-to-kickoff analysis** - bucket breakdown dialog showing margin trends by time period
+- **Multi-bookmaker comparison** - overlay charts and difference bar charts for competitive analysis
+- **Odds availability tracking** - `unavailable_at` timestamp detecting when markets disappear
+- **Three-state availability display** - normal odds, strikethrough+tooltip for unavailable, dash for never offered
+- **History charts availability** - dashed lines for unavailable periods with "(unavailable)" tooltip suffix
 
 ## Requirements
 
@@ -154,10 +162,23 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Comprehensive README.md with architecture and setup guide — v2.3
 - ✓ Return type annotations for 10 functions — v2.3
 - ✓ JSONDecodeError handling for 9 scraper API calls — v2.3
+- ✓ Historical Analysis page with tournament list and date range filters — v2.4
+- ✓ Interactive timeline charts with click-through from tournament cards — v2.4
+- ✓ Tournament detail page with ALL market cards and margin stats — v2.4
+- ✓ Time-to-kickoff bucket analysis with breakdown dialog — v2.4
+- ✓ Opening vs closing margin comparison cards — v2.4
+- ✓ Multi-bookmaker comparison with overlay and difference charts — v2.4
+- ✓ Line parameter in history API for specifier-based market filtering — v2.4
+- ✓ Availability tracking with `unavailable_at` timestamp column — v2.5
+- ✓ Cache-level availability detection comparing previous to current scrape — v2.5
+- ✓ API availability responses with `available` and `unavailable_since` fields — v2.5
+- ✓ Three-state availability display in Odds Comparison (normal/strikethrough/dash) — v2.5
+- ✓ Three-state availability display in Event Details (OddsBadge) — v2.5
+- ✓ History charts with dashed lines for unavailable periods — v2.5
 
 ### Active
 
-(No active requirements — project feature-complete for v2.3)
+(No active requirements — project feature-complete for v2.5)
 
 ### Out of Scope
 
@@ -269,6 +290,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Remove HIGH confidence dead code only | Defer LOW confidence items as documented concerns | ✓ Good — v2.3 safe cleanup |
 | JSDoc format matching PEP 257 style | Consistency between frontend and backend documentation | ✓ Good — v2.3 unified style |
 | TypeVar for generic decorator | Simple T = TypeVar("T") instead of complex protocol types | ✓ Good — v2.3 readable annotations |
+| Line parameter as optional query param | Backward compatibility with existing history API consumers | ✓ Good — v2.4 fixed specifier mixing |
+| Extract ALL unique markets from Betpawa | Full visibility into any market type, not just tracked 4 | ✓ Good — v2.4 complete analytics |
+| getMarketKey(id, line) pattern | Unique identification distinguishing specifier variants | ✓ Good — v2.4 correct market grouping |
+| Simplify over explain pattern | Remove complexity rather than add tooltips/labels | ✓ Good — v2.4 cleaner UX |
+| Option B unavailable_at timestamp | Timestamp tells us WHEN, not just IF unavailable | ✓ Good — v2.5 enables tooltips |
+| Detection at cache layer | Compare previous cache to new scrape for availability changes | ✓ Good — v2.5 efficient detection |
+| UI distinction dash vs strikethrough | Differentiate never_offered from became_unavailable | ✓ Good — v2.5 clear UX |
+| Dashed overlay line approach | Simpler than gradient masking, no SVG complexity | ✓ Good — v2.5 clean charts |
 
 ---
-*Last updated: 2026-02-09 after v2.3 milestone*
+*Last updated: 2026-02-11 after v2.5 milestone*

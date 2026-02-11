@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-09)
+See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** All milestones complete through v2.4
+**Current focus:** All milestones complete through v2.5
 
 ## Current Position
 
 Phase: 92 of 92 (History Charts)
 Plan: 1 of 1 complete
-Status: Milestone complete
-Last activity: 2026-02-11 — Completed 92-01-PLAN.md
+Status: All milestones shipped (v2.5 archived)
+Last activity: 2026-02-11 — Completed v2.5 milestone archival
 
 Progress: ██████████ 100%
 
@@ -138,6 +138,27 @@ Progress: ██████████ 100%
 - Added return type annotations to 10 functions, JSONDecodeError handling to 9 API calls
 - +9,035 / -1,808 lines (net +7,227)
 - ~40,000 total LOC (net after dead code removal)
+
+**v2.4 Summary:**
+- 11 phases completed (19 plans including 4 FIX plans, 3 decimal phases)
+- 2 days (2026-02-10 to 2026-02-11)
+- Fixed specifier bug in history API (line parameter)
+- Historical Analysis page with tournament list and date range filters
+- Tournament detail page with ALL market cards
+- Time-to-kickoff bucket analysis with breakdown dialog
+- Multi-bookmaker comparison with overlay and difference charts
+- +11,858 / -177 lines (net +11,681)
+- ~40,000 total LOC
+
+**v2.5 Summary:**
+- 6 phases completed (6 plans)
+- Same day (2026-02-11, ~2 hours)
+- Availability tracking with unavailable_at timestamp
+- Cache-level detection comparing previous to current scrape
+- Three-state display in Odds Comparison and Event Details
+- History charts with dashed lines for unavailable periods
+- +3,184 / -136 lines (net +3,048)
+- ~40,949 total LOC
 
 ## Accumulated Context
 
@@ -327,11 +348,14 @@ Progress: ██████████ 100%
 - Phase 85.1 inserted after Phase 85: Historical Analysis Card Margins - add opening/closing margins per market to cards, fix margin inconsistencies (URGENT)
 - Phase 87 removed: Polish phase skipped, features complete as-is
 - v2.4 Historical Analytics shipped 2026-02-11 with 11 phases (19 plans)
+- v2.4 archived to .planning/milestones/v2.4-ROADMAP.md
 - Milestone v2.5 created: Odds Availability Tracking, 6 phases (Phase 87-92)
+- v2.5 Odds Availability Tracking shipped 2026-02-11 with 6 phases (6 plans)
+- v2.5 archived to .planning/milestones/v2.5-ROADMAP.md
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 92 (History Charts) - v2.5 milestone complete
+Stopped at: v2.5 milestone archived
 Resume file: None
-Next action: `/gsd:complete-milestone` to archive v2.5
+Next action: `/gsd:discuss-milestone` to plan v2.6 features
