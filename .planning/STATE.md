@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 91 of 92 (Event Details UI)
+Phase: 92 of 92 (History Charts)
 Plan: 1 of 1 complete
-Status: Phase complete
-Last activity: 2026-02-11 — Completed 91-01-PLAN.md
+Status: Milestone complete
+Last activity: 2026-02-11 — Completed 92-01-PLAN.md
 
-Progress: █████░░░░░ 83%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -33,7 +33,7 @@ Progress: █████░░░░░ 83%
 - **v2.2 Odds Freshness** — SHIPPED 2026-02-09 (3 phases, 3 plans)
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
-- **v2.5 Odds Availability Tracking** — IN PROGRESS (6 phases, Phase 87-92)
+- **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
 
 ## Performance Metrics
 
@@ -239,6 +239,9 @@ Progress: █████░░░░░ 83%
 - **Three-state availability rendering** - available (normal odds), unavailable (strikethrough dash + tooltip), never_offered (plain dash); getMarketAvailabilityState centralizes logic (v2.5 Phase 90)
 - **OutcomeOddsResult pattern** - getOutcomeOdds returns { odds, available, unavailableSince } object for single function call per cell efficiency (v2.5 Phase 90)
 - **OutcomeDisplay availability extension** - extend existing display interface with available/unavailableSince fields for prop drilling to OddsBadge (v2.5 Phase 91)
+- **splitByAvailability helper for chart rendering** - separate data points into available/unavailable arrays for dual-line approach (v2.5 Phase 92)
+- **Dashed overlay line for unavailable periods** - strokeDasharray="5 5" on secondary line, solid primary line; connectNulls bridges gaps (v2.5 Phase 92)
+- **Tooltip unavailable suffix pattern** - append "(unavailable)" to tooltip values when available=false for clear UX (v2.5 Phase 92)
 
 ### Key Decisions
 
@@ -329,6 +332,6 @@ Progress: █████░░░░░ 83%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 91 (Event Details UI)
+Stopped at: Completed Phase 92 (History Charts) - v2.5 milestone complete
 Resume file: None
-Next action: `/gsd:plan-phase 92` to plan History Charts
+Next action: `/gsd:complete-milestone` to archive v2.5

@@ -21,9 +21,9 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ **v2.4 Historical Analytics** — Phases 79-86 (shipped 2026-02-11)
-- 🚧 **v2.5 Odds Availability Tracking** — Phases 87-92 (in progress)
+- ✅ **v2.5 Odds Availability Tracking** — Phases 87-92 (shipped 2026-02-11)
 
-### 🚧 v2.5 Odds Availability Tracking (In Progress)
+### ✅ v2.5 Odds Availability Tracking (Shipped 2026-02-11)
 
 **Milestone Goal:** Track when odds/events become unavailable, display appropriately with strikethrough styling, and capture availability transitions in history charts.
 
@@ -86,7 +86,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 92-01: TBD
+- [x] 92-01: History charts availability visualization — 2026-02-11
 
 ---
 
@@ -395,4 +395,5 @@ Plans:
 | 89. API & Cache Changes | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 90. Odds Comparison UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 92. History Charts | v2.5 | 0/? | Not started | - |
+| 92. History Charts | v2.5 | 1/1 | Complete | 2026-02-11 |
+| **v2.5 SHIPPED** | | | **2026-02-11** | |
