@@ -195,6 +195,11 @@ export interface OutcomeOdds {
  *
  * @description Compact representation of a market's odds for list views,
  * including calculated margin.
+ *
+ * Availability states:
+ * - `available=true, unavailable_since=null`: Market is currently offered
+ * - `available=false, unavailable_since=timestamp`: Market became unavailable at that time
+ * - Market not in response at all: Never offered (shown as dash in UI)
  */
 export interface InlineOdds {
   /** Unique market identifier (e.g., "1x2", "over_under_2.5") */
@@ -207,6 +212,10 @@ export interface InlineOdds {
   outcomes: OutcomeOdds[]
   /** Calculated bookmaker margin percentage, or null if not calculable */
   margin: number | null
+  /** Whether this market is currently available for betting (default true) */
+  available?: boolean
+  /** ISO timestamp when market became unavailable, or null if available (default null) */
+  unavailable_since?: string | null
 }
 
 /**
@@ -301,6 +310,11 @@ export interface MarketOutcome {
  * Detailed market odds data.
  *
  * @description Full market information including grouping metadata for display.
+ *
+ * Availability states:
+ * - `available=true, unavailable_since=null`: Market is currently offered
+ * - `available=false, unavailable_since=timestamp`: Market became unavailable at that time
+ * - Market not in response at all: Never offered (shown as dash in UI)
  */
 export interface MarketOddsDetail {
   /** Betpawa's market identifier (used as canonical market ID) */
@@ -315,6 +329,10 @@ export interface MarketOddsDetail {
   margin: number
   /** Market group categories for organization (e.g., ["Main", "Goals"]), or null */
   market_groups: string[] | null
+  /** Whether this market is currently available for betting (default true) */
+  available?: boolean
+  /** ISO timestamp when market became unavailable, or null if available (default null) */
+  unavailable_since?: string | null
 }
 
 /**
