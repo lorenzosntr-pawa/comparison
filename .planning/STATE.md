@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 84.2 of 88 (Tournament Detail Page)
-Plan: 1 of 1 in current phase + 1 FIX
-Status: Phase complete (including UAT fix)
-Last activity: 2026-02-11 — Completed 84.2-01-FIX.md
+Phase: 85 of 88 (Time-to-Kickoff Charts)
+Plan: 1 of 1 in current phase
+Status: In progress
+Last activity: 2026-02-11 — Completed 85-01-PLAN.md
 
-Progress: █████░░░░░ 54%
+Progress: █████░░░░░ 56%
 
 ## Milestones
 
@@ -311,6 +311,6 @@ Progress: █████░░░░░ 54%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 84.2-01-FIX (UAT fix for all markets display)
+Stopped at: Completed 85-01-PLAN.md (time-to-kickoff data & chart component)
 Resume file: None
-Next action: `/gsd:verify-work 84.2` (re-verify fix) or `/gsd:plan-phase 85` (time-to-kickoff charts)
+Next action: Check remaining plans for Phase 85 or `/gsd:plan-phase 86` (Betpawa vs competitor)

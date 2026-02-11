@@ -126,10 +126,10 @@ Plans:
 **Goal**: Market type grouping with aggregate vs individual event toggle
 **Depends on**: Phase 84
 **Research**: Unlikely (recharts already in codebase)
-**Plans**: TBD
+**Plans**: 1/? in progress
 
 Plans:
-- [ ] 85-01: TBD
+- [x] 85-01: Time-to-kickoff data & chart component
 
 #### Phase 86: Betpawa vs Competitor Comparison
 
@@ -441,7 +441,7 @@ Plans:
 | 84. Tournament Summary Metrics | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.1 Fix Tournament Metrics Design (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-10 |
 | 84.2 Tournament Detail Page (INSERTED) | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-11 |
-| 85. Time-to-Kickoff Charts | v2.4 | 0/? | Not started | - |
+| 85. Time-to-Kickoff Charts | v2.4 | 1/? | In progress | - |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 0/? | Not started | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
 | 88. Polish & Integration | v2.4 | 0/? | Not started | - |
