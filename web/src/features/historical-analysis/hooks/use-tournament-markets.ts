@@ -27,6 +27,32 @@ export interface MarginHistoryPoint {
 }
 
 /**
+ * Margin data point with time-to-kickoff calculation for normalized X-axis.
+ */
+export interface TimeToKickoffPoint {
+  /** Hours until kickoff (negative values: -72, -24, -1, etc.) */
+  hoursToKickoff: number
+  /** Margin value */
+  margin: number
+  /** Event ID for drill-down capability */
+  eventId: number
+}
+
+/**
+ * Time bucket labels for grouping margin data.
+ */
+export type TimeBucket = '7d+' | '3-7d' | '24-72h' | '<24h'
+
+/**
+ * Statistics for a specific time bucket.
+ */
+export interface BucketStats {
+  bucket: TimeBucket
+  avgMargin: number
+  pointCount: number
+}
+
+/**
  * Market statistics for a tournament.
  */
 export interface TournamentMarket {
@@ -46,6 +72,16 @@ export interface TournamentMarket {
   eventCount: number
   /** Chronological margin history for timeline chart */
   marginHistory: MarginHistoryPoint[]
+  /** First margin data point (earliest captured_at) */
+  openingMargin: number
+  /** Last margin data point (closest to kickoff) */
+  closingMargin: number
+  /** Change from opening to closing margin */
+  marginDelta: number
+  /** Margin history with normalized time-to-kickoff X-axis */
+  timeToKickoffHistory: TimeToKickoffPoint[]
+  /** Statistics per time bucket */
+  bucketStats: BucketStats[]
 }
 
 /**
@@ -67,6 +103,18 @@ interface MarketAccumulator {
   line: number | null
   margins: number[]
   marginHistory: MarginHistoryPoint[]
+  timeToKickoffHistory: TimeToKickoffPoint[]
+}
+
+/**
+ * Determine which time bucket a hoursToKickoff value falls into.
+ */
+function getTimeBucket(hoursToKickoff: number): TimeBucket {
+  // hoursToKickoff is negative (e.g., -72 means 72 hours before kickoff)
+  if (hoursToKickoff <= -168) return '7d+' // 7 * 24 = 168 hours
+  if (hoursToKickoff <= -72) return '3-7d'
+  if (hoursToKickoff <= -24) return '24-72h'
+  return '<24h'
 }
 
 /**
@@ -174,6 +222,14 @@ export function useTournamentMarkets(
         )
         if (!betpawaData) continue
 
+        // Parse event kickoff time for time-to-kickoff calculation
+        const kickoffTime = new Date(eventDetail.kickoff).getTime()
+        const capturedAtRaw = betpawaData.snapshot_time || eventDetail.kickoff
+        const capturedAtTime = new Date(capturedAtRaw).getTime()
+
+        // Calculate hours to kickoff (negative: before kickoff)
+        const hoursToKickoff = (capturedAtTime - kickoffTime) / (1000 * 60 * 60)
+
         // Extract ALL markets from Betpawa's full market list
         for (const market of betpawaData.markets) {
           if (market.margin === null || market.margin < 0) continue
@@ -188,14 +244,20 @@ export function useTournamentMarkets(
               line: market.line,
               margins: [],
               marginHistory: [],
+              timeToKickoffHistory: [],
             }
             marketMap.set(key, acc)
           }
 
           acc.margins.push(market.margin)
           acc.marginHistory.push({
-            capturedAt: betpawaData.snapshot_time || eventDetail.kickoff,
+            capturedAt: capturedAtRaw,
             margin: market.margin,
+          })
+          acc.timeToKickoffHistory.push({
+            hoursToKickoff,
+            margin: market.margin,
+            eventId: eventDetail.id,
           })
         }
       }
@@ -217,6 +279,49 @@ export function useTournamentMarkets(
             new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime()
         )
 
+        // Sort time-to-kickoff history (most negative = earliest first)
+        const sortedTimeToKickoff = [...acc.timeToKickoffHistory].sort(
+          (a, b) => a.hoursToKickoff - b.hoursToKickoff
+        )
+
+        // Compute opening/closing margins from sorted time-to-kickoff history
+        const openingMargin =
+          sortedTimeToKickoff.length > 0 ? sortedTimeToKickoff[0].margin : avgMargin
+        const closingMargin =
+          sortedTimeToKickoff.length > 0
+            ? sortedTimeToKickoff[sortedTimeToKickoff.length - 1].margin
+            : avgMargin
+        const marginDelta = closingMargin - openingMargin
+
+        // Compute bucket statistics
+        const bucketData: Record<TimeBucket, number[]> = {
+          '7d+': [],
+          '3-7d': [],
+          '24-72h': [],
+          '<24h': [],
+        }
+
+        for (const point of sortedTimeToKickoff) {
+          const bucket = getTimeBucket(point.hoursToKickoff)
+          bucketData[bucket].push(point.margin)
+        }
+
+        const bucketStats: BucketStats[] = (
+          ['7d+', '3-7d', '24-72h', '<24h'] as TimeBucket[]
+        )
+          .map((bucket) => {
+            const margins = bucketData[bucket]
+            return {
+              bucket,
+              avgMargin:
+                margins.length > 0
+                  ? margins.reduce((s, m) => s + m, 0) / margins.length
+                  : 0,
+              pointCount: margins.length,
+            }
+          })
+          .filter((s) => s.pointCount > 0) // Only include buckets with data
+
         markets.push({
           id: acc.id,
           name: acc.name,
@@ -226,6 +331,11 @@ export function useTournamentMarkets(
           maxMargin,
           eventCount: acc.margins.length,
           marginHistory: sortedHistory,
+          openingMargin,
+          closingMargin,
+          marginDelta,
+          timeToKickoffHistory: sortedTimeToKickoff,
+          bucketStats,
         })
       }
 
