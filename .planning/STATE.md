@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 86 of 86 (Betpawa vs Competitor Comparison)
-Plan: 4/4 complete
-Status: Complete
-Last activity: 2026-02-11 — Shipped v2.4 Historical Analytics
+Phase: 87 of 92 (Investigation & Schema Design)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-02-11 — Milestone v2.5 created
 
-Progress: ██████████ 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -33,6 +33,7 @@ Progress: ██████████ 100%
 - **v2.2 Odds Freshness** — SHIPPED 2026-02-09 (3 phases, 3 plans)
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
+- **v2.5 Odds Availability Tracking** — IN PROGRESS (6 phases, Phase 87-92)
 
 ## Performance Metrics
 
@@ -318,10 +319,11 @@ Progress: ██████████ 100%
 - Phase 85.1 inserted after Phase 85: Historical Analysis Card Margins - add opening/closing margins per market to cards, fix margin inconsistencies (URGENT)
 - Phase 87 removed: Polish phase skipped, features complete as-is
 - v2.4 Historical Analytics shipped 2026-02-11 with 11 phases (19 plans)
+- Milestone v2.5 created: Odds Availability Tracking, 6 phases (Phase 87-92)
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Shipped v2.4 Historical Analytics
+Stopped at: Milestone v2.5 initialization
 Resume file: None
-Next action: `/gsd:new-milestone` to plan next milestone or work on enhancements
+Next action: `/gsd:plan-phase 87` to plan first phase

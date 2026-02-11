@@ -21,6 +21,74 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ **v2.4 Historical Analytics** — Phases 79-86 (shipped 2026-02-11)
+- 🚧 **v2.5 Odds Availability Tracking** — Phases 87-92 (in progress)
+
+### 🚧 v2.5 Odds Availability Tracking (In Progress)
+
+**Milestone Goal:** Track when odds/events become unavailable, display appropriately with strikethrough styling, and capture availability transitions in history charts.
+
+#### Phase 87: Investigation & Schema Design
+
+**Goal**: Analyze current data flow and design availability storage approach
+**Depends on**: v2.4 complete
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 87-01: TBD (run /gsd:plan-phase 87 to break down)
+
+#### Phase 88: Backend Availability Tracking
+
+**Goal**: Implement detection logic in scraping pipeline, storage with `available` flag
+**Depends on**: Phase 87
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 88-01: TBD
+
+#### Phase 89: API & Cache Changes
+
+**Goal**: Add availability state to API responses and cache updates
+**Depends on**: Phase 88
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 89-01: TBD
+
+#### Phase 90: Odds Comparison UI
+
+**Goal**: Strikethrough styling, "Unavailable since X" tooltips, dash for never_offered
+**Depends on**: Phase 89
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 90-01: TBD
+
+#### Phase 91: Event Details UI
+
+**Goal**: Same styling applied to Event Details page for consistency
+**Depends on**: Phase 90
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 91-01: TBD
+
+#### Phase 92: History Charts
+
+**Goal**: Dotted/dashed lines for unavailable periods, availability transitions in dialog
+**Depends on**: Phase 91
+**Research**: Likely (custom recharts line styling)
+**Research topics**: recharts custom line segments, dashed line styling for gaps
+**Plans**: TBD
+
+Plans:
+- [ ] 92-01: TBD
+
+---
 
 ## Completed Milestones
 
@@ -322,3 +390,9 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-11 |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 4/4 | Complete | 2026-02-11 |
 | **v2.4 SHIPPED** | | | **2026-02-11** | |
+| 87. Investigation & Schema Design | v2.5 | 0/? | Not started | - |
+| 88. Backend Availability Tracking | v2.5 | 0/? | Not started | - |
+| 89. API & Cache Changes | v2.5 | 0/? | Not started | - |
+| 90. Odds Comparison UI | v2.5 | 0/? | Not started | - |
+| 91. Event Details UI | v2.5 | 0/? | Not started | - |
+| 92. History Charts | v2.5 | 0/? | Not started | - |
