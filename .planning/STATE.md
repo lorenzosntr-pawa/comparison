@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 88 of 92 (Backend Availability Tracking)
+Phase: 89 of 92 (API & Cache Changes)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-11 — Completed 88-01-PLAN.md
+Last activity: 2026-02-11 — Completed 89-01-PLAN.md
 
-Progress: ██░░░░░░░░ 33%
+Progress: ███░░░░░░░ 50%
 
 ## Milestones
 
@@ -235,6 +235,7 @@ Progress: ██░░░░░░░░ 33%
 - **MergedDataPoint for multi-bookmaker charts** - merge hoursToKickoff data with 1 decimal precision, each bookmaker as optional key (v2.4 Phase 86)
 - **DifferenceBarChart for margin gap visualization** - bar chart showing Betpawa minus competitor per time bucket, green=Betpawa better, red=competitor better (v2.4 Phase 86)
 - **calculateBucketStats helper** - convert timeline points to bucket statistics on-demand in dialog component (v2.4 Phase 86)
+- **Availability extraction pattern** - `unavailable_at = getattr(market, 'unavailable_at', None); available = unavailable_at is None` for safe access across cache/DB paths (v2.5 Phase 89)
 
 ### Key Decisions
 
@@ -325,6 +326,6 @@ Progress: ██░░░░░░░░ 33%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 88 (Backend Availability Tracking)
+Stopped at: Completed Phase 89 (API & Cache Changes)
 Resume file: None
-Next action: `/gsd:plan-phase 89` to plan API Availability Endpoints
+Next action: `/gsd:plan-phase 90` to plan Odds Comparison UI

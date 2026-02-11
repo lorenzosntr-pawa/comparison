@@ -52,10 +52,10 @@ Plans:
 **Goal**: Add availability state to API responses and cache updates
 **Depends on**: Phase 88
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 89-01: TBD
+- [x] 89-01: API availability endpoints — 2026-02-11
 
 #### Phase 90: Odds Comparison UI
 
@@ -392,7 +392,7 @@ Plans:
 | **v2.4 SHIPPED** | | | **2026-02-11** | |
 | 87. Investigation & Schema Design | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 88. Backend Availability Tracking | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 89. API & Cache Changes | v2.5 | 0/? | Not started | - |
+| 89. API & Cache Changes | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 90. Odds Comparison UI | v2.5 | 0/? | Not started | - |
 | 91. Event Details UI | v2.5 | 0/? | Not started | - |
 | 92. History Charts | v2.5 | 0/? | Not started | - |
