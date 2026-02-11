@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 89 of 92 (API & Cache Changes)
+Phase: 90 of 92 (Odds Comparison UI)
 Plan: 1 of 1 complete
 Status: Phase complete
-Last activity: 2026-02-11 — Completed 89-01-PLAN.md
+Last activity: 2026-02-11 — Completed 90-01-PLAN.md
 
-Progress: ███░░░░░░░ 50%
+Progress: ████░░░░░░ 67%
 
 ## Milestones
 
@@ -236,6 +236,8 @@ Progress: ███░░░░░░░ 50%
 - **DifferenceBarChart for margin gap visualization** - bar chart showing Betpawa minus competitor per time bucket, green=Betpawa better, red=competitor better (v2.4 Phase 86)
 - **calculateBucketStats helper** - convert timeline points to bucket statistics on-demand in dialog component (v2.4 Phase 86)
 - **Availability extraction pattern** - `unavailable_at = getattr(market, 'unavailable_at', None); available = unavailable_at is None` for safe access across cache/DB paths (v2.5 Phase 89)
+- **Three-state availability rendering** - available (normal odds), unavailable (strikethrough dash + tooltip), never_offered (plain dash); getMarketAvailabilityState centralizes logic (v2.5 Phase 90)
+- **OutcomeOddsResult pattern** - getOutcomeOdds returns { odds, available, unavailableSince } object for single function call per cell efficiency (v2.5 Phase 90)
 
 ### Key Decisions
 
@@ -326,6 +328,6 @@ Progress: ███░░░░░░░ 50%
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed Phase 89 (API & Cache Changes)
+Stopped at: Completed Phase 90 (Odds Comparison UI)
 Resume file: None
-Next action: `/gsd:plan-phase 90` to plan Odds Comparison UI
+Next action: `/gsd:plan-phase 91` to plan Event Details UI

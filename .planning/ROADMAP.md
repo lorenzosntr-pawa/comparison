@@ -62,10 +62,10 @@ Plans:
 **Goal**: Strikethrough styling, "Unavailable since X" tooltips, dash for never_offered
 **Depends on**: Phase 89
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 90-01: TBD
+- [x] 90-01: OddsValue availability styling — 2026-02-11
 
 #### Phase 91: Event Details UI
 
@@ -393,6 +393,6 @@ Plans:
 | 87. Investigation & Schema Design | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 88. Backend Availability Tracking | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 89. API & Cache Changes | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 90. Odds Comparison UI | v2.5 | 0/? | Not started | - |
+| 90. Odds Comparison UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 91. Event Details UI | v2.5 | 0/? | Not started | - |
 | 92. History Charts | v2.5 | 0/? | Not started | - |
