@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v2.4 Historical Analytics - specifier bug fix, interactive charts, historical analysis page
+**Current focus:** All milestones complete through v2.4
 
 ## Current Position
 
-Phase: 87 of 87 (Polish & Integration)
-Plan: 0 of ? in current phase
-Status: Not started
-Last activity: 2026-02-11 — Removed Phase 87 (Market Coverage & Export)
+Phase: 86 of 86 (Betpawa vs Competitor Comparison)
+Plan: 4/4 complete
+Status: Complete
+Last activity: 2026-02-11 — Shipped v2.4 Historical Analytics
 
-Progress: ████████░░ 85%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -32,7 +32,7 @@ Progress: ████████░░ 85%
 - **v2.1 Historical Odds Tracking** — SHIPPED 2026-02-08 (9 phases, 12 plans)
 - **v2.2 Odds Freshness** — SHIPPED 2026-02-09 (3 phases, 3 plans)
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
-- **v2.4 Historical Analytics** — IN PROGRESS (9 phases, Phase 79-87)
+- **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
 
 ## Performance Metrics
 
@@ -316,10 +316,12 @@ Progress: ████████░░ 85%
 - Phase 84.1 inserted after Phase 84: Fix Tournament Metrics Design (URGENT) - BUG-013/014/015
 - Phase 84.2 inserted after Phase 84.1: Tournament Detail Page - ISS-005 (user requested feature)
 - Phase 85.1 inserted after Phase 85: Historical Analysis Card Margins - add opening/closing margins per market to cards, fix margin inconsistencies (URGENT)
+- Phase 87 removed: Polish phase skipped, features complete as-is
+- v2.4 Historical Analytics shipped 2026-02-11 with 11 phases (19 plans)
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Removed Phase 87 (Market Coverage & Export)
+Stopped at: Shipped v2.4 Historical Analytics
 Resume file: None
-Next action: `/gsd:plan-phase 87` to create plan for Polish & Integration
+Next action: `/gsd:new-milestone` to plan next milestone or work on enhancements

@@ -20,156 +20,26 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
-- 🚧 **v2.4 Historical Analytics** — Phases 79-87 (in progress)
-
-### 🚧 v2.4 Historical Analytics (In Progress)
-
-**Milestone Goal:** Enable traders to analyze historical margin patterns across tournaments and market types, with accurate specifier handling and interactive chart exploration.
-
-#### Phase 79: Investigation ✓
-
-**Goal**: Root cause analysis for specifier bug in historical data
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal debugging)
-**Plans**: 1/1 complete
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 79-01: SQL verification and bug report documentation
-
-#### Phase 80: Specifier Bug Fix ✓
-
-**Goal**: Fix historical data for markets with specifiers (Over/Under, Handicap)
-**Depends on**: Phase 79
-**Research**: Unlikely (internal patterns)
-**Plans**: 2/2 complete
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 80-01: Backend API and frontend data layer (line parameter)
-- [x] 80-02: Frontend components (pass line through click handlers)
-
-#### Phase 81: Interactive Chart ✓
-
-**Goal**: Add hover tooltip and click-to-lock crosshair interactions to charts
-**Depends on**: Phase 80
-**Research**: Unlikely (recharts already integrated)
-**Plans**: 1/1 complete + 1 FIX
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 81-01: Click-to-lock crosshair with comparison panel
-- [x] 81-01-FIX: Fix click-to-lock not persisting (debounce, refs, index comparison)
-
-#### Phase 82: Comparison Table ✓
-
-**Goal**: Locked timestamp comparison display for multi-bookmaker analysis
-**Depends on**: Phase 81
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 82-01: ComparisonTable component with best/worst highlighting and delta columns
-
-#### Phase 83: Historical Analysis Page Foundation ✓
-
-**Goal**: New page with route, navigation, filter bar, and tournament list
-**Depends on**: Phase 82
-**Research**: Unlikely (established React patterns)
-**Plans**: 1/1 complete
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 83-01: Feature structure, route, navigation, filter bar, tournament list
-
-#### Phase 84: Tournament Summary Metrics ✓
-
-**Goal**: Event count, avg margin, coverage stats, and trend indicators
-**Depends on**: Phase 83
-**Research**: Unlikely (SQL aggregation, established patterns)
-**Plans**: 1/1 complete + 1 FIX
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 84-01: Extend useTournaments hook with metrics, add display to tournament cards
-- [x] 84-01-FIX: Fix page_size validation error (UAT-001) with pagination loop
-
-#### Phase 84.1: Fix Tournament Metrics Design (INSERTED) ✓
-
-**Goal**: Include started events, per-market margin breakdown, market-level grouping
-**Depends on**: Phase 84
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete + 1 FIX
-**Addresses**: BUG-013, BUG-014, BUG-015
-**Completed**: 2026-02-10
-
-Plans:
-- [x] 84.1-01: Multi-market metrics (1X2, O/U 2.5, BTTS, DC) and include_started fix
-- [x] 84.1-01-FIX: Simplify tournament card display (UAT-001 through UAT-005)
-
-#### Phase 84.2: Tournament Detail Page (INSERTED) ✓
-
-**Goal**: Click-through from tournament card to detail page with event list and margin timeline
-**Depends on**: Phase 84.1
-**Research**: Unlikely (established React patterns)
-**Plans**: 1/1 complete + 1 FIX
-**Addresses**: ISS-005
-**Completed**: 2026-02-11
-
-Plans:
-- [x] 84.2-01: Route, data hook, TournamentDetailPage with market cards and timeline chart
-- [x] 84.2-01-FIX: Fetch ALL markets via event detail endpoint (was only showing 4 main markets)
-
-#### Phase 85: Time-to-Kickoff Charts ✓
-
-**Goal**: Market type grouping with aggregate vs individual event toggle
-**Depends on**: Phase 84
-**Research**: Unlikely (recharts already in codebase)
-**Plans**: 2/2 complete
-**Completed**: 2026-02-11
-
-Plans:
-- [x] 85-01: Time-to-kickoff data & chart component
-- [x] 85-02: TimelineDialog & page integration
-
-#### Phase 85.1: Historical Analysis Card Margins (INSERTED) ✓
-
-**Goal**: Add opening/closing margins per market to historical analysis cards, fix margin inconsistencies
-**Depends on**: Phase 85
-**Research**: Unlikely (internal patterns)
-**Addresses**: Margin discrepancy between Historical Analysis page and Tournament Details page
-**Plans**: 1/1 complete
-**Completed**: 2026-02-11
-
-Plans:
-- [x] 85.1-01: Add opening/closing margins to MarginMetrics and update tournament card display
-
-#### Phase 86: Betpawa vs Competitor Comparison ✓
-
-**Goal**: Overlay lines and difference chart toggle for margin comparison
-**Depends on**: Phase 85
-**Research**: Unlikely (internal patterns)
-**Plans**: 4/4 complete
-**Completed**: 2026-02-11
-
-Plans:
-- [x] 86-01: Bookmaker filter and multi-column cards
-- [x] 86-02: Per-bookmaker margin data in hook
-- [x] 86-03: Multi-bookmaker chart overlay
-- [x] 86-04: Difference chart toggle
-
-#### Phase 87: Polish & Integration
-
-**Goal**: UX refinements, edge cases, final testing
-**Depends on**: Phase 86
-**Research**: Unlikely (internal patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 87-01: TBD
+- ✅ **v2.4 Historical Analytics** — Phases 79-86 (shipped 2026-02-11)
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.4 Historical Analytics (Phases 79-86) — SHIPPED 2026-02-11</summary>
+
+- [x] Phase 79: Investigation (1/1 plans) — 2026-02-10
+- [x] Phase 80: Specifier Bug Fix (2/2 plans) — 2026-02-10
+- [x] Phase 81: Interactive Chart (1/1 + 1 FIX plans) — 2026-02-10
+- [x] Phase 82: Comparison Table (1/1 plans) — 2026-02-10
+- [x] Phase 83: Historical Analysis Page Foundation (1/1 plans) — 2026-02-10
+- [x] Phase 84: Tournament Summary Metrics (1/1 + 1 FIX plans) — 2026-02-10
+- [x] Phase 84.1: Fix Tournament Metrics Design (1/1 + 1 FIX plans) — 2026-02-10
+- [x] Phase 84.2: Tournament Detail Page (1/1 + 1 FIX plans) — 2026-02-11
+- [x] Phase 85: Time-to-Kickoff Charts (2/2 plans) — 2026-02-11
+- [x] Phase 85.1: Historical Analysis Card Margins (1/1 plans) — 2026-02-11
+- [x] Phase 86: Betpawa vs Competitor Comparison (4/4 plans) — 2026-02-11
+
+</details>
 
 <details>
 <summary>✅ v2.3 Code Quality & Reliability (Phases 72-78) — SHIPPED 2026-02-09</summary>
@@ -451,4 +321,4 @@ Plans:
 | 85. Time-to-Kickoff Charts | v2.4 | 2/2 | Complete | 2026-02-11 |
 | 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-11 |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 4/4 | Complete | 2026-02-11 |
-| 87. Polish & Integration | v2.4 | 0/? | Not started | - |
+| **v2.4 SHIPPED** | | | **2026-02-11** | |
