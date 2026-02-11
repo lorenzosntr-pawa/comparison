@@ -36,6 +36,27 @@ const BOOKMAKER_COLORS: Record<string, string> = {
   bet9ja: '#f97316',     // Orange
 }
 
+/**
+ * Split chart data into available and unavailable segments for a given data key.
+ * Points where availability is false get their value moved to `${key}_unavailable`
+ * to allow rendering separate line series with different styling.
+ */
+function splitByAvailability<T extends Record<string, unknown>>(
+  data: T[],
+  dataKey: string,
+  availabilityKey: string = 'available'
+): T[] {
+  return data.map((point) => {
+    const available = point[availabilityKey] !== false
+    const unavailableKey = `${dataKey}_unavailable`
+    return {
+      ...point,
+      [dataKey]: available ? point[dataKey] : null,
+      [unavailableKey]: available ? null : point[dataKey],
+    } as T
+  })
+}
+
 interface OddsLineChartProps {
   data?: OddsHistoryPoint[]
   multiData?: MultiOddsHistoryData
@@ -89,7 +110,7 @@ export function OddsLineChart({
       // Create a map of bucketed time -> { bookmaker: odds }
       // Timestamps are bucketed to the nearest minute so data from different
       // bookmakers captured at similar times gets merged together
-      const timeMap = new Map<string, Record<string, number | null>>()
+      const timeMap = new Map<string, Record<string, number | boolean | null>>()
       const allBookmakers = Object.keys(multiData)
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
@@ -107,6 +128,8 @@ export function OddsLineChart({
           // (later entries in history array are typically newer)
           if (row[bookmakerSlug] === undefined) {
             row[bookmakerSlug] = outcome?.odds ?? null
+            // Store availability as a separate field per bookmaker
+            row[`${bookmakerSlug}_available`] = point.available ?? true
           }
         })
       })
@@ -117,17 +140,26 @@ export function OddsLineChart({
 
       // Forward-fill: carry forward the last known value for each bookmaker
       const lastKnown: Record<string, number | null> = {}
+      const lastKnownAvailable: Record<string, boolean> = {}
       const filledData = sortedEntries.map(([time, values]) => {
         // Update last known values with any new data at this timestamp
         for (const slug of allBookmakers) {
-          if (values[slug] !== undefined && values[slug] !== null) {
-            lastKnown[slug] = values[slug]
+          const oddsValue = values[slug]
+          if (oddsValue !== undefined && oddsValue !== null && typeof oddsValue === 'number') {
+            lastKnown[slug] = oddsValue
+          }
+          const availValue = values[`${slug}_available`]
+          if (availValue !== undefined && typeof availValue === 'boolean') {
+            lastKnownAvailable[slug] = availValue
           }
         }
         // Build row with forward-filled values
-        const filledRow: Record<string, number | null> = {}
+        const filledRow: Record<string, number | boolean | null> = {}
         for (const slug of allBookmakers) {
-          filledRow[slug] = values[slug] ?? lastKnown[slug] ?? null
+          const oddsVal = values[slug]
+          filledRow[slug] = (typeof oddsVal === 'number' ? oddsVal : null) ?? lastKnown[slug] ?? null
+          const availVal = values[`${slug}_available`]
+          filledRow[`${slug}_available`] = (typeof availVal === 'boolean' ? availVal : undefined) ?? lastKnownAvailable[slug] ?? true
         }
         return {
           time,
@@ -143,10 +175,11 @@ export function OddsLineChart({
     if (!data?.length) return []
 
     return data.map((point) => {
-      const row: Record<string, number | string | null> = {
+      const row: Record<string, number | string | boolean | null> = {
         time: point.captured_at,
         timeLabel: format(new Date(point.captured_at), 'HH:mm'),
         margin: point.margin,
+        available: point.available ?? true,
       }
       point.outcomes?.forEach((outcome) => {
         row[outcome.name] = outcome.odds
@@ -162,6 +195,39 @@ export function OddsLineChart({
     }
     return []
   }, [multiData, comparisonMode])
+
+  // Process chart data to split available/unavailable values for visualization
+  const processedChartData = useMemo(() => {
+    if (!chartData.length) return []
+
+    if (comparisonMode) {
+      // For comparison mode, split each bookmaker's data
+      let result = chartData as Record<string, unknown>[]
+      for (const slug of bookmakerSlugs) {
+        result = splitByAvailability(result, slug, `${slug}_available`)
+      }
+      return result
+    } else {
+      // For single mode, split each outcome's data
+      let result = chartData as Record<string, unknown>[]
+      for (const name of outcomeNames) {
+        result = splitByAvailability(result, name, 'available')
+      }
+      return result
+    }
+  }, [chartData, comparisonMode, bookmakerSlugs, outcomeNames])
+
+  // Check if there are any unavailable points
+  const hasUnavailablePoints = useMemo(() => {
+    if (comparisonMode) {
+      return bookmakerSlugs.some((slug) =>
+        processedChartData.some((point) => point[`${slug}_unavailable`] !== null)
+      )
+    }
+    return processedChartData.some((point) =>
+      outcomeNames.some((name) => point[`${name}_unavailable`] !== null)
+    )
+  }, [processedChartData, comparisonMode, bookmakerSlugs, outcomeNames])
 
   // Wrapper for handleChartClick that passes chartData for index lookup
   const onChartClick = useCallback(
@@ -221,9 +287,17 @@ export function OddsLineChart({
         </div>
       )}
 
+      {/* Legend note for unavailable data */}
+      {hasUnavailablePoints && (
+        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+          <span className="inline-block w-6 border-t-2 border-dashed border-muted-foreground"></span>
+          <span>Dashed line = market unavailable</span>
+        </div>
+      )}
+
       <ResponsiveContainer width="100%" height={height}>
         <LineChart
-          data={chartData}
+          data={processedChartData}
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
           onClick={onChartClick}
         >
@@ -251,26 +325,37 @@ export function OddsLineChart({
               }
               return label
             }}
-            formatter={(value, name) => [
-              typeof value === 'number' ? value.toFixed(2) : '-',
-              comparisonMode && multiData
-                ? multiData[name as string]?.bookmakerName || name
-                : name
-            ]}
+            formatter={(value, name) => {
+              // Handle unavailable series - show with marker
+              const nameStr = String(name)
+              const isUnavailable = nameStr.endsWith('_unavailable')
+              const baseName = isUnavailable ? nameStr.replace('_unavailable', '') : nameStr
+              const displayName = comparisonMode && multiData
+                ? multiData[baseName]?.bookmakerName || baseName
+                : baseName
+              const suffix = isUnavailable ? ' (unavailable)' : ''
+              return [
+                typeof value === 'number' ? value.toFixed(2) : '-',
+                displayName + suffix
+              ]
+            }}
             cursor={{ strokeDasharray: '3 3' }}
             isAnimationActive={false}
           />
           <Legend
-            formatter={(value) =>
-              comparisonMode && multiData
-                ? multiData[value as string]?.bookmakerName || value
+            formatter={(value) => {
+              const valueStr = String(value)
+              // Hide unavailable series from legend (they share the same visual identity)
+              if (valueStr.endsWith('_unavailable')) return null
+              return comparisonMode && multiData
+                ? multiData[valueStr]?.bookmakerName || value
                 : value
-            }
+            }}
           />
 
           {comparisonMode ? (
-            // Comparison mode: one line per bookmaker for the selected outcome
-            bookmakerSlugs.map((slug) => (
+            // Comparison mode: two lines per bookmaker (available solid, unavailable dashed)
+            bookmakerSlugs.flatMap((slug) => [
               <Line
                 key={slug}
                 type="monotone"
@@ -281,12 +366,25 @@ export function OddsLineChart({
                 activeDot={{ r: 4 }}
                 connectNulls
                 isAnimationActive={false}
+              />,
+              <Line
+                key={`${slug}_unavailable`}
+                type="monotone"
+                dataKey={`${slug}_unavailable`}
+                stroke={BOOKMAKER_COLORS[slug] || '#888'}
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={false}
+                activeDot={{ r: 4 }}
+                connectNulls
+                isAnimationActive={false}
+                legendType="none"
               />
-            ))
+            ])
           ) : (
-            // Single bookmaker mode: one line per outcome
+            // Single bookmaker mode: two lines per outcome (available solid, unavailable dashed)
             <>
-              {outcomeNames.map((name, index) => (
+              {outcomeNames.flatMap((name, index) => [
                 <Line
                   key={name}
                   type="monotone"
@@ -296,8 +394,21 @@ export function OddsLineChart({
                   dot={false}
                   activeDot={{ r: 4 }}
                   isAnimationActive={false}
+                />,
+                <Line
+                  key={`${name}_unavailable`}
+                  type="monotone"
+                  dataKey={`${name}_unavailable`}
+                  stroke={OUTCOME_COLORS[index % OUTCOME_COLORS.length]}
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                  connectNulls
+                  isAnimationActive={false}
+                  legendType="none"
                 />
-              ))}
+              ])}
               {showMargin && (
                 <Line
                   type="monotone"
@@ -314,9 +425,9 @@ export function OddsLineChart({
           )}
 
           {/* Lock indicator line */}
-          {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
+          {isLocked && lockedIndex !== null && lockedIndex < processedChartData.length && processedChartData[lockedIndex] && (
             <ReferenceLine
-              x={chartData[lockedIndex].timeLabel as string}
+              x={processedChartData[lockedIndex].timeLabel as string}
               stroke="hsl(var(--primary))"
               strokeWidth={2}
             />
@@ -325,11 +436,11 @@ export function OddsLineChart({
       </ResponsiveContainer>
 
       {/* Locked comparison panel */}
-      {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
+      {isLocked && lockedIndex !== null && lockedIndex < processedChartData.length && processedChartData[lockedIndex] && (
         <div className="mt-3 p-3 border rounded-lg bg-muted/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">
-              Locked at {format(new Date(chartData[lockedIndex].time as string), 'MMM d, HH:mm')}
+              Locked at {format(new Date(processedChartData[lockedIndex].time as string), 'MMM d, HH:mm')}
             </span>
             <button
               onClick={clearLock}
