@@ -1,9 +1,15 @@
 import { useState, Fragment } from 'react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import type { MatchedEvent, BookmakerOdds } from '@/types/api'
-import { formatRelativeTime } from '../lib/market-utils'
+import type { MatchedEvent, BookmakerOdds, InlineOdds } from '@/types/api'
+import { formatRelativeTime, formatUnavailableSince } from '../lib/market-utils'
 import { HistoryDialog, type BookmakerInfo } from './history-dialog'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
@@ -77,21 +83,39 @@ interface MatchTableProps {
 }
 
 /**
- * Get odds value for a specific outcome from inline odds.
+ * Result from getOutcomeOdds including availability state.
+ */
+interface OutcomeOddsResult {
+  odds: number | null
+  available: boolean
+  unavailableSince: string | null
+  market: InlineOdds | null
+}
+
+/**
+ * Get odds value and availability state for a specific outcome from inline odds.
  */
 function getOutcomeOdds(
   bookmaker: BookmakerOdds,
   marketId: string,
   outcomeName: string
-): number | null {
-  const market = bookmaker.inline_odds?.find((m) => m.market_id === marketId)
-  if (!market) return null
+): OutcomeOddsResult {
+  const market = bookmaker.inline_odds?.find((m) => m.market_id === marketId) ?? null
+  if (!market) {
+    return { odds: null, available: true, unavailableSince: null, market: null }
+  }
 
   const outcome = market.outcomes.find((o) =>
     o.name.toLowerCase() === outcomeName.toLowerCase() ||
     o.name === outcomeName
   )
-  return outcome?.odds ?? null
+
+  return {
+    odds: outcome?.odds ?? null,
+    available: market.available !== false, // Default to true if undefined
+    unavailableSince: market.unavailable_since ?? null,
+    market,
+  }
 }
 
 /**
@@ -141,16 +165,17 @@ function getComparisonData(
   outcomeName: string
 ): ComparisonData {
   const betpawa = bookmakers.find((b) => b.bookmaker_slug === 'betpawa')
-  const betpawaOdds = betpawa ? getOutcomeOdds(betpawa, marketId, outcomeName) : null
+  const betpawaResult = betpawa ? getOutcomeOdds(betpawa, marketId, outcomeName) : null
+  const betpawaOdds = betpawaResult?.odds ?? null
 
   let bestCompetitorOdds: number | null = null
   let bestCompetitorSlug: string | null = null
 
   for (const b of bookmakers) {
     if (b.bookmaker_slug === 'betpawa') continue
-    const odds = getOutcomeOdds(b, marketId, outcomeName)
-    if (odds !== null && (bestCompetitorOdds === null || odds > bestCompetitorOdds)) {
-      bestCompetitorOdds = odds
+    const result = getOutcomeOdds(b, marketId, outcomeName)
+    if (result.odds !== null && (bestCompetitorOdds === null || result.odds > bestCompetitorOdds)) {
+      bestCompetitorOdds = result.odds
       bestCompetitorSlug = b.bookmaker_slug
     }
   }
@@ -159,24 +184,54 @@ function getComparisonData(
 }
 
 /**
- * Render a single odds cell with color coding.
+ * Render a single odds cell with color coding and availability styling.
  *
  * Color coding shows competitive position:
  * - Green on Betpawa: Betpawa has best odds
  * - Red on Betpawa: Betpawa is worse than competitor
  * - Green on competitor: This competitor beats Betpawa (has better odds)
+ *
+ * Availability states:
+ * - odds=null: Never offered (plain dash, no tooltip)
+ * - available=false: Became unavailable (strikethrough dash with tooltip)
+ * - available=true: Normal odds display
  */
 function OddsValue({
   odds,
   bookmakerSlug,
   comparisonData,
+  available = true,
+  unavailableSince = null,
   onClick,
 }: {
   odds: number | null
   bookmakerSlug: string
   comparisonData: ComparisonData
+  available?: boolean
+  unavailableSince?: string | null
   onClick?: (e: React.MouseEvent) => void
 }) {
+  // Market became unavailable - show strikethrough dash with tooltip
+  if (!available) {
+    const tooltipText = unavailableSince
+      ? formatUnavailableSince(unavailableSince)
+      : 'Market unavailable'
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-muted-foreground line-through text-xs cursor-help">
+            -
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  // Never offered - plain dash, no tooltip
   if (odds === null) {
     return <span className="text-muted-foreground text-xs">-</span>
   }
@@ -397,6 +452,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
   }
 
   return (
+    <TooltipProvider>
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -550,19 +606,21 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                   {visibleMarkets.map((marketId) => (
                     <Fragment key={marketId}>
                       {MARKET_CONFIG[marketId].outcomes.map((outcome) => {
-                        const odds = bookmaker
+                        const oddsResult = bookmaker
                           ? getOutcomeOdds(bookmaker, marketId, outcome)
-                          : null
+                          : { odds: null, available: true, unavailableSince: null, market: null }
                         const comparisonData = comparisonDataByMarket[marketId][outcome]
 
                         return (
                           <td key={`${marketId}-${outcome}`} className="px-2 py-2 text-center">
                             <OddsValue
-                              odds={odds}
+                              odds={oddsResult.odds}
                               bookmakerSlug={bookmakerSlug}
                               comparisonData={comparisonData}
+                              available={oddsResult.available}
+                              unavailableSince={oddsResult.unavailableSince}
                               onClick={
-                                odds !== null && bookmaker
+                                oddsResult.odds !== null && bookmaker
                                   ? (e: React.MouseEvent) => {
                                       e.stopPropagation()
                                       // Get all bookmakers that have this market
@@ -654,5 +712,6 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         allBookmakers={historyDialog?.allBookmakers}
       />
     </div>
+    </TooltipProvider>
   )
 }
