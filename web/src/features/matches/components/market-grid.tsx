@@ -6,6 +6,7 @@ import { MarketFilterBar } from './market-filter-bar'
 import { HistoryDialog, type BookmakerInfo } from './history-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { mergeMarketOutcomes } from '../lib/market-utils'
 
@@ -426,35 +427,37 @@ export function MarketGrid({ marketsByBookmaker, eventId }: MarketGridProps) {
       {/* Table inside Card for visual consistency */}
       <Card className={isHeaderStuck ? 'mt-4' : 'mt-4'}>
         <CardContent className="pt-6">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="py-3 px-4 text-left font-semibold">Market</th>
-                  <th className="py-3 px-2 text-center font-semibold">Selection</th>
-                  {bookmakerOrder.map((slug) => (
-                    <th key={slug} className="py-3 px-2 text-center font-semibold">
-                      {BOOKMAKER_NAMES[slug]}
-                    </th>
+          <TooltipProvider>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="py-3 px-4 text-left font-semibold">Market</th>
+                    <th className="py-3 px-2 text-center font-semibold">Selection</th>
+                    {bookmakerOrder.map((slug) => (
+                      <th key={slug} className="py-3 px-2 text-center font-semibold">
+                        {BOOKMAKER_NAMES[slug]}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMarkets.map((market, index) => (
+                    <MarketRow
+                      key={`${market.id}_${market.line ?? 'null'}_${index}`}
+                      marketName={market.name}
+                      line={market.line}
+                      bookmakerMarkets={market.bookmakerMarkets}
+                      bookmakerOrder={bookmakerOrder}
+                      eventId={eventId}
+                      onOddsClick={handleHistoryClick}
+                      onMarginClick={handleHistoryClick}
+                    />
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMarkets.map((market, index) => (
-                  <MarketRow
-                    key={`${market.id}_${market.line ?? 'null'}_${index}`}
-                    marketName={market.name}
-                    line={market.line}
-                    bookmakerMarkets={market.bookmakerMarkets}
-                    bookmakerOrder={bookmakerOrder}
-                    eventId={eventId}
-                    onOddsClick={handleHistoryClick}
-                    onMarginClick={handleHistoryClick}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          </TooltipProvider>
 
           {filteredMarkets.length === 0 && (
             <div className="text-center py-4 text-muted-foreground text-sm">

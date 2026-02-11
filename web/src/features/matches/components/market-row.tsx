@@ -20,6 +20,8 @@ interface OutcomeDisplay {
   name: string
   odds: number | null
   isActive: boolean
+  available?: boolean
+  unavailableSince?: string | null
 }
 
 /**
@@ -62,6 +64,7 @@ function getUnifiedOutcomes(
 /**
  * Get outcome data for a specific bookmaker and outcome name.
  * Uses normalized names for matching to handle cross-bookmaker differences.
+ * Also returns market-level availability data for display purposes.
  */
 function getOutcomeForBookmaker(
   market: MarketOddsDetail | null,
@@ -79,13 +82,21 @@ function getOutcomeForBookmaker(
     (o) => normalizeOutcomeName(o.name) === normalizedTarget
   )
   if (!outcome) {
-    return { name: outcomeName, odds: null, isActive: false }
+    return {
+      name: outcomeName,
+      odds: null,
+      isActive: false,
+      available: market.available,
+      unavailableSince: market.unavailable_since,
+    }
   }
 
   return {
     name: outcomeName,
     odds: outcome.odds,
     isActive: outcome.is_active,
+    available: market.available,
+    unavailableSince: market.unavailable_since,
   }
 }
 
@@ -221,6 +232,8 @@ export function MarketRow({
                         e.stopPropagation()
                         onOddsClick(slug, marketId, displayName, line)
                       } : undefined}
+                      available={outcome.available}
+                      unavailableSince={outcome.unavailableSince}
                     />
                   </div>
                 )
