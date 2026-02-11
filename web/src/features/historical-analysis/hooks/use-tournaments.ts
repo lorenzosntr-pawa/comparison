@@ -38,6 +38,12 @@ export interface MarginMetrics {
   competitorAvgMargin: number | null
   /** Margin trend indicator, or null if insufficient data */
   trend: 'up' | 'down' | 'stable' | null
+  /** Opening margin (earliest event by kickoff), or null if no data */
+  openingMargin: number | null
+  /** Closing margin (latest event by kickoff), or null if no data */
+  closingMargin: number | null
+  /** Delta between closing and opening margin (closing - opening), or null if either is null */
+  marginDelta: number | null
 }
 
 /**
@@ -288,10 +294,28 @@ export function useTournaments(dateRange: DateRange) {
 
           const trend = calculateTrend(marketData.eventMargins)
 
+          // Calculate opening/closing margins from kickoff-sorted events
+          let openingMargin: number | null = null
+          let closingMargin: number | null = null
+          let marginDelta: number | null = null
+
+          if (marketData.eventMargins.length > 0) {
+            // Sort by kickoff ascending to get chronological order
+            const sorted = [...marketData.eventMargins].sort(
+              (a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+            )
+            openingMargin = sorted[0].margin
+            closingMargin = sorted[sorted.length - 1].margin
+            marginDelta = closingMargin - openingMargin
+          }
+
           marginsByMarket[market.id] = {
             avgMargin,
             competitorAvgMargin,
             trend,
+            openingMargin,
+            closingMargin,
+            marginDelta,
           }
         }
 
