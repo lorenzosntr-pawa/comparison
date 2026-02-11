@@ -150,12 +150,12 @@ Plans:
 **Goal**: Overlay lines and difference chart toggle for margin comparison
 **Depends on**: Phase 85
 **Research**: Unlikely (internal patterns)
-**Plans**: 1/4 complete
+**Plans**: 2/4 complete
 **Status**: In progress
 
 Plans:
 - [x] 86-01: Bookmaker filter and multi-column cards
-- [ ] 86-02: Per-bookmaker margin data in hook
+- [x] 86-02: Per-bookmaker margin data in hook
 - [ ] 86-03: Multi-bookmaker chart overlay
 - [ ] 86-04: Difference chart toggle
 
@@ -461,6 +461,6 @@ Plans:
 | 84.2 Tournament Detail Page (INSERTED) | v2.4 | 1/1 + 1 FIX | Complete | 2026-02-11 |
 | 85. Time-to-Kickoff Charts | v2.4 | 2/2 | Complete | 2026-02-11 |
 | 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-11 |
-| 86. Betpawa vs Competitor Comparison | v2.4 | 1/4 | In progress | - |
+| 86. Betpawa vs Competitor Comparison | v2.4 | 2/4 | In progress | - |
 | 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
 | 88. Polish & Integration | v2.4 | 0/? | Not started | - |
