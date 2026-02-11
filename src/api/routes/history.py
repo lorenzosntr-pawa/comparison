@@ -326,11 +326,17 @@ async def get_odds_history(
         # Calculate margin
         margin = _calculate_margin_from_outcomes(market.outcomes if isinstance(market.outcomes, list) else [])
 
+        # Extract availability info using getattr for safe access
+        unavailable_at = getattr(market, 'unavailable_at', None)
+        available = unavailable_at is None
+
         history.append(
             OddsHistoryPoint(
                 captured_at=snapshot.captured_at,
                 outcomes=outcomes,
                 margin=margin,
+                available=available,
+                unavailable_at=unavailable_at,
             )
         )
 
@@ -478,10 +484,16 @@ async def get_margin_history(
         # Calculate margin
         margin = _calculate_margin_from_outcomes(market.outcomes if isinstance(market.outcomes, list) else [])
 
+        # Extract availability info using getattr for safe access
+        unavailable_at = getattr(market, 'unavailable_at', None)
+        available = unavailable_at is None
+
         history.append(
             MarginHistoryPoint(
                 captured_at=snapshot.captured_at,
                 margin=margin,
+                available=available,
+                unavailable_at=unavailable_at,
             )
         )
 

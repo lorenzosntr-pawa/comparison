@@ -196,6 +196,8 @@ class OddsHistoryPoint(BaseModel):
     captured_at: datetime
     outcomes: list[OutcomeOdds]
     margin: float | None = None
+    available: bool = True
+    unavailable_at: datetime | None = None
 
 
 class OddsHistoryResponse(BaseModel):
@@ -215,6 +217,8 @@ class MarginHistoryPoint(BaseModel):
 
     captured_at: datetime
     margin: float | None = None
+    available: bool = True
+    unavailable_at: datetime | None = None
 
 
 class MarginHistoryResponse(BaseModel):
