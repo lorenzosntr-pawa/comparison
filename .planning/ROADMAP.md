@@ -20,7 +20,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.1 Historical Odds Tracking](milestones/v2.1-ROADMAP.md) — Phases 60-68 (shipped 2026-02-08)
 - ✅ [v2.2 Odds Freshness](milestones/v2.2-ROADMAP.md) — Phases 69-71 (shipped 2026-02-09)
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
-- 🚧 **v2.4 Historical Analytics** — Phases 79-88 (in progress)
+- 🚧 **v2.4 Historical Analytics** — Phases 79-87 (in progress)
 
 ### 🚧 v2.4 Historical Analytics (In Progress)
 
@@ -159,26 +159,15 @@ Plans:
 - [x] 86-03: Multi-bookmaker chart overlay
 - [x] 86-04: Difference chart toggle
 
-#### Phase 87: Market Coverage & Export
-
-**Goal**: Summary table and CSV/screenshot export functionality
-**Depends on**: Phase 86
-**Research**: Likely (export libraries)
-**Research topics**: file-saver for CSV, html2canvas or similar for chart screenshots
-**Plans**: TBD
-
-Plans:
-- [ ] 87-01: TBD
-
-#### Phase 88: Polish & Integration
+#### Phase 87: Polish & Integration
 
 **Goal**: UX refinements, edge cases, final testing
-**Depends on**: Phase 87
+**Depends on**: Phase 86
 **Research**: Unlikely (internal patterns)
 **Plans**: TBD
 
 Plans:
-- [ ] 88-01: TBD
+- [ ] 87-01: TBD
 
 ## Completed Milestones
 
@@ -462,5 +451,4 @@ Plans:
 | 85. Time-to-Kickoff Charts | v2.4 | 2/2 | Complete | 2026-02-11 |
 | 85.1 Historical Analysis Card Margins (INSERTED) | v2.4 | 1/1 | Complete | 2026-02-11 |
 | 86. Betpawa vs Competitor Comparison | v2.4 | 4/4 | Complete | 2026-02-11 |
-| 87. Market Coverage & Export | v2.4 | 0/? | Not started | - |
-| 88. Polish & Integration | v2.4 | 0/? | Not started | - |
+| 87. Polish & Integration | v2.4 | 0/? | Not started | - |
