@@ -87,29 +87,32 @@ async def _load_snapshots_cached(
     betpawa = cache.get_betpawa_snapshots(event_ids)
     competitor = cache.get_competitor_snapshots(event_ids)
 
-    # Check for cache misses
+    # Check for cache misses INDEPENDENTLY for betpawa and competitor
+    # An event might have competitor data cached but not betpawa (or vice versa)
+    # We must check each cache separately to ensure complete data
     cached_bp_ids = set(betpawa.keys())
     cached_comp_ids = set(competitor.keys())
-    all_cached = cached_bp_ids | cached_comp_ids
 
-    # Events with NO cache data at all need DB fallback
-    # (An event might legitimately have no competitor data, so only consider
-    # events missing from BOTH caches as potential misses)
-    miss_ids = [eid for eid in event_ids if eid not in all_cached]
-
-    if miss_ids:
-        # DB fallback for misses
-        db_betpawa = await _load_latest_snapshots_for_events(db, miss_ids)
-        db_competitor = await _load_competitor_snapshots_for_events(db, miss_ids)
+    # Betpawa cache misses - fetch from DB
+    bp_miss_ids = [eid for eid in event_ids if eid not in cached_bp_ids]
+    if bp_miss_ids:
+        db_betpawa = await _load_latest_snapshots_for_events(db, bp_miss_ids)
         betpawa.update(db_betpawa)
+
+    # Competitor cache misses - fetch from DB
+    comp_miss_ids = [eid for eid in event_ids if eid not in cached_comp_ids]
+    if comp_miss_ids:
+        db_competitor = await _load_competitor_snapshots_for_events(db, comp_miss_ids)
         competitor.update(db_competitor)
 
     logger.debug(
         "snapshot_loading",
         total_requested=len(event_ids),
-        cache_hits=len(all_cached),
-        cache_misses=len(miss_ids),
-        source="cache" if not miss_ids else "mixed",
+        bp_cache_hits=len(cached_bp_ids),
+        bp_cache_misses=len(bp_miss_ids),
+        comp_cache_hits=len(cached_comp_ids),
+        comp_cache_misses=len(comp_miss_ids),
+        source="cache" if not bp_miss_ids and not comp_miss_ids else "mixed",
     )
 
     return betpawa, competitor
