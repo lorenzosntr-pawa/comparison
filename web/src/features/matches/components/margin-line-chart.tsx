@@ -24,6 +24,27 @@ const BOOKMAKER_COLORS: Record<string, string> = {
 }
 
 /**
+ * Split chart data into available and unavailable segments for a given data key.
+ * Points where availability is false get their value moved to `${key}_unavailable`
+ * to allow rendering separate line series with different styling.
+ */
+function splitByAvailability<T extends Record<string, unknown>>(
+  data: T[],
+  dataKey: string,
+  availabilityKey: string = 'available'
+): T[] {
+  return data.map((point) => {
+    const available = point[availabilityKey] !== false
+    const unavailableKey = `${dataKey}_unavailable`
+    return {
+      ...point,
+      [dataKey]: available ? point[dataKey] : null,
+      [unavailableKey]: available ? null : point[dataKey],
+    } as T
+  })
+}
+
+/**
  * Bucket a timestamp to the nearest minute for comparison mode data merging.
  * This allows bookmaker data captured at slightly different times to be grouped together.
  */
@@ -59,7 +80,7 @@ export function MarginLineChart({
       // Comparison mode: merge all bookmaker data on a time axis
       // Timestamps are bucketed to the nearest minute so data from different
       // bookmakers captured at similar times gets merged together
-      const timeMap = new Map<string, Record<string, number | null>>()
+      const timeMap = new Map<string, Record<string, number | boolean | null>>()
       const allBookmakers = Object.keys(multiData)
 
       Object.entries(multiData).forEach(([bookmakerSlug, { history }]) => {
@@ -73,6 +94,8 @@ export function MarginLineChart({
           // Only update if we don't have a value yet
           if (row[bookmakerSlug] === undefined) {
             row[bookmakerSlug] = point.margin
+            // Store availability as a separate field per bookmaker
+            row[`${bookmakerSlug}_available`] = point.available ?? true
           }
         })
       })
@@ -83,17 +106,26 @@ export function MarginLineChart({
 
       // Forward-fill: carry forward the last known value for each bookmaker
       const lastKnown: Record<string, number | null> = {}
+      const lastKnownAvailable: Record<string, boolean> = {}
       const filledData = sortedEntries.map(([time, values]) => {
         // Update last known values with any new data at this timestamp
         for (const slug of allBookmakers) {
-          if (values[slug] !== undefined && values[slug] !== null) {
-            lastKnown[slug] = values[slug]
+          const marginValue = values[slug]
+          if (marginValue !== undefined && marginValue !== null && typeof marginValue === 'number') {
+            lastKnown[slug] = marginValue
+          }
+          const availValue = values[`${slug}_available`]
+          if (availValue !== undefined && typeof availValue === 'boolean') {
+            lastKnownAvailable[slug] = availValue
           }
         }
         // Build row with forward-filled values
-        const filledRow: Record<string, number | null> = {}
+        const filledRow: Record<string, number | boolean | null> = {}
         for (const slug of allBookmakers) {
-          filledRow[slug] = values[slug] ?? lastKnown[slug] ?? null
+          const marginVal = values[slug]
+          filledRow[slug] = (typeof marginVal === 'number' ? marginVal : null) ?? lastKnown[slug] ?? null
+          const availVal = values[`${slug}_available`]
+          filledRow[`${slug}_available`] = (typeof availVal === 'boolean' ? availVal : undefined) ?? lastKnownAvailable[slug] ?? true
         }
         return {
           time,
@@ -112,6 +144,7 @@ export function MarginLineChart({
       time: point.captured_at,
       timeLabel: format(new Date(point.captured_at), 'HH:mm'),
       margin: point.margin,
+      available: point.available ?? true,
     }))
   }, [data, multiData, comparisonMode])
 
@@ -122,6 +155,33 @@ export function MarginLineChart({
     }
     return []
   }, [multiData, comparisonMode])
+
+  // Process chart data to split available/unavailable values for visualization
+  const processedChartData = useMemo(() => {
+    if (!chartData.length) return []
+
+    if (comparisonMode) {
+      // For comparison mode, split each bookmaker's data
+      let result = chartData as Record<string, unknown>[]
+      for (const slug of bookmakerSlugs) {
+        result = splitByAvailability(result, slug, `${slug}_available`)
+      }
+      return result
+    } else {
+      // For single mode, split margin data by availability
+      return splitByAvailability(chartData as Record<string, unknown>[], 'margin', 'available')
+    }
+  }, [chartData, comparisonMode, bookmakerSlugs])
+
+  // Check if there are any unavailable points
+  const hasUnavailablePoints = useMemo(() => {
+    if (comparisonMode) {
+      return bookmakerSlugs.some((slug) =>
+        processedChartData.some((point) => point[`${slug}_unavailable`] !== null)
+      )
+    }
+    return processedChartData.some((point) => point.margin_unavailable !== null)
+  }, [processedChartData, comparisonMode, bookmakerSlugs])
 
   // Wrapper for handleChartClick that passes chartData for index lookup
   const onChartClick = useCallback(
@@ -159,9 +219,17 @@ export function MarginLineChart({
 
   return (
     <div>
+      {/* Legend note for unavailable data */}
+      {hasUnavailablePoints && (
+        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+          <span className="inline-block w-6 border-t-2 border-dashed border-muted-foreground"></span>
+          <span>Dashed line = market unavailable</span>
+        </div>
+      )}
+
       <ResponsiveContainer width="100%" height={height}>
         <LineChart
-          data={chartData}
+          data={processedChartData}
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
           onClick={onChartClick}
         >
@@ -190,24 +258,35 @@ export function MarginLineChart({
             }
             return label
           }}
-          formatter={(value, name) => [
-            typeof value === 'number' ? `${value.toFixed(2)}%` : '-',
-            comparisonMode && multiData
-              ? multiData[name as string]?.bookmakerName || 'Margin'
+          formatter={(value, name) => {
+            // Handle unavailable series - show with marker
+            const nameStr = String(name)
+            const isUnavailable = nameStr.endsWith('_unavailable')
+            const baseName = isUnavailable ? nameStr.replace('_unavailable', '') : nameStr
+            const displayName = comparisonMode && multiData
+              ? multiData[baseName]?.bookmakerName || 'Margin'
               : 'Margin'
-          ]}
+            const suffix = isUnavailable ? ' (unavailable)' : ''
+            return [
+              typeof value === 'number' ? `${value.toFixed(2)}%` : '-',
+              displayName + suffix
+            ]
+          }}
           cursor={{ strokeDasharray: '3 3' }}
           isAnimationActive={false}
         />
         {comparisonMode && <Legend
-          formatter={(value) =>
-            multiData?.[value as string]?.bookmakerName || value
-          }
+          formatter={(value) => {
+            const valueStr = String(value)
+            // Hide unavailable series from legend (they share the same visual identity)
+            if (valueStr.endsWith('_unavailable')) return null
+            return multiData?.[valueStr]?.bookmakerName || value
+          }}
         />}
 
         {comparisonMode ? (
-          // Comparison mode: one line per bookmaker
-          bookmakerSlugs.map((slug) => (
+          // Comparison mode: two lines per bookmaker (available solid, unavailable dashed)
+          bookmakerSlugs.flatMap((slug) => [
             <Line
               key={slug}
               type="monotone"
@@ -218,19 +297,46 @@ export function MarginLineChart({
               activeDot={{ r: 4 }}
               connectNulls
               isAnimationActive={false}
+            />,
+            <Line
+              key={`${slug}_unavailable`}
+              type="monotone"
+              dataKey={`${slug}_unavailable`}
+              stroke={BOOKMAKER_COLORS[slug] || '#888'}
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls
+              isAnimationActive={false}
+              legendType="none"
             />
-          ))
+          ])
         ) : (
-          // Single bookmaker mode
-          <Line
-            type="monotone"
-            dataKey="margin"
-            stroke="#3b82f6"
-            strokeWidth={2}
-            dot={false}
-            activeDot={{ r: 4 }}
-            isAnimationActive={false}
-          />
+          // Single bookmaker mode: two lines (available solid, unavailable dashed)
+          <>
+            <Line
+              type="monotone"
+              dataKey="margin"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+              isAnimationActive={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="margin_unavailable"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls
+              isAnimationActive={false}
+              legendType="none"
+            />
+          </>
         )}
 
         {referenceValue !== undefined && !comparisonMode && (
@@ -248,9 +354,9 @@ export function MarginLineChart({
         )}
 
         {/* Lock indicator line */}
-        {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
+        {isLocked && lockedIndex !== null && lockedIndex < processedChartData.length && processedChartData[lockedIndex] && (
           <ReferenceLine
-            x={chartData[lockedIndex]?.timeLabel}
+            x={processedChartData[lockedIndex]?.timeLabel as string}
             stroke="hsl(var(--primary))"
             strokeWidth={2}
           />
@@ -259,11 +365,11 @@ export function MarginLineChart({
       </ResponsiveContainer>
 
       {/* Locked comparison panel */}
-      {isLocked && lockedIndex !== null && lockedIndex < chartData.length && chartData[lockedIndex] && (
+      {isLocked && lockedIndex !== null && lockedIndex < processedChartData.length && processedChartData[lockedIndex] && (
         <div className="mt-3 p-3 border rounded-lg bg-muted/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">
-              Locked at {format(new Date(chartData[lockedIndex].time as string), 'MMM d, HH:mm')}
+              Locked at {format(new Date(processedChartData[lockedIndex].time as string), 'MMM d, HH:mm')}
             </span>
             <button
               onClick={clearLock}
@@ -291,10 +397,11 @@ export function MarginLineChart({
               )}
             />
           ) : (
-            // Single bookmaker mode: show margin value
+            // Single bookmaker mode: show margin value with availability indicator
             (() => {
               const lockedPoint = chartData[lockedIndex] as Record<string, unknown>
               const marginValue = lockedPoint.margin
+              const isAvailable = lockedPoint.available !== false
               return (
                 <div className="flex items-center gap-2">
                   <div
@@ -308,6 +415,9 @@ export function MarginLineChart({
                         ? `${marginValue.toFixed(2)}%`
                         : '-'}
                     </strong>
+                    {!isAvailable && (
+                      <span className="text-muted-foreground ml-1">(unavailable)</span>
+                    )}
                   </span>
                 </div>
               )
