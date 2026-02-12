@@ -36,19 +36,20 @@ function countPlatformEvents(events: PalimpsestEvent[], platform: string): numbe
 
 /**
  * Platform coverage cell showing check/count or X icon.
+ * Uses justify-center for consistent alignment across rows.
  */
 function PlatformCell({ count }: { count: number }) {
   if (count > 0) {
     return (
-      <div className="flex items-center gap-1 text-green-600">
+      <div className="flex items-center justify-center gap-1 text-green-600">
         <Check className="h-4 w-4" />
-        <span className="text-sm font-medium">{count}</span>
+        <span className="text-sm font-medium tabular-nums">{count}</span>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center text-orange-500">
+    <div className="flex items-center justify-center text-orange-500">
       <X className="h-4 w-4" />
     </div>
   )
