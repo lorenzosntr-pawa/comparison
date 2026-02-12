@@ -30,6 +30,16 @@ export function CoveragePage() {
     error: coverageError,
   } = useCoverage({ includeStarted: filters.includeStarted })
 
+  // Unfiltered query for stats cards - always fetches ALL tournaments
+  const {
+    data: statsData,
+    isPending: statsPending,
+    error: statsError,
+  } = usePalimpsestEvents({
+    includeStarted: filters.includeStarted,
+  })
+
+  // Filtered query for table display
   const {
     data: eventsData,
     isPending: eventsPending,
@@ -40,12 +50,13 @@ export function CoveragePage() {
     includeStarted: filters.includeStarted,
   })
 
-  const error = coverageError || eventsError
+  const error = coverageError || eventsError || statsError
 
   // Stable reference for all tournaments (used by TournamentStatsCards)
+  // Uses statsData which never changes based on availability filter
   const allTournaments = useMemo(
-    () => eventsData?.tournaments ?? [],
-    [eventsData?.tournaments]
+    () => statsData?.tournaments ?? [],
+    [statsData?.tournaments]
   )
 
   // Extract unique countries from tournaments for the country filter dropdown
@@ -60,15 +71,21 @@ export function CoveragePage() {
     return Array.from(countries).sort()
   }, [allTournaments])
 
-  // Filter tournaments by selected countries
+  // Get tournaments from availability-filtered data for table display
+  const tableTournaments = useMemo(
+    () => eventsData?.tournaments ?? [],
+    [eventsData?.tournaments]
+  )
+
+  // Filter table tournaments by selected countries
   const filteredTournaments = useMemo(() => {
-    if (!allTournaments.length) return []
-    if (filters.countries.length === 0) return allTournaments
-    return allTournaments.filter(
+    if (!tableTournaments.length) return []
+    if (filters.countries.length === 0) return tableTournaments
+    return tableTournaments.filter(
       (t) =>
         t.tournament_country && filters.countries.includes(t.tournament_country)
     )
-  }, [allTournaments, filters.countries])
+  }, [tableTournaments, filters.countries])
 
   // Calculate filtered event count
   const filteredEventCount = useMemo(() => {
@@ -123,10 +140,10 @@ export function CoveragePage() {
       {/* Event Stats Cards */}
       <CoverageStatsCards coverage={coverage} isLoading={coveragePending} />
 
-      {/* Tournament Stats Cards - uses stable allTournaments ref to avoid re-computation on filter changes */}
+      {/* Tournament Stats Cards - uses statsData (unfiltered) to avoid re-computation on filter changes */}
       <TournamentStatsCards
         tournaments={allTournaments}
-        isLoading={eventsPending}
+        isLoading={statsPending}
       />
 
       {/* Filters */}

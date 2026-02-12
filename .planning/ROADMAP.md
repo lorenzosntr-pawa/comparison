@@ -89,6 +89,7 @@ Features:
 Plans:
 - [x] 94-01: Coverage Page Improvements (3 tasks) - 2026-02-12
 - [x] 94-01-FIX: UAT Fixes (2 tasks) - 2026-02-12
+- [x] 94-01-FIX2: Stable tournament stats cards (BUG-017) — 2026-02-12
 
 ### Phase 95: Historical Analysis
 
@@ -443,6 +444,6 @@ Plans:
 | **v2.5 SHIPPED** | | | **2026-02-11** | |
 | 93. Odds Comparison Page | v2.6 | 5/5 | Complete | 2026-02-12 |
 | 93.1 Tournament Data Integrity Fix (INSERTED) | v2.6 | 2/2 | Complete | 2026-02-12 |
-| 94. Coverage Page | v2.6 | 1/1 | Complete | 2026-02-12 |
+| 94. Coverage Page | v2.6 | 3/3 | Complete | 2026-02-12 |
 | 95. Historical Analysis | v2.6 | 0/? | Not started | - |
 | 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |

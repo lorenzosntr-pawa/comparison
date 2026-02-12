@@ -35,52 +35,19 @@ Market mapping library covers core markets but many exotic/niche market types re
 
 ## Open Bugs
 
-### BUG-016: Tournament collision — same-name tournaments from different countries share single ID
-**Discovered:** 2026-02-12 (user report during Phase 93)
-**Type:** Critical Data Integrity Bug
-**Severity:** BLOCKER
-**Effort:** Medium-High
-
-**Description:**
-Singapore Premier League shows events from England Premier League, Malta Premier League, Chelsea matches, etc. Tournaments with identical names from different countries are being stored under the same database record.
-
-**Root Cause (3 locations):**
-
-1. **Database Schema** - `src/db/models/sport.py:51-87`
-   - No composite unique constraint on `(sport_id, name, country)`
-   - `country` is nullable
-   - Only `sportradar_id` is unique (when not null)
-
-2. **Tournament Lookup** - `src/scraping/event_coordinator.py:2089-2097`
-   - Looks up tournaments by name + sport_id only
-   - Does NOT include country in WHERE clause
-   - Returns first tournament with matching name regardless of country
-
-3. **API Filtering** - `src/api/routes/events.py:1291-1292`
-   - Matches competitor tournaments by name only
-   - `WHERE func.lower(CompetitorTournament.name) == 'premier league'`
-   - Returns all tournaments from any country with that name
-
-**Impact:**
-- Events stored under wrong tournaments
-- User cannot filter by specific country's league
-- All "Premier League" events mixed together (England, Singapore, Malta, etc.)
-- Data corruption affects Odds Comparison, Coverage, and Historical Analysis pages
-
-**Required Fix (Phase 93.1):**
-1. Add migration with `UNIQUE(sport_id, name, country)` constraint
-2. Update tournament lookup to include country in WHERE clause
-3. Update tournament creation to require country (make NOT NULL or validate)
-4. Update API queries to filter by country + name
-5. Data cleanup: split existing tournaments by country, re-link events
-
-**Future consideration:** Add sport differentiation for when other sports are integrated (user's note).
-
----
+None
 
 ---
 
 ## Closed Bugs
+
+### BUG-017: Coverage page summary cards recalculate on filter toggle (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 94 review)
+**Resolution:** Fixed 2026-02-12 (Phase 94-01-FIX2) - Added separate `usePalimpsestEvents` call with `availability: undefined` for stats cards. Stats now use unfiltered `statsData`, table uses filtered `eventsData`. Data sources are independent so toggling availability filter no longer affects stats cards.
+
+### BUG-016: Tournament collision — same-name tournaments from different countries share single ID (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 93)
+**Resolution:** Fixed 2026-02-12 (Phase 93.1) - Added composite unique constraint `UNIQUE(sport_id, name, country)` on Tournament table, updated tournament lookup to include country in WHERE clause, updated API queries to filter by country + name, and performed data cleanup to split existing tournaments by country.
 
 ### BUG-015: No per-market margin breakdown per tournament (RESOLVED)
 **Discovered:** Phase 84 UAT - 2026-02-10
