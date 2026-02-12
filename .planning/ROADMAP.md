@@ -96,7 +96,7 @@ Plans:
 **Goal**: Polish bookmaker UI and add filtering
 **Depends on**: Phase 94
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Features:
 - Professional bookmaker buttons (pill/chip style with brand colors)
@@ -104,7 +104,7 @@ Features:
 - Country filter
 
 Plans:
-- [ ] 95-01: TBD
+- [x] 95-01: Bookmaker Pills, Tournament Search, Country Filter (3 tasks) — 2026-02-12
 
 ### Phase 96: Navigation Overhaul
 
@@ -445,5 +445,5 @@ Plans:
 | 93. Odds Comparison Page | v2.6 | 5/5 | Complete | 2026-02-12 |
 | 93.1 Tournament Data Integrity Fix (INSERTED) | v2.6 | 2/2 | Complete | 2026-02-12 |
 | 94. Coverage Page | v2.6 | 3/3 | Complete | 2026-02-12 |
-| 95. Historical Analysis | v2.6 | 0/? | Not started | - |
+| 95. Historical Analysis | v2.6 | 1/1 | Complete | 2026-02-12 |
 | 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |
