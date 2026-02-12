@@ -326,20 +326,49 @@ function getMarginComparisonData(
  * - Green on competitor: This competitor has lower margin than Betpawa
  *
  * Best margin per market gets highlighted.
+ *
+ * Availability states:
+ * - available=false: Market became unavailable (strikethrough dash with tooltip)
+ * - margin=null: Never offered (plain dash)
+ * - otherwise: Normal margin display
  */
 function MarginValue({
   margin,
   bookmakerSlug,
   comparisonData,
   isBestMargin,
+  available = true,
+  unavailableSince = null,
   onClick,
 }: {
   margin: number | null
   bookmakerSlug: string
   comparisonData: MarginComparisonData
   isBestMargin: boolean
+  available?: boolean
+  unavailableSince?: string | null
   onClick?: (e: React.MouseEvent) => void
 }) {
+  // Market became unavailable - show strikethrough dash with tooltip
+  if (available === false) {
+    const tooltipText = unavailableSince
+      ? formatUnavailableSince(unavailableSince)
+      : 'Market unavailable'
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-muted-foreground line-through text-xs cursor-help">
+            -
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
   if (margin === null) {
     return <span className="text-muted-foreground text-xs">-</span>
   }
@@ -739,17 +768,22 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                       })}
                       {/* Margin cell for this market */}
                       <td key={`${marketId}-margin`} className="px-2 py-2 text-center border-r border-r-border/50">
-                        <MarginValue
-                          margin={bookmaker ? getMargin(bookmaker, marketId) : null}
-                          bookmakerSlug={bookmakerSlug}
-                          comparisonData={marginComparisonByMarket[marketId]}
-                          isBestMargin={
-                            bookmaker
-                              ? getMargin(bookmaker, marketId) === bestMargins[marketId] &&
-                                bestMargins[marketId] !== null
-                              : false
-                          }
-                          onClick={
+                        {(() => {
+                          const market = bookmaker?.inline_odds?.find((m) => m.market_id === marketId) ?? null
+                          return (
+                            <MarginValue
+                              margin={bookmaker ? getMargin(bookmaker, marketId) : null}
+                              bookmakerSlug={bookmakerSlug}
+                              comparisonData={marginComparisonByMarket[marketId]}
+                              isBestMargin={
+                                bookmaker
+                                  ? getMargin(bookmaker, marketId) === bestMargins[marketId] &&
+                                    bestMargins[marketId] !== null
+                                  : false
+                              }
+                              available={market?.available !== false}
+                              unavailableSince={market?.unavailable_since ?? null}
+                              onClick={
                             bookmaker && getMargin(bookmaker, marketId) !== null
                               ? (e: React.MouseEvent) => {
                                   e.stopPropagation()
@@ -776,7 +810,9 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                                 }
                               : undefined
                           }
-                        />
+                            />
+                          )
+                        })()}
                       </td>
                     </Fragment>
                   ))}
