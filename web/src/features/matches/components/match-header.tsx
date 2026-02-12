@@ -25,7 +25,7 @@ export function MatchHeader({ event }: MatchHeaderProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/odds-comparison">Back to Odds Comparison</Link>
+            <Link to="/">Back to Odds Comparison</Link>
           </Button>
           <span className="text-sm text-muted-foreground">
             {event.sport_name}
