@@ -46,6 +46,7 @@ Features:
 Plans:
 - [x] 93-01: Tournament & Country Filters (2 tasks) — 2026-02-12
 - [x] 93-01-FIX: UAT Enhancement Fixes (2 tasks) — 2026-02-12
+- [x] 93-01-FIX2: UAT Enhancement Fixes Round 2 (3 tasks) — 2026-02-12
 - [ ] 93-02: Column Resizing (2 tasks)
 
 ### Phase 94: Coverage Page
@@ -414,7 +415,7 @@ Plans:
 | 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 92. History Charts | v2.5 | 1/1 | Complete | 2026-02-11 |
 | **v2.5 SHIPPED** | | | **2026-02-11** | |
-| 93. Odds Comparison Page | v2.6 | 2/3 | In progress | - |
+| 93. Odds Comparison Page | v2.6 | 3/4 | In progress | - |
 | 94. Coverage Page | v2.6 | 0/? | Not started | - |
 | 95. Historical Analysis | v2.6 | 0/? | Not started | - |
 | 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |
