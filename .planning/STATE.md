@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 ## Current Position
 
 Phase: 93 of 96 (Odds Comparison Page)
-Plan: 3 of 4 in current phase (93-01, 93-01-FIX, 93-01-FIX2 done)
-Status: In progress
-Last activity: 2026-02-12 — Completed 93-01-FIX2.md (UAT enhancement fixes - round 2)
+Plan: 4 of 4 in current phase (all plans complete)
+Status: Phase complete
+Last activity: 2026-02-12 — Completed 93-02-PLAN.md (Column Resizing)
 
 Progress: ███░░░░░░░ 75%
 
@@ -264,6 +264,8 @@ Progress: ███░░░░░░░ 75%
 - **splitByAvailability helper for chart rendering** - separate data points into available/unavailable arrays for dual-line approach (v2.5 Phase 92)
 - **Dashed overlay line for unavailable periods** - strokeDasharray="5 5" on secondary line, solid primary line; connectNulls bridges gaps (v2.5 Phase 92)
 - **Tooltip unavailable suffix pattern** - append "(unavailable)" to tooltip values when available=false for clear UX (v2.5 Phase 92)
+- **Resize handle pattern** - absolute positioned div at column edge with cursor-col-resize, mouse tracking via document events (v2.6 Phase 93)
+- **Separate localStorage keys for related settings** - use distinct keys (column-widths vs column-visibility) to avoid conflicts (v2.6 Phase 93)
 
 ### Key Decisions
 
@@ -358,6 +360,6 @@ Progress: ███░░░░░░░ 75%
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 93-01-FIX2.md (UAT enhancement fixes - round 2)
+Stopped at: Completed 93-02-PLAN.md (Column Resizing)
 Resume file: None
-Next action: `/gsd:verify-work 93-01` to re-test, then `/gsd:plan-phase 93-02`
+Next action: `/gsd:plan-phase 94` to plan Coverage Page improvements
