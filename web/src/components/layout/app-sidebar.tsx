@@ -22,10 +22,13 @@ import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, differenceInSeconds } from 'date-fns'
 
-const navItems = [
+const mainNavItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Historical Analysis', url: '/historical-analysis', icon: TrendingUp },
+]
+
+const utilityNavItems = [
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
@@ -103,10 +106,10 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Analysis</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
@@ -303,6 +306,27 @@ export function AppSidebar() {
                 </Button>
               </div>
             </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Utilities</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {utilityNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === item.url}
+                    tooltip={item.title}
+                  >
+                    <NavLink to={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
