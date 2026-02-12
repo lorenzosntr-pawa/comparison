@@ -44,7 +44,7 @@ Features:
 - Fix competitor-only filter to use competitor data
 
 Plans:
-- [ ] 93-01: Tournament & Country Filters (2 tasks)
+- [x] 93-01: Tournament & Country Filters (2 tasks) — 2026-02-12
 - [ ] 93-02: Column Resizing (2 tasks)
 
 ### Phase 94: Coverage Page
@@ -413,7 +413,7 @@ Plans:
 | 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 92. History Charts | v2.5 | 1/1 | Complete | 2026-02-11 |
 | **v2.5 SHIPPED** | | | **2026-02-11** | |
-| 93. Odds Comparison Page | v2.6 | 0/2 | Planned | - |
+| 93. Odds Comparison Page | v2.6 | 1/2 | In progress | - |
 | 94. Coverage Page | v2.6 | 0/? | Not started | - |
 | 95. Historical Analysis | v2.6 | 0/? | Not started | - |
 | 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |
