@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -1271,29 +1271,42 @@ async def list_events(
             comp_query = comp_query.where(or_(*country_conditions))
             comp_count_query = comp_count_query.where(or_(*country_conditions))
 
-        # Tournament filter for competitor events via tournament name matching
+        # Tournament filter for competitor events via tournament name + country matching
         if tournament_ids:
-            # Get tournament names from BetPawa Tournament table
-            tournament_names_query = select(Tournament.name).where(
+            # Get tournament names and countries from BetPawa Tournament table
+            tournament_info_query = select(Tournament.name, Tournament.country).where(
                 Tournament.id.in_(tournament_ids)
             )
-            tournament_names_result = await db.execute(tournament_names_query)
-            tournament_names = [row[0] for row in tournament_names_result.all()]
+            tournament_info_result = await db.execute(tournament_info_query)
+            tournament_info = [(row[0], row[1]) for row in tournament_info_result.all()]
 
-            if tournament_names:
-                # Filter CompetitorEvents where tournament name matches (case-insensitive)
+            if tournament_info:
+                # Filter CompetitorEvents where tournament name AND country match
                 # Need to join tournament if not already joined
                 if not comp_tournament_joined:
                     comp_query = comp_query.join(CompetitorEvent.tournament)
                     comp_count_query = comp_count_query.join(CompetitorEvent.tournament)
 
-                # Use func.lower for case-insensitive matching
-                name_conditions = [
-                    func.lower(CompetitorTournament.name) == name.lower()
-                    for name in tournament_names
-                ]
-                comp_query = comp_query.where(or_(*name_conditions))
-                comp_count_query = comp_count_query.where(or_(*name_conditions))
+                # Build conditions matching name (case-insensitive) and country
+                # Handle null countries by matching NULL in CompetitorTournament.country_raw
+                name_country_conditions = []
+                for name, country in tournament_info:
+                    if country is None:
+                        # Match tournaments with NULL country
+                        condition = and_(
+                            func.lower(CompetitorTournament.name) == name.lower(),
+                            CompetitorTournament.country_raw.is_(None),
+                        )
+                    else:
+                        # Match tournaments with specific country (case-insensitive)
+                        condition = and_(
+                            func.lower(CompetitorTournament.name) == name.lower(),
+                            func.lower(CompetitorTournament.country_raw) == country.lower(),
+                        )
+                    name_country_conditions.append(condition)
+
+                comp_query = comp_query.where(or_(*name_country_conditions))
+                comp_count_query = comp_count_query.where(or_(*name_country_conditions))
             else:
                 # tournament_ids provided but no matching BetPawa tournaments found
                 # Return empty result (no competitor events match non-existent tournaments)
