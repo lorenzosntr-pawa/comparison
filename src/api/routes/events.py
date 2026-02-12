@@ -919,15 +919,15 @@ async def list_countries(
     if availability == "competitor":
         # Countries with competitor-only events (CompetitorEvent where betpawa_event_id IS NULL)
         query = (
-            select(CompetitorTournament.country)
+            select(CompetitorTournament.country_raw)
             .distinct()
             .join(CompetitorEvent, CompetitorTournament.id == CompetitorEvent.tournament_id)
             .where(
                 CompetitorEvent.betpawa_event_id.is_(None),
                 CompetitorEvent.kickoff > now,
-                CompetitorTournament.country.isnot(None),
+                CompetitorTournament.country_raw.isnot(None),
             )
-            .order_by(CompetitorTournament.country)
+            .order_by(CompetitorTournament.country_raw)
         )
     else:
         # Countries with BetPawa events (default or availability='betpawa')
