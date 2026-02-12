@@ -1056,13 +1056,66 @@ async def get_event(
     )
 
 
+@router.get("/alerts/count")
+async def get_alerts_count(
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, int]:
+    """Get count of events with availability issues.
+
+    Returns the number of upcoming BetPawa events that have at least one
+    market with unavailable_at set (either BetPawa or competitor markets).
+    """
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    # Find event IDs with unavailable BetPawa markets
+    bp_events_with_alerts = (
+        select(OddsSnapshot.event_id)
+        .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
+        .join(Event, Event.id == OddsSnapshot.event_id)
+        .where(
+            MarketOdds.unavailable_at.isnot(None),
+            Event.kickoff > now,
+        )
+        .distinct()
+    )
+
+    # Find event IDs with unavailable competitor markets
+    comp_events_with_alerts = (
+        select(CompetitorEvent.betpawa_event_id)
+        .join(
+            CompetitorOddsSnapshot,
+            CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+        )
+        .join(
+            CompetitorMarketOdds,
+            CompetitorMarketOdds.snapshot_id == CompetitorOddsSnapshot.id,
+        )
+        .join(Event, Event.id == CompetitorEvent.betpawa_event_id)
+        .where(
+            CompetitorMarketOdds.unavailable_at.isnot(None),
+            CompetitorEvent.betpawa_event_id.isnot(None),
+            Event.kickoff > now,
+        )
+        .distinct()
+    )
+
+    # Union both queries and count distinct event IDs
+    union_query = bp_events_with_alerts.union(comp_events_with_alerts).subquery()
+    count_query = select(func.count()).select_from(union_query)
+
+    result = await db.execute(count_query)
+    count = result.scalar() or 0
+
+    return {"count": count}
+
+
 @router.get("", response_model=MatchedEventList)
 async def list_events(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    availability: Literal["betpawa", "competitor"] = Query(
+    availability: Literal["betpawa", "competitor", "alerts"] = Query(
         default="betpawa",
-        description="Filter by availability: betpawa (only BetPawa events) | competitor (competitor-only events)",
+        description="Filter by availability: betpawa (only BetPawa events) | competitor (competitor-only events) | alerts (events with unavailable markets)",
     ),
     tournament_id: int | None = Query(default=None, description="Filter by single tournament (deprecated, use tournament_ids)"),
     tournament_ids: list[int] | None = Query(default=None, description="Filter by multiple tournament IDs"),
@@ -1369,7 +1422,50 @@ async def list_events(
             page_size=page_size,
         )
 
-    # Standard flow (availability='betpawa')
+    # ---- Alerts Events (when availability='alerts') ----
+    if availability == "alerts":
+        # Find event IDs with unavailable BetPawa markets
+        bp_events_with_alerts = (
+            select(OddsSnapshot.event_id)
+            .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
+            .join(Event, Event.id == OddsSnapshot.event_id)
+            .where(
+                MarketOdds.unavailable_at.isnot(None),
+                Event.kickoff > now,
+            )
+            .distinct()
+        )
+
+        # Find event IDs with unavailable competitor markets
+        comp_events_with_alerts = (
+            select(CompetitorEvent.betpawa_event_id)
+            .join(
+                CompetitorOddsSnapshot,
+                CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+            )
+            .join(
+                CompetitorMarketOdds,
+                CompetitorMarketOdds.snapshot_id == CompetitorOddsSnapshot.id,
+            )
+            .join(Event, Event.id == CompetitorEvent.betpawa_event_id)
+            .where(
+                CompetitorMarketOdds.unavailable_at.isnot(None),
+                CompetitorEvent.betpawa_event_id.isnot(None),
+                Event.kickoff > now,
+            )
+            .distinct()
+        )
+
+        # Union both queries to get all event IDs with alerts
+        alerts_event_ids_subq = bp_events_with_alerts.union(
+            comp_events_with_alerts
+        ).subquery()
+
+        # Apply alerts filter to main query
+        query = query.where(Event.id.in_(select(alerts_event_ids_subq)))
+        count_query = count_query.where(Event.id.in_(select(alerts_event_ids_subq)))
+
+    # Standard flow (availability='betpawa' or 'alerts')
     # Get BetPawa event count
     count_result = await db.execute(count_query)
     betpawa_total = count_result.scalar() or 0
