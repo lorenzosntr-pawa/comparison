@@ -1244,6 +1244,15 @@ async def list_events(
                 ]
                 comp_query = comp_query.where(or_(*name_conditions))
                 comp_count_query = comp_count_query.where(or_(*name_conditions))
+            else:
+                # tournament_ids provided but no matching BetPawa tournaments found
+                # Return empty result (no competitor events match non-existent tournaments)
+                return MatchedEventList(
+                    events=[],
+                    total=0,
+                    page=page,
+                    page_size=page_size,
+                )
 
         # Get all competitor-only events (we need to dedupe by SR ID and apply metadata priority)
         comp_result = await db.execute(comp_query)
