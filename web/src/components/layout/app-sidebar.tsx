@@ -1,4 +1,4 @@
-import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock } from 'lucide-react'
+import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2 } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -13,7 +13,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useCoverage } from '@/features/coverage/hooks'
-import { useHealth, useSchedulerStatus } from '@/features/dashboard/hooks'
+import { useHealth, useSchedulerStatus, useActiveScrapesObserver } from '@/features/dashboard/hooks'
 import { useScrapeRuns } from '@/features/scrape-runs/hooks'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
@@ -33,6 +33,7 @@ export function AppSidebar() {
   const { data: health } = useHealth()
   const { data: scheduler } = useSchedulerStatus()
   const { data: recentRuns } = useScrapeRuns(1, 0)
+  const { activeScrapeId, overallPhase, connectionState } = useActiveScrapesObserver()
 
   const dbHealthy = health?.database === 'connected'
   const schedulerRunning = scheduler?.running ?? false
@@ -133,7 +134,56 @@ export function AppSidebar() {
                         : 'Stopped'}
                   </span>
                 </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>WebSocket</span>
+                  <span className={cn(
+                    'flex items-center gap-1 font-medium',
+                    connectionState === 'connected'
+                      ? 'text-green-600'
+                      : connectionState === 'connecting'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  )}>
+                    {connectionState === 'connected' ? (
+                      <>
+                        <Wifi className="h-3 w-3" />
+                        OK
+                      </>
+                    ) : connectionState === 'connecting' ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Connecting
+                      </>
+                    ) : (
+                      <>
+                        <WifiOff className="h-3 w-3" />
+                        Disconnected
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
+
+              {/* Active scrape (when running) */}
+              {activeScrapeId !== null && (
+                <div className="space-y-1 pt-1 border-t border-sidebar-border">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Active Scrape</span>
+                    <span className="font-medium text-blue-600 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      In Progress
+                    </span>
+                  </div>
+                  {overallPhase && (
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="pl-2">Phase</span>
+                      <span className="font-medium text-foreground">
+                        {overallPhase}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Last scrape run */}
               {lastRun && (
