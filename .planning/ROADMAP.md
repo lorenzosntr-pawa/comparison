@@ -88,6 +88,7 @@ Features:
 
 Plans:
 - [x] 94-01: Coverage Page Improvements (3 tasks) - 2026-02-12
+- [x] 94-01-FIX: UAT Fixes (2 tasks) - 2026-02-12
 
 ### Phase 95: Historical Analysis
 
