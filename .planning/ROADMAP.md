@@ -71,7 +71,7 @@ Plans:
 4. Data cleanup: Split existing tournaments by country, re-link events
 
 Plans:
-- [ ] 93.1-01: Code Fixes (2 tasks) - Fix tournament lookup and API filtering
+- [x] 93.1-01: Code Fixes (2 tasks) - Fix tournament lookup and API filtering — 2026-02-12
 - [ ] 93.1-02: Schema Migration (2 tasks) - Data cleanup and unique constraint
 
 ### Phase 94: Coverage Page
