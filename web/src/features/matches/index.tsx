@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 
 const DEFAULT_FILTERS: MatchFiltersState = {
   search: '',
+  countryFilter: [],
   tournamentIds: [],
   kickoffFrom: '',
   kickoffTo: '',

@@ -78,6 +78,7 @@ function toDatetimeLocal(date: Date): string {
 
 export interface MatchFiltersState {
   search: string
+  countryFilter: string[]
   tournamentIds: number[]
   kickoffFrom: string
   kickoffTo: string
@@ -94,6 +95,17 @@ interface MatchFiltersProps {
 export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
   const { data: tournaments, isPending: tournamentsLoading } = useTournaments()
   const [leaguePopoverOpen, setLeaguePopoverOpen] = useState(false)
+  const [countryPopoverOpen, setCountryPopoverOpen] = useState(false)
+
+  // Extract unique countries from tournaments
+  const countries = Array.from(
+    new Set(tournaments?.map((t) => t.country).filter((c): c is string => c !== null) ?? [])
+  ).sort()
+
+  // Filter tournaments by selected countries
+  const filteredTournaments = filters.countryFilter.length > 0
+    ? tournaments?.filter((t) => t.country && filters.countryFilter.includes(t.country))
+    : tournaments
 
   const updateFilter = <K extends keyof MatchFiltersState>(
     key: K,
@@ -124,14 +136,34 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
   }
 
   const selectAllTournaments = () => {
-    if (tournaments) {
-      updateFilter('tournamentIds', tournaments.map((t) => t.id))
+    if (filteredTournaments) {
+      updateFilter('tournamentIds', filteredTournaments.map((t) => t.id))
     }
+  }
+
+  const toggleCountry = (country: string) => {
+    const currentCountries = filters.countryFilter
+    const newCountries = currentCountries.includes(country)
+      ? currentCountries.filter((c) => c !== country)
+      : [...currentCountries, country]
+    // Reset tournament filter when country filter changes
+    onFiltersChange({ ...filters, countryFilter: newCountries, tournamentIds: [] })
+  }
+
+  const clearAllCountries = () => {
+    // Also reset tournament filter when clearing countries
+    onFiltersChange({ ...filters, countryFilter: [], tournamentIds: [] })
+  }
+
+  const selectAllCountries = () => {
+    // Reset tournament filter when selecting all countries
+    onFiltersChange({ ...filters, countryFilter: countries, tournamentIds: [] })
   }
 
   const clearFilters = () => {
     onFiltersChange({
       search: '',
+      countryFilter: [],
       tournamentIds: [],
       kickoffFrom: '',
       kickoffTo: '',
@@ -143,6 +175,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
   const hasActiveFilters =
     filters.search !== '' ||
+    filters.countryFilter.length > 0 ||
     filters.tournamentIds.length > 0 ||
     filters.kickoffFrom !== '' ||
     filters.kickoffTo !== '' ||
@@ -160,6 +193,68 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
           onChange={(e) => updateFilter('search', e.target.value)}
           className="w-[160px]"
         />
+      </div>
+
+      {/* Country filter - searchable multi-select */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Country</label>
+        <Popover open={countryPopoverOpen} onOpenChange={setCountryPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={countryPopoverOpen}
+              className="w-[160px] justify-between font-normal"
+              disabled={tournamentsLoading}
+            >
+              {filters.countryFilter.length === 0
+                ? 'All countries'
+                : `${filters.countryFilter.length} ${filters.countryFilter.length === 1 ? 'country' : 'countries'}`}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[250px] p-0" align="start">
+            <Command>
+              <CommandInput placeholder="Search countries..." />
+              <CommandList>
+                <CommandEmpty>No countries found.</CommandEmpty>
+                <CommandGroup>
+                  {countries.map((country) => (
+                    <CommandItem
+                      key={country}
+                      value={country}
+                      onSelect={() => toggleCountry(country)}
+                    >
+                      <Checkbox
+                        checked={filters.countryFilter.includes(country)}
+                        className="mr-2"
+                      />
+                      <span className="truncate flex-1">{country}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+              <div className="flex items-center justify-between border-t p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllCountries}
+                  className="text-xs"
+                >
+                  Clear all
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={selectAllCountries}
+                  className="text-xs"
+                >
+                  Select all
+                </Button>
+              </div>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* League filter - searchable multi-select */}
@@ -186,7 +281,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
               <CommandList>
                 <CommandEmpty>No leagues found.</CommandEmpty>
                 <CommandGroup>
-                  {tournaments?.map((t) => (
+                  {filteredTournaments?.map((t) => (
                     <CommandItem
                       key={t.id}
                       value={`${t.name} ${t.country ?? ''}`}
