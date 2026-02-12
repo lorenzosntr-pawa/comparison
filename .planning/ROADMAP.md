@@ -22,13 +22,13 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
-- 🔄 **v2.6 UX Polish & Navigation** — Phases 93-97 (in progress)
+- 🔄 **v2.6 UX Polish & Navigation** — Phases 93-98 (in progress)
 
 ---
 
 ## 🔄 v2.6 UX Polish & Navigation (IN PROGRESS)
 
-**Milestone Goal:** App-wide UX improvements, bug fixes, and navigation restructure
+**Milestone Goal:** App-wide UX improvements, bug fixes, navigation restructure, and real-time sidebar
 
 ### Phase 93: Odds Comparison Page
 
@@ -136,6 +136,21 @@ Features:
 
 Plans:
 - [x] 97-01: Final Cleanup (3 tasks) — Remove Dashboard, fix nav links, reorganize sidebar — 2026-02-12
+
+### Phase 98: Real-Time Sidebar Widget
+
+**Goal**: Make sidebar status widgets update via WebSocket without page refresh
+**Depends on**: Phase 97
+**Research**: Unlikely (internal patterns)
+**Plans**: 1
+
+Features:
+- Last scrape widget updates via WebSocket subscription
+- Event count and health indicators refresh in real-time
+- No page refresh needed to see updated scrape status
+
+Plans:
+- [x] 98-01: Real-Time Sidebar Updates (1 task + checkpoint) — 2026-02-12
 
 ---
 
@@ -464,3 +479,5 @@ Plans:
 | 95. Historical Analysis | v2.6 | 1/1 | Complete | 2026-02-12 |
 | 96. Navigation Overhaul | v2.6 | 2/2 | Complete | 2026-02-12 |
 | 97. Last Fixes | v2.6 | 1/1 | Complete | 2026-02-12 |
+| 98. Real-Time Sidebar Widget | v2.6 | 1/1 | Complete | 2026-02-12 |
+| **v2.6 SHIPPED** | | | **2026-02-12** | |

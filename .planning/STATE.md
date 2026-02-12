@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 
 ## Current Position
 
-Phase: 97 of 97 (Last Fixes)
+Phase: 98 of 98 (Real-Time Sidebar Widget)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-12 — Completed 97-01-PLAN.md
+Status: Milestone v2.6 complete
+Last activity: 2026-02-12 — Completed 98-01-PLAN.md
 
 Progress: ██████████ 100%
 
@@ -34,7 +34,7 @@ Progress: ██████████ 100%
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
 - **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
-- **v2.6 UX Polish & Navigation** — IN PROGRESS (5 phases, Phase 93-97)
+- **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (6 phases, Phase 93-98)
 
 ## Performance Metrics
 
@@ -162,7 +162,7 @@ Progress: ██████████ 100%
 - ~40,949 total LOC
 
 **v2.6 Summary:**
-- 4 phases completed (including 1 decimal, 11+ plans with FIX plans)
+- 6 phases completed (including 1 decimal, 12+ plans with FIX plans)
 - 1 day (2026-02-12)
 - Tournament & country filters on Odds Comparison page
 - Resizable columns with localStorage persistence
@@ -171,6 +171,7 @@ Progress: ██████████ 100%
 - Historical Analysis bookmaker pills, search, country filter
 - Navigation overhaul: Odds Comparison as landing, sidebar status widgets
 - Sidebar status widget improvements (BUG-018/019/020)
+- Real-time sidebar updates via WebSocket query invalidation
 
 ## Accumulated Context
 
@@ -278,6 +279,7 @@ Progress: ██████████ 100%
 - **Resize handle pattern** - absolute positioned div at column edge with cursor-col-resize, mouse tracking via document events (v2.6 Phase 93)
 - **Separate localStorage keys for related settings** - use distinct keys (column-widths vs column-visibility) to avoid conflicts (v2.6 Phase 93)
 - **Sidebar compact status widgets** - event count badge and health indicator dots (green/yellow/red) for at-a-glance system monitoring (v2.6 Phase 96)
+- **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
 
 ### Key Decisions
 
@@ -371,10 +373,13 @@ Progress: ██████████ 100%
 - v2.6 UX Polish & Navigation shipped 2026-02-12 with 4 phases (10+ plans)
 - Phase 97 added: Last Fixes - remove Dashboard, fix navigation links, reorganize sidebar
 - Phase 97 planned: 1 plan with 3 tasks defined
+- Phase 98 added: Real-Time Sidebar Widget - WebSocket updates for sidebar status widgets
+- Phase 98 executed: 1 plan completed
+- v2.6 UX Polish & Navigation shipped 2026-02-12 with 6 phases (12+ plans)
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 97 (Last Fixes) - All phases complete
+Stopped at: Completed Phase 98 (Real-Time Sidebar Widget) - v2.6 milestone complete
 Resume file: None
 Next action: /gsd:complete-milestone
