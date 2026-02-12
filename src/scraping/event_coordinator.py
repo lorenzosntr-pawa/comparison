@@ -1685,10 +1685,6 @@ class EventCoordinator:
 
                 # UPDATE unavailable markets in DB (sync path)
                 if unavailable_bp or unavailable_comp:
-                    from sqlalchemy import update
-                    from src.db.models.odds import MarketOdds
-                    from src.db.models.competitor import CompetitorMarketOdds
-
                     for umu in unavailable_bp:
                         await db.execute(
                             update(MarketOdds)
