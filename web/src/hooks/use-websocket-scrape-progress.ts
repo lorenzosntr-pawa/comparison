@@ -175,6 +175,9 @@ export function useWebSocketScrapeProgress(
         queryClient.invalidateQueries({ queryKey: ['scheduler-history'] })
         queryClient.invalidateQueries({ queryKey: ['events'] })
         queryClient.invalidateQueries({ queryKey: ['scrape-run'] })
+        // Invalidate sidebar queries for real-time updates
+        queryClient.invalidateQueries({ queryKey: ['coverage'] })
+        queryClient.invalidateQueries({ queryKey: ['scrape-runs'] })
 
         onCompleteRef.current?.()
       }
@@ -193,6 +196,9 @@ export function useWebSocketScrapeProgress(
     queryClient.invalidateQueries({ queryKey: ['scheduler-history'] })
     queryClient.invalidateQueries({ queryKey: ['events'] })
     queryClient.invalidateQueries({ queryKey: ['scrape-run'] })
+    // Invalidate sidebar queries for real-time updates
+    queryClient.invalidateQueries({ queryKey: ['coverage'] })
+    queryClient.invalidateQueries({ queryKey: ['scrape-runs'] })
   }, [queryClient])
 
   // Connect to WebSocket with scrape_progress topic
