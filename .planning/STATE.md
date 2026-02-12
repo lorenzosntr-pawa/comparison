@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 99 of 99 (Availability Tracking Fix)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-12 — Milestone v2.7 created
+Plan: 1 of 1 complete
+Status: Milestone complete
+Last activity: 2026-02-12 — v2.7 Availability Tracking Bugfix shipped
 
-Progress: ░░░░░░░░░░ 0%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -35,7 +35,7 @@ Progress: ░░░░░░░░░░ 0%
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
 - **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
 - **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (6 phases, Phase 93-98)
-- **v2.7 Availability Tracking Bugfix** — IN PROGRESS (1 phase, Phase 99)
+- **v2.7 Availability Tracking Bugfix** — SHIPPED 2026-02-12 (1 phase, Phase 99)
 
 ## Performance Metrics
 
@@ -283,6 +283,7 @@ Progress: ░░░░░░░░░░ 0%
 - **Separate localStorage keys for related settings** - use distinct keys (column-widths vs column-visibility) to avoid conflicts (v2.6 Phase 93)
 - **Sidebar compact status widgets** - event count badge and health indicator dots (green/yellow/red) for at-a-glance system monitoring (v2.6 Phase 96)
 - **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
+- **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
 
 ### Key Decisions
 
@@ -385,6 +386,6 @@ Progress: ░░░░░░░░░░ 0%
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Milestone v2.7 initialization
+Stopped at: v2.7 Availability Tracking Bugfix complete
 Resume file: None
-Next action: /gsd:plan-phase 99
+Next action: /gsd:complete-milestone

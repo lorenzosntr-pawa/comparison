@@ -23,27 +23,18 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
-- 🚧 **v2.7 Availability Tracking Bugfix** — Phase 99 (in progress)
-
----
-
-### 🚧 v2.7 Availability Tracking Bugfix (In Progress)
-
-**Milestone Goal:** Complete the v2.5 availability tracking implementation by wiring up the detection-to-persistence data flow
-
-#### Phase 99: Availability Tracking Fix
-
-**Goal**: Add unavailable_at to write queue, integrate detection results, verify all edge cases
-**Depends on**: Phase 98 (Previous milestone complete)
-**Research**: Unlikely (internal codebase fix, patterns established)
-**Plans**: TBD
-
-Plans:
-- [ ] 99-01: TBD (run /gsd:plan-phase 99 to break down)
+- ✅ **v2.7 Availability Tracking Bugfix** — Phase 99 (shipped 2026-02-12)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.7 Availability Tracking Bugfix (Phase 99) — SHIPPED 2026-02-12</summary>
+
+- [x] Phase 99: Availability Tracking Fix (1/1 plans) — 2026-02-12
+
+</details>
 
 <details>
 <summary>✅ v2.6 UX Polish & Navigation (Phases 93-98) — SHIPPED 2026-02-12</summary>
@@ -383,4 +374,5 @@ Plans:
 | 97. Last Fixes | v2.6 | 1/1 | Complete | 2026-02-12 |
 | 98. Real-Time Sidebar Widget | v2.6 | 1/1 | Complete | 2026-02-12 |
 | **v2.6 SHIPPED** | | | **2026-02-12** | |
-| 99. Availability Tracking Fix | v2.7 | 0/? | Not started | - |
+| 99. Availability Tracking Fix | v2.7 | 1/1 | Complete | 2026-02-12 |
+| **v2.7 SHIPPED** | | | **2026-02-12** | |
