@@ -1,5 +1,6 @@
-import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +13,11 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { Button } from '@/components/ui/button'
 import { useCoverage } from '@/features/coverage/hooks'
 import { useHealth, useSchedulerStatus, useActiveScrapesObserver } from '@/features/dashboard/hooks'
 import { useScrapeRuns } from '@/features/scrape-runs/hooks'
+import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -29,11 +32,19 @@ const navItems = [
 
 export function AppSidebar() {
   const location = useLocation()
+  const queryClient = useQueryClient()
   const { data: coverage } = useCoverage()
   const { data: health } = useHealth()
   const { data: scheduler } = useSchedulerStatus()
   const { data: recentRuns } = useScrapeRuns(1, 0)
   const { activeScrapeId, overallPhase, connectionState } = useActiveScrapesObserver()
+
+  const triggerScrape = useMutation({
+    mutationFn: () => api.triggerScrape(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scrapeRuns'] })
+    },
+  })
 
   const dbHealthy = health?.database === 'connected'
   const schedulerRunning = scheduler?.running ?? false
@@ -220,6 +231,24 @@ export function AppSidebar() {
                   </div>
                 </div>
               )}
+
+              {/* Manual scrape button */}
+              <div className="pt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  disabled={activeScrapeId !== null || triggerScrape.isPending}
+                  onClick={() => triggerScrape.mutate()}
+                >
+                  {triggerScrape.isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Play className="h-3 w-3 mr-1" />
+                  )}
+                  Run Scrape
+                </Button>
+              </div>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
