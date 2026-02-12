@@ -56,8 +56,10 @@ export function AppSidebar() {
     ? formatDistanceToNow(new Date(lastRun.started_at), { addSuffix: true })
     : null
 
-  // Countdown to next scrape
-  const nextRun = scheduler?.jobs?.[0]?.next_run
+  // Countdown to next scrape - find the scrape_all_platforms job specifically
+  const scrapeJob = scheduler?.jobs?.find(job => job.id === 'scrape_all_platforms')
+  const nextRun = scrapeJob?.next_run
+  const scrapeInterval = scrapeJob?.interval_minutes
   const [countdown, setCountdown] = useState<string | null>(null)
 
   useEffect(() => {
@@ -217,6 +219,12 @@ export function AppSidebar() {
                       : !schedulerRunning
                         ? '-'
                         : countdown ?? '-'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="pl-2">Interval</span>
+                  <span className="font-medium text-foreground">
+                    {scrapeInterval ? `${scrapeInterval}m` : '-'}
                   </span>
                 </div>
               </div>

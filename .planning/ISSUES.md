@@ -41,6 +41,26 @@ None
 
 ## Closed Bugs
 
+### BUG-022: Scheduled scrapings appear not to start (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 96 UAT)
+**Resolution:** Fixed 2026-02-12 (Phase 96-02-FIX) - Root cause was BUG-021 (wrong countdown). User was watching the `detect_stale_runs` job countdown (2 min interval) expecting a scrape to start, but that's a background watchdog job, not the actual scrape job. After fixing BUG-021 to show the correct `scrape_all_platforms` countdown, the issue is resolved.
+
+### BUG-021: Next scrape countdown shows wrong job interval (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 96 UAT)
+**Resolution:** Fixed 2026-02-12 (Phase 96-02-FIX) - Changed `app-sidebar.tsx:60` from blindly taking `scheduler?.jobs?.[0]?.next_run` to finding the correct job with `.find(job => job.id === 'scrape_all_platforms')`. Also added scrape interval display to sidebar for user clarity.
+
+### BUG-020: Sidebar scrape runs widget missing (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 96 UAT)
+**Resolution:** Fixed 2026-02-12 (Phase 96-01-FIX) - Added "Last Scrape" section to sidebar showing relative time, status, and events scraped. Uses `useScrapeRuns(1, 0)` hook to fetch most recent run.
+
+### BUG-019: Sidebar event count incomplete (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 96 UAT)
+**Resolution:** Fixed 2026-02-12 (Phase 96-01-FIX) - Events section now shows both total events AND matched count on separate lines instead of just total.
+
+### BUG-018: Sidebar status dots confusing and ugly (RESOLVED)
+**Discovered:** 2026-02-12 (user report during Phase 96 UAT)
+**Resolution:** Fixed 2026-02-12 (Phase 96-01-FIX) - Replaced tiny colored dots with readable labeled text. Database shows "OK" or "Error" with icons. Scheduler shows "Running", "Paused", or "Stopped" with color coding.
+
 ### BUG-017: Coverage page summary cards recalculate on filter toggle (RESOLVED)
 **Discovered:** 2026-02-12 (user report during Phase 94 review)
 **Resolution:** Fixed 2026-02-12 (Phase 94-01-FIX2) - Added separate `usePalimpsestEvents` call with `availability: undefined` for stats cards. Stats now use unfiltered `statsData`, table uses filtered `eventsData`. Data sources are independent so toggling availability filter no longer affects stats cards.
