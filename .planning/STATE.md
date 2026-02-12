@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** All milestones complete through v2.5
+**Current focus:** All milestones complete through v2.6
 
 ## Current Position
 
-Phase: 95 of 96 (Historical Analysis)
+Phase: 96 of 96 (Navigation Overhaul)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-12 — Completed 95-01-PLAN.md (Historical Analysis polish)
+Status: Phase complete — MILESTONE COMPLETE
+Last activity: 2026-02-12 — Completed 96-01-PLAN.md (Navigation Overhaul)
 
-Progress: █████████░ 95%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -34,7 +34,7 @@ Progress: █████████░ 95%
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
 - **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
-- **v2.6 UX Polish & Navigation** — IN PROGRESS (4 phases, Phase 93-96)
+- **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (4 phases, Phase 93-96)
 
 ## Performance Metrics
 
@@ -161,6 +161,16 @@ Progress: █████████░ 95%
 - +3,184 / -136 lines (net +3,048)
 - ~40,949 total LOC
 
+**v2.6 Summary:**
+- 4 phases completed (including 1 decimal, 10+ plans with FIX plans)
+- 1 day (2026-02-12)
+- Tournament & country filters on Odds Comparison page
+- Resizable columns with localStorage persistence
+- Tournament data integrity fix (BUG-016)
+- Coverage page improvements and stable stats
+- Historical Analysis bookmaker pills, search, country filter
+- Navigation overhaul: Odds Comparison as landing, sidebar status widgets
+
 ## Accumulated Context
 
 ### Key Patterns (v1.0 through v2.0)
@@ -266,6 +276,7 @@ Progress: █████████░ 95%
 - **Tooltip unavailable suffix pattern** - append "(unavailable)" to tooltip values when available=false for clear UX (v2.5 Phase 92)
 - **Resize handle pattern** - absolute positioned div at column edge with cursor-col-resize, mouse tracking via document events (v2.6 Phase 93)
 - **Separate localStorage keys for related settings** - use distinct keys (column-widths vs column-visibility) to avoid conflicts (v2.6 Phase 93)
+- **Sidebar compact status widgets** - event count badge and health indicator dots (green/yellow/red) for at-a-glance system monitoring (v2.6 Phase 96)
 
 ### Key Decisions
 
@@ -356,10 +367,12 @@ Progress: █████████░ 95%
 - v2.5 Odds Availability Tracking shipped 2026-02-11 with 6 phases (6 plans)
 - v2.5 archived to .planning/milestones/v2.5-ROADMAP.md
 - Milestone v2.6 created: UX Polish & Navigation, 4 phases (Phase 93-96)
+- v2.6 UX Polish & Navigation shipped 2026-02-12 with 4 phases (10+ plans)
+- v2.6 archived to .planning/milestones/v2.6-ROADMAP.md
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 95-01 (Historical Analysis polish)
+Stopped at: Completed 96-01-PLAN.md (Navigation Overhaul) — MILESTONE COMPLETE
 Resume file: None
-Next action: Plan Phase 96 (Navigation Overhaul)
+Next action: /gsd:complete-milestone to archive v2.6
