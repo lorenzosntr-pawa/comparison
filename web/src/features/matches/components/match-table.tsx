@@ -213,8 +213,10 @@ function OddsValue({
   unavailableSince?: string | null
   onClick?: (e: React.MouseEvent) => void
 }) {
-  // Market became unavailable - show strikethrough dash with tooltip
-  if (!available) {
+  const isUnavailable = available === false
+
+  // Case 1: No odds and unavailable → strikethrough dash with tooltip
+  if (odds === null && isUnavailable) {
     const tooltipText = unavailableSince
       ? formatUnavailableSince(unavailableSince)
       : 'Market unavailable'
@@ -233,10 +235,32 @@ function OddsValue({
     )
   }
 
-  // Never offered - plain dash, no tooltip
+  // Case 2: No odds and available → plain dash (never offered)
   if (odds === null) {
     return <span className="text-muted-foreground text-xs">-</span>
   }
+
+  // Case 3: Has odds but unavailable → strikethrough stale odds with tooltip
+  if (isUnavailable) {
+    const tooltipText = unavailableSince
+      ? formatUnavailableSince(unavailableSince)
+      : 'Market unavailable'
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-muted-foreground line-through text-xs cursor-help">
+            {odds.toFixed(2)}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  // Case 4: Has odds and available → normal rendering
 
   const isBetpawa = bookmakerSlug === 'betpawa'
   const { betpawaOdds, bestCompetitorOdds } = comparisonData
