@@ -2068,6 +2068,8 @@ class EventCoordinator:
         """Get or create Tournament from BetPawa event raw response.
 
         Parses competition and region info from raw_data to find/create a proper tournament.
+        Lookup uses name + sport_id + country to avoid collisions between same-name
+        tournaments in different countries (e.g., "Premier League" England vs Singapore).
 
         Args:
             db: AsyncSession for database operations.
@@ -2085,13 +2087,24 @@ class EventCoordinator:
         comp_id = competition.get("id")
         region_name = region.get("name")
 
-        # Try to find existing tournament by name
-        result = await db.execute(
-            select(Tournament.id).where(
-                Tournament.name == comp_name,
-                Tournament.sport_id == sport_id,
+        # Try to find existing tournament by name, sport, and country
+        # Handle None region_name by matching NULL country
+        if region_name is None:
+            result = await db.execute(
+                select(Tournament.id).where(
+                    Tournament.name == comp_name,
+                    Tournament.sport_id == sport_id,
+                    Tournament.country.is_(None),
+                )
             )
-        )
+        else:
+            result = await db.execute(
+                select(Tournament.id).where(
+                    Tournament.name == comp_name,
+                    Tournament.sport_id == sport_id,
+                    Tournament.country == region_name,
+                )
+            )
         row = result.first()
         if row:
             return row[0]
