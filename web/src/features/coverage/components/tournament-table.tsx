@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { ChevronRight, ChevronDown, Check, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronRight, ChevronDown, ChevronLeft, Check, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -13,6 +14,7 @@ import type { TournamentGroup, PalimpsestEvent } from '@/types/api'
 import { EventRows } from './event-rows'
 
 const PLATFORMS = ['betpawa', 'sportybet', 'bet9ja'] as const
+const PAGE_SIZE = 15
 const PLATFORM_LABELS: Record<string, string> = {
   betpawa: 'BetPawa',
   sportybet: 'SportyBet',
@@ -53,6 +55,19 @@ function PlatformCell({ count }: { count: number }) {
 
 export function TournamentTable({ tournaments, isLoading }: TournamentTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Reset to page 1 when tournaments array changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [tournaments.length])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(tournaments.length / PAGE_SIZE)
+  const paginatedTournaments = tournaments.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  )
 
   const toggleExpanded = (tournamentId: number) => {
     setExpandedIds((prev) => {
@@ -126,7 +141,7 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tournaments.map((tournament) => {
+          {paginatedTournaments.map((tournament) => {
             const isExpanded = expandedIds.has(tournament.tournament_id)
             const totalEvents = tournament.events.length
 
@@ -176,6 +191,33 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
           })}
         </TableBody>
       </Table>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages} ({tournaments.length} tournaments)
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
