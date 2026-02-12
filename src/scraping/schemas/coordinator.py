@@ -122,3 +122,23 @@ class ScrapeBatch(TypedDict):
     batch_id: str
     events: list[EventTarget]
     created_at: datetime
+
+
+@dataclass
+class DiscoveryResult:
+    """Track which events were discovered per platform.
+
+    Used for reconciliation to detect events that were previously
+    in the cache but are no longer offered by a platform.
+
+    Attributes:
+        betpawa_sr_ids: Set of SportRadar IDs discovered on BetPawa.
+        sportybet_sr_ids: Set of SportRadar IDs discovered on SportyBet.
+        bet9ja_sr_ids: Set of SportRadar IDs discovered on Bet9ja.
+        merged_events: Dict mapping SR ID -> EventTarget (same as before).
+    """
+
+    betpawa_sr_ids: set[str] = field(default_factory=set)
+    sportybet_sr_ids: set[str] = field(default_factory=set)
+    bet9ja_sr_ids: set[str] = field(default_factory=set)
+    merged_events: dict[str, "EventTarget"] = field(default_factory=dict)

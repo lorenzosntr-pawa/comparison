@@ -62,7 +62,12 @@ from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
 from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
 from src.market_mapping.types.errors import MappingError
 from src.market_mapping.types.sportybet import SportybetMarket
-from src.scraping.schemas.coordinator import EventTarget, ScrapeBatch, ScrapeStatus
+from src.scraping.schemas.coordinator import (
+    DiscoveryResult,
+    EventTarget,
+    ScrapeBatch,
+    ScrapeStatus,
+)
 
 if TYPE_CHECKING:
     from src.caching.odds_cache import CachedMarket, OddsCache
@@ -192,14 +197,14 @@ class EventCoordinator:
     # DISCOVERY: Phase 1 - Parallel event discovery from all platforms
     # =========================================================================
 
-    async def discover_events(self) -> dict[str, EventTarget]:
+    async def discover_events(self) -> DiscoveryResult:
         """Discover events from all platforms in parallel.
 
         Runs discovery for BetPawa, SportyBet, and Bet9ja simultaneously,
         then merges results into a unified event map keyed by SR ID.
 
         Returns:
-            Dict mapping SR ID to EventTarget with platform availability.
+            DiscoveryResult containing SR IDs per platform and merged event map.
         """
         logger.info("Starting parallel event discovery")
 
@@ -222,6 +227,13 @@ class EventCoordinator:
         )
         discovery_total_ms = int((time.perf_counter() - discovery_wall_start) * 1000)
 
+        # Track SR IDs per platform for reconciliation
+        platform_sr_ids: dict[str, set[str]] = {
+            "betpawa": set(),
+            "sportybet": set(),
+            "bet9ja": set(),
+        }
+
         # Merge into unified event map
         platforms = ["betpawa", "sportybet", "bet9ja"]
         discovery_counts: dict[str, int] = {}
@@ -243,6 +255,9 @@ class EventCoordinator:
                 sr_id = event["sr_id"]
                 kickoff = event["kickoff"]
                 platform_id = event.get("platform_id", "")
+
+                # Track SR ID for this platform (for reconciliation)
+                platform_sr_ids[platform].add(sr_id)
 
                 if sr_id in self._event_map:
                     # Event already discovered from another platform - add this platform
@@ -277,7 +292,12 @@ class EventCoordinator:
             **self._last_discovery_timings,
         )
 
-        return self._event_map
+        return DiscoveryResult(
+            betpawa_sr_ids=platform_sr_ids["betpawa"],
+            sportybet_sr_ids=platform_sr_ids["sportybet"],
+            bet9ja_sr_ids=platform_sr_ids["bet9ja"],
+            merged_events=self._event_map,
+        )
 
     async def _discover_betpawa(self) -> list[dict]:
         """Discover events from BetPawa.
@@ -2839,7 +2859,7 @@ class EventCoordinator:
         }
 
         # Phase 2: Discovery
-        await self.discover_events()
+        discovery_result = await self.discover_events()
 
         discovery_counts = {
             platform: sum(
