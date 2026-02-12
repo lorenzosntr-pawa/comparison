@@ -22,6 +22,74 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
+- 🚧 **v2.6 UX Polish & Navigation** — Phases 93-96 (in progress)
+
+---
+
+## 🚧 v2.6 UX Polish & Navigation (In Progress)
+
+**Milestone Goal:** App-wide UX improvements, bug fixes, and navigation restructure
+
+### Phase 93: Odds Comparison Page
+
+**Goal**: Improve filtering and column layout on Odds Comparison page
+**Depends on**: v2.5 complete
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Features:
+- Full tournament filter (show all tournaments, not just visible)
+- Country filter
+- Resizable columns with localStorage persistence
+- Fix competitor-only filter to use competitor data
+
+Plans:
+- [ ] 93-01: TBD (run /gsd:plan-phase 93 to break down)
+
+### Phase 94: Coverage Page
+
+**Goal**: Fix layout issues and add navigation shortcuts
+**Depends on**: Phase 93
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Features:
+- Stable summary cards (don't update based on filter toggles)
+- Fix tournament column pagination
+- Quick nav buttons to historical analysis, odds comparison, event detail
+
+Plans:
+- [ ] 94-01: TBD
+
+### Phase 95: Historical Analysis
+
+**Goal**: Polish bookmaker UI and add filtering
+**Depends on**: Phase 94
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Features:
+- Professional bookmaker buttons (pill/chip style with brand colors)
+- Tournament search filter
+- Country filter
+
+Plans:
+- [ ] 95-01: TBD
+
+### Phase 96: Navigation Overhaul
+
+**Goal**: Restructure navigation with sidebar widgets
+**Depends on**: Phase 95
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Features:
+- Odds Comparison as default landing page
+- Sidebar dashboard widgets (events, scrape runs, health)
+- ~20% wider sidebar for readability
+
+Plans:
+- [ ] 96-01: TBD
 
 ---
 
@@ -344,3 +412,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 92. History Charts | v2.5 | 1/1 | Complete | 2026-02-11 |
 | **v2.5 SHIPPED** | | | **2026-02-11** | |
+| 93. Odds Comparison Page | v2.6 | 0/? | Not started | - |
+| 94. Coverage Page | v2.6 | 0/? | Not started | - |
+| 95. Historical Analysis | v2.6 | 0/? | Not started | - |
+| 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |
