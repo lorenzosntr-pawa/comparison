@@ -12,6 +12,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { Badge } from '@/components/ui/badge'
+import { useCoverage } from '@/features/coverage/hooks'
+import { useHealth, useSchedulerStatus } from '@/features/dashboard/hooks'
+import { cn } from '@/lib/utils'
 
 const navItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
@@ -24,6 +28,14 @@ const navItems = [
 
 export function AppSidebar() {
   const location = useLocation()
+  const { data: coverage } = useCoverage()
+  const { data: health } = useHealth()
+  const { data: scheduler } = useSchedulerStatus()
+
+  const dbHealthy = health?.status === 'healthy'
+  const schedulerState = scheduler?.state
+  const schedulerHealthy = schedulerState === 'running' || schedulerState === 'idle'
+  const schedulerPaused = schedulerState === 'paused'
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -55,6 +67,42 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel>Status</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2 space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <span>Events</span>
+                <Badge variant="secondary" className="text-xs h-5 px-1.5">
+                  {coverage?.total_events ?? '-'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>System</span>
+                <div className="flex gap-1.5">
+                  <span
+                    className={cn(
+                      'h-2 w-2 rounded-full',
+                      dbHealthy ? 'bg-green-500' : 'bg-red-500'
+                    )}
+                    title="Database"
+                  />
+                  <span
+                    className={cn(
+                      'h-2 w-2 rounded-full',
+                      schedulerHealthy
+                        ? 'bg-green-500'
+                        : schedulerPaused
+                          ? 'bg-yellow-500'
+                          : 'bg-gray-500'
+                    )}
+                    title="Scheduler"
+                  />
+                </div>
+              </div>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
