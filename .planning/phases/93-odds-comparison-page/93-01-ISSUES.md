@@ -1,7 +1,7 @@
 # UAT Issues: Phase 93 Plan 01
 
-**Tested:** 2026-02-12
-**Source:** .planning/phases/93-odds-comparison-page/93-01-SUMMARY.md
+**Tested:** 2026-02-12 (re-test after FIX2)
+**Source:** .planning/phases/93-odds-comparison-page/93-01-SUMMARY.md, 93-01-FIX-SUMMARY.md, 93-01-FIX2-SUMMARY.md
 **Tester:** User via /gsd:verify-work
 
 ## Open Issues
@@ -9,6 +9,49 @@
 [None]
 
 ## Resolved Issues
+
+### UAT-006: Countries endpoint crashes in competitor mode
+
+**Discovered:** 2026-02-12
+**Resolved:** 2026-02-12 in 93-01-FIX3
+**Phase/Plan:** 93-01-FIX2
+**Severity:** Blocker
+**Feature:** Country filter in competitor-only mode
+**Description:** The `/api/events/countries?availability=competitor` endpoint returns a 500 Internal Server Error.
+**Root Cause:** `CompetitorTournament` model has `country_raw` attribute, not `country`. The endpoint incorrectly referenced `CompetitorTournament.country`.
+**Resolution:** Changed 3 references to use `country_raw` instead of `country` in the `list_countries` function.
+**Commit:** `bb3a2e8`
+
+### UAT-003: Country filter doesn't scope to availability mode
+
+**Discovered:** 2026-02-12
+**Resolved:** 2026-02-12 in FIX2 + FIX3
+**Phase/Plan:** 93-01
+**Severity:** Major
+**Feature:** Country filter dropdown
+**Description:** When in competitor-only mode, the country filter still shows ALL countries instead of only countries with competitor events.
+**Resolution:** Added `/events/countries` endpoint with availability parameter (FIX2) + fixed attribute name (FIX3)
+
+### UAT-004: API 500 error when filtering in competitor-only mode
+
+**Discovered:** 2026-02-12
+**Resolved:** 2026-02-12 in 93-01-FIX2
+**Phase/Plan:** 93-01
+**Severity:** Blocker
+**Feature:** Tournament filter in competitor-only mode
+**Description:** Selecting a tournament filter in competitor-only mode sometimes causes a 500 API error.
+**Resolution:** Added early return with empty MatchedEventList when tournament_names is empty but tournament_ids provided.
+
+### UAT-005: Filter state not preserved per availability mode (Enhancement)
+
+**Discovered:** 2026-02-12
+**Resolved:** 2026-02-12 in 93-01-FIX2
+**Phase/Plan:** 93-01
+**Severity:** Minor
+**Type:** Enhancement
+**Feature:** Filter state management
+**Description:** Switching between modes would reset all filters.
+**Resolution:** Implemented per-mode filter state with separate useState hooks for betpawaFilters and competitorFilters.
 
 ### UAT-001: Country filter should directly filter events list
 
@@ -40,4 +83,4 @@
 
 *Phase: 93-odds-comparison-page*
 *Plan: 01*
-*Tested: 2026-02-12*
+*Tested: 2026-02-12 (re-test)*

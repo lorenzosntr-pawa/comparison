@@ -47,6 +47,7 @@ Plans:
 - [x] 93-01: Tournament & Country Filters (2 tasks) — 2026-02-12
 - [x] 93-01-FIX: UAT Enhancement Fixes (2 tasks) — 2026-02-12
 - [x] 93-01-FIX2: UAT Enhancement Fixes Round 2 (3 tasks) — 2026-02-12
+- [x] 93-01-FIX3: Countries Endpoint Blocker Fix (1 task) — 2026-02-12
 - [ ] 93-02: Column Resizing (2 tasks)
 
 ### Phase 94: Coverage Page
