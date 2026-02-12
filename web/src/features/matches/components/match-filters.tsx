@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/command'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useTournaments } from '../hooks/use-tournaments'
+import { useCountries } from '../hooks/use-countries'
 import { X, ChevronsUpDown } from 'lucide-react'
 
 type DatePreset = 'today' | 'tomorrow' | 'weekend' | 'next7days'
@@ -93,17 +94,16 @@ interface MatchFiltersProps {
 }
 
 export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
+  // Fetch countries scoped to current availability mode
+  const { data: countries = [], isPending: countriesLoading } = useCountries({
+    availability: filters.availability,
+  })
   // Fetch tournaments scoped to current availability mode
   const { data: tournaments, isPending: tournamentsLoading } = useTournaments({
     availability: filters.availability,
   })
   const [leaguePopoverOpen, setLeaguePopoverOpen] = useState(false)
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false)
-
-  // Extract unique countries from tournaments
-  const countries = Array.from(
-    new Set(tournaments?.map((t) => t.country).filter((c): c is string => c !== null) ?? [])
-  ).sort()
 
   // Filter tournaments by selected countries
   const filteredTournaments = filters.countryFilter.length > 0
@@ -208,7 +208,7 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
               role="combobox"
               aria-expanded={countryPopoverOpen}
               className="w-[160px] justify-between font-normal"
-              disabled={tournamentsLoading}
+              disabled={countriesLoading}
             >
               {filters.countryFilter.length === 0
                 ? 'All countries'

@@ -898,6 +898,56 @@ async def list_unmatched_events(
     return unmatched_events
 
 
+@router.get("/countries", response_model=list[str])
+async def list_countries(
+    db: AsyncSession = Depends(get_db),
+    availability: Literal["betpawa", "competitor"] | None = Query(
+        default=None,
+        description="Filter countries by availability: betpawa (countries with BetPawa events) | competitor (countries with competitor-only events)",
+    ),
+) -> list[str]:
+    """List all countries for filter dropdowns.
+
+    Returns unique countries sorted alphabetically, optionally filtered by
+    availability mode.
+
+    When availability='competitor', returns only countries that have upcoming
+    competitor-only events (events on SportyBet/Bet9ja but not BetPawa).
+    """
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    if availability == "competitor":
+        # Countries with competitor-only events (CompetitorEvent where betpawa_event_id IS NULL)
+        query = (
+            select(CompetitorTournament.country)
+            .distinct()
+            .join(CompetitorEvent, CompetitorTournament.id == CompetitorEvent.tournament_id)
+            .where(
+                CompetitorEvent.betpawa_event_id.is_(None),
+                CompetitorEvent.kickoff > now,
+                CompetitorTournament.country.isnot(None),
+            )
+            .order_by(CompetitorTournament.country)
+        )
+    else:
+        # Countries with BetPawa events (default or availability='betpawa')
+        query = (
+            select(Tournament.country)
+            .distinct()
+            .join(Event, Tournament.id == Event.tournament_id)
+            .where(
+                Event.kickoff > now,
+                Tournament.country.isnot(None),
+            )
+            .order_by(Tournament.country)
+        )
+
+    result = await db.execute(query)
+    countries = [row[0] for row in result.all()]
+
+    return countries
+
+
 @router.get("/tournaments", response_model=list[TournamentSummary])
 async def list_tournaments(
     db: AsyncSession = Depends(get_db),

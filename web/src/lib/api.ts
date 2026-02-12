@@ -289,6 +289,25 @@ export const api = {
     )
   },
 
+  /**
+   * Fetches list of countries for filter dropdowns.
+   *
+   * @param params - Optional filter parameters
+   * @param params.availability - Filter by platform availability
+   * @returns Promise resolving to array of country names
+   */
+  getCountries: (params?: {
+    availability?: 'betpawa' | 'competitor'
+  }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.availability)
+      searchParams.set('availability', params.availability)
+    const query = searchParams.toString()
+    return fetchJson<string[]>(
+      `/events/countries${query ? `?${query}` : ''}`
+    )
+  },
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Settings
   // ─────────────────────────────────────────────────────────────────────────────
