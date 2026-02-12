@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid, SummarySection } from './components'
 import type { MatchFiltersState } from './components'
-import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
+import { useMatches, useColumnSettings, useColumnWidths, useMatchDetail } from './hooks'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_BETPAWA_FILTERS: MatchFiltersState = {
@@ -57,6 +57,13 @@ export function MatchList() {
     showAll,
     hideAll,
   } = useColumnSettings()
+
+  // Column width settings (persisted to localStorage)
+  const {
+    widths: columnWidths,
+    setWidth: setColumnWidth,
+    resetWidths: resetColumnWidths,
+  } = useColumnWidths()
 
   // Convert datetime-local format to ISO for API
   const apiKickoffFrom = useMemo(() => {
@@ -159,6 +166,7 @@ export function MatchList() {
             onToggleColumn={toggleColumn}
             onShowAll={showAll}
             onHideAll={hideAll}
+            onResetWidths={resetColumnWidths}
           />
         </div>
       </div>
@@ -177,6 +185,8 @@ export function MatchList() {
         isLoading={isPending}
         visibleColumns={visibleColumns}
         excludeBetpawa={filters.availability === 'competitor'}
+        columnWidths={columnWidths}
+        onColumnWidthChange={setColumnWidth}
       />
 
       {/* Pagination */}

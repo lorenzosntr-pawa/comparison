@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useState, useRef, useCallback, useEffect, Fragment } from 'react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -80,6 +80,8 @@ interface MatchTableProps {
   isLoading?: boolean
   visibleColumns?: string[]
   excludeBetpawa?: boolean
+  columnWidths?: Record<string, number>
+  onColumnWidthChange?: (columnId: string, width: number) => void
 }
 
 /**
@@ -416,9 +418,79 @@ function formatKickoff(kickoff: string): string {
   })
 }
 
-export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false }: MatchTableProps) {
+export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false, columnWidths = {}, onColumnWidthChange }: MatchTableProps) {
   const navigate = useNavigate()
   const [historyDialog, setHistoryDialog] = useState<HistoryDialogState | null>(null)
+
+  // Resize state
+  const [resizing, setResizing] = useState<string | null>(null)
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  // Handle resize start
+  const handleResizeStart = useCallback((e: React.MouseEvent, columnId: string, currentWidth: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setResizing(columnId)
+    resizeRef.current = { startX: e.clientX, startWidth: currentWidth }
+  }, [])
+
+  // Handle resize move and end
+  useEffect(() => {
+    if (!resizing || !onColumnWidthChange) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!resizeRef.current) return
+      const delta = e.clientX - resizeRef.current.startX
+      const newWidth = resizeRef.current.startWidth + delta
+      onColumnWidthChange(resizing, newWidth)
+    }
+
+    const handleMouseUp = () => {
+      setResizing(null)
+      resizeRef.current = null
+    }
+
+    // Prevent text selection during resize
+    document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'col-resize'
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.body.style.userSelect = ''
+      document.body.style.cursor = ''
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [resizing, onColumnWidthChange])
+
+  // Default widths for columns
+  const defaultWidths: Record<string, number> = {
+    region: 100,
+    tournament: 150,
+    kickoff: 120,
+    match: 200,
+    book: 50,
+  }
+
+  // Get width for a column
+  const getColumnWidth = (columnId: string) => columnWidths[columnId] ?? defaultWidths[columnId]
+
+  // Resize handle component
+  const ResizeHandle = ({ columnId }: { columnId: string }) => {
+    if (!onColumnWidthChange) return null
+    return (
+      <div
+        className={cn(
+          'absolute right-0 top-0 bottom-0 w-1 cursor-col-resize',
+          'hover:bg-blue-500/50 active:bg-blue-500/70',
+          resizing === columnId && 'bg-blue-500/70'
+        )}
+        onMouseDown={(e) => handleResizeStart(e, columnId, getColumnWidth(columnId))}
+      />
+    )
+  }
 
   // Get ordered list of bookmakers
   // Exclude betpawa when showing competitor-only events
@@ -458,11 +530,26 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
         <thead>
           {/* Main header row */}
           <tr className="border-b bg-muted/30">
-            <th className="px-3 py-3 text-left font-medium">Region</th>
-            <th className="px-3 py-3 text-left font-medium">Tournament</th>
-            <th className="px-3 py-3 text-left font-medium whitespace-nowrap">Kickoff</th>
-            <th className="px-3 py-3 text-left font-medium">Match</th>
-            <th className="px-3 py-3 text-center font-medium w-12">Book</th>
+            <th className="px-3 py-3 text-left font-medium relative" style={{ width: getColumnWidth('region') }}>
+              Region
+              <ResizeHandle columnId="region" />
+            </th>
+            <th className="px-3 py-3 text-left font-medium relative" style={{ width: getColumnWidth('tournament') }}>
+              Tournament
+              <ResizeHandle columnId="tournament" />
+            </th>
+            <th className="px-3 py-3 text-left font-medium whitespace-nowrap relative" style={{ width: getColumnWidth('kickoff') }}>
+              Kickoff
+              <ResizeHandle columnId="kickoff" />
+            </th>
+            <th className="px-3 py-3 text-left font-medium relative" style={{ width: getColumnWidth('match') }}>
+              Match
+              <ResizeHandle columnId="match" />
+            </th>
+            <th className="px-3 py-3 text-center font-medium relative" style={{ width: getColumnWidth('book') }}>
+              Book
+              <ResizeHandle columnId="book" />
+            </th>
             {/* Market group headers (outcomes + margin column) */}
             {visibleMarkets.map((marketId, index) => (
               <th

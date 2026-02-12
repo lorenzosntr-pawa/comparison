@@ -14,6 +14,7 @@ interface ColumnSettingsProps {
   onToggleColumn: (columnId: string) => void
   onShowAll: () => void
   onHideAll: () => void
+  onResetWidths?: () => void
 }
 
 export function ColumnSettings({
@@ -21,6 +22,7 @@ export function ColumnSettings({
   onToggleColumn,
   onShowAll,
   onHideAll,
+  onResetWidths,
 }: ColumnSettingsProps) {
   return (
     <Popover>
@@ -78,6 +80,20 @@ export function ColumnSettings({
               Hide all
             </Button>
           </div>
+
+          {onResetWidths && (
+            <>
+              <Separator />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onResetWidths}
+                className="w-full text-muted-foreground"
+              >
+                Reset column widths
+              </Button>
+            </>
+          )}
         </div>
       </PopoverContent>
     </Popover>
