@@ -48,6 +48,8 @@ export interface UseMatchesParams {
   minBookmakers?: number
   /** Filter by specific tournament IDs */
   tournamentIds?: number[]
+  /** Filter by country/region names */
+  countries?: string[]
   /** ISO timestamp - only show matches kicking off after this time */
   kickoffFrom?: string
   /** ISO timestamp - only show matches kicking off before this time */
@@ -86,16 +88,17 @@ export interface UseMatchesParams {
  * ```
  */
 export function useMatches(params: UseMatchesParams = {}) {
-  const { page = 1, pageSize = 50, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search, availability } = params
+  const { page = 1, pageSize = 50, minBookmakers, tournamentIds, countries, kickoffFrom, kickoffTo, search, availability } = params
 
   return useQuery({
-    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, kickoffFrom, kickoffTo, search, availability }],
+    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, countries, kickoffFrom, kickoffTo, search, availability }],
     queryFn: () =>
       api.getEvents({
         page,
         page_size: pageSize,
         min_bookmakers: minBookmakers,
         tournament_ids: tournamentIds,
+        countries,
         kickoff_from: kickoffFrom,
         kickoff_to: kickoffTo,
         search,

@@ -55,6 +55,7 @@ export function MatchList() {
     pageSize,
     minBookmakers: filters.minBookmakers,
     tournamentIds: filters.tournamentIds.length > 0 ? filters.tournamentIds : undefined,
+    countries: filters.countryFilter.length > 0 ? filters.countryFilter : undefined,
     kickoffFrom: apiKickoffFrom,
     kickoffTo: apiKickoffTo,
     search: filters.search || undefined,

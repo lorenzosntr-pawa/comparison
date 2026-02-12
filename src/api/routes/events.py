@@ -1001,6 +1001,9 @@ async def list_events(
     search: str | None = Query(
         default=None, description="Search by team name (home or away)"
     ),
+    countries: list[str] | None = Query(
+        default=None, description="Filter by country/region names (case-insensitive)"
+    ),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=100),
 ) -> MatchedEventList:
@@ -1045,12 +1048,30 @@ async def list_events(
         query = query.where(Event.tournament_id == tournament_id)
         count_query = count_query.where(Event.tournament_id == tournament_id)
 
+    # Track if we've already joined tournament (to avoid duplicate joins)
+    tournament_joined = False
+
     # Apply sport filter (join through tournament)
     if sport_id is not None:
         query = query.join(Event.tournament).where(Tournament.sport_id == sport_id)
         count_query = count_query.join(Event.tournament).where(
             Tournament.sport_id == sport_id
         )
+        tournament_joined = True
+
+    # Apply country filter (join through tournament if not already joined)
+    if countries:
+        if not tournament_joined:
+            query = query.join(Event.tournament)
+            count_query = count_query.join(Event.tournament)
+            tournament_joined = True
+        # Case-insensitive country matching
+        country_conditions = [
+            func.lower(Tournament.country) == country.lower()
+            for country in countries
+        ]
+        query = query.where(or_(*country_conditions))
+        count_query = count_query.where(or_(*country_conditions))
 
     # Apply kickoff time filters
     if kickoff_from_naive is not None:
@@ -1142,6 +1163,9 @@ async def list_events(
                 )
             )
 
+        # Track if we've joined competitor tournament
+        comp_tournament_joined = False
+
         # Apply sport filter (join through competitor tournament)
         if sport_id is not None:
             comp_query = comp_query.join(CompetitorEvent.tournament).where(
@@ -1150,6 +1174,21 @@ async def list_events(
             comp_count_query = comp_count_query.join(CompetitorEvent.tournament).where(
                 CompetitorTournament.sport_id == sport_id
             )
+            comp_tournament_joined = True
+
+        # Apply country filter for competitor events
+        if countries:
+            if not comp_tournament_joined:
+                comp_query = comp_query.join(CompetitorEvent.tournament)
+                comp_count_query = comp_count_query.join(CompetitorEvent.tournament)
+                comp_tournament_joined = True
+            # Case-insensitive country matching
+            country_conditions = [
+                func.lower(CompetitorTournament.country) == country.lower()
+                for country in countries
+            ]
+            comp_query = comp_query.where(or_(*country_conditions))
+            comp_count_query = comp_count_query.where(or_(*country_conditions))
 
         # Tournament filter for competitor events via tournament name matching
         if tournament_ids:
@@ -1163,7 +1202,7 @@ async def list_events(
             if tournament_names:
                 # Filter CompetitorEvents where tournament name matches (case-insensitive)
                 # Need to join tournament if not already joined
-                if sport_id is None:
+                if not comp_tournament_joined:
                     comp_query = comp_query.join(CompetitorEvent.tournament)
                     comp_count_query = comp_count_query.join(CompetitorEvent.tournament)
 
