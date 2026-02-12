@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +15,7 @@ import type { MatchFiltersState } from './components'
 import { useMatches, useColumnSettings, useMatchDetail } from './hooks'
 import { cn } from '@/lib/utils'
 
-const DEFAULT_FILTERS: MatchFiltersState = {
+const DEFAULT_BETPAWA_FILTERS: MatchFiltersState = {
   search: '',
   countryFilter: [],
   tournamentIds: [],
@@ -26,10 +26,29 @@ const DEFAULT_FILTERS: MatchFiltersState = {
   availability: 'betpawa',
 }
 
+const DEFAULT_COMPETITOR_FILTERS: MatchFiltersState = {
+  search: '',
+  countryFilter: [],
+  tournamentIds: [],
+  kickoffFrom: '',
+  kickoffTo: '',
+  minBookmakers: 2,
+  sortBy: 'kickoff',
+  availability: 'competitor',
+}
+
 export function MatchList() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
-  const [filters, setFilters] = useState<MatchFiltersState>(DEFAULT_FILTERS)
+
+  // Per-mode filter state - each mode has independent filters
+  const [betpawaFilters, setBetpawaFilters] = useState<MatchFiltersState>(DEFAULT_BETPAWA_FILTERS)
+  const [competitorFilters, setCompetitorFilters] = useState<MatchFiltersState>(DEFAULT_COMPETITOR_FILTERS)
+  const [currentMode, setCurrentMode] = useState<'betpawa' | 'competitor'>('betpawa')
+
+  // Get current filters based on mode
+  const filters = currentMode === 'betpawa' ? betpawaFilters : competitorFilters
+  const setFilters = currentMode === 'betpawa' ? setBetpawaFilters : setCompetitorFilters
 
   // Column visibility settings (persisted to localStorage)
   const {
@@ -62,11 +81,26 @@ export function MatchList() {
     availability: filters.availability,
   })
 
-  // Reset to page 1 when filters change
-  const handleFiltersChange = (newFilters: MatchFiltersState) => {
+  // Handle filter changes (excluding mode switch)
+  const handleFiltersChange = useCallback((newFilters: MatchFiltersState) => {
+    // If availability changed, switch mode instead of updating current filters
+    if (newFilters.availability !== currentMode) {
+      setCurrentMode(newFilters.availability)
+      setPage(1)
+      return
+    }
+    // Otherwise update current mode's filters
     setFilters(newFilters)
     setPage(1)
-  }
+  }, [currentMode, setFilters])
+
+  // Handle mode switch via toggle buttons
+  const handleModeSwitch = useCallback((mode: 'betpawa' | 'competitor') => {
+    if (mode !== currentMode) {
+      setCurrentMode(mode)
+      setPage(1)
+    }
+  }, [currentMode])
 
   // Sort events client-side based on sortBy
   const sortedEvents = useMemo(() => {
@@ -99,10 +133,10 @@ export function MatchList() {
               size="sm"
               className={cn(
                 'h-7 px-3 text-xs font-medium',
-                filters.availability === 'betpawa' &&
+                currentMode === 'betpawa' &&
                   'bg-background text-foreground shadow-sm'
               )}
-              onClick={() => handleFiltersChange({ ...filters, availability: 'betpawa' })}
+              onClick={() => handleModeSwitch('betpawa')}
             >
               BetPawa
             </Button>
@@ -112,10 +146,10 @@ export function MatchList() {
               size="sm"
               className={cn(
                 'h-7 px-3 text-xs font-medium',
-                filters.availability === 'competitor' &&
+                currentMode === 'competitor' &&
                   'bg-background text-foreground shadow-sm'
               )}
-              onClick={() => handleFiltersChange({ ...filters, availability: 'competitor' })}
+              onClick={() => handleModeSwitch('competitor')}
             >
               Competitors Only
             </Button>
