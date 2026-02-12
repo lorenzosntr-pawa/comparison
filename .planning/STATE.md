@@ -2,10 +2,10 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-11)
+See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** All milestones complete through v2.6
+**Current focus:** Project feature-complete through v2.6
 
 ## Current Position
 
@@ -162,16 +162,18 @@ Progress: ██████████ 100%
 - ~40,949 total LOC
 
 **v2.6 Summary:**
-- 6 phases completed (including 1 decimal, 12+ plans with FIX plans)
-- 1 day (2026-02-12)
+- 6 phases completed (including 1 decimal, 15+ plans with FIX plans)
+- Same day (2026-02-12, ~4.5 hours)
 - Tournament & country filters on Odds Comparison page
 - Resizable columns with localStorage persistence
 - Tournament data integrity fix (BUG-016)
 - Coverage page improvements and stable stats
 - Historical Analysis bookmaker pills, search, country filter
 - Navigation overhaul: Odds Comparison as landing, sidebar status widgets
-- Sidebar status widget improvements (BUG-018/019/020)
+- Dashboard removed, sidebar reorganized into three sections
 - Real-time sidebar updates via WebSocket query invalidation
+- +4,695 / -908 lines (net +3,787)
+- ~41,395 total LOC
 
 ## Accumulated Context
 
@@ -375,11 +377,12 @@ Progress: ██████████ 100%
 - Phase 97 planned: 1 plan with 3 tasks defined
 - Phase 98 added: Real-Time Sidebar Widget - WebSocket updates for sidebar status widgets
 - Phase 98 executed: 1 plan completed
-- v2.6 UX Polish & Navigation shipped 2026-02-12 with 6 phases (12+ plans)
+- v2.6 UX Polish & Navigation shipped 2026-02-12 with 6 phases (15+ plans)
+- v2.6 archived to .planning/milestones/v2.6-ROADMAP.md
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 98 (Real-Time Sidebar Widget) - v2.6 milestone complete
+Stopped at: v2.6 milestone archived and complete
 Resume file: None
-Next action: /gsd:complete-milestone
+Next action: Project feature-complete. Use /gsd:discuss-milestone if additional features needed.

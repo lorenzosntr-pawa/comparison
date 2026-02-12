@@ -1,5 +1,36 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.6 UX Polish & Navigation (Shipped: 2026-02-12)
+
+**Delivered:** App-wide UX improvements including tournament/country filters, resizable columns, navigation restructure with Odds Comparison as landing page, sidebar status widgets, and real-time sidebar updates.
+
+**Phases completed:** 93-98 (15+ plans total including 6 FIX plans, 1 decimal phase)
+
+**Key accomplishments:**
+
+- Tournament & country filters on Odds Comparison page with full tournament list access and availability-scoped filtering
+- Resizable table columns with localStorage persistence for user customization
+- Tournament data integrity fix (BUG-016) with composite unique constraint preventing cross-country collisions
+- Coverage page improvements: stable summary cards, pagination, navigation shortcuts to related pages
+- Historical Analysis polish: professional bookmaker pills with brand colors, tournament search, country filter
+- Navigation overhaul: Odds Comparison as default landing page, compact sidebar status widgets
+- Dashboard removed, sidebar reorganized into three sections (Analysis/Status/Utilities)
+- Real-time sidebar updates via WebSocket query invalidation when scrapes complete
+
+**Stats:**
+
+- 64 files changed
+- +4,695 / -908 lines (net +3,787)
+- 6 phases (including 1 decimal), 15+ plans
+- Same day (2026-02-12, ~4.5 hours)
+- ~41,395 total LOC
+
+**Git range:** `94780b3` → `e2dd0d7`
+
+**What's next:** Project feature-complete. Use `/gsd:discuss-milestone` if additional features needed.
+
+---
+
 ## v2.5 Odds Availability Tracking (Shipped: 2026-02-11)
 
 **Delivered:** Track when odds/events become unavailable across platforms, display appropriately with strikethrough styling and tooltips, and visualize availability transitions in history charts.

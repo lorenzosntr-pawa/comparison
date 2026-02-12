@@ -22,139 +22,24 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
-- 🔄 **v2.6 UX Polish & Navigation** — Phases 93-98 (in progress)
-
----
-
-## 🔄 v2.6 UX Polish & Navigation (IN PROGRESS)
-
-**Milestone Goal:** App-wide UX improvements, bug fixes, navigation restructure, and real-time sidebar
-
-### Phase 93: Odds Comparison Page
-
-**Goal**: Improve filtering and column layout on Odds Comparison page
-**Depends on**: v2.5 complete
-**Research**: Unlikely (internal patterns)
-**Plans**: 2
-
-Features:
-- Full tournament filter (show all tournaments, not just visible)
-- Country filter
-- Resizable columns with localStorage persistence
-- Fix competitor-only filter to use competitor data
-
-Plans:
-- [x] 93-01: Tournament & Country Filters (2 tasks) — 2026-02-12
-- [x] 93-01-FIX: UAT Enhancement Fixes (2 tasks) — 2026-02-12
-- [x] 93-01-FIX2: UAT Enhancement Fixes Round 2 (3 tasks) — 2026-02-12
-- [x] 93-01-FIX3: Countries Endpoint Blocker Fix (1 task) — 2026-02-12
-- [x] 93-02: Column Resizing (2 tasks) — 2026-02-12
-
-### Phase 93.1: Tournament Data Integrity Fix (INSERTED - URGENT)
-
-**Goal**: Fix critical bug where tournaments with same name from different countries collide
-**Depends on**: Phase 93
-**Research**: Investigation complete (2026-02-12)
-**Plans**: TBD
-
-**Bug:** BUG-016 - Singapore Premier League shows events from England, Malta, etc.
-
-**Root Cause:**
-- No `UNIQUE(sport_id, name, country)` constraint in database
-- Tournament lookup uses name only, ignores country
-- API filtering matches by name only
-
-**Required Tasks:**
-1. Schema migration: Add composite unique constraint, make country NOT NULL
-2. Code fixes: Update tournament lookup/creation to include country
-3. API fixes: Update competitor tournament matching to use country
-4. Data cleanup: Split existing tournaments by country, re-link events
-
-Plans:
-- [x] 93.1-01: Code Fixes (2 tasks) - Fix tournament lookup and API filtering — 2026-02-12
-- [x] 93.1-02: Schema Migration (2 tasks) - Data cleanup and unique constraint — 2026-02-12
-
-### Phase 94: Coverage Page
-
-**Goal**: Fix layout issues and add navigation shortcuts
-**Depends on**: Phase 93
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Features:
-- Stable summary cards (don't update based on filter toggles)
-- Fix tournament column pagination
-- Quick nav buttons to historical analysis, odds comparison, event detail
-
-Plans:
-- [x] 94-01: Coverage Page Improvements (3 tasks) - 2026-02-12
-- [x] 94-01-FIX: UAT Fixes (2 tasks) - 2026-02-12
-- [x] 94-01-FIX2: Stable tournament stats cards (BUG-017) — 2026-02-12
-
-### Phase 95: Historical Analysis
-
-**Goal**: Polish bookmaker UI and add filtering
-**Depends on**: Phase 94
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Features:
-- Professional bookmaker buttons (pill/chip style with brand colors)
-- Tournament search filter
-- Country filter
-
-Plans:
-- [x] 95-01: Bookmaker Pills, Tournament Search, Country Filter (3 tasks) — 2026-02-12
-
-### Phase 96: Navigation Overhaul
-
-**Goal**: Restructure navigation with sidebar widgets
-**Depends on**: Phase 95
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Features:
-- Odds Comparison as default landing page
-- Sidebar dashboard widgets (events, scrape runs, health)
-- ~20% wider sidebar for readability
-
-Plans:
-- [x] 96-01: Navigation Overhaul (3 tasks) — 2026-02-12
-- [x] 96-01-FIX: Sidebar Status Widget Improvements (4 tasks) — 2026-02-12
-
-### Phase 97: Last Fixes
-
-**Goal**: Final cleanup - remove unused pages, fix navigation links, reorganize sidebar
-**Depends on**: Phase 96
-**Research**: Unlikely (internal patterns)
-**Plans**: TBD
-
-Features:
-- Remove Dashboard page and its navigation entry
-- Fix stale navigation links (e.g., "back to odds comparison" pointing to old routes)
-- Reorganize sidebar: Settings and Scrape Runs at bottom, Run Scrape button and status widgets above them
-
-Plans:
-- [x] 97-01: Final Cleanup (3 tasks) — Remove Dashboard, fix nav links, reorganize sidebar — 2026-02-12
-
-### Phase 98: Real-Time Sidebar Widget
-
-**Goal**: Make sidebar status widgets update via WebSocket without page refresh
-**Depends on**: Phase 97
-**Research**: Unlikely (internal patterns)
-**Plans**: 1
-
-Features:
-- Last scrape widget updates via WebSocket subscription
-- Event count and health indicators refresh in real-time
-- No page refresh needed to see updated scrape status
-
-Plans:
-- [x] 98-01: Real-Time Sidebar Updates (1 task + checkpoint) — 2026-02-12
+- ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.6 UX Polish & Navigation (Phases 93-98) — SHIPPED 2026-02-12</summary>
+
+- [x] Phase 93: Odds Comparison Page (5/5 plans) — 2026-02-12
+- [x] Phase 93.1: Tournament Data Integrity Fix (2/2 plans) — 2026-02-12
+- [x] Phase 94: Coverage Page (3/3 plans) — 2026-02-12
+- [x] Phase 95: Historical Analysis (1/1 plans) — 2026-02-12
+- [x] Phase 96: Navigation Overhaul (2/2 plans) — 2026-02-12
+- [x] Phase 97: Last Fixes (1/1 plans) — 2026-02-12
+- [x] Phase 98: Real-Time Sidebar Widget (1/1 plans) — 2026-02-12
+
+</details>
 
 <details>
 <summary>✅ v2.5 Odds Availability Tracking (Phases 87-92) — SHIPPED 2026-02-11</summary>

@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.5 Odds Availability Tracking)
+## Current State (v2.6 UX Polish & Navigation)
 
-**Shipped:** 2026-02-11
+**Shipped:** 2026-02-12
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~40,949 lines of code
+- ~41,395 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -77,6 +77,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Odds availability tracking** - `unavailable_at` timestamp detecting when markets disappear
 - **Three-state availability display** - normal odds, strikethrough+tooltip for unavailable, dash for never offered
 - **History charts availability** - dashed lines for unavailable periods with "(unavailable)" tooltip suffix
+- **Tournament & country filters** - full tournament list access with availability-scoped filtering on Odds Comparison page
+- **Resizable table columns** - drag-to-resize with localStorage persistence for user customization
+- **Tournament data integrity** - composite unique constraint (sport_id, name, country) preventing cross-country collisions
+- **Coverage page improvements** - stable summary cards, client-side pagination, navigation shortcuts
+- **Historical Analysis filters** - professional bookmaker pills with brand colors, tournament search, country multi-select
+- **Navigation overhaul** - Odds Comparison as default landing page, compact sidebar status widgets
+- **Sidebar reorganization** - three sections (Analysis/Status/Utilities), Dashboard page removed
+- **Real-time sidebar updates** - WebSocket query invalidation for sidebar widgets on scrape completion
 
 ## Requirements
 
@@ -175,10 +183,21 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Three-state availability display in Odds Comparison (normal/strikethrough/dash) — v2.5
 - ✓ Three-state availability display in Event Details (OddsBadge) — v2.5
 - ✓ History charts with dashed lines for unavailable periods — v2.5
+- ✓ Tournament & country filters on Odds Comparison page with full list access — v2.6
+- ✓ Resizable table columns with localStorage persistence — v2.6
+- ✓ Tournament data integrity fix with composite unique constraint (BUG-016) — v2.6
+- ✓ Coverage page stable summary cards with client-side pagination — v2.6
+- ✓ Coverage page navigation shortcuts to related pages — v2.6
+- ✓ Historical Analysis professional bookmaker pills with brand colors — v2.6
+- ✓ Historical Analysis tournament search and country filter — v2.6
+- ✓ Odds Comparison as default landing page — v2.6
+- ✓ Sidebar status widgets with event count and health indicators — v2.6
+- ✓ Dashboard removal and sidebar reorganization into three sections — v2.6
+- ✓ Real-time sidebar updates via WebSocket query invalidation — v2.6
 
 ### Active
 
-(No active requirements — project feature-complete for v2.5)
+(No active requirements — project feature-complete for v2.6)
 
 ### Out of Scope
 
@@ -298,6 +317,13 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Detection at cache layer | Compare previous cache to new scrape for availability changes | ✓ Good — v2.5 efficient detection |
 | UI distinction dash vs strikethrough | Differentiate never_offered from became_unavailable | ✓ Good — v2.5 clear UX |
 | Dashed overlay line approach | Simpler than gradient masking, no SVG complexity | ✓ Good — v2.5 clean charts |
+| Separate localStorage keys for settings | Use distinct keys for column-widths vs column-visibility | ✓ Good — v2.6 avoids conflicts |
+| Resize handle pattern | Absolute positioned div at column edge with cursor-col-resize | ✓ Good — v2.6 standard interaction |
+| Composite unique constraint (sport_id, name, country) | Prevent cross-country tournament collisions | ✓ Good — v2.6 data integrity |
+| Odds Comparison as default landing | Reflects primary user workflow of competitive analysis | ✓ Good — v2.6 intuitive navigation |
+| Compact sidebar status widgets | Event count badge and health dots for at-a-glance monitoring | ✓ Good — v2.6 reduced visual noise |
+| Sidebar query invalidation on scrape | Invalidate coverage and scrape-runs queries for instant refresh | ✓ Good — v2.6 real-time updates |
+| Three-section sidebar layout | Analysis/Status/Utilities for logical grouping | ✓ Good — v2.6 clear navigation |
 
 ---
-*Last updated: 2026-02-11 after v2.5 milestone*
+*Last updated: 2026-02-12 after v2.6 milestone*
