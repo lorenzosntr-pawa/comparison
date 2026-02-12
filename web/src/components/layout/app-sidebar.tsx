@@ -1,4 +1,4 @@
-import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp } from 'lucide-react'
+import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -12,10 +12,11 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { Badge } from '@/components/ui/badge'
 import { useCoverage } from '@/features/coverage/hooks'
 import { useHealth, useSchedulerStatus } from '@/features/dashboard/hooks'
+import { useScrapeRuns } from '@/features/scrape-runs/hooks'
 import { cn } from '@/lib/utils'
+import { formatDistanceToNow } from 'date-fns'
 
 const navItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
@@ -31,11 +32,16 @@ export function AppSidebar() {
   const { data: coverage } = useCoverage()
   const { data: health } = useHealth()
   const { data: scheduler } = useSchedulerStatus()
+  const { data: recentRuns } = useScrapeRuns(1, 0)
 
-  const dbHealthy = health?.status === 'healthy'
+  const dbHealthy = health?.database === 'connected'
   const schedulerRunning = scheduler?.running ?? false
   const schedulerPaused = scheduler?.paused ?? false
-  const schedulerHealthy = schedulerRunning && !schedulerPaused
+
+  const lastRun = recentRuns?.[0]
+  const lastRunTime = lastRun?.started_at
+    ? formatDistanceToNow(new Date(lastRun.started_at), { addSuffix: true })
+    : null
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -72,36 +78,98 @@ export function AppSidebar() {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>Status</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="px-2 space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center justify-between">
-                <span>Events</span>
-                <Badge variant="secondary" className="text-xs h-5 px-1.5">
-                  {coverage?.total_events ?? '-'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>System</span>
-                <div className="flex gap-1.5">
-                  <span
-                    className={cn(
-                      'h-2 w-2 rounded-full',
-                      dbHealthy ? 'bg-green-500' : 'bg-red-500'
-                    )}
-                    title="Database"
-                  />
-                  <span
-                    className={cn(
-                      'h-2 w-2 rounded-full',
-                      schedulerHealthy
-                        ? 'bg-green-500'
-                        : schedulerPaused
-                          ? 'bg-yellow-500'
-                          : 'bg-gray-500'
-                    )}
-                    title="Scheduler"
-                  />
+            <div className="px-2 space-y-3 text-xs">
+              {/* Events - total and matched */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Events</span>
+                  <span className="font-medium text-foreground">
+                    {coverage?.total_events ?? '-'} total
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="pl-2">Matched</span>
+                  <span className="font-medium text-foreground">
+                    {coverage?.matched_count ?? '-'}
+                  </span>
                 </div>
               </div>
+
+              {/* System health */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Database</span>
+                  <span className={cn(
+                    'flex items-center gap-1 font-medium',
+                    dbHealthy ? 'text-green-600' : 'text-red-600'
+                  )}>
+                    {dbHealthy ? (
+                      <>
+                        <Check className="h-3 w-3" />
+                        OK
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-3 w-3" />
+                        Error
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Scheduler</span>
+                  <span className={cn(
+                    'font-medium',
+                    schedulerRunning && !schedulerPaused
+                      ? 'text-green-600'
+                      : schedulerPaused
+                        ? 'text-yellow-600'
+                        : 'text-muted-foreground'
+                  )}>
+                    {schedulerRunning && !schedulerPaused
+                      ? 'Running'
+                      : schedulerPaused
+                        ? 'Paused'
+                        : 'Stopped'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Last scrape run */}
+              {lastRun && (
+                <div className="space-y-1 pt-1 border-t border-sidebar-border">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Last Scrape</span>
+                    <span className="font-medium text-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {lastRunTime}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="pl-2">Status</span>
+                    <span className={cn(
+                      'font-medium',
+                      lastRun.status === 'completed'
+                        ? 'text-green-600'
+                        : lastRun.status === 'failed'
+                          ? 'text-red-600'
+                          : lastRun.status === 'running'
+                            ? 'text-blue-600'
+                            : 'text-yellow-600'
+                    )}>
+                      {lastRun.status === 'completed' ? 'OK' :
+                       lastRun.status === 'running' ? 'In Progress' :
+                       lastRun.status.charAt(0).toUpperCase() + lastRun.status.slice(1)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="pl-2">Events</span>
+                    <span className="font-medium text-foreground">
+                      {lastRun.events_scraped}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
