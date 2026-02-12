@@ -33,9 +33,9 @@ export function AppSidebar() {
   const { data: scheduler } = useSchedulerStatus()
 
   const dbHealthy = health?.status === 'healthy'
-  const schedulerState = scheduler?.state
-  const schedulerHealthy = schedulerState === 'running' || schedulerState === 'idle'
-  const schedulerPaused = schedulerState === 'paused'
+  const schedulerRunning = scheduler?.running ?? false
+  const schedulerPaused = scheduler?.paused ?? false
+  const schedulerHealthy = schedulerRunning && !schedulerPaused
 
   return (
     <Sidebar collapsible="offcanvas">
