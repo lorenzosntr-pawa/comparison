@@ -35,7 +35,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 **Goal**: Improve filtering and column layout on Odds Comparison page
 **Depends on**: v2.5 complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 2
 
 Features:
 - Full tournament filter (show all tournaments, not just visible)
@@ -44,7 +44,8 @@ Features:
 - Fix competitor-only filter to use competitor data
 
 Plans:
-- [ ] 93-01: TBD (run /gsd:plan-phase 93 to break down)
+- [ ] 93-01: Tournament & Country Filters (2 tasks)
+- [ ] 93-02: Column Resizing (2 tasks)
 
 ### Phase 94: Coverage Page
 
@@ -412,7 +413,7 @@ Plans:
 | 91. Event Details UI | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 92. History Charts | v2.5 | 1/1 | Complete | 2026-02-11 |
 | **v2.5 SHIPPED** | | | **2026-02-11** | |
-| 93. Odds Comparison Page | v2.6 | 0/? | Not started | - |
+| 93. Odds Comparison Page | v2.6 | 0/2 | Planned | - |
 | 94. Coverage Page | v2.6 | 0/? | Not started | - |
 | 95. Historical Analysis | v2.6 | 0/? | Not started | - |
 | 96. Navigation Overhaul | v2.6 | 0/? | Not started | - |
