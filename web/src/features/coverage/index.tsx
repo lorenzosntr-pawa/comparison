@@ -119,7 +119,7 @@ export function CoveragePage() {
 
       {/* Tournament Stats Cards */}
       <TournamentStatsCards
-        tournaments={filteredTournaments}
+        tournaments={eventsData?.tournaments ?? []}
         isLoading={eventsPending}
       />
 
