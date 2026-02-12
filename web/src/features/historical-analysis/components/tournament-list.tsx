@@ -30,6 +30,7 @@ interface TournamentListProps {
   isLoading: boolean
   selectedBookmakers: string[]
   searchQuery: string
+  selectedCountries: string[]
 }
 
 /**
@@ -256,11 +257,23 @@ export function TournamentList({
   isLoading,
   selectedBookmakers,
   searchQuery,
+  selectedCountries,
 }: TournamentListProps) {
-  // Filter tournaments by search query (case-insensitive)
+  // Filter tournaments by search query and country
   const filteredTournaments = tournaments.filter((tournament) => {
-    if (!searchQuery) return true
-    return tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+    // Country filter
+    if (selectedCountries.length > 0) {
+      if (!tournament.country || !selectedCountries.includes(tournament.country)) {
+        return false
+      }
+    }
+    // Search query filter (case-insensitive)
+    if (searchQuery) {
+      if (!tournament.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false
+      }
+    }
+    return true
   })
 
   if (isLoading) {

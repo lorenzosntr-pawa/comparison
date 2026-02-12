@@ -1,6 +1,21 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Calendar, Search } from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Calendar, Search, ChevronsUpDown } from 'lucide-react'
 import { format, subDays } from 'date-fns'
 import { BookmakerFilter } from './bookmaker-filter'
 
@@ -16,6 +31,9 @@ interface FilterBarProps {
   onBookmakersChange: (selected: string[]) => void
   searchQuery: string
   onSearchChange: (query: string) => void
+  availableCountries: string[]
+  selectedCountries: string[]
+  onCountriesChange: (countries: string[]) => void
 }
 
 function formatDateForInput(date: Date | undefined): string {
@@ -35,7 +53,28 @@ export function FilterBar({
   onBookmakersChange,
   searchQuery,
   onSearchChange,
+  availableCountries,
+  selectedCountries,
+  onCountriesChange,
 }: FilterBarProps) {
+  const [countryPopoverOpen, setCountryPopoverOpen] = useState(false)
+
+  const toggleCountry = (country: string) => {
+    if (selectedCountries.includes(country)) {
+      onCountriesChange(selectedCountries.filter((c) => c !== country))
+    } else {
+      onCountriesChange([...selectedCountries, country])
+    }
+  }
+
+  const clearAllCountries = () => {
+    onCountriesChange([])
+  }
+
+  const selectAllCountries = () => {
+    onCountriesChange(availableCountries)
+  }
+
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     const date = value ? new Date(value + 'T00:00:00') : undefined
@@ -106,6 +145,69 @@ export function FilterBar({
             className="w-[200px] pl-10"
           />
         </div>
+      </div>
+
+      {/* Country filter */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">
+          Country
+        </label>
+        <Popover open={countryPopoverOpen} onOpenChange={setCountryPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={countryPopoverOpen}
+              className="w-[160px] justify-between font-normal"
+            >
+              {selectedCountries.length === 0
+                ? 'All countries'
+                : `${selectedCountries.length} ${selectedCountries.length === 1 ? 'country' : 'countries'}`}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[250px] p-0" align="start">
+            <Command>
+              <CommandInput placeholder="Search countries..." />
+              <CommandList>
+                <CommandEmpty>No countries found.</CommandEmpty>
+                <CommandGroup>
+                  {availableCountries.map((country) => (
+                    <CommandItem
+                      key={country}
+                      value={country}
+                      onSelect={() => toggleCountry(country)}
+                    >
+                      <Checkbox
+                        checked={selectedCountries.includes(country)}
+                        className="mr-2"
+                      />
+                      <span className="truncate flex-1">{country}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+              <div className="flex items-center justify-between border-t p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllCountries}
+                  className="text-xs"
+                >
+                  Clear all
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={selectAllCountries}
+                  className="text-xs"
+                >
+                  Select all
+                </Button>
+              </div>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Bookmaker filter */}

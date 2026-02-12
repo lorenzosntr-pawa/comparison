@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { subDays } from 'date-fns'
 import { FilterBar, TournamentList, type DateRange } from './components'
 import { useTournaments } from './hooks'
@@ -25,7 +25,20 @@ export function HistoricalAnalysisPage() {
   // Tournament search filter
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Country filter state
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
+
   const { data: tournaments, isPending, error } = useTournaments(dateRange)
+
+  // Extract unique countries from tournaments
+  const availableCountries = useMemo(() => {
+    if (!tournaments) return []
+    const countries = new Set<string>()
+    tournaments.forEach((t) => {
+      if (t.country) countries.add(t.country)
+    })
+    return Array.from(countries).sort()
+  }, [tournaments])
 
   return (
     <div className="space-y-4">
@@ -38,6 +51,9 @@ export function HistoricalAnalysisPage() {
         onBookmakersChange={setSelectedBookmakers}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        availableCountries={availableCountries}
+        selectedCountries={selectedCountries}
+        onCountriesChange={setSelectedCountries}
       />
 
       {error && (
@@ -51,6 +67,7 @@ export function HistoricalAnalysisPage() {
         isLoading={isPending}
         selectedBookmakers={selectedBookmakers}
         searchQuery={searchQuery}
+        selectedCountries={selectedCountries}
       />
     </div>
   )
