@@ -42,27 +42,33 @@ export function CoveragePage() {
 
   const error = coverageError || eventsError
 
+  // Stable reference for all tournaments (used by TournamentStatsCards)
+  const allTournaments = useMemo(
+    () => eventsData?.tournaments ?? [],
+    [eventsData?.tournaments]
+  )
+
   // Extract unique countries from tournaments for the country filter dropdown
   const uniqueCountries = useMemo(() => {
-    if (!eventsData?.tournaments) return []
+    if (!allTournaments.length) return []
     const countries = new Set<string>()
-    eventsData.tournaments.forEach((t) => {
+    allTournaments.forEach((t) => {
       if (t.tournament_country) {
         countries.add(t.tournament_country)
       }
     })
     return Array.from(countries).sort()
-  }, [eventsData?.tournaments])
+  }, [allTournaments])
 
   // Filter tournaments by selected countries
   const filteredTournaments = useMemo(() => {
-    if (!eventsData?.tournaments) return []
-    if (filters.countries.length === 0) return eventsData.tournaments
-    return eventsData.tournaments.filter(
+    if (!allTournaments.length) return []
+    if (filters.countries.length === 0) return allTournaments
+    return allTournaments.filter(
       (t) =>
         t.tournament_country && filters.countries.includes(t.tournament_country)
     )
-  }, [eventsData?.tournaments, filters.countries])
+  }, [allTournaments, filters.countries])
 
   // Calculate filtered event count
   const filteredEventCount = useMemo(() => {
@@ -117,9 +123,9 @@ export function CoveragePage() {
       {/* Event Stats Cards */}
       <CoverageStatsCards coverage={coverage} isLoading={coveragePending} />
 
-      {/* Tournament Stats Cards */}
+      {/* Tournament Stats Cards - uses stable allTournaments ref to avoid re-computation on filter changes */}
       <TournamentStatsCards
-        tournaments={eventsData?.tournaments ?? []}
+        tournaments={allTournaments}
         isLoading={eventsPending}
       />
 
