@@ -32,6 +32,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass
+from datetime import datetime
 
 import structlog
 
@@ -52,6 +53,7 @@ class MarketWriteData:
     handicap_away: float | None
     outcomes: dict  # [{name, odds, is_active}, ...]
     market_groups: list[str] | None
+    unavailable_at: datetime | None = None
 
 
 @dataclass(frozen=True)

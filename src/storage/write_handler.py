@@ -62,6 +62,7 @@ def _build_market_odds(mwd: MarketWriteData) -> MarketOdds:
         handicap_away=mwd.handicap_away,
         outcomes=mwd.outcomes,
         market_groups=mwd.market_groups,
+        unavailable_at=mwd.unavailable_at,
     )
 
 
@@ -76,6 +77,7 @@ def _build_competitor_market_odds(mwd: MarketWriteData) -> CompetitorMarketOdds:
         handicap_away=mwd.handicap_away,
         outcomes=mwd.outcomes,
         market_groups=mwd.market_groups,
+        unavailable_at=mwd.unavailable_at,
     )
 
 
