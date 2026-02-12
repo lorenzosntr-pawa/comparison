@@ -120,6 +120,7 @@ Features:
 
 Plans:
 - [x] 96-01: Navigation Overhaul (3 tasks) — 2026-02-12
+- [x] 96-01-FIX: Sidebar Status Widget Improvements (4 tasks) — 2026-02-12
 
 ---
 
@@ -446,5 +447,5 @@ Plans:
 | 93.1 Tournament Data Integrity Fix (INSERTED) | v2.6 | 2/2 | Complete | 2026-02-12 |
 | 94. Coverage Page | v2.6 | 3/3 | Complete | 2026-02-12 |
 | 95. Historical Analysis | v2.6 | 1/1 | Complete | 2026-02-12 |
-| 96. Navigation Overhaul | v2.6 | 1/1 | Complete | 2026-02-12 |
+| 96. Navigation Overhaul | v2.6 | 2/2 | Complete | 2026-02-12 |
 | **v2.6 SHIPPED** | | | **2026-02-12** | |
