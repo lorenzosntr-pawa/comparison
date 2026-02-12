@@ -1,4 +1,5 @@
-import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -19,7 +20,7 @@ import { useHealth, useSchedulerStatus, useActiveScrapesObserver } from '@/featu
 import { useScrapeRuns } from '@/features/scrape-runs/hooks'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, differenceInSeconds } from 'date-fns'
 
 const navItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
@@ -54,6 +55,40 @@ export function AppSidebar() {
   const lastRunTime = lastRun?.started_at
     ? formatDistanceToNow(new Date(lastRun.started_at), { addSuffix: true })
     : null
+
+  // Countdown to next scrape
+  const nextRun = scheduler?.jobs?.[0]?.next_run
+  const [countdown, setCountdown] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!nextRun || schedulerPaused || !schedulerRunning) {
+      setCountdown(null)
+      return
+    }
+
+    const updateCountdown = () => {
+      const seconds = differenceInSeconds(new Date(nextRun), new Date())
+      if (seconds <= 0) {
+        setCountdown('Now')
+        return
+      }
+      const mins = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      if (mins >= 60) {
+        const hours = Math.floor(mins / 60)
+        const remainingMins = mins % 60
+        setCountdown(`${hours}h ${remainingMins}m`)
+      } else if (mins > 0) {
+        setCountdown(`${mins}m ${secs}s`)
+      } else {
+        setCountdown(`${secs}s`)
+      }
+    }
+
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+    return () => clearInterval(interval)
+  }, [nextRun, schedulerPaused, schedulerRunning])
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -171,6 +206,17 @@ export function AppSidebar() {
                         Disconnected
                       </>
                     )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Next Scrape</span>
+                  <span className="font-medium text-foreground flex items-center gap-1">
+                    <Timer className="h-3 w-3" />
+                    {schedulerPaused
+                      ? 'Paused'
+                      : !schedulerRunning
+                        ? '-'
+                        : countdown ?? '-'}
                   </span>
                 </div>
               </div>
