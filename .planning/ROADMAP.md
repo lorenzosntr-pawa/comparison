@@ -22,11 +22,11 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.3 Code Quality & Reliability](milestones/v2.3-ROADMAP.md) — Phases 72-78 (shipped 2026-02-09)
 - ✅ [v2.4 Historical Analytics](milestones/v2.4-ROADMAP.md) — Phases 79-86 (shipped 2026-02-11)
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
-- ✅ **v2.6 UX Polish & Navigation** — Phases 93-96 (shipped 2026-02-12)
+- 🔄 **v2.6 UX Polish & Navigation** — Phases 93-97 (in progress)
 
 ---
 
-## ✅ v2.6 UX Polish & Navigation (SHIPPED 2026-02-12)
+## 🔄 v2.6 UX Polish & Navigation (IN PROGRESS)
 
 **Milestone Goal:** App-wide UX improvements, bug fixes, and navigation restructure
 
@@ -121,6 +121,21 @@ Features:
 Plans:
 - [x] 96-01: Navigation Overhaul (3 tasks) — 2026-02-12
 - [x] 96-01-FIX: Sidebar Status Widget Improvements (4 tasks) — 2026-02-12
+
+### Phase 97: Last Fixes
+
+**Goal**: Final cleanup - remove unused pages, fix navigation links, reorganize sidebar
+**Depends on**: Phase 96
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Features:
+- Remove Dashboard page and its navigation entry
+- Fix stale navigation links (e.g., "back to odds comparison" pointing to old routes)
+- Reorganize sidebar: Settings and Scrape Runs at bottom, Run Scrape button and status widgets above them
+
+Plans:
+- [x] 97-01: Final Cleanup (3 tasks) — Remove Dashboard, fix nav links, reorganize sidebar — 2026-02-12
 
 ---
 
@@ -448,4 +463,4 @@ Plans:
 | 94. Coverage Page | v2.6 | 3/3 | Complete | 2026-02-12 |
 | 95. Historical Analysis | v2.6 | 1/1 | Complete | 2026-02-12 |
 | 96. Navigation Overhaul | v2.6 | 2/2 | Complete | 2026-02-12 |
-| **v2.6 SHIPPED** | | | **2026-02-12** | |
+| 97. Last Fixes | v2.6 | 1/1 | Complete | 2026-02-12 |

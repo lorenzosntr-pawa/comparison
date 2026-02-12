@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 
 ## Current Position
 
-Phase: 96 of 96 (Navigation Overhaul)
-Plan: 1 of 1 in current phase (+ 1 FIX plan)
-Status: Phase complete — MILESTONE COMPLETE
-Last activity: 2026-02-12 — Completed 96-01-FIX.md (Sidebar Status Widget Improvements)
+Phase: 97 of 97 (Last Fixes)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-12 — Completed 97-01-PLAN.md
 
 Progress: ██████████ 100%
 
@@ -34,7 +34,7 @@ Progress: ██████████ 100%
 - **v2.3 Code Quality & Reliability** — SHIPPED 2026-02-09 (7 phases, Phase 72-78)
 - **v2.4 Historical Analytics** — SHIPPED 2026-02-11 (11 phases, Phase 79-86, 19 plans)
 - **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
-- **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (4 phases, Phase 93-96)
+- **v2.6 UX Polish & Navigation** — IN PROGRESS (5 phases, Phase 93-97)
 
 ## Performance Metrics
 
@@ -369,11 +369,12 @@ Progress: ██████████ 100%
 - v2.5 archived to .planning/milestones/v2.5-ROADMAP.md
 - Milestone v2.6 created: UX Polish & Navigation, 4 phases (Phase 93-96)
 - v2.6 UX Polish & Navigation shipped 2026-02-12 with 4 phases (10+ plans)
-- v2.6 archived to .planning/milestones/v2.6-ROADMAP.md
+- Phase 97 added: Last Fixes - remove Dashboard, fix navigation links, reorganize sidebar
+- Phase 97 planned: 1 plan with 3 tasks defined
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 96-01-FIX.md (Sidebar Status Widget Improvements) — MILESTONE COMPLETE
+Stopped at: Completed Phase 97 (Last Fixes) - All phases complete
 Resume file: None
-Next action: /gsd:complete-milestone to archive v2.6
+Next action: /gsd:complete-milestone
