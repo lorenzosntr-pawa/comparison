@@ -32,7 +32,7 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 <details>
 <summary>✅ v2.7 Availability Tracking Bugfix (Phase 99) — SHIPPED 2026-02-12</summary>
 
-- [x] Phase 99: Availability Tracking Fix (1/1 + 1 FIX plans) — 2026-02-12
+- [x] Phase 99: Availability Tracking Fix (1/1 + 2 FIX plans) — 2026-02-12
 
 </details>
 
@@ -374,5 +374,5 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 97. Last Fixes | v2.6 | 1/1 | Complete | 2026-02-12 |
 | 98. Real-Time Sidebar Widget | v2.6 | 1/1 | Complete | 2026-02-12 |
 | **v2.6 SHIPPED** | | | **2026-02-12** | |
-| 99. Availability Tracking Fix | v2.7 | 1/1 + 1 FIX | Complete | 2026-02-12 |
+| 99. Availability Tracking Fix | v2.7 | 1/1 + 2 FIX | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
