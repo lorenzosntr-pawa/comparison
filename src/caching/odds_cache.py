@@ -290,3 +290,58 @@ class OddsCache:
             "total_markets": total_markets,
             "estimated_memory_mb": estimated_memory_mb,
         }
+
+    # -- Reconciliation helpers ------------------------------------------------
+
+    def get_cached_events_by_bookmaker(self) -> dict[str, set[int]]:
+        """Return event IDs in cache grouped by bookmaker slug.
+
+        Used for reconciliation to detect events dropped from discovery.
+
+        Returns:
+            Dict mapping bookmaker_slug -> set of betpawa_event_ids.
+            For competitors (sportybet, bet9ja), returns the betpawa event ID
+            that the competitor snapshot is linked to.
+        """
+        result: dict[str, set[int]] = {
+            "betpawa": set(),
+            "sportybet": set(),
+            "bet9ja": set(),
+        }
+
+        # BetPawa events - all events in _betpawa_snapshots
+        result["betpawa"] = set(self._betpawa_snapshots.keys())
+
+        # Competitor events - from _competitor_snapshots
+        for event_id, sources in self._competitor_snapshots.items():
+            for source in sources.keys():
+                if source == "sportybet":
+                    result["sportybet"].add(event_id)
+                elif source == "bet9ja":
+                    result["bet9ja"].add(event_id)
+
+        return result
+
+    def get_snapshot_for_update(
+        self, event_id: int, bookmaker_slug: str
+    ) -> CachedSnapshot | None:
+        """Get a snapshot for potential update during reconciliation.
+
+        Args:
+            event_id: The betpawa event ID.
+            bookmaker_slug: "betpawa", "sportybet", or "bet9ja".
+
+        Returns:
+            The CachedSnapshot if found, else None.
+        """
+        if bookmaker_slug == "betpawa":
+            by_bm = self._betpawa_snapshots.get(event_id)
+            if by_bm:
+                # Return first bookmaker's snapshot (typically there's only one)
+                for snap in by_bm.values():
+                    return snap
+        else:
+            by_src = self._competitor_snapshots.get(event_id)
+            if by_src and bookmaker_slug in by_src:
+                return by_src[bookmaker_slug]
+        return None

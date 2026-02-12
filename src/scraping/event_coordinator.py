@@ -882,6 +882,113 @@ class EventCoordinator:
         """
         return self._event_map
 
+    async def _reconcile_unavailable_events(
+        self,
+        discovery: DiscoveryResult,
+        timestamp: datetime,
+        db: AsyncSession,
+    ) -> int:
+        """Mark markets unavailable for events dropped from discovery.
+
+        After each scrape cycle, events that:
+        - Exist in cache (were previously scraped)
+        - Were NOT in this cycle's discovery (platform no longer offers them)
+
+        Should have their markets marked as unavailable for that platform.
+
+        Args:
+            discovery: DiscoveryResult with per-platform SR ID sets.
+            timestamp: When to mark markets unavailable.
+            db: AsyncSession for database operations.
+
+        Returns:
+            Count of markets marked unavailable.
+        """
+        if self._odds_cache is None:
+            return 0
+
+        cached_events = self._odds_cache.get_cached_events_by_bookmaker()
+
+        # Collect all event IDs we need to look up
+        all_event_ids: set[int] = set()
+        for event_ids in cached_events.values():
+            all_event_ids.update(event_ids)
+
+        if not all_event_ids:
+            return 0
+
+        # Query DB for event_id -> sr_id mapping
+        from src.db.models.event import Event
+
+        result = await db.execute(
+            select(Event.id, Event.sportradar_id).where(Event.id.in_(all_event_ids))
+        )
+        event_id_to_sr: dict[int, str] = {
+            row.id: row.sportradar_id for row in result.fetchall()
+        }
+
+        unavailable_count = 0
+
+        # Check BetPawa events
+        for event_id in cached_events["betpawa"]:
+            sr_id = event_id_to_sr.get(event_id)
+            if sr_id and sr_id not in discovery.betpawa_sr_ids:
+                # BetPawa no longer has this event - mark markets unavailable
+                snap = self._odds_cache.get_snapshot_for_update(event_id, "betpawa")
+                if snap and snap.snapshot_id:
+                    result = await db.execute(
+                        update(MarketOdds)
+                        .where(
+                            MarketOdds.snapshot_id == snap.snapshot_id,
+                            MarketOdds.unavailable_at.is_(None),
+                        )
+                        .values(unavailable_at=timestamp)
+                    )
+                    unavailable_count += result.rowcount
+
+        # Check SportyBet events
+        for event_id in cached_events["sportybet"]:
+            sr_id = event_id_to_sr.get(event_id)
+            if sr_id and sr_id not in discovery.sportybet_sr_ids:
+                # SportyBet no longer has this event - mark markets unavailable
+                snap = self._odds_cache.get_snapshot_for_update(event_id, "sportybet")
+                if snap and snap.snapshot_id:
+                    result = await db.execute(
+                        update(CompetitorMarketOdds)
+                        .where(
+                            CompetitorMarketOdds.snapshot_id == snap.snapshot_id,
+                            CompetitorMarketOdds.unavailable_at.is_(None),
+                        )
+                        .values(unavailable_at=timestamp)
+                    )
+                    unavailable_count += result.rowcount
+
+        # Check Bet9ja events
+        for event_id in cached_events["bet9ja"]:
+            sr_id = event_id_to_sr.get(event_id)
+            if sr_id and sr_id not in discovery.bet9ja_sr_ids:
+                # Bet9ja no longer has this event - mark markets unavailable
+                snap = self._odds_cache.get_snapshot_for_update(event_id, "bet9ja")
+                if snap and snap.snapshot_id:
+                    result = await db.execute(
+                        update(CompetitorMarketOdds)
+                        .where(
+                            CompetitorMarketOdds.snapshot_id == snap.snapshot_id,
+                            CompetitorMarketOdds.unavailable_at.is_(None),
+                        )
+                        .values(unavailable_at=timestamp)
+                    )
+                    unavailable_count += result.rowcount
+
+        if unavailable_count > 0:
+            await db.commit()
+            logger.info(
+                "reconciliation.unavailable_events",
+                markets_marked_unavailable=unavailable_count,
+            )
+
+        return unavailable_count
+
     def clear(self) -> None:
         """Clear all discovered events and the priority queue.
 
@@ -2942,7 +3049,14 @@ class EventCoordinator:
             events_failed += batch_failed
             total_snapshots += store_result["snapshots_created"]
 
-        # Phase 5: Cycle complete
+        # Phase 5: Reconciliation - mark events dropped from discovery as unavailable
+        reconciliation_count = await self._reconcile_unavailable_events(
+            discovery=discovery_result,
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
+            db=db,
+        )
+
+        # Phase 6: Cycle complete
         total_ms = int((time.perf_counter() - total_start) * 1000)
 
         yield {
@@ -2954,6 +3068,7 @@ class EventCoordinator:
             "total_snapshots": total_snapshots,
             "batch_count": batch_index,
             "total_timing_ms": total_ms,
+            "markets_reconciled": reconciliation_count,
         }
 
         # Clear for next cycle
