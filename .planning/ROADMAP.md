@@ -72,7 +72,7 @@ Plans:
 
 Plans:
 - [x] 93.1-01: Code Fixes (2 tasks) - Fix tournament lookup and API filtering — 2026-02-12
-- [ ] 93.1-02: Schema Migration (2 tasks) - Data cleanup and unique constraint
+- [x] 93.1-02: Schema Migration (2 tasks) - Data cleanup and unique constraint — 2026-02-12
 
 ### Phase 94: Coverage Page
 
