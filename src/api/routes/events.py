@@ -1063,13 +1063,29 @@ async def get_alerts_count(
     """Get count of events with availability issues.
 
     Returns the number of upcoming BetPawa events that have at least one
-    market with unavailable_at set (either BetPawa or competitor markets).
+    market with unavailable_at set in the LATEST snapshot (either BetPawa
+    or competitor markets).
     """
     now = datetime.now(timezone.utc).replace(tzinfo=None)
 
-    # Find event IDs with unavailable BetPawa markets
+    # Subquery to get latest BetPawa snapshot ID per event
+    latest_bp_snapshot_subq = (
+        select(
+            OddsSnapshot.event_id,
+            func.max(OddsSnapshot.id).label("max_id"),
+        )
+        .group_by(OddsSnapshot.event_id)
+        .subquery()
+    )
+
+    # Find event IDs with unavailable BetPawa markets in LATEST snapshot only
     bp_events_with_alerts = (
         select(OddsSnapshot.event_id)
+        .join(
+            latest_bp_snapshot_subq,
+            (OddsSnapshot.event_id == latest_bp_snapshot_subq.c.event_id)
+            & (OddsSnapshot.id == latest_bp_snapshot_subq.c.max_id),
+        )
         .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
         .join(Event, Event.id == OddsSnapshot.event_id)
         .where(
@@ -1079,12 +1095,27 @@ async def get_alerts_count(
         .distinct()
     )
 
-    # Find event IDs with unavailable competitor markets
+    # Subquery to get latest competitor snapshot ID per competitor_event
+    latest_comp_snapshot_subq = (
+        select(
+            CompetitorOddsSnapshot.competitor_event_id,
+            func.max(CompetitorOddsSnapshot.id).label("max_id"),
+        )
+        .group_by(CompetitorOddsSnapshot.competitor_event_id)
+        .subquery()
+    )
+
+    # Find event IDs with unavailable competitor markets in LATEST snapshot only
     comp_events_with_alerts = (
         select(CompetitorEvent.betpawa_event_id)
         .join(
             CompetitorOddsSnapshot,
             CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+        )
+        .join(
+            latest_comp_snapshot_subq,
+            (CompetitorOddsSnapshot.competitor_event_id == latest_comp_snapshot_subq.c.competitor_event_id)
+            & (CompetitorOddsSnapshot.id == latest_comp_snapshot_subq.c.max_id),
         )
         .join(
             CompetitorMarketOdds,
@@ -1424,9 +1455,24 @@ async def list_events(
 
     # ---- Alerts Events (when availability='alerts') ----
     if availability == "alerts":
-        # Find event IDs with unavailable BetPawa markets
+        # Subquery to get latest BetPawa snapshot ID per event
+        latest_bp_snapshot_subq = (
+            select(
+                OddsSnapshot.event_id,
+                func.max(OddsSnapshot.id).label("max_id"),
+            )
+            .group_by(OddsSnapshot.event_id)
+            .subquery()
+        )
+
+        # Find event IDs with unavailable BetPawa markets in LATEST snapshot only
         bp_events_with_alerts = (
             select(OddsSnapshot.event_id)
+            .join(
+                latest_bp_snapshot_subq,
+                (OddsSnapshot.event_id == latest_bp_snapshot_subq.c.event_id)
+                & (OddsSnapshot.id == latest_bp_snapshot_subq.c.max_id),
+            )
             .join(MarketOdds, MarketOdds.snapshot_id == OddsSnapshot.id)
             .join(Event, Event.id == OddsSnapshot.event_id)
             .where(
@@ -1436,12 +1482,27 @@ async def list_events(
             .distinct()
         )
 
-        # Find event IDs with unavailable competitor markets
+        # Subquery to get latest competitor snapshot ID per competitor_event
+        latest_comp_snapshot_subq = (
+            select(
+                CompetitorOddsSnapshot.competitor_event_id,
+                func.max(CompetitorOddsSnapshot.id).label("max_id"),
+            )
+            .group_by(CompetitorOddsSnapshot.competitor_event_id)
+            .subquery()
+        )
+
+        # Find event IDs with unavailable competitor markets in LATEST snapshot only
         comp_events_with_alerts = (
             select(CompetitorEvent.betpawa_event_id)
             .join(
                 CompetitorOddsSnapshot,
                 CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+            )
+            .join(
+                latest_comp_snapshot_subq,
+                (CompetitorOddsSnapshot.competitor_event_id == latest_comp_snapshot_subq.c.competitor_event_id)
+                & (CompetitorOddsSnapshot.id == latest_comp_snapshot_subq.c.max_id),
             )
             .join(
                 CompetitorMarketOdds,
