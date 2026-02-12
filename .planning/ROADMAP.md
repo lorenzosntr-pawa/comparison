@@ -50,6 +50,30 @@ Plans:
 - [x] 93-01-FIX3: Countries Endpoint Blocker Fix (1 task) — 2026-02-12
 - [x] 93-02: Column Resizing (2 tasks) — 2026-02-12
 
+### Phase 93.1: Tournament Data Integrity Fix (INSERTED - URGENT)
+
+**Goal**: Fix critical bug where tournaments with same name from different countries collide
+**Depends on**: Phase 93
+**Research**: Investigation complete (2026-02-12)
+**Plans**: TBD
+
+**Bug:** BUG-016 - Singapore Premier League shows events from England, Malta, etc.
+
+**Root Cause:**
+- No `UNIQUE(sport_id, name, country)` constraint in database
+- Tournament lookup uses name only, ignores country
+- API filtering matches by name only
+
+**Required Tasks:**
+1. Schema migration: Add composite unique constraint, make country NOT NULL
+2. Code fixes: Update tournament lookup/creation to include country
+3. API fixes: Update competitor tournament matching to use country
+4. Data cleanup: Split existing tournaments by country, re-link events
+
+Plans:
+- [ ] 93.1-01: Code Fixes (2 tasks) - Fix tournament lookup and API filtering
+- [ ] 93.1-02: Schema Migration (2 tasks) - Data cleanup and unique constraint
+
 ### Phase 94: Coverage Page
 
 **Goal**: Fix layout issues and add navigation shortcuts
