@@ -78,6 +78,15 @@ class CompetitorSnapshotWriteData:
 
 
 @dataclass(frozen=True)
+class UnavailableMarketUpdate:
+    """Track a market that became unavailable - needs UPDATE on existing row."""
+
+    snapshot_id: int
+    betpawa_market_id: str
+    unavailable_at: datetime
+
+
+@dataclass(frozen=True)
 class WriteBatch:
     """A complete batch of writes to process."""
 
@@ -87,6 +96,8 @@ class WriteBatch:
     unchanged_competitor_ids: tuple[int, ...]
     scrape_run_id: int | None
     batch_index: int
+    unavailable_betpawa: tuple[UnavailableMarketUpdate, ...] = ()
+    unavailable_competitor: tuple[UnavailableMarketUpdate, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +168,8 @@ class AsyncWriteQueue:
             changed_comp=len(batch.changed_competitor),
             unchanged_bp=len(batch.unchanged_betpawa_ids),
             unchanged_comp=len(batch.unchanged_competitor_ids),
+            unavailable_bp=len(batch.unavailable_betpawa),
+            unavailable_comp=len(batch.unavailable_competitor),
         )
 
     def stats(self) -> dict:

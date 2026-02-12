@@ -41,6 +41,7 @@ from src.storage.write_queue import (
     CompetitorSnapshotWriteData,
     MarketWriteData,
     SnapshotWriteData,
+    UnavailableMarketUpdate,
     WriteBatch,
 )
 
@@ -101,6 +102,8 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
     inserted_comp = 0
     updated_bp = 0
     updated_comp = 0
+    unavailable_bp_count = 0
+    unavailable_comp_count = 0
     now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     async with session_factory() as db:
@@ -176,7 +179,35 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
                 updated_comp = len(batch.unchanged_competitor_ids)
 
             # ----------------------------------------------------------
-            # 5. Commit
+            # 5. UPDATE unavailable BetPawa markets
+            # ----------------------------------------------------------
+            for umu in batch.unavailable_betpawa:
+                await db.execute(
+                    update(MarketOdds)
+                    .where(
+                        MarketOdds.snapshot_id == umu.snapshot_id,
+                        MarketOdds.betpawa_market_id == umu.betpawa_market_id,
+                    )
+                    .values(unavailable_at=umu.unavailable_at)
+                )
+                unavailable_bp_count += 1
+
+            # ----------------------------------------------------------
+            # 6. UPDATE unavailable competitor markets
+            # ----------------------------------------------------------
+            for umu in batch.unavailable_competitor:
+                await db.execute(
+                    update(CompetitorMarketOdds)
+                    .where(
+                        CompetitorMarketOdds.snapshot_id == umu.snapshot_id,
+                        CompetitorMarketOdds.betpawa_market_id == umu.betpawa_market_id,
+                    )
+                    .values(unavailable_at=umu.unavailable_at)
+                )
+                unavailable_comp_count += 1
+
+            # ----------------------------------------------------------
+            # 7. Commit
             # ----------------------------------------------------------
             await db.commit()
 
@@ -200,6 +231,8 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
         "inserted_comp": inserted_comp,
         "updated_bp": updated_bp,
         "updated_comp": updated_comp,
+        "unavailable_bp": unavailable_bp_count,
+        "unavailable_comp": unavailable_comp_count,
         "write_ms": round(elapsed_ms, 1),
     }
 
