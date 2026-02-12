@@ -7,7 +7,7 @@ Tournaments represent leagues or competitions within a sport.
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.base import Base
@@ -58,7 +58,7 @@ class Tournament(Base):
         id: Primary key.
         sport_id: FK to sports table.
         name: Display name (e.g., "English Premier League").
-        country: Country where tournament is based (nullable).
+        country: Country where tournament is based (NOT NULL, default "Unknown").
         sportradar_id: Cross-platform matching key (unique, nullable).
 
     Relationships:
@@ -67,14 +67,20 @@ class Tournament(Base):
 
     Constraints:
         - sportradar_id: unique (when not null)
+        - (sport_id, name, country): composite unique key
     """
 
     __tablename__ = "tournaments"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport_id", "name", "country", name="uq_tournaments_sport_name_country"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     sport_id: Mapped[int] = mapped_column(ForeignKey("sports.id"))
     name: Mapped[str] = mapped_column(String(255))
-    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    country: Mapped[str] = mapped_column(String(100), nullable=False, default="Unknown")
     sportradar_id: Mapped[str | None] = mapped_column(
         String(100), unique=True, nullable=True
     )
