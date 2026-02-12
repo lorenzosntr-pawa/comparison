@@ -1263,9 +1263,9 @@ async def list_events(
                 comp_query = comp_query.join(CompetitorEvent.tournament)
                 comp_count_query = comp_count_query.join(CompetitorEvent.tournament)
                 comp_tournament_joined = True
-            # Case-insensitive country matching
+            # Case-insensitive country matching (CompetitorTournament uses country_raw, not country)
             country_conditions = [
-                func.lower(CompetitorTournament.country) == country.lower()
+                func.lower(CompetitorTournament.country_raw) == country.lower()
                 for country in countries
             ]
             comp_query = comp_query.where(or_(*country_conditions))

@@ -19,12 +19,15 @@ The BetPawa `Tournament` model uses `country`, but `CompetitorTournament` uses a
 
 ### Fix Applied
 
-Changed 3 references in `list_countries` function:
+Changed 4 references total:
+
+**Commit 1:** `bb3a2e8` - `list_countries` function:
 - Line 922: `select(CompetitorTournament.country)` → `select(CompetitorTournament.country_raw)`
 - Line 928: `CompetitorTournament.country.isnot(None)` → `CompetitorTournament.country_raw.isnot(None)`
 - Line 930: `.order_by(CompetitorTournament.country)` → `.order_by(CompetitorTournament.country_raw)`
 
-**Commit:** `bb3a2e8`
+**Commit 2:** `b186643` - `list_events` function:
+- Line 1268: `CompetitorTournament.country` → `CompetitorTournament.country_raw` (in country filter for competitor events)
 
 ## Files Changed
 
