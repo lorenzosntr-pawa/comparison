@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Home, BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer } from 'lucide-react'
+import { BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -26,7 +26,6 @@ const navItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Historical Analysis', url: '/historical-analysis', icon: TrendingUp },
-  { title: 'Dashboard', url: '/dashboard', icon: Home },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
