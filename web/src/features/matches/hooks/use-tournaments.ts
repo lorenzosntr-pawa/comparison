@@ -46,12 +46,21 @@ export interface Tournament {
 }
 
 /**
+ * Parameters for filtering tournaments.
+ */
+export interface UseTournamentsParams {
+  /** Filter by platform availability: 'betpawa' or 'competitor' */
+  availability?: 'betpawa' | 'competitor'
+}
+
+/**
  * Fetches the list of available tournaments.
  *
  * @description Returns all tournaments that have events in the database.
  * Uses a 5-minute stale time since tournament lists rarely change.
  * Commonly used to populate filter dropdowns.
  *
+ * @param params - Optional filter parameters
  * @returns TanStack Query result with array of Tournament objects
  *
  * @example
@@ -67,10 +76,12 @@ export interface Tournament {
  * }, {})
  * ```
  */
-export function useTournaments() {
+export function useTournaments(params: UseTournamentsParams = {}) {
+  const { availability } = params
+
   return useQuery({
-    queryKey: ['tournaments'],
-    queryFn: () => api.getTournaments(),
+    queryKey: ['tournaments', { availability }],
+    queryFn: () => api.getTournaments({ availability }),
     staleTime: 5 * 60 * 1000, // 5 minutes - tournaments don't change often
     gcTime: 10 * 60 * 1000, // 10 minutes
   })

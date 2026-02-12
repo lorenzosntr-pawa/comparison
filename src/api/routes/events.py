@@ -904,19 +904,50 @@ async def list_tournaments(
     with_events_only: bool = Query(
         default=True, description="Only return tournaments that have events"
     ),
+    availability: Literal["betpawa", "competitor"] | None = Query(
+        default=None,
+        description="Filter tournaments by availability: betpawa (tournaments with BetPawa events) | competitor (tournaments with competitor-only events)",
+    ),
 ) -> list[TournamentSummary]:
     """List all tournaments for filter dropdowns.
 
     Returns tournaments sorted by name, optionally filtered to only
     those that have events in the database.
+
+    When availability='competitor', returns BetPawa tournaments that have
+    matching competitor-only events (matched by tournament name).
     """
-    if with_events_only:
-        # Only tournaments that have at least one event
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    if availability == "competitor":
+        # For competitor mode, find BetPawa tournaments that have competitor-only events
+        # (CompetitorEvent where betpawa_event_id IS NULL, matched by tournament name)
+        # First get competitor tournament names with upcoming competitor-only events
+        comp_tournament_names_query = (
+            select(func.lower(CompetitorTournament.name))
+            .distinct()
+            .join(CompetitorEvent, CompetitorTournament.id == CompetitorEvent.tournament_id)
+            .where(
+                CompetitorEvent.betpawa_event_id.is_(None),
+                CompetitorEvent.kickoff > now,
+            )
+        )
+
+        # Return BetPawa tournaments that match these names (case-insensitive)
+        query = (
+            select(Tournament)
+            .where(func.lower(Tournament.name).in_(comp_tournament_names_query))
+            .order_by(Tournament.name)
+        )
+    elif with_events_only:
+        # Only tournaments that have at least one upcoming BetPawa event
         query = (
             select(Tournament)
             .where(
                 Tournament.id.in_(
-                    select(Event.tournament_id).distinct()
+                    select(Event.tournament_id)
+                    .where(Event.kickoff > now)
+                    .distinct()
                 )
             )
             .order_by(Tournament.name)

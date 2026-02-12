@@ -271,14 +271,23 @@ export const api = {
   // ─────────────────────────────────────────────────────────────────────────────
 
   /**
-   * Fetches list of all tournaments for filter dropdowns.
+   * Fetches list of tournaments for filter dropdowns.
    *
+   * @param params - Optional filter parameters
+   * @param params.availability - Filter by platform availability
    * @returns Promise resolving to array of tournament objects with id, name, and country
    */
-  getTournaments: () =>
-    fetchJson<Array<{ id: number; name: string; country: string | null }>>(
-      '/events/tournaments'
-    ),
+  getTournaments: (params?: {
+    availability?: 'betpawa' | 'competitor'
+  }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.availability)
+      searchParams.set('availability', params.availability)
+    const query = searchParams.toString()
+    return fetchJson<Array<{ id: number; name: string; country: string | null }>>(
+      `/events/tournaments${query ? `?${query}` : ''}`
+    )
+  },
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Settings

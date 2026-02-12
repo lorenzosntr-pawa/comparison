@@ -93,7 +93,10 @@ interface MatchFiltersProps {
 }
 
 export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
-  const { data: tournaments, isPending: tournamentsLoading } = useTournaments()
+  // Fetch tournaments scoped to current availability mode
+  const { data: tournaments, isPending: tournamentsLoading } = useTournaments({
+    availability: filters.availability,
+  })
   const [leaguePopoverOpen, setLeaguePopoverOpen] = useState(false)
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false)
 
