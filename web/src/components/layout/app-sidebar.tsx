@@ -14,10 +14,10 @@ import {
 } from '@/components/ui/sidebar'
 
 const navItems = [
-  { title: 'Dashboard', url: '/', icon: Home },
-  { title: 'Odds Comparison', url: '/odds-comparison', icon: BarChart3 },
+  { title: 'Odds Comparison', url: '/', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Historical Analysis', url: '/historical-analysis', icon: TrendingUp },
+  { title: 'Dashboard', url: '/dashboard', icon: Home },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
