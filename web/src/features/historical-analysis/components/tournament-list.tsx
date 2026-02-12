@@ -29,6 +29,7 @@ interface TournamentListProps {
   tournaments: TournamentWithCount[]
   isLoading: boolean
   selectedBookmakers: string[]
+  searchQuery: string
 }
 
 /**
@@ -254,7 +255,14 @@ export function TournamentList({
   tournaments,
   isLoading,
   selectedBookmakers,
+  searchQuery,
 }: TournamentListProps) {
+  // Filter tournaments by search query (case-insensitive)
+  const filteredTournaments = tournaments.filter((tournament) => {
+    if (!searchQuery) return true
+    return tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -265,12 +273,14 @@ export function TournamentList({
     )
   }
 
-  if (tournaments.length === 0) {
+  if (filteredTournaments.length === 0) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
           <p className="text-muted-foreground">
-            No tournaments with data in selected period
+            {searchQuery
+              ? `No tournaments matching "${searchQuery}"`
+              : 'No tournaments with data in selected period'}
           </p>
         </CardContent>
       </Card>
@@ -279,7 +289,7 @@ export function TournamentList({
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {tournaments.map((tournament) => (
+      {filteredTournaments.map((tournament) => (
         <TournamentCard
           key={tournament.id}
           tournament={tournament}

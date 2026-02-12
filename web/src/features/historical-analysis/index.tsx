@@ -22,6 +22,9 @@ export function HistoricalAnalysisPage() {
     'bet9ja',
   ])
 
+  // Tournament search filter
+  const [searchQuery, setSearchQuery] = useState('')
+
   const { data: tournaments, isPending, error } = useTournaments(dateRange)
 
   return (
@@ -33,6 +36,8 @@ export function HistoricalAnalysisPage() {
         onDateRangeChange={setDateRange}
         selectedBookmakers={selectedBookmakers}
         onBookmakersChange={setSelectedBookmakers}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       {error && (
@@ -45,6 +50,7 @@ export function HistoricalAnalysisPage() {
         tournaments={tournaments ?? []}
         isLoading={isPending}
         selectedBookmakers={selectedBookmakers}
+        searchQuery={searchQuery}
       />
     </div>
   )

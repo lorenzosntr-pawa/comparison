@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Calendar } from 'lucide-react'
+import { Calendar, Search } from 'lucide-react'
 import { format, subDays } from 'date-fns'
 import { BookmakerFilter } from './bookmaker-filter'
 
@@ -14,6 +14,8 @@ interface FilterBarProps {
   onDateRangeChange: (range: DateRange) => void
   selectedBookmakers: string[]
   onBookmakersChange: (selected: string[]) => void
+  searchQuery: string
+  onSearchChange: (query: string) => void
 }
 
 function formatDateForInput(date: Date | undefined): string {
@@ -31,6 +33,8 @@ export function FilterBar({
   onDateRangeChange,
   selectedBookmakers,
   onBookmakersChange,
+  searchQuery,
+  onSearchChange,
 }: FilterBarProps) {
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -84,6 +88,23 @@ export function FilterBar({
           >
             Last 90 days
           </Button>
+        </div>
+      </div>
+
+      {/* Tournament search */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">
+          Search
+        </label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="text"
+            placeholder="Search tournaments..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-[200px] pl-10"
+          />
         </div>
       </div>
 
