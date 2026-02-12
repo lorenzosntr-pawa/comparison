@@ -345,3 +345,62 @@ class OddsCache:
             if by_src and bookmaker_slug in by_src:
                 return by_src[bookmaker_slug]
         return None
+
+    def mark_snapshot_unavailable(
+        self,
+        event_id: int,
+        bookmaker_slug: str,
+        timestamp: datetime,
+    ) -> int:
+        """Mark all markets in a snapshot as unavailable.
+
+        Updates the in-memory cache to reflect unavailable status immediately,
+        so the API returns up-to-date data without waiting for the next scrape.
+
+        Args:
+            event_id: The betpawa event ID.
+            bookmaker_slug: "betpawa", "sportybet", or "bet9ja".
+            timestamp: When the markets became unavailable.
+
+        Returns:
+            Count of markets marked unavailable.
+        """
+        from dataclasses import replace
+
+        count = 0
+
+        if bookmaker_slug == "betpawa":
+            by_bm = self._betpawa_snapshots.get(event_id)
+            if by_bm:
+                for bm_id, snap in by_bm.items():
+                    # Create updated markets with unavailable_at set
+                    updated_markets = tuple(
+                        replace(m, unavailable_at=timestamp)
+                        if m.unavailable_at is None
+                        else m
+                        for m in snap.markets
+                    )
+                    count += sum(
+                        1 for m in updated_markets if m.unavailable_at == timestamp
+                    )
+                    # Replace the snapshot with updated markets
+                    by_bm[bm_id] = replace(snap, markets=updated_markets)
+        else:
+            by_src = self._competitor_snapshots.get(event_id)
+            if by_src and bookmaker_slug in by_src:
+                snap = by_src[bookmaker_slug]
+                updated_markets = tuple(
+                    replace(m, unavailable_at=timestamp)
+                    if m.unavailable_at is None
+                    else m
+                    for m in snap.markets
+                )
+                count = sum(
+                    1 for m in updated_markets if m.unavailable_at == timestamp
+                )
+                by_src[bookmaker_slug] = replace(snap, markets=updated_markets)
+
+        if count > 0:
+            self._notify_update([event_id], bookmaker_slug)
+
+        return count

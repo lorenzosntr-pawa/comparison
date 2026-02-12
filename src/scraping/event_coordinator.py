@@ -945,6 +945,10 @@ class EventCoordinator:
                         .values(unavailable_at=timestamp)
                     )
                     unavailable_count += result.rowcount
+                    # Update cache for immediate API effect
+                    self._odds_cache.mark_snapshot_unavailable(
+                        event_id, "betpawa", timestamp
+                    )
 
         # Check SportyBet events
         for event_id in cached_events["sportybet"]:
@@ -962,6 +966,10 @@ class EventCoordinator:
                         .values(unavailable_at=timestamp)
                     )
                     unavailable_count += result.rowcount
+                    # Update cache for immediate API effect
+                    self._odds_cache.mark_snapshot_unavailable(
+                        event_id, "sportybet", timestamp
+                    )
 
         # Check Bet9ja events
         for event_id in cached_events["bet9ja"]:
@@ -979,6 +987,10 @@ class EventCoordinator:
                         .values(unavailable_at=timestamp)
                     )
                     unavailable_count += result.rowcount
+                    # Update cache for immediate API effect
+                    self._odds_cache.mark_snapshot_unavailable(
+                        event_id, "bet9ja", timestamp
+                    )
 
         if unavailable_count > 0:
             await db.commit()
