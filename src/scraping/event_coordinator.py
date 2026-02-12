@@ -1466,7 +1466,7 @@ class EventCoordinator:
             eid_to_sr: dict[int, str] = {v: k for k, v in event_id_map.items()}
 
             # Detect and log availability changes before cache update
-            availability_stats = self._detect_and_log_availability_changes(
+            unavailable_bp, unavailable_comp, availability_stats = self._detect_and_log_availability_changes(
                 bp_write_data=bp_write_data,
                 comp_write_data=comp_write_data,
                 comp_meta=comp_meta,
@@ -1580,6 +1580,8 @@ class EventCoordinator:
                 unchanged_competitor_ids=tuple(unchanged_comp_ids),
                 scrape_run_id=scrape_run_id,
                 batch_index=0,  # Will be set by caller if needed
+                unavailable_betpawa=tuple(unavailable_bp),
+                unavailable_competitor=tuple(unavailable_comp),
             )
             await self._write_queue.enqueue(write_batch)
 
@@ -1673,13 +1675,46 @@ class EventCoordinator:
                 }
 
                 # Detect and log availability changes before cache update (sync path)
-                self._detect_and_log_availability_changes_sync(
+                unavailable_bp, unavailable_comp, _avail_stats = self._detect_and_log_availability_changes_sync(
                     betpawa_snapshots=betpawa_snapshots,
                     competitor_snapshots=competitor_snapshots,
                     comp_eid_to_sr=comp_eid_to_sr,
                     event_id_map=event_id_map,
                     timestamp=now_naive,
                 )
+
+                # UPDATE unavailable markets in DB (sync path)
+                if unavailable_bp or unavailable_comp:
+                    from sqlalchemy import update
+                    from src.db.models.odds import MarketOdds
+                    from src.db.models.competitor import CompetitorMarketOdds
+
+                    for umu in unavailable_bp:
+                        await db.execute(
+                            update(MarketOdds)
+                            .where(
+                                MarketOdds.snapshot_id == umu.snapshot_id,
+                                MarketOdds.betpawa_market_id == umu.betpawa_market_id,
+                            )
+                            .values(unavailable_at=umu.unavailable_at)
+                        )
+
+                    for umu in unavailable_comp:
+                        await db.execute(
+                            update(CompetitorMarketOdds)
+                            .where(
+                                CompetitorMarketOdds.snapshot_id == umu.snapshot_id,
+                                CompetitorMarketOdds.betpawa_market_id == umu.betpawa_market_id,
+                            )
+                            .values(unavailable_at=umu.unavailable_at)
+                        )
+
+                    await db.commit()
+                    logger.debug(
+                        "availability_updates_committed_sync",
+                        unavailable_bp=len(unavailable_bp),
+                        unavailable_comp=len(unavailable_comp),
+                    )
 
                 from src.caching.warmup import snapshot_to_cached_from_models
 
@@ -2329,12 +2364,11 @@ class EventCoordinator:
         comp_meta: list[tuple[str, str, int]],
         event_id_map: dict[str, int],
         timestamp: datetime,
-    ) -> dict:
+    ) -> tuple[list, list, dict]:
         """Detect and log availability changes before cache update (async path).
 
         Compares previous cache state to new scrape results for each event/bookmaker
-        combination. Logs changes for observability. Phase 89 will handle persisting
-        availability to DB during snapshot creation.
+        combination. Returns UnavailableMarketUpdate objects for database persistence.
 
         Args:
             bp_write_data: List of SnapshotWriteData for BetPawa snapshots.
@@ -2344,18 +2378,21 @@ class EventCoordinator:
             timestamp: Current timestamp for unavailable_at.
 
         Returns:
-            Dict with availability change statistics.
+            Tuple of (unavailable_bp_updates, unavailable_comp_updates, stats_dict).
         """
         from src.caching.availability_detection import (
             detect_availability_changes,
             get_market_key,
         )
+        from src.storage.write_queue import UnavailableMarketUpdate
 
         if self._odds_cache is None:
-            return {"total_became_unavailable": 0, "total_became_available": 0}
+            return [], [], {"total_became_unavailable": 0, "total_became_available": 0}
 
         total_became_unavailable = 0
         total_became_available = 0
+        unavailable_bp_updates: list[UnavailableMarketUpdate] = []
+        unavailable_comp_updates: list[UnavailableMarketUpdate] = []
 
         # Check BetPawa snapshots
         for swd in bp_write_data:
@@ -2387,6 +2424,14 @@ class EventCoordinator:
                 new_market_data=new_market_data,
                 timestamp=timestamp,
             )
+
+            # Build UnavailableMarketUpdate for each market that became unavailable
+            for market in became_unavailable:
+                unavailable_bp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=market.unavailable_at,
+                ))
 
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
@@ -2427,6 +2472,14 @@ class EventCoordinator:
                 timestamp=timestamp,
             )
 
+            # Build UnavailableMarketUpdate for each market that became unavailable
+            for market in became_unavailable:
+                unavailable_comp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=market.unavailable_at,
+                ))
+
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
 
@@ -2437,10 +2490,11 @@ class EventCoordinator:
                 total_became_available=total_became_available,
             )
 
-        return {
+        stats = {
             "total_became_unavailable": total_became_unavailable,
             "total_became_available": total_became_available,
         }
+        return unavailable_bp_updates, unavailable_comp_updates, stats
 
     def _detect_and_log_availability_changes_sync(
         self,
@@ -2449,7 +2503,7 @@ class EventCoordinator:
         comp_eid_to_sr: dict[int, tuple[str, str]],
         event_id_map: dict[str, int],
         timestamp: datetime,
-    ) -> dict:
+    ) -> tuple[list, list, dict]:
         """Detect and log availability changes before cache update (sync path).
 
         Similar to _detect_and_log_availability_changes but works with ORM
@@ -2463,18 +2517,21 @@ class EventCoordinator:
             timestamp: Current timestamp for unavailable_at.
 
         Returns:
-            Dict with availability change statistics.
+            Tuple of (unavailable_bp_updates, unavailable_comp_updates, stats_dict).
         """
         from src.caching.availability_detection import (
             detect_availability_changes,
             get_market_key,
         )
+        from src.storage.write_queue import UnavailableMarketUpdate
 
         if self._odds_cache is None:
-            return {"total_became_unavailable": 0, "total_became_available": 0}
+            return [], [], {"total_became_unavailable": 0, "total_became_available": 0}
 
         total_became_unavailable = 0
         total_became_available = 0
+        unavailable_bp_updates: list[UnavailableMarketUpdate] = []
+        unavailable_comp_updates: list[UnavailableMarketUpdate] = []
 
         # Check BetPawa snapshots
         for snapshot, markets in betpawa_snapshots:
@@ -2506,6 +2563,14 @@ class EventCoordinator:
                 new_market_data=new_market_data,
                 timestamp=timestamp,
             )
+
+            # Build UnavailableMarketUpdate for each market that became unavailable
+            for market in became_unavailable:
+                unavailable_bp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=market.unavailable_at,
+                ))
 
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
@@ -2550,6 +2615,14 @@ class EventCoordinator:
                 timestamp=timestamp,
             )
 
+            # Build UnavailableMarketUpdate for each market that became unavailable
+            for market in became_unavailable:
+                unavailable_comp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=market.unavailable_at,
+                ))
+
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
 
@@ -2560,10 +2633,11 @@ class EventCoordinator:
                 total_became_available=total_became_available,
             )
 
-        return {
+        stats = {
             "total_became_unavailable": total_became_unavailable,
             "total_became_available": total_became_available,
         }
+        return unavailable_bp_updates, unavailable_comp_updates, stats
 
     def _parse_betpawa_markets(self, raw_data: dict) -> list[MarketOdds]:
         """Parse BetPawa raw response into MarketOdds records.
