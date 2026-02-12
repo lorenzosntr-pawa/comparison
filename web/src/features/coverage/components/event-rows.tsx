@@ -1,4 +1,5 @@
-import { Check, X } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { Check, X, ExternalLink } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import type { PalimpsestEvent } from '@/types/api'
@@ -67,6 +68,8 @@ function PlatformIndicator({ hasPlatform }: { hasPlatform: boolean }) {
 }
 
 export function EventRows({ events, isExpanded }: EventRowsProps) {
+  const navigate = useNavigate()
+
   if (!isExpanded) {
     return null
   }
@@ -77,9 +80,10 @@ export function EventRows({ events, isExpanded }: EventRowsProps) {
         <TableRow
           key={event.id}
           className={cn(
-            'bg-muted/20 hover:bg-muted/40',
+            'bg-muted/20 hover:bg-muted/40 cursor-pointer',
             getRowClass(event.availability)
           )}
+          onClick={() => navigate(`/odds-comparison/${event.id}`)}
         >
           <TableCell className="pl-10">
             <div className="text-sm">
@@ -96,6 +100,9 @@ export function EventRows({ events, isExpanded }: EventRowsProps) {
               <PlatformIndicator hasPlatform={event.platforms.includes(platform)} />
             </TableCell>
           ))}
+          <TableCell className="text-right pr-4">
+            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+          </TableCell>
           <TableCell />
         </TableRow>
       ))}

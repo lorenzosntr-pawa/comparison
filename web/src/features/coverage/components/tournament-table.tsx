@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { ChevronRight, ChevronDown, ChevronLeft, Check, X } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { ChevronRight, ChevronDown, ChevronLeft, Check, X, BarChart2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -54,6 +55,7 @@ function PlatformCell({ count }: { count: number }) {
 }
 
 export function TournamentTable({ tournaments, isLoading }: TournamentTableProps) {
+  const navigate = useNavigate()
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -94,6 +96,7 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
                 </TableHead>
               ))}
               <TableHead className="text-center">Total</TableHead>
+              <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -110,6 +113,7 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
                 <TableCell className="text-center">
                   <Skeleton className="h-5 w-8 mx-auto" />
                 </TableCell>
+                <TableCell />
               </TableRow>
             ))}
           </TableBody>
@@ -138,6 +142,7 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
               </TableHead>
             ))}
             <TableHead className="text-center">Total</TableHead>
+            <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -179,6 +184,20 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
                   })}
                   <TableCell className="text-center font-medium">
                     {totalEvents}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/historical-analysis/${tournament.tournament_id}`)
+                      }}
+                      title="View historical analysis"
+                    >
+                      <BarChart2 className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
                 <EventRows
