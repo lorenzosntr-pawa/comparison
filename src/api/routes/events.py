@@ -1151,8 +1151,29 @@ async def list_events(
                 CompetitorTournament.sport_id == sport_id
             )
 
-        # Tournament filter for competitor events via sportradar_id matching
-        # (more complex - skip for now as competitor tournaments have different IDs)
+        # Tournament filter for competitor events via tournament name matching
+        if tournament_ids:
+            # Get tournament names from BetPawa Tournament table
+            tournament_names_query = select(Tournament.name).where(
+                Tournament.id.in_(tournament_ids)
+            )
+            tournament_names_result = await db.execute(tournament_names_query)
+            tournament_names = [row[0] for row in tournament_names_result.all()]
+
+            if tournament_names:
+                # Filter CompetitorEvents where tournament name matches (case-insensitive)
+                # Need to join tournament if not already joined
+                if sport_id is None:
+                    comp_query = comp_query.join(CompetitorEvent.tournament)
+                    comp_count_query = comp_count_query.join(CompetitorEvent.tournament)
+
+                # Use func.lower for case-insensitive matching
+                name_conditions = [
+                    func.lower(CompetitorTournament.name) == name.lower()
+                    for name in tournament_names
+                ]
+                comp_query = comp_query.where(or_(*name_conditions))
+                comp_count_query = comp_count_query.where(or_(*name_conditions))
 
         # Get all competitor-only events (we need to dedupe by SR ID and apply metadata priority)
         comp_result = await db.execute(comp_query)
