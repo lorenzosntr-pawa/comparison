@@ -85,7 +85,7 @@ export interface MatchFiltersState {
   kickoffTo: string
   minBookmakers: number
   sortBy: 'kickoff' | 'tournament'
-  availability: 'betpawa' | 'competitor'
+  availability: 'betpawa' | 'competitor' | 'alerts'
 }
 
 interface MatchFiltersProps {
@@ -94,13 +94,16 @@ interface MatchFiltersProps {
 }
 
 export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
+  // For alerts mode, use 'betpawa' for countries/tournaments since alerts are BetPawa events
+  const countryTournamentAvailability = filters.availability === 'alerts' ? 'betpawa' : filters.availability
+
   // Fetch countries scoped to current availability mode
   const { data: countries = [], isPending: countriesLoading } = useCountries({
-    availability: filters.availability,
+    availability: countryTournamentAvailability,
   })
   // Fetch tournaments scoped to current availability mode
   const { data: tournaments, isPending: tournamentsLoading } = useTournaments({
-    availability: filters.availability,
+    availability: countryTournamentAvailability,
   })
   const [leaguePopoverOpen, setLeaguePopoverOpen] = useState(false)
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false)

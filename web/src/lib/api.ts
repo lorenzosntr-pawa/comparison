@@ -220,7 +220,7 @@ export const api = {
     kickoff_from?: string
     kickoff_to?: string
     search?: string
-    availability?: 'betpawa' | 'competitor'
+    availability?: 'betpawa' | 'competitor' | 'alerts'
     countries?: string[]
     include_started?: boolean
   }) => {
@@ -265,6 +265,13 @@ export const api = {
    */
   getEventDetail: (id: number) =>
     fetchJson<EventDetailResponse>(`/events/${id}`),
+
+  /**
+   * Fetches the count of events with availability alerts.
+   *
+   * @returns Promise resolving to object with count of events with unavailable markets
+   */
+  getAlertsCount: () => fetchJson<{ count: number }>('/events/alerts/count'),
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Tournaments

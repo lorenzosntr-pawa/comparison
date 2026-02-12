@@ -56,8 +56,8 @@ export interface UseMatchesParams {
   kickoffTo?: string
   /** Free-text search (matches team names, tournament) */
   search?: string
-  /** Filter by platform availability: 'betpawa' or 'competitor' */
-  availability?: 'betpawa' | 'competitor'
+  /** Filter by platform availability: 'betpawa', 'competitor', or 'alerts' */
+  availability?: 'betpawa' | 'competitor' | 'alerts'
 }
 
 /**
@@ -106,6 +106,25 @@ export function useMatches(params: UseMatchesParams = {}) {
       }),
     staleTime: 30000, // 30 seconds
     gcTime: 60000, // 60 seconds (formerly cacheTime)
+    refetchInterval: 60000, // Poll every 60 seconds
+  })
+}
+
+/**
+ * Fetches the count of events with availability alerts.
+ *
+ * @description Returns the number of events that have at least one market
+ * with unavailable_at set (indicating the market was previously available
+ * but is now unavailable).
+ *
+ * @returns TanStack Query result with count of events with alerts
+ */
+export function useAlertsCount() {
+  return useQuery({
+    queryKey: ['alertsCount'],
+    queryFn: () => api.getAlertsCount(),
+    staleTime: 30000, // 30 seconds
+    gcTime: 60000, // 60 seconds
     refetchInterval: 60000, // Poll every 60 seconds
   })
 }

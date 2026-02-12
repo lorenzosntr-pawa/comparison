@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid, SummarySection } from './components'
 import type { MatchFiltersState } from './components'
-import { useMatches, useColumnSettings, useColumnWidths, useMatchDetail } from './hooks'
+import { useMatches, useColumnSettings, useColumnWidths, useMatchDetail, useAlertsCount } from './hooks'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_BETPAWA_FILTERS: MatchFiltersState = {
@@ -37,6 +37,17 @@ const DEFAULT_COMPETITOR_FILTERS: MatchFiltersState = {
   availability: 'competitor',
 }
 
+const DEFAULT_ALERTS_FILTERS: MatchFiltersState = {
+  search: '',
+  countryFilter: [],
+  tournamentIds: [],
+  kickoffFrom: '',
+  kickoffTo: '',
+  minBookmakers: 2,
+  sortBy: 'kickoff',
+  availability: 'alerts',
+}
+
 export function MatchList() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
@@ -44,11 +55,23 @@ export function MatchList() {
   // Per-mode filter state - each mode has independent filters
   const [betpawaFilters, setBetpawaFilters] = useState<MatchFiltersState>(DEFAULT_BETPAWA_FILTERS)
   const [competitorFilters, setCompetitorFilters] = useState<MatchFiltersState>(DEFAULT_COMPETITOR_FILTERS)
-  const [currentMode, setCurrentMode] = useState<'betpawa' | 'competitor'>('betpawa')
+  const [alertsFilters, setAlertsFilters] = useState<MatchFiltersState>(DEFAULT_ALERTS_FILTERS)
+  const [currentMode, setCurrentMode] = useState<'betpawa' | 'competitor' | 'alerts'>('betpawa')
 
   // Get current filters based on mode
-  const filters = currentMode === 'betpawa' ? betpawaFilters : competitorFilters
-  const setFilters = currentMode === 'betpawa' ? setBetpawaFilters : setCompetitorFilters
+  const filters = currentMode === 'betpawa'
+    ? betpawaFilters
+    : currentMode === 'competitor'
+      ? competitorFilters
+      : alertsFilters
+  const setFilters = currentMode === 'betpawa'
+    ? setBetpawaFilters
+    : currentMode === 'competitor'
+      ? setCompetitorFilters
+      : setAlertsFilters
+
+  // Fetch alerts count for badge
+  const { data: alertsCountData } = useAlertsCount()
 
   // Column visibility settings (persisted to localStorage)
   const {
@@ -102,7 +125,7 @@ export function MatchList() {
   }, [currentMode, setFilters])
 
   // Handle mode switch via toggle buttons
-  const handleModeSwitch = useCallback((mode: 'betpawa' | 'competitor') => {
+  const handleModeSwitch = useCallback((mode: 'betpawa' | 'competitor' | 'alerts') => {
     if (mode !== currentMode) {
       setCurrentMode(mode)
       setPage(1)
@@ -160,6 +183,19 @@ export function MatchList() {
             >
               Competitors Only
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-7 px-3 text-xs font-medium',
+                currentMode === 'alerts' &&
+                  'bg-background text-foreground shadow-sm'
+              )}
+              onClick={() => handleModeSwitch('alerts')}
+            >
+              Alerts{alertsCountData?.count ? ` (${alertsCountData.count})` : ''}
+            </Button>
           </div>
           <ColumnSettings
             visibleColumns={visibleColumns}
@@ -184,7 +220,7 @@ export function MatchList() {
         events={sortedEvents}
         isLoading={isPending}
         visibleColumns={visibleColumns}
-        excludeBetpawa={filters.availability === 'competitor'}
+        excludeBetpawa={currentMode === 'competitor'}
         columnWidths={columnWidths}
         onColumnWidthChange={setColumnWidth}
       />
