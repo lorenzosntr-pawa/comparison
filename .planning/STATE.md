@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 ## Current Position
 
-Phase: 99 of 99 (Availability Tracking Fix)
-Plan: 1 of 1 complete + 2 FIX plans
-Status: Milestone complete (FIX2 plan executed)
-Last activity: 2026-02-12 — Completed 99-01-FIX2 (Odds Comparison UI fixes)
+Phase: 99.1 of 99.1 (Availability Filters)
+Plan: Not started
+Status: Phase inserted, awaiting discussion/planning
+Last activity: 2026-02-12 — Inserted Phase 99.1 for availability filters
 
-Progress: ██████████ 100%
+Progress: ██████████ 99%
 
 ## Milestones
 
@@ -384,10 +384,11 @@ Progress: ██████████ 100%
 - Milestone v2.7 created: Availability Tracking Bugfix, 1 phase (Phase 99)
 - Phase 99 FIX plan executed: UAT-001 (UnboundLocalError) and UAT-002 (stale odds) fixed
 - Phase 99 FIX2 plan executed: UAT-003 (Odds Comparison styling) and UAT-004 (margin display) fixed
+- Phase 99.1 inserted: Availability Filters - add filters to show events with unavailable bookmakers/markets
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 99-01-FIX2 (Odds Comparison UI fixes)
+Stopped at: Inserted Phase 99.1 (Availability Filters)
 Resume file: None
-Next action: /gsd:verify-work 99-01-FIX2 or /gsd:complete-milestone
+Next action: /gsd:discuss-phase 99.1 or /gsd:research-phase 99.1
