@@ -71,6 +71,7 @@ from src.scraping.schemas.coordinator import (
 )
 
 if TYPE_CHECKING:
+    from src.api.websocket.manager import ConnectionManager
     from src.caching.odds_cache import CachedMarket, OddsCache
     from src.db.models.settings import Settings
     from src.scraping.clients.bet9ja import Bet9jaClient
@@ -119,6 +120,7 @@ class EventCoordinator:
         odds_cache: OddsCache | None = None,
         write_queue: AsyncWriteQueue | None = None,
         max_concurrent_events: int = DEFAULT_MAX_CONCURRENT_EVENTS,
+        ws_manager: ConnectionManager | None = None,
     ) -> None:
         """Initialize the EventCoordinator.
 
@@ -136,6 +138,7 @@ class EventCoordinator:
                 When None, falls back to synchronous flush+commit.
             max_concurrent_events: Max events scraped in parallel per batch (default 10).
                 With 3 platforms each, 10 events means up to 30 concurrent HTTP requests.
+            ws_manager: Optional WebSocket connection manager for unmapped market alerts.
         """
         self._clients: dict[str, BetPawaClient | SportyBetClient | Bet9jaClient] = {
             "betpawa": betpawa_client,
@@ -148,6 +151,7 @@ class EventCoordinator:
         self._odds_cache: OddsCache | None = odds_cache
         self._write_queue: AsyncWriteQueue | None = write_queue
         self._max_concurrent_events = max_concurrent_events
+        self._ws_manager: ConnectionManager | None = ws_manager
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
         self._last_discovery_timings: dict[str, int] = {}
@@ -162,6 +166,7 @@ class EventCoordinator:
         settings: Settings,
         odds_cache: OddsCache | None = None,
         write_queue: AsyncWriteQueue | None = None,
+        ws_manager: ConnectionManager | None = None,
     ) -> EventCoordinator:
         """Create EventCoordinator with tuning parameters from Settings model.
 
@@ -172,6 +177,7 @@ class EventCoordinator:
             settings: Settings model with tuning parameters.
             odds_cache: Optional in-memory OddsCache to populate after storage.
             write_queue: Optional AsyncWriteQueue for background DB writes.
+            ws_manager: Optional WebSocket connection manager for unmapped market alerts.
 
         Returns:
             Configured EventCoordinator instance.
@@ -192,6 +198,7 @@ class EventCoordinator:
             max_concurrent_events=getattr(
                 settings, "max_concurrent_events", DEFAULT_MAX_CONCURRENT_EVENTS
             ),
+            ws_manager=ws_manager,
         )
 
     # =========================================================================
@@ -3082,6 +3089,23 @@ class EventCoordinator:
         unmapped_count = await unmapped_logger.flush(db)
         if unmapped_count > 0:
             logger.info("unmapped_markets.discovered", count=unmapped_count)
+
+            # Broadcast WebSocket alert for new unmapped markets
+            new_markets = unmapped_logger.get_new_markets()
+            if new_markets and self._ws_manager:
+                from src.api.websocket.messages import build_unmapped_alert
+
+                alert = build_unmapped_alert([
+                    {
+                        "source": m.source,
+                        "externalMarketId": m.external_market_id,
+                        "marketName": m.market_name,
+                    }
+                    for m in new_markets
+                ])
+                await self._ws_manager.broadcast(alert, "unmapped_alerts")
+                logger.info("unmapped_markets.alert_sent", count=len(new_markets))
+            unmapped_logger.clear_new_markets()
 
         # Phase 6: Cycle complete
         total_ms = int((time.perf_counter() - total_start) * 1000)

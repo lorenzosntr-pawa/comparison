@@ -110,3 +110,24 @@ def error_message(code: str, detail: str) -> dict:
         Typed message dict with type "error".
     """
     return _envelope("error", {"code": code, "detail": detail})
+
+
+def build_unmapped_alert(markets: list[dict]) -> dict:
+    """Build WebSocket message for new unmapped markets.
+
+    Sent when new unmapped markets are discovered during scraping.
+    Allows real-time notification to users monitoring mapping coverage.
+
+    Args:
+        markets: List of dicts with source, externalMarketId, marketName.
+
+    Returns:
+        Typed message dict with type "unmapped_alert".
+    """
+    return _envelope(
+        "unmapped_alert",
+        {
+            "count": len(markets),
+            "markets": markets,
+        },
+    )

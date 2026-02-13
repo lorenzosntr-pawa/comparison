@@ -146,7 +146,7 @@ async def scrape_all_platforms() -> None:
                 f"bet9ja new={discovery_results['bet9ja']['new']}"
             )
 
-            # Create EventCoordinator from settings (with optional cache and write queue)
+            # Create EventCoordinator from settings (with optional cache, write queue, ws_manager)
             coordinator = EventCoordinator.from_settings(
                 betpawa_client=betpawa_client,
                 sportybet_client=sportybet_client,
@@ -154,6 +154,7 @@ async def scrape_all_platforms() -> None:
                 settings=settings,
                 odds_cache=getattr(_app_state, "odds_cache", None),
                 write_queue=getattr(_app_state, "write_queue", None),
+                ws_manager=getattr(_app_state, "ws_manager", None),
             )
 
             # Execute scrape with progress streaming

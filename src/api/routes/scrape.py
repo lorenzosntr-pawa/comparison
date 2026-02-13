@@ -110,6 +110,7 @@ async def trigger_scrape(
         settings=settings,
         odds_cache=getattr(request.app.state, "odds_cache", None),
         write_queue=getattr(request.app.state, "write_queue", None),
+        ws_manager=getattr(request.app.state, "ws_manager", None),
     )
 
     # Run cycle and collect results
@@ -494,6 +495,7 @@ async def retry_scrape_run(
         settings=settings,
         odds_cache=getattr(request.app.state, "odds_cache", None),
         write_queue=getattr(request.app.state, "write_queue", None),
+        ws_manager=getattr(request.app.state, "ws_manager", None),
     )
 
     # Run full cycle (event-centric covers all platforms)

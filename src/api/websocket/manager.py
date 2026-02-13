@@ -12,7 +12,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 log = structlog.get_logger("src.api.websocket.manager")
 
 # Predefined topics (extensible — any string works as a topic)
-TOPICS = {"scrape_progress", "odds_updates"}
+TOPICS = {"scrape_progress", "odds_updates", "unmapped_alerts"}
 
 
 class ConnectionManager:
