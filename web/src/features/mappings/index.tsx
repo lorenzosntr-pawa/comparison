@@ -1,4 +1,5 @@
 import { useMappingStats } from './hooks'
+import { MappingStatsCards } from './components'
 
 export function MappingDashboard() {
   const { data: stats, isPending, error } = useMappingStats()
@@ -23,10 +24,8 @@ export function MappingDashboard() {
         )}
       </div>
 
-      {/* Stats Cards - placeholder until Task 2 */}
-      <div className="text-muted-foreground">
-        {isPending ? 'Loading stats...' : `${stats?.totalMappings ?? 0} mappings loaded`}
-      </div>
+      {/* Stats Cards */}
+      <MappingStatsCards stats={stats} isLoading={isPending} />
     </div>
   )
 }

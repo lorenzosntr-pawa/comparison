@@ -1,2 +1,1 @@
-// Components barrel export
-// Stats cards will be added in Task 2
+export { MappingStatsCards } from './stats-cards'
