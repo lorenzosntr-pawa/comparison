@@ -59,10 +59,11 @@ Plans:
 **Goal**: Log unmapped markets during scraping, WebSocket alerts for new unmapped markets, on-demand analysis endpoint, historical unmapped market queries
 **Depends on**: Phase 101
 **Research**: Unlikely (existing WebSocket infra)
-**Plans**: TBD
+**Plans**: 0/2
 
 Plans:
-- [ ] 102-01: TBD
+- [ ] 102-01: UnmappedLogger service + scraping integration
+- [ ] 102-02: API endpoints + WebSocket alerts
 
 #### Phase 103: Mapping Dashboard
 
