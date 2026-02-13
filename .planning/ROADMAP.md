@@ -70,10 +70,13 @@ Plans:
 **Goal**: Stats overview with cards, coverage trend charts using recharts, per-market analytics, priority scoring algorithm, recent changes feed
 **Depends on**: Phase 102
 **Research**: Unlikely (recharts already integrated)
-**Plans**: TBD
+**Plans**: 0/4
 
 Plans:
-- [ ] 103-01: TBD
+- [ ] 103-01: Backend Dashboard APIs (stats + audit-log endpoints)
+- [ ] 103-02: Dashboard Page + Stats Cards
+- [ ] 103-03: Recent Changes + Coverage Charts
+- [ ] 103-04: Priority Scoring + High Priority Section
 
 #### Phase 104: Mapping Editor
 
