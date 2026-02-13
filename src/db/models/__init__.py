@@ -12,6 +12,11 @@ from src.db.models.competitor import (
 )
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
+from src.db.models.mapping import (
+    MappingAuditLog,
+    UnmappedMarketLog,
+    UserMarketMapping,
+)
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import (
     ScrapeBatch,
@@ -47,4 +52,8 @@ __all__ = [
     "CompetitorMarketOdds",
     # Event-centric architecture models
     "EventScrapeStatus",
+    # Market mapping models
+    "UserMarketMapping",
+    "MappingAuditLog",
+    "UnmappedMarketLog",
 ]
