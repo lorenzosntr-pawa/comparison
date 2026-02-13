@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer } from 'lucide-react'
+import { BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer, Map } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -29,6 +29,7 @@ const mainNavItems = [
 ]
 
 const utilityNavItems = [
+  { title: 'Market Mappings', url: '/mappings', icon: Map },
   { title: 'Scrape Runs', url: '/scrape-runs', icon: History },
   { title: 'Settings', url: '/settings', icon: Settings },
 ]
