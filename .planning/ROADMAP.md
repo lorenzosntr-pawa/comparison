@@ -59,10 +59,10 @@ Plans:
 **Goal**: Log unmapped markets during scraping, WebSocket alerts for new unmapped markets, on-demand analysis endpoint, historical unmapped market queries
 **Depends on**: Phase 101
 **Research**: Unlikely (existing WebSocket infra)
-**Plans**: 0/2
+**Plans**: 1/2
 
 Plans:
-- [ ] 102-01: UnmappedLogger service + scraping integration
+- [x] 102-01: UnmappedLogger service + scraping integration — 2026-02-13
 - [ ] 102-02: API endpoints + WebSocket alerts
 
 #### Phase 103: Mapping Dashboard
@@ -460,7 +460,7 @@ Plans:
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
 | 100. Investigation & Design | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 101. Backend Foundation | v2.8 | 3/3 | Complete | 2026-02-13 |
-| 102. Unmapped Discovery System | v2.8 | 0/? | Not started | - |
+| 102. Unmapped Discovery System | v2.8 | 1/2 | In progress | - |
 | 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
 | 104. Mapping Editor | v2.8 | 0/? | Not started | - |
 | 105. Conflict & Audit | v2.8 | 0/? | Not started | - |
