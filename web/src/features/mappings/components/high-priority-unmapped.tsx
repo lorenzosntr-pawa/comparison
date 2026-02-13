@@ -2,7 +2,8 @@ import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useHighPriorityUnmapped, HighPriorityItem } from '../hooks/use-high-priority-unmapped'
+import { useHighPriorityUnmapped } from '../hooks/use-high-priority-unmapped'
+import type { HighPriorityItem } from '../hooks/use-high-priority-unmapped'
 
 /**
  * Get priority badge styling based on score.

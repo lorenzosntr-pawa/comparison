@@ -5,27 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuditLog } from '../hooks/use-audit-log'
 
 /**
- * Get badge variant based on action type.
- */
-function getActionVariant(
-  action: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (action.toUpperCase()) {
-    case 'CREATE':
-      return 'default' // green-ish default
-    case 'UPDATE':
-      return 'secondary' // blue-ish
-    case 'DELETE':
-    case 'DEACTIVATE':
-      return 'destructive' // red
-    case 'ACTIVATE':
-      return 'outline'
-    default:
-      return 'secondary'
-  }
-}
-
-/**
  * Get custom classes for action badges.
  */
 function getActionClasses(action: string): string {
