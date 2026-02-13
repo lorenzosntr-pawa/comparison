@@ -24,6 +24,83 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
+- 🚧 **v2.8 Market Mapping Utility** — Phases 100-106 (in progress)
+
+---
+
+### 🚧 v2.8 Market Mapping Utility (In Progress)
+
+**Milestone Goal:** Comprehensive market mapping management tool enabling users to discover, create, edit, and audit market mappings through an intuitive UI, replacing the need for code deploys to fix mapping gaps.
+
+#### Phase 100: Investigation & Design
+
+**Goal**: Analyze current mapping gaps with SQL queries, design DB schema (user_market_mappings, mapping_audit_log, unmapped_market_log), plan runtime merge strategy, define API contracts
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 100-01: TBD (run /gsd:plan-phase 100 to break down)
+
+#### Phase 101: Backend Foundation
+
+**Goal**: Create DB tables with Alembic migrations, Pydantic models, implement merge logic at startup to combine code + DB mappings, CRUD API endpoints
+**Depends on**: Phase 100
+**Research**: Unlikely (established patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 101-01: TBD
+
+#### Phase 102: Unmapped Discovery System
+
+**Goal**: Log unmapped markets during scraping, WebSocket alerts for new unmapped markets, on-demand analysis endpoint, historical unmapped market queries
+**Depends on**: Phase 101
+**Research**: Unlikely (existing WebSocket infra)
+**Plans**: TBD
+
+Plans:
+- [ ] 102-01: TBD
+
+#### Phase 103: Mapping Dashboard
+
+**Goal**: Stats overview with cards, coverage trend charts using recharts, per-market analytics, priority scoring algorithm, recent changes feed
+**Depends on**: Phase 102
+**Research**: Unlikely (recharts already integrated)
+**Plans**: TBD
+
+Plans:
+- [ ] 103-01: TBD
+
+#### Phase 104: Mapping Editor
+
+**Goal**: Side-by-side UI component, Betpawa market picker with search, outcome auto-suggest algorithm, parameterized market handling (base + exceptions), preview mode showing impact
+**Depends on**: Phase 103
+**Research**: Unlikely (shadcn/ui patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 104-01: TBD
+
+#### Phase 105: Conflict & Audit
+
+**Goal**: Conflict detection and resolution UI, audit log display, rollback functionality, change diff visualization
+**Depends on**: Phase 104
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 105-01: TBD
+
+#### Phase 106: Polish & Validation
+
+**Goal**: Pre-submit validation rules, clear error messages with guidance, auto-fix suggestions, UX refinements
+**Depends on**: Phase 105
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 106-01: TBD
 
 ---
 
@@ -378,3 +455,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 99. Availability Tracking Fix | v2.7 | 1/1 + 2 FIX | Complete | 2026-02-12 |
 | 99.1 Availability Filters (INSERTED) | v2.7 | 1/1 | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
+| 100. Investigation & Design | v2.8 | 0/? | Not started | - |
+| 101. Backend Foundation | v2.8 | 0/? | Not started | - |
+| 102. Unmapped Discovery System | v2.8 | 0/? | Not started | - |
+| 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
+| 104. Mapping Editor | v2.8 | 0/? | Not started | - |
+| 105. Conflict & Audit | v2.8 | 0/? | Not started | - |
+| 106. Polish & Validation | v2.8 | 0/? | Not started | - |
