@@ -1,5 +1,33 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.7 Availability Tracking Bugfix (Shipped: 2026-02-12)
+
+**Delivered:** Complete availability tracking pipeline: fixed DB persistence, added reconciliation for dropped events, consistent unavailable styling, and alerts filter for monitoring.
+
+**Phases completed:** 99-99.1 (5 plans total: 2 main + 3 FIX plans)
+
+**Key accomplishments:**
+
+- Fixed availability detection pipeline — markets that disappear from scrapes now persist `unavailable_at` timestamp to DB
+- Added reconciliation for events dropped from discovery — events no longer offered by platforms get marked unavailable
+- Consistent unavailable styling on Odds Comparison page — strikethrough odds/margins with tooltips
+- Added "Alerts" toggle filtering events with unavailable markets (with count badge)
+- Fixed alerts filter to query only latest snapshot per event (not historical data)
+
+**Stats:**
+
+- 30 files changed
+- +2,664 / -56 lines (net +2,608)
+- 2 phases, 5 plans
+- Same day (2026-02-12, ~2.3 hours)
+- ~41,395 total LOC
+
+**Git range:** `77a7dc0` → `85d4071`
+
+**What's next:** Project feature-complete. Use `/gsd:discuss-milestone` if additional features needed.
+
+---
+
 ## v2.6 UX Polish & Navigation (Shipped: 2026-02-12)
 
 **Delivered:** App-wide UX improvements including tournament/country filters, resizable columns, navigation restructure with Odds Comparison as landing page, sidebar status widgets, and real-time sidebar updates.

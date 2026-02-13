@@ -8,7 +8,7 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.6 UX Polish & Navigation)
+## Current State (v2.7 Availability Tracking Bugfix)
 
 **Shipped:** 2026-02-12
 
@@ -194,10 +194,15 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Sidebar status widgets with event count and health indicators — v2.6
 - ✓ Dashboard removal and sidebar reorganization into three sections — v2.6
 - ✓ Real-time sidebar updates via WebSocket query invalidation — v2.6
+- ✓ Availability detection pipeline persisting unavailable_at to database — v2.7
+- ✓ Reconciliation for events dropped from platform discovery — v2.7
+- ✓ Consistent unavailable styling on Odds Comparison (strikethrough + tooltip) — v2.7
+- ✓ Alerts toggle filtering events with unavailable markets — v2.7
+- ✓ Alerts filter querying only latest snapshot per event — v2.7
 
 ### Active
 
-(No active requirements — project feature-complete for v2.6)
+(No active requirements — project feature-complete for v2.7)
 
 ### Out of Scope
 
@@ -324,6 +329,11 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Compact sidebar status widgets | Event count badge and health dots for at-a-glance monitoring | ✓ Good — v2.6 reduced visual noise |
 | Sidebar query invalidation on scrape | Invalidate coverage and scrape-runs queries for instant refresh | ✓ Good — v2.6 real-time updates |
 | Three-section sidebar layout | Analysis/Status/Utilities for logical grouping | ✓ Good — v2.6 clear navigation |
+| UnavailableMarketUpdate pattern | Separate INSERT (new markets) from UPDATE (unavailable existing) | ✓ Good — v2.7 correct DB operations |
+| Dual-path availability persistence | Both async (WriteBatch) and sync (direct query) handle unavailability | ✓ Good — v2.7 complete coverage |
+| Reconciliation for dropped events | Post-cycle pass marks events not in discovery as unavailable | ✓ Good — v2.7 catches platform removal |
+| Cache update after DB update | Update cache immediately after DB for instant API effect | ✓ Good — v2.7 consistent state |
+| Latest snapshot for alerts filter | Query only latest snapshot per event, not historical | ✓ Good — v2.7 accurate filtering |
 
 ---
-*Last updated: 2026-02-12 after v2.6 milestone*
+*Last updated: 2026-02-12 after v2.7 milestone*

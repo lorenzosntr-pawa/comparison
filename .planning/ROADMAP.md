@@ -27,14 +27,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 ---
 
-## Most Recent Milestone: v2.7 Availability Tracking Bugfix
+## Completed Milestones
+
+<details>
+<summary>✅ v2.7 Availability Tracking Bugfix (Phases 99-99.1) — SHIPPED 2026-02-12</summary>
 
 - [x] Phase 99: Availability Tracking Fix (1/1 + 2 FIX plans) — 2026-02-12
-- [x] Phase 99.1: Availability Filters (1/1 plans) — 2026-02-12
+- [x] Phase 99.1: Availability Filters (1/1 + 1 FIX plans) — 2026-02-12
 
----
-
-## Completed Milestones
+</details>
 
 <details>
 <summary>✅ v2.6 UX Polish & Navigation (Phases 93-98) — SHIPPED 2026-02-12</summary>

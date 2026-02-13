@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Project feature-complete through v2.6
+**Current focus:** Project feature-complete through v2.7
 
 ## Current Position
 
 Phase: 99.1 of 99.1 (Availability Filters)
-Plan: 1 of 1 in current phase
-Status: Phase complete, milestone complete
-Last activity: 2026-02-12 — Completed 99.1-01-PLAN.md
+Plan: Complete
+Status: v2.7 milestone archived
+Last activity: 2026-02-12 — v2.7 milestone complete
 
 Progress: ██████████ 100%
 
@@ -386,11 +386,12 @@ Progress: ██████████ 100%
 - Phase 99 FIX2 plan executed: UAT-003 (Odds Comparison styling) and UAT-004 (margin display) fixed
 - Phase 99.1 inserted: Availability Filters - add filters to show events with unavailable bookmakers/markets
 - Phase 99.1 executed: "Alerts" toggle added to Odds Comparison page filtering events with unavailable markets
-- v2.7 Availability Tracking Bugfix shipped 2026-02-12 with 2 phases (4 plans)
+- v2.7 Availability Tracking Bugfix shipped 2026-02-12 with 2 phases (5 plans)
+- v2.7 archived to .planning/milestones/v2.7-ROADMAP.md
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 99.1 (Availability Filters) - v2.7 milestone complete
+Stopped at: v2.7 milestone archived
 Resume file: None
-Next action: /gsd:complete-milestone
+Next action: /gsd:discuss-milestone (if more features needed)
