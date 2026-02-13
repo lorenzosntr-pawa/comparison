@@ -30,6 +30,7 @@ class UnmappedMarketListItem(BaseModel):
         last_seen_at: When last encountered.
         occurrence_count: How many times seen (for prioritization).
         status: NEW, ACKNOWLEDGED, MAPPED, IGNORED.
+        priority_score: Computed priority (0-150), higher = more important.
     """
 
     model_config = ConfigDict(
@@ -46,6 +47,7 @@ class UnmappedMarketListItem(BaseModel):
     last_seen_at: datetime = Field(description="When last encountered")
     occurrence_count: int = Field(description="Number of times seen")
     status: str = Field(description="Status: NEW, ACKNOWLEDGED, MAPPED, IGNORED")
+    priority_score: int = Field(description="Priority 0-150, higher = more important")
 
 
 class UnmappedMarketListResponse(BaseModel):
@@ -135,3 +137,20 @@ class UpdateUnmappedRequest(BaseModel):
         max_length=1000,
         description="Admin notes (max 1000 chars)",
     )
+
+
+class HighPriorityUnmappedResponse(BaseModel):
+    """Top priority unmapped markets.
+
+    Simple list without pagination for dashboard display.
+
+    Attributes:
+        items: List of high-priority unmapped markets.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    items: list[UnmappedMarketListItem] = Field(description="High-priority unmapped markets")
