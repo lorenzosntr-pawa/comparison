@@ -90,24 +90,48 @@ export interface UseMatchesParams {
 export function useMatches(params: UseMatchesParams = {}) {
   const { page = 1, pageSize = 50, minBookmakers, tournamentIds, countries, kickoffFrom, kickoffTo, search, availability } = params
 
-  return useQuery({
-    queryKey: ['matches', { page, pageSize, minBookmakers, tournamentIds, countries, kickoffFrom, kickoffTo, search, availability }],
-    queryFn: () =>
-      api.getEvents({
-        page,
-        page_size: pageSize,
-        min_bookmakers: minBookmakers,
-        tournament_ids: tournamentIds,
-        countries,
-        kickoff_from: kickoffFrom,
-        kickoff_to: kickoffTo,
-        search,
-        availability,
-      }),
+  // Use availability as a top-level key part to ensure different modes have different cache entries
+  const queryKey = ['matches', availability ?? 'betpawa', page, pageSize, minBookmakers, search ?? ''] as const
+  console.log('[DEBUG] useMatches - availability:', availability, '- full queryKey:', queryKey)
+
+  const query = useQuery({
+    queryKey,
+    queryFn: async () => {
+      console.log('[DEBUG] >>> queryFn STARTING for availability:', availability)
+      try {
+        const result = await api.getEvents({
+          page,
+          page_size: pageSize,
+          min_bookmakers: minBookmakers,
+          tournament_ids: tournamentIds,
+          countries,
+          kickoff_from: kickoffFrom,
+          kickoff_to: kickoffTo,
+          search,
+          availability,
+        })
+        console.log('[DEBUG] >>> queryFn SUCCESS, got', result?.events?.length ?? 0, 'events')
+        return result
+      } catch (err) {
+        console.error('[DEBUG] >>> queryFn ERROR:', err)
+        throw err
+      }
+    },
     staleTime: 30000, // 30 seconds
     gcTime: 60000, // 60 seconds (formerly cacheTime)
     refetchInterval: 60000, // Poll every 60 seconds
   })
+
+  // Log query state on every call
+  console.log('[DEBUG] useMatches - query state:', {
+    isPending: query.isPending,
+    isFetching: query.isFetching,
+    isStale: query.isStale,
+    status: query.status,
+    fetchStatus: query.fetchStatus,
+  })
+
+  return query
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,12 +43,13 @@ const DEFAULT_ALERTS_FILTERS: MatchFiltersState = {
   tournamentIds: [],
   kickoffFrom: '',
   kickoffTo: '',
-  minBookmakers: 2,
+  minBookmakers: 1,  // Show all events with alerts, regardless of bookmaker count
   sortBy: 'kickoff',
   availability: 'alerts',
 }
 
 export function MatchList() {
+  console.log('[DEBUG] MatchList render started')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
 
@@ -59,11 +60,13 @@ export function MatchList() {
   const [currentMode, setCurrentMode] = useState<'betpawa' | 'competitor' | 'alerts'>('betpawa')
 
   // Get current filters based on mode
+  console.log('[DEBUG] currentMode:', currentMode)
   const filters = currentMode === 'betpawa'
     ? betpawaFilters
     : currentMode === 'competitor'
       ? competitorFilters
       : alertsFilters
+  console.log('[DEBUG] filters.availability:', filters.availability)
   const setFilters = currentMode === 'betpawa'
     ? setBetpawaFilters
     : currentMode === 'competitor'
@@ -99,6 +102,13 @@ export function MatchList() {
     return new Date(filters.kickoffTo).toISOString()
   }, [filters.kickoffTo])
 
+  // Debug: log mode changes
+  useEffect(() => {
+    console.log('[DEBUG] >>> currentMode changed to:', currentMode)
+  }, [currentMode])
+
+  // Use currentMode directly for availability to ensure it's always in sync
+  console.log('[DEBUG] About to call useMatches with availability:', currentMode)
   const { data, isPending, error } = useMatches({
     page,
     pageSize,
@@ -108,8 +118,9 @@ export function MatchList() {
     kickoffFrom: apiKickoffFrom,
     kickoffTo: apiKickoffTo,
     search: filters.search || undefined,
-    availability: filters.availability,
+    availability: currentMode,
   })
+  console.log('[DEBUG] useMatches returned:', { isPending, hasData: !!data, error: error?.message })
 
   // Handle filter changes (excluding mode switch)
   const handleFiltersChange = useCallback((newFilters: MatchFiltersState) => {
@@ -126,7 +137,9 @@ export function MatchList() {
 
   // Handle mode switch via toggle buttons
   const handleModeSwitch = useCallback((mode: 'betpawa' | 'competitor' | 'alerts') => {
+    console.log('[DEBUG] handleModeSwitch called with:', mode, 'currentMode:', currentMode)
     if (mode !== currentMode) {
+      console.log('[DEBUG] Switching mode from', currentMode, 'to', mode)
       setCurrentMode(mode)
       setPage(1)
     }
