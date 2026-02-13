@@ -33,7 +33,7 @@ from src.api.routes.ws import router as ws_router
 from src.api.websocket import ConnectionManager, create_cache_update_bridge
 from src.caching.odds_cache import OddsCache
 from src.caching.warmup import warm_cache_from_db
-from src.market_mapping.cache import mapping_cache
+from src.market_mapping.cache import init_mapping_cache
 from src.db.engine import async_session_factory
 from src.storage import AsyncWriteQueue
 from src.scheduling.jobs import set_app_state
@@ -186,15 +186,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     **warmup_stats,
                 )
 
-                # --- Market mapping cache warmup ---
+                # --- Market mapping cache warmup (singleton initialization) ---
                 t0 = perf_counter()
                 async with async_session_factory() as db:
-                    mapping_count = await mapping_cache.load(db)
+                    mapping_cache = await init_mapping_cache(db)
                 mapping_ms = (perf_counter() - t0) * 1000
                 app.state.mapping_cache = mapping_cache
                 log.info(
                     "mapping_cache.warmup.done",
-                    mappings=mapping_count,
+                    mappings=mapping_cache.count,
+                    code=mapping_cache.code_count,
+                    db=mapping_cache.db_count,
                     warmup_ms=round(mapping_ms, 1),
                 )
 

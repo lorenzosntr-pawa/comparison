@@ -378,5 +378,62 @@ class MappingCache:
 # Module-level singleton
 # -----------------------------------------------------------------------------
 
+_mapping_cache: MappingCache | None = None
+"""Private singleton instance. Use get_mapping_cache() to access."""
+
+
+def get_mapping_cache() -> MappingCache:
+    """Get global mapping cache singleton.
+
+    Returns:
+        The initialized MappingCache instance.
+
+    Raises:
+        RuntimeError: If cache has not been initialized via init_mapping_cache().
+    """
+    if _mapping_cache is None:
+        raise RuntimeError(
+            "MappingCache not initialized. Call init_mapping_cache() first."
+        )
+    return _mapping_cache
+
+
+def is_mapping_cache_initialized() -> bool:
+    """Check if the mapping cache has been initialized.
+
+    Returns:
+        True if init_mapping_cache() has been called, False otherwise.
+    """
+    return _mapping_cache is not None
+
+
+async def init_mapping_cache(session: AsyncSession) -> MappingCache:
+    """Initialize global mapping cache singleton.
+
+    Loads and merges code + DB mappings into the global cache.
+    Should be called once during app startup after DB is ready.
+
+    Args:
+        session: SQLAlchemy async session for DB queries.
+
+    Returns:
+        The initialized MappingCache instance.
+    """
+    global _mapping_cache
+    _mapping_cache = MappingCache()
+    await _mapping_cache.load(session)
+    logger.info(
+        "mapping_cache.singleton_initialized",
+        total=_mapping_cache.count,
+        code=_mapping_cache.code_count,
+        db=_mapping_cache.db_count,
+    )
+    return _mapping_cache
+
+
+# Legacy alias for backward compatibility
 mapping_cache = MappingCache()
-"""Global singleton instance for app-wide access."""
+"""Global singleton instance for app-wide access.
+
+DEPRECATED: Use get_mapping_cache() instead. This instance may not be loaded.
+"""

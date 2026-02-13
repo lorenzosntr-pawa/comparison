@@ -13,10 +13,13 @@ Structure:
     - bet9ja_key: Bet9ja's market key prefix (e.g., "S_1X2")
     - outcome_mapping: How outcomes map between platforms
 
-Lookup Functions (in __init__.py):
+Lookup Functions:
     find_by_betpawa_id(id): Find mapping by Betpawa market ID
     find_by_sportybet_id(id): Find mapping by Sportybet market ID
     find_by_bet9ja_key(key): Find mapping by Bet9ja key prefix
+
+    Note: Lookup functions use MappingCache when initialized (includes DB mappings).
+    Falls back to hardcoded MARKET_MAPPINGS during startup before cache is ready.
 
 Adding New Mappings:
     1. Add a new MarketMapping entry to MARKET_MAPPINGS
@@ -24,7 +27,14 @@ Adding New Mappings:
     3. Lookup functions will automatically include the new mapping
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ..types.normalized import MarketMapping, OutcomeMapping
+
+if TYPE_CHECKING:
+    from ..cache import CachedMapping, CachedOutcome
 
 # Core football market mappings
 #
@@ -1961,8 +1971,40 @@ VARIANT_MARKET_IDS: frozenset[str] = frozenset({
 # Lookup Functions
 # =============================================================================
 
+
+def _cached_to_market_mapping(cached: CachedMapping) -> MarketMapping:
+    """Convert CachedMapping to MarketMapping for backward compatibility.
+
+    Args:
+        cached: CachedMapping from the cache.
+
+    Returns:
+        MarketMapping with same data.
+    """
+    return MarketMapping(
+        canonical_id=cached.canonical_id,
+        name=cached.name,
+        betpawa_id=cached.betpawa_id,
+        sportybet_id=cached.sportybet_id,
+        bet9ja_key=cached.bet9ja_key,
+        outcome_mapping=tuple(
+            OutcomeMapping(
+                canonical_id=o.canonical_id,
+                betpawa_name=o.betpawa_name,
+                sportybet_desc=o.sportybet_desc,
+                bet9ja_suffix=o.bet9ja_suffix,
+                position=o.position,
+            )
+            for o in cached.outcome_mapping
+        ),
+    )
+
+
 def find_by_betpawa_id(market_id: str) -> MarketMapping | None:
     """Find a market mapping by Betpawa market type ID.
+
+    Uses MappingCache when initialized (includes user DB mappings).
+    Falls back to hardcoded mappings during startup.
 
     Args:
         market_id: Betpawa marketType.id (e.g., "3743")
@@ -1970,11 +2012,24 @@ def find_by_betpawa_id(market_id: str) -> MarketMapping | None:
     Returns:
         The matching MarketMapping or None if not found
     """
+    # Try cache first (includes user DB mappings)
+    from ..cache import get_mapping_cache, is_mapping_cache_initialized
+
+    if is_mapping_cache_initialized():
+        cached = get_mapping_cache().find_by_betpawa_id(market_id)
+        if cached:
+            return _cached_to_market_mapping(cached)
+        return None
+
+    # Fallback to hardcoded during startup
     return _BY_BETPAWA_ID.get(market_id)
 
 
 def find_by_sportybet_id(market_id: str) -> MarketMapping | None:
     """Find a market mapping by Sportybet market ID.
+
+    Uses MappingCache when initialized (includes user DB mappings).
+    Falls back to hardcoded mappings during startup.
 
     Args:
         market_id: Sportybet market.id (e.g., "1")
@@ -1982,11 +2037,24 @@ def find_by_sportybet_id(market_id: str) -> MarketMapping | None:
     Returns:
         The matching MarketMapping or None if not found
     """
+    # Try cache first (includes user DB mappings)
+    from ..cache import get_mapping_cache, is_mapping_cache_initialized
+
+    if is_mapping_cache_initialized():
+        cached = get_mapping_cache().find_by_sportybet_id(market_id)
+        if cached:
+            return _cached_to_market_mapping(cached)
+        return None
+
+    # Fallback to hardcoded during startup
     return _BY_SPORTYBET_ID.get(market_id)
 
 
 def find_by_canonical_id(canonical_id: str) -> MarketMapping | None:
     """Find a market mapping by canonical ID.
+
+    Uses MappingCache when initialized (includes user DB mappings).
+    Falls back to hardcoded mappings during startup.
 
     Args:
         canonical_id: Canonical market ID (e.g., "1x2_ft")
@@ -1994,11 +2062,24 @@ def find_by_canonical_id(canonical_id: str) -> MarketMapping | None:
     Returns:
         The matching MarketMapping or None if not found
     """
+    # Try cache first (includes user DB mappings)
+    from ..cache import get_mapping_cache, is_mapping_cache_initialized
+
+    if is_mapping_cache_initialized():
+        cached = get_mapping_cache().find_by_canonical_id(canonical_id)
+        if cached:
+            return _cached_to_market_mapping(cached)
+        return None
+
+    # Fallback to hardcoded during startup
     return _BY_CANONICAL_ID.get(canonical_id)
 
 
 def find_by_bet9ja_key(bet9ja_key: str) -> MarketMapping | None:
     """Find a market mapping by Bet9ja key.
+
+    Uses MappingCache when initialized (includes user DB mappings).
+    Falls back to hardcoded mappings during startup.
 
     Accepts a market key (e.g., "S_1X2", "S_OU").
 
@@ -2008,6 +2089,16 @@ def find_by_bet9ja_key(bet9ja_key: str) -> MarketMapping | None:
     Returns:
         The matching MarketMapping or None if not found
     """
+    # Try cache first (includes user DB mappings)
+    from ..cache import get_mapping_cache, is_mapping_cache_initialized
+
+    if is_mapping_cache_initialized():
+        cached = get_mapping_cache().find_by_bet9ja_key(bet9ja_key)
+        if cached:
+            return _cached_to_market_mapping(cached)
+        return None
+
+    # Fallback to hardcoded during startup
     return _BY_BET9JA_KEY.get(bet9ja_key)
 
 
