@@ -1,5 +1,5 @@
 import { useMappingStats } from './hooks'
-import { MappingStatsCards, RecentChanges } from './components'
+import { MappingStatsCards, RecentChanges, PlatformCoverageChart } from './components'
 
 export function MappingDashboard() {
   const { data: stats, isPending, error } = useMappingStats()
@@ -29,8 +29,12 @@ export function MappingDashboard() {
 
       {/* Charts & Recent Changes - 2-column grid on large screens */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left: Charts (will be added in Task 2) */}
-        <div>{/* PlatformCoverageChart placeholder */}</div>
+        {/* Left: Platform Coverage Chart */}
+        <PlatformCoverageChart
+          data={stats?.byPlatform}
+          totalMappings={stats?.totalMappings ?? 0}
+          isLoading={isPending}
+        />
 
         {/* Right: Recent Changes */}
         <RecentChanges />
