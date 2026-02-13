@@ -3,6 +3,7 @@ import { MatchList, MatchDetail } from '@/features/matches'
 import { CoveragePage } from '@/features/coverage'
 import { HistoricalAnalysisPage, TournamentDetailPage } from '@/features/historical-analysis'
 import { MappingDashboard } from '@/features/mappings'
+import { MappingEditor } from '@/features/mappings/editor'
 import { ScrapeRunsPage, ScrapeRunDetailPage } from '@/features/scrape-runs'
 import { Settings } from '@/features/settings'
 
@@ -18,6 +19,7 @@ export function AppRoutes() {
       <Route path="/scrape-runs/:id" element={<ScrapeRunDetailPage />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/mappings" element={<MappingDashboard />} />
+      <Route path="/mappings/editor/:unmappedId" element={<MappingEditor />} />
     </Routes>
   )
 }
