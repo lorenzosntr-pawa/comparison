@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/command'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Calendar, Search, ChevronsUpDown } from 'lucide-react'
-import { format, subDays } from 'date-fns'
+import { format, subDays, addDays } from 'date-fns'
 import { BookmakerFilter } from './bookmaker-filter'
 
 export interface DateRange {
@@ -95,6 +95,15 @@ export function FilterBar({
     onDateRangeChange({ from, to: today })
   }
 
+  const applyAllEventsPreset = () => {
+    const today = new Date()
+    const from = subDays(today, 30)
+    from.setHours(0, 0, 0, 0)
+    const to = addDays(today, 7)
+    to.setHours(23, 59, 59, 999)
+    onDateRangeChange({ from, to })
+  }
+
   return (
     <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/30 rounded-lg">
       {/* Quick presets */}
@@ -126,6 +135,14 @@ export function FilterBar({
             className="h-9 px-3 text-xs"
           >
             Last 90 days
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={applyAllEventsPreset}
+            className="h-9 px-3 text-xs"
+          >
+            All + Upcoming
           </Button>
         </div>
       </div>

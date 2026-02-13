@@ -41,6 +41,11 @@ None
 
 ## Closed Bugs
 
+### BUG-024: Historical Analysis page shows only past events, missing tournaments from Odds Comparison (RESOLVED)
+**Discovered:** 2026-02-13 (user report during issue review)
+**Root Cause:** Default date range was set to "last 7 days" (past only), while users expected to see the same tournaments/events visible on Odds Comparison page (which shows upcoming events).
+**Resolution:** Fixed 2026-02-13 - Extended default date range to 30 days past + 7 days future. Added "All + Upcoming" quick select button. Updated `useTournamentMarkets` hook to use same extended range. Files modified: `index.tsx`, `filter-bar.tsx`, `use-tournament-markets.ts`.
+
 ### BUG-023: Country and tournament filters not applying to Odds Comparison table (RESOLVED)
 **Discovered:** 2026-02-13 (user report during issue review)
 **Resolution:** Fixed 2026-02-13 - The `queryKey` in `use-matches.ts:94` was modified to exclude `tournamentIds`, `countries`, `kickoffFrom`, and `kickoffTo`. This prevented TanStack Query from detecting filter changes and caused cached data to be returned instead of re-fetching. Fixed by restoring complete queryKey with all filter parameters. Also removed debug console.log statements.

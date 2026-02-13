@@ -8,7 +8,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { subDays } from 'date-fns'
+import { subDays, addDays } from 'date-fns'
 import { api } from '@/lib/api'
 import type { DateRange } from '../components'
 import type { MatchedEvent, EventDetailResponse } from '@/types/api'
@@ -164,7 +164,7 @@ export function useTournamentMarkets(
   tournamentId: number,
   dateRange?: DateRange
 ) {
-  // Default to last 30 days if no range provided
+  // Default to last 30 days + 7 days future if no range provided
   const effectiveRange = dateRange ?? {
     from: (() => {
       const d = subDays(new Date(), 30)
@@ -172,7 +172,7 @@ export function useTournamentMarkets(
       return d
     })(),
     to: (() => {
-      const d = new Date()
+      const d = addDays(new Date(), 7)
       d.setHours(23, 59, 59, 999)
       return d
     })(),

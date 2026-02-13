@@ -1,18 +1,19 @@
 import { useState, useMemo } from 'react'
-import { subDays } from 'date-fns'
+import { subDays, addDays } from 'date-fns'
 import { FilterBar, TournamentList, type DateRange } from './components'
 import { useTournaments } from './hooks'
 
 export { TournamentDetailPage } from './tournament-detail'
 
 export function HistoricalAnalysisPage() {
-  // Default to last 7 days
+  // Default to last 30 days + 7 days future (includes both historical and upcoming events)
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const today = new Date()
-    today.setHours(23, 59, 59, 999)
-    const from = subDays(today, 7)
+    const from = subDays(today, 30)
     from.setHours(0, 0, 0, 0)
-    return { from, to: today }
+    const to = addDays(today, 7)
+    to.setHours(23, 59, 59, 999)
+    return { from, to }
   })
 
   // Bookmaker filter state - all selected by default
