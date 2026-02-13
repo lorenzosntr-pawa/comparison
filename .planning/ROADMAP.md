@@ -47,11 +47,11 @@ Plans:
 **Goal**: Create DB tables with Alembic migrations, Pydantic models, implement merge logic at startup to combine code + DB mappings, CRUD API endpoints
 **Depends on**: Phase 100
 **Research**: Unlikely (established patterns)
-**Plans**: 1/3
+**Plans**: 2/3
 
 Plans:
 - [x] 101-01: Database schema (3 tables, ORM models) — 2026-02-13
-- [ ] 101-02: TBD
+- [x] 101-02: MappingCache with merge logic — 2026-02-13
 - [ ] 101-03: TBD
 
 #### Phase 102: Unmapped Discovery System
@@ -458,7 +458,7 @@ Plans:
 | 99.1 Availability Filters (INSERTED) | v2.7 | 1/1 | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
 | 100. Investigation & Design | v2.8 | 1/1 | Complete | 2026-02-13 |
-| 101. Backend Foundation | v2.8 | 1/3 | In progress | - |
+| 101. Backend Foundation | v2.8 | 2/3 | In progress | - |
 | 102. Unmapped Discovery System | v2.8 | 0/? | Not started | - |
 | 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
 | 104. Mapping Editor | v2.8 | 0/? | Not started | - |
