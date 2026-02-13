@@ -8,13 +8,14 @@ import { SourceMarketPanel } from './components/source-market-panel'
 import { TargetMarketPanel } from './components/target-market-panel'
 import type { MappingFormState } from './components/target-market-form'
 import type { MappingPickerMode } from './components/mapping-picker'
+import type { OutcomeFormItem } from './utils/outcome-suggest'
 
 /**
  * Mapping Editor page.
  *
  * Two-column layout (40% / 60%):
  * - Left panel: Source market details (platform, name, external ID, occurrences, sample outcomes)
- * - Right panel: Target market configuration (picker to select existing or create new, form fields)
+ * - Right panel: Target market configuration (picker to select existing or create new, form fields, outcome mappings)
  */
 export function MappingEditor() {
   const { unmappedId } = useParams<{ unmappedId: string }>()
@@ -33,9 +34,17 @@ export function MappingEditor() {
     priority: 10,
   })
 
+  // Outcome mapping state (lifted here for submit in Plan 04)
+  const [outcomes, setOutcomes] = useState<OutcomeFormItem[]>([])
+
   // Stable callback for form changes to avoid unnecessary re-renders
   const handleFormChange = useCallback((state: MappingFormState) => {
     setFormState(state)
+  }, [])
+
+  // Stable callback for outcome changes
+  const handleOutcomesChange = useCallback((newOutcomes: OutcomeFormItem[]) => {
+    setOutcomes(newOutcomes)
   }, [])
 
   // Loading state
@@ -111,6 +120,8 @@ export function MappingEditor() {
           sourceMarket={data}
           formState={formState}
           onFormChange={handleFormChange}
+          outcomes={outcomes}
+          onOutcomesChange={handleOutcomesChange}
           selectedMappingId={selectedMappingId}
           onMappingSelect={setSelectedMappingId}
           mode={pickerMode}
