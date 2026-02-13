@@ -221,3 +221,70 @@ class ReloadResponse(BaseModel):
     status: str = Field(description="Status: 'ok'")
     mapping_count: int = Field(description="Total mappings loaded")
     reloaded_at: datetime = Field(description="Reload timestamp")
+
+
+class PlatformCounts(BaseModel):
+    """Platform-specific mapping counts.
+
+    Attributes:
+        betpawa_count: Mappings with BetPawa ID.
+        sportybet_count: Mappings with SportyBet ID.
+        bet9ja_count: Mappings with Bet9ja key.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    betpawa_count: int = Field(description="Mappings with BetPawa ID")
+    sportybet_count: int = Field(description="Mappings with SportyBet ID")
+    bet9ja_count: int = Field(description="Mappings with Bet9ja key")
+
+
+class UnmappedCounts(BaseModel):
+    """Unmapped market status counts.
+
+    Attributes:
+        new: Markets with NEW status.
+        acknowledged: Markets with ACKNOWLEDGED status.
+        mapped: Markets with MAPPED status.
+        ignored: Markets with IGNORED status.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    new: int = Field(description="NEW status count")
+    acknowledged: int = Field(description="ACKNOWLEDGED status count")
+    mapped: int = Field(description="MAPPED status count")
+    ignored: int = Field(description="IGNORED status count")
+
+
+class MappingStatsResponse(BaseModel):
+    """Mapping dashboard statistics.
+
+    Aggregated statistics from mapping cache and unmapped market log.
+
+    Attributes:
+        total_mappings: Total mappings in cache.
+        code_mappings: Mappings from code.
+        db_mappings: Mappings from database.
+        by_platform: Platform-specific mapping counts.
+        unmapped_counts: Unmapped market status breakdown.
+        cache_loaded_at: When cache was last loaded.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    total_mappings: int = Field(description="Total mappings in cache")
+    code_mappings: int = Field(description="Code-defined mappings")
+    db_mappings: int = Field(description="Database mappings")
+    by_platform: PlatformCounts = Field(description="Platform counts")
+    unmapped_counts: UnmappedCounts = Field(description="Unmapped status breakdown")
+    cache_loaded_at: datetime | None = Field(description="Cache load timestamp")

@@ -15,7 +15,7 @@ which merges code-defined and database mappings at runtime.
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.mappings import (
@@ -23,15 +23,68 @@ from src.api.schemas.mappings import (
     MappingDetailResponse,
     MappingListItem,
     MappingListResponse,
+    MappingStatsResponse,
     OutcomeMappingSchema,
+    PlatformCounts,
     ReloadResponse,
+    UnmappedCounts,
     UpdateMappingRequest,
 )
 from src.db.engine import get_db
-from src.db.models.mapping import MappingAuditLog, UserMarketMapping
+from src.db.models.mapping import MappingAuditLog, UnmappedMarketLog, UserMarketMapping
 from src.market_mapping.cache import mapping_cache
 
 router = APIRouter(prefix="/mappings", tags=["mappings"])
+
+
+@router.get("/stats", response_model=MappingStatsResponse)
+async def get_mapping_stats(
+    db: AsyncSession = Depends(get_db),
+) -> MappingStatsResponse:
+    """Get mapping dashboard statistics.
+
+    Returns aggregated statistics from the mapping cache and unmapped market log.
+    Includes total mappings, source breakdown, platform coverage, and unmapped
+    market status counts.
+
+    Args:
+        db: Database session (injected).
+
+    Returns:
+        MappingStatsResponse with aggregated statistics.
+    """
+    # Get stats from mapping cache
+    cache_stats = mapping_cache.stats()
+
+    # Query unmapped market status counts
+    status_query = select(
+        UnmappedMarketLog.status,
+        func.count(UnmappedMarketLog.id).label("count"),
+    ).group_by(UnmappedMarketLog.status)
+
+    result = await db.execute(status_query)
+    status_rows = result.all()
+
+    # Build status counts dict
+    status_counts = {row.status: row.count for row in status_rows}
+
+    return MappingStatsResponse(
+        total_mappings=cache_stats["total"],
+        code_mappings=cache_stats["code"],
+        db_mappings=cache_stats["db"],
+        by_platform=PlatformCounts(
+            betpawa_count=cache_stats["by_betpawa"],
+            sportybet_count=cache_stats["by_sportybet"],
+            bet9ja_count=cache_stats["by_bet9ja"],
+        ),
+        unmapped_counts=UnmappedCounts(
+            new=status_counts.get("NEW", 0),
+            acknowledged=status_counts.get("ACKNOWLEDGED", 0),
+            mapped=status_counts.get("MAPPED", 0),
+            ignored=status_counts.get("IGNORED", 0),
+        ),
+        cache_loaded_at=mapping_cache.loaded_at,
+    )
 
 
 @router.get("", response_model=MappingListResponse)
