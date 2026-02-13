@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 103 of 106 (Mapping Dashboard)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-13 — Completed 103-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-02-13 — Completed 103-04-PLAN.md
 
-Progress: ███░░░░░░░ 38%
+Progress: ████░░░░░░ 40%
 
 ## Milestones
 
@@ -285,6 +285,7 @@ Progress: ███░░░░░░░ 38%
 - **Sidebar compact status widgets** - event count badge and health indicator dots (green/yellow/red) for at-a-glance system monitoring (v2.6 Phase 96)
 - **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
 - **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
+- **Priority scoring formula** - base = min(occurrence_count, 100) + recency bonus (+50 <24h, +25 <7d); 0-150 range for unmapped market prioritization (v2.8 Phase 103)
 
 ### Key Decisions
 
@@ -394,6 +395,6 @@ Progress: ███░░░░░░░ 38%
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 103-03-PLAN.md
+Stopped at: Completed 103-04-PLAN.md (Phase 103 complete)
 Resume file: None
-Next action: /gsd:execute-plan .planning/phases/103-mapping-dashboard/103-04-PLAN.md
+Next action: /gsd:plan-phase 104
