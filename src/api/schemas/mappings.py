@@ -288,3 +288,54 @@ class MappingStatsResponse(BaseModel):
     by_platform: PlatformCounts = Field(description="Platform counts")
     unmapped_counts: UnmappedCounts = Field(description="Unmapped status breakdown")
     cache_loaded_at: datetime | None = Field(description="Cache load timestamp")
+
+
+class AuditLogItem(BaseModel):
+    """Single audit log entry.
+
+    Represents a change to a market mapping with action details.
+
+    Attributes:
+        id: Database ID.
+        canonical_id: Market identifier that was changed.
+        action: Action type: CREATE, UPDATE, DELETE, ACTIVATE, DEACTIVATE.
+        reason: Optional explanation for the change.
+        created_at: When the action occurred.
+        created_by: User who made the change.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    id: int = Field(description="Audit log ID")
+    canonical_id: str = Field(description="Market identifier")
+    action: str = Field(description="Action type")
+    reason: str | None = Field(default=None, description="Change reason")
+    created_at: datetime = Field(description="Action timestamp")
+    created_by: str | None = Field(default=None, description="User who made change")
+
+
+class AuditLogResponse(BaseModel):
+    """Paginated audit log response.
+
+    List of recent mapping changes with pagination metadata.
+
+    Attributes:
+        items: List of audit log entries.
+        total: Total count before pagination.
+        page: Current page number (1-indexed).
+        page_size: Items per page.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    items: list[AuditLogItem] = Field(description="Audit log entries")
+    total: int = Field(description="Total count before pagination")
+    page: int = Field(description="Current page (1-indexed)")
+    page_size: int = Field(description="Items per page")

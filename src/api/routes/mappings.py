@@ -19,6 +19,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.mappings import (
+    AuditLogItem,
+    AuditLogResponse,
     CreateMappingRequest,
     MappingDetailResponse,
     MappingListItem,
@@ -84,6 +86,69 @@ async def get_mapping_stats(
             ignored=status_counts.get("IGNORED", 0),
         ),
         cache_loaded_at=mapping_cache.loaded_at,
+    )
+
+
+@router.get("/audit-log", response_model=AuditLogResponse)
+async def get_audit_log(
+    action: str | None = Query(None, description="Filter by action: CREATE, UPDATE, DELETE, etc."),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    db: AsyncSession = Depends(get_db),
+) -> AuditLogResponse:
+    """Get paginated audit log of mapping changes.
+
+    Returns recent changes to market mappings ordered by timestamp descending.
+    Supports filtering by action type and pagination.
+
+    Args:
+        action: Filter by action type (CREATE, UPDATE, DELETE, ACTIVATE, DEACTIVATE).
+        page: Page number, 1-indexed.
+        page_size: Items per page (1-100, default 20).
+        db: Database session (injected).
+
+    Returns:
+        AuditLogResponse with paginated audit entries.
+    """
+    # Build query
+    query = select(MappingAuditLog)
+
+    # Apply action filter
+    if action:
+        query = query.where(MappingAuditLog.action == action.upper())
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    total_result = await db.execute(count_query)
+    total = total_result.scalar() or 0
+
+    # Order by created_at DESC and apply pagination
+    query = query.order_by(MappingAuditLog.created_at.desc())
+    offset = (page - 1) * page_size
+    query = query.offset(offset).limit(page_size)
+
+    # Execute query
+    result = await db.execute(query)
+    records = result.scalars().all()
+
+    # Convert to response items
+    items = [
+        AuditLogItem(
+            id=record.id,
+            canonical_id=record.canonical_id,
+            action=record.action,
+            reason=record.reason,
+            created_at=record.created_at,
+            created_by=record.created_by,
+        )
+        for record in records
+    ]
+
+    return AuditLogResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
     )
 
 
