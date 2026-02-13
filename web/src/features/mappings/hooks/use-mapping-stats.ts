@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 export interface PlatformCounts {
   betpawaCount: number
   sportybetCount: number
-  bet9jaCount: number
+  bet9JaCount: number
 }
 
 export interface UnmappedCounts {

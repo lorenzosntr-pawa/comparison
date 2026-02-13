@@ -125,8 +125,8 @@ export function PlatformCoverageChart({
     },
     {
       platform: 'Bet9ja',
-      count: data.bet9jaCount,
-      percentage: totalMappings > 0 ? (data.bet9jaCount / totalMappings) * 100 : 0,
+      count: data.bet9JaCount,
+      percentage: totalMappings > 0 ? (data.bet9JaCount / totalMappings) * 100 : 0,
     },
   ]
 
