@@ -72,7 +72,7 @@ Each task was committed atomically:
 2. **Task 2: Create left panel source market component** - `4632253` (feat)
 3. **Task 3: Wire navigation from dashboard high-priority section** - `28caddf` (feat)
 
-**Plan metadata:** TBD (docs: complete plan)
+**Plan metadata:** `88c9260` (docs: complete plan)
 
 ## Files Created/Modified
 
