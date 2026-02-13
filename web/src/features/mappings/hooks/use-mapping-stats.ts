@@ -24,7 +24,7 @@ export interface MappingStats {
 }
 
 async function fetchMappingStats(): Promise<MappingStats> {
-  const response = await api.get<MappingStats>('/api/mappings/stats')
+  const response = await api.get<MappingStats>('/mappings/stats')
   return response
 }
 
