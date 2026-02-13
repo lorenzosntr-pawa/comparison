@@ -1,5 +1,5 @@
 import { useMappingStats } from './hooks'
-import { MappingStatsCards, RecentChanges, PlatformCoverageChart } from './components'
+import { MappingStatsCards, RecentChanges, PlatformCoverageChart, HighPriorityUnmapped } from './components'
 
 export function MappingDashboard() {
   const { data: stats, isPending, error } = useMappingStats()
@@ -39,6 +39,9 @@ export function MappingDashboard() {
         {/* Right: Recent Changes */}
         <RecentChanges />
       </div>
+
+      {/* High Priority Unmapped Markets */}
+      <HighPriorityUnmapped />
     </div>
   )
 }
