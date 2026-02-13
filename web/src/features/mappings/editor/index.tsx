@@ -1,32 +1,9 @@
 import { useParams, Link } from 'react-router'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useUnmappedDetail } from './hooks/use-unmapped-detail'
-
-/**
- * Get source badge styling.
- */
-function getSourceBadge(source: string): { label: string; className: string } {
-  switch (source) {
-    case 'sportybet':
-      return {
-        label: 'SportyBet',
-        className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-      }
-    case 'bet9ja':
-      return {
-        label: 'Bet9ja',
-        className: 'bg-green-100 text-green-800 hover:bg-green-200',
-      }
-    default:
-      return {
-        label: source,
-        className: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
-      }
-  }
-}
+import { SourceMarketPanel } from './components/source-market-panel'
 
 /**
  * Mapping Editor page.
@@ -90,8 +67,6 @@ export function MappingEditor() {
     )
   }
 
-  const source = getSourceBadge(data.source)
-
   return (
     <div className="space-y-4">
       {/* Header with back link */}
@@ -108,45 +83,7 @@ export function MappingEditor() {
       {/* Two-column layout */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left Panel: Source Market Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              Source Market
-              <Badge className={source.className} variant="secondary">
-                {source.label}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Market Name */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Market Name</p>
-              <p className="text-sm">{data.marketName || '(No name available)'}</p>
-            </div>
-
-            {/* External ID */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">External Market ID</p>
-              <p className="text-sm font-mono">{data.externalMarketId}</p>
-            </div>
-
-            {/* Occurrence Count */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Occurrences</p>
-              <p className="text-sm">{data.occurrenceCount} times</p>
-            </div>
-
-            {/* Sample Outcomes */}
-            {data.sampleOutcomes && data.sampleOutcomes.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Sample Outcomes</p>
-                <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-48">
-                  {JSON.stringify(data.sampleOutcomes, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <SourceMarketPanel data={data} />
 
         {/* Right Panel: Target Mapping (Placeholder) */}
         <Card>
