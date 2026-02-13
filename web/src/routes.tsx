@@ -4,6 +4,7 @@ import { CoveragePage } from '@/features/coverage'
 import { HistoricalAnalysisPage, TournamentDetailPage } from '@/features/historical-analysis'
 import { MappingDashboard } from '@/features/mappings'
 import { MappingEditor } from '@/features/mappings/editor'
+import { EditMappingEditor, OverrideMappingEditor } from '@/features/mappings/editor/existing-editor'
 import { ScrapeRunsPage, ScrapeRunDetailPage } from '@/features/scrape-runs'
 import { Settings } from '@/features/settings'
 
@@ -20,6 +21,8 @@ export function AppRoutes() {
       <Route path="/settings" element={<Settings />} />
       <Route path="/mappings" element={<MappingDashboard />} />
       <Route path="/mappings/editor/:unmappedId" element={<MappingEditor />} />
+      <Route path="/mappings/editor/existing/:canonicalId" element={<EditMappingEditor />} />
+      <Route path="/mappings/editor/override/:canonicalId" element={<OverrideMappingEditor />} />
     </Routes>
   )
 }
