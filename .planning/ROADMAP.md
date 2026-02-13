@@ -32,15 +32,15 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Comprehensive market mapping management tool enabling users to discover, create, edit, and audit market mappings through an intuitive UI, replacing the need for code deploys to fix mapping gaps.
 
-#### Phase 100: Investigation & Design
+#### Phase 100: Investigation & Design ✓
 
 **Goal**: Analyze current mapping gaps with SQL queries, design DB schema (user_market_mappings, mapping_audit_log, unmapped_market_log), plan runtime merge strategy, define API contracts
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1
 
 Plans:
-- [ ] 100-01: TBD (run /gsd:plan-phase 100 to break down)
+- [x] 100-01: Gap analysis and architecture design — 2026-02-13
 
 #### Phase 101: Backend Foundation
 
@@ -455,7 +455,7 @@ Plans:
 | 99. Availability Tracking Fix | v2.7 | 1/1 + 2 FIX | Complete | 2026-02-12 |
 | 99.1 Availability Filters (INSERTED) | v2.7 | 1/1 | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
-| 100. Investigation & Design | v2.8 | 0/? | Not started | - |
+| 100. Investigation & Design | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 101. Backend Foundation | v2.8 | 0/? | Not started | - |
 | 102. Unmapped Discovery System | v2.8 | 0/? | Not started | - |
 | 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
