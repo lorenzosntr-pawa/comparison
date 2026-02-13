@@ -139,7 +139,7 @@ class MappingCache:
             self._code_count = len(merged)
 
             # 2. Load DB mappings (active only)
-            from db.models.mapping import UserMarketMapping
+            from src.db.models.mapping import UserMarketMapping
 
             result = await session.execute(
                 select(UserMarketMapping).where(UserMarketMapping.is_active == True)
