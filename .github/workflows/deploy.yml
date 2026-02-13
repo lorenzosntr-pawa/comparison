@@ -20,5 +20,5 @@ jobs:
             cd ~/comparison
             git pull origin master
             docker compose up -d --build
-            docker cp comparison-app-1:/app/web/dist/. ~/comparison/web-static/
+            docker compose cp app:/app/web/dist/. ./web-static/
             docker image prune -f
