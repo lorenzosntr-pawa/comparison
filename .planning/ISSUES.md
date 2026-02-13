@@ -41,6 +41,10 @@ None
 
 ## Closed Bugs
 
+### BUG-023: Country and tournament filters not applying to Odds Comparison table (RESOLVED)
+**Discovered:** 2026-02-13 (user report during issue review)
+**Resolution:** Fixed 2026-02-13 - The `queryKey` in `use-matches.ts:94` was modified to exclude `tournamentIds`, `countries`, `kickoffFrom`, and `kickoffTo`. This prevented TanStack Query from detecting filter changes and caused cached data to be returned instead of re-fetching. Fixed by restoring complete queryKey with all filter parameters. Also removed debug console.log statements.
+
 ### BUG-022: Scheduled scrapings appear not to start (RESOLVED)
 **Discovered:** 2026-02-12 (user report during Phase 96 UAT)
 **Resolution:** Fixed 2026-02-12 (Phase 96-02-FIX) - Root cause was BUG-021 (wrong countdown). User was watching the `detect_stale_runs` job countdown (2 min interval) expecting a scrape to start, but that's a background watchdog job, not the actual scrape job. After fixing BUG-021 to show the correct `scrape_all_platforms` countdown, the issue is resolved.
