@@ -49,6 +49,7 @@ from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
 from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
 from src.market_mapping.types.errors import MappingError
 from src.market_mapping.types.sportybet import SportybetMarket
+from src.market_mapping.unmapped_logger import unmapped_logger, UnmappedEntry
 from src.scraping.clients.bet9ja import Bet9jaClient
 from src.scraping.clients.sportybet import SportyBetClient
 from src.scraping.exceptions import ApiError, InvalidEventIdError, NetworkError
@@ -322,8 +323,17 @@ class CompetitorEventScrapingService:
                 market_odds_list.append(market_odds)
 
             except MappingError:
-                # Market not mappable - skip it (common for exotic markets)
-                pass
+                # Log unmapped market for discovery
+                unmapped_logger.log(UnmappedEntry(
+                    source="sportybet",
+                    external_market_id=str(sportybet_market.id),
+                    market_name=sportybet_market.name or sportybet_market.desc,
+                    sample_outcomes=[
+                        {"desc": o.desc, "odds": o.odds}
+                        for o in sportybet_market.outcomes[:3]
+                    ],
+                    seen_at=datetime.now(timezone.utc),
+                ))
             except Exception as e:
                 log.debug("Error parsing SportyBet market", error=str(e))
 

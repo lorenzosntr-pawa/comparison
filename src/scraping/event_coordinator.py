@@ -62,6 +62,7 @@ from src.market_mapping.mappers.bet9ja import map_bet9ja_odds_to_betpawa
 from src.market_mapping.mappers.sportybet import map_sportybet_to_betpawa
 from src.market_mapping.types.errors import MappingError
 from src.market_mapping.types.sportybet import SportybetMarket
+from src.market_mapping.unmapped_logger import unmapped_logger, UnmappedEntry
 from src.scraping.schemas.coordinator import (
     DiscoveryResult,
     EventTarget,
@@ -2891,8 +2892,17 @@ class EventCoordinator:
                 market_odds_list.append(market_odds)
 
             except MappingError:
-                # Market not mappable - skip it (common for exotic markets)
-                pass
+                # Log unmapped market for discovery
+                unmapped_logger.log(UnmappedEntry(
+                    source="sportybet",
+                    external_market_id=str(sportybet_market.id),
+                    market_name=sportybet_market.name or sportybet_market.desc,
+                    sample_outcomes=[
+                        {"desc": o.desc, "odds": o.odds}
+                        for o in sportybet_market.outcomes[:3]
+                    ],
+                    seen_at=datetime.now(timezone.utc),
+                ))
             except Exception as e:
                 logger.debug("Error parsing SportyBet market", error=str(e))
 
@@ -3067,6 +3077,11 @@ class EventCoordinator:
             timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
             db=db,
         )
+
+        # Flush unmapped markets to DB
+        unmapped_count = await unmapped_logger.flush(db)
+        if unmapped_count > 0:
+            logger.info("unmapped_markets.discovered", count=unmapped_count)
 
         # Phase 6: Cycle complete
         total_ms = int((time.perf_counter() - total_start) * 1000)
