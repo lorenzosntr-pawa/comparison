@@ -32,8 +32,7 @@ interface ValidationWarning {
  */
 function validateMapping(
   formState: MappingFormState,
-  outcomes: OutcomeFormItem[],
-  mode: 'create' | 'extend'
+  outcomes: OutcomeFormItem[]
 ): ValidationWarning[] {
   const warnings: ValidationWarning[] = []
 
@@ -107,9 +106,9 @@ export function MappingPreview({
   formState,
   outcomes,
   sourceMarket,
-  existingMapping,
+  existingMapping: _existingMapping,
 }: MappingPreviewProps) {
-  const warnings = validateMapping(formState, outcomes, mode)
+  const warnings = validateMapping(formState, outcomes)
   const hasErrors = warnings.some((w) => w.type === 'error')
   const coverage = getPlatformCoverage(formState)
 
@@ -305,6 +304,6 @@ export function isValidForSubmission(
   formState: MappingFormState,
   outcomes: OutcomeFormItem[]
 ): boolean {
-  const warnings = validateMapping(formState, outcomes, 'create')
+  const warnings = validateMapping(formState, outcomes)
   return !warnings.some((w) => w.type === 'error')
 }

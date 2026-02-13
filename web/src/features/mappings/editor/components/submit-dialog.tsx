@@ -243,7 +243,7 @@ export function SubmitDialog({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!canSubmit || submitState === 'submitting'}
+                disabled={!canSubmit}
               >
                 {submitState === 'submitting' ? (
                   <>
