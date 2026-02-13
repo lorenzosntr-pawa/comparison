@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router'
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle, Send } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useUnmappedDetail } from './hooks/use-unmapped-detail'
+import { useMappingDetail } from './hooks/use-mapping-detail'
 import { SourceMarketPanel } from './components/source-market-panel'
 import { TargetMarketPanel } from './components/target-market-panel'
+import { SubmitDialog } from './components/submit-dialog'
+import { isValidForSubmission } from './components/mapping-preview'
 import type { MappingFormState } from './components/target-market-form'
 import type { MappingPickerMode } from './components/mapping-picker'
 import type { OutcomeFormItem } from './utils/outcome-suggest'
@@ -36,6 +39,14 @@ export function MappingEditor() {
 
   // Outcome mapping state (lifted here for submit in Plan 04)
   const [outcomes, setOutcomes] = useState<OutcomeFormItem[]>([])
+
+  // Submit dialog state
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
+
+  // Fetch mapping detail when in extend mode
+  const { data: mappingDetail } = useMappingDetail(
+    pickerMode === 'select' ? selectedMappingId : undefined
+  )
 
   // Stable callback for form changes to avoid unnecessary re-renders
   const handleFormChange = useCallback((state: MappingFormState) => {
@@ -128,6 +139,30 @@ export function MappingEditor() {
           onModeChange={setPickerMode}
         />
       </div>
+
+      {/* Submit Button - Fixed at bottom */}
+      <div className="flex justify-end pt-4 border-t">
+        <Button
+          size="lg"
+          onClick={() => setIsSubmitDialogOpen(true)}
+          disabled={!isValidForSubmission(formState, outcomes)}
+          className="gap-2"
+        >
+          <Send className="h-4 w-4" />
+          Preview & Submit
+        </Button>
+      </div>
+
+      {/* Submit Dialog */}
+      <SubmitDialog
+        open={isSubmitDialogOpen}
+        onOpenChange={setIsSubmitDialogOpen}
+        mode={pickerMode === 'create' ? 'create' : 'extend'}
+        formState={formState}
+        outcomes={outcomes}
+        sourceMarket={data}
+        existingMapping={mappingDetail}
+      />
     </div>
   )
 }
