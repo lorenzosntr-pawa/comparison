@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -55,15 +56,15 @@ function getSourceBadge(source: string): { label: string; className: string } {
 
 interface HighPriorityRowProps {
   item: HighPriorityItem
+  onNavigate: (id: number) => void
 }
 
-function HighPriorityRow({ item }: HighPriorityRowProps) {
+function HighPriorityRow({ item, onNavigate }: HighPriorityRowProps) {
   const priority = getPriorityBadge(item.priorityScore)
   const source = getSourceBadge(item.source)
 
-  // TODO: Will link to mapping editor in Phase 104
   const handleClick = () => {
-    console.log('TODO: Navigate to mapping editor for', item.id)
+    onNavigate(item.id)
   }
 
   return (
@@ -87,7 +88,12 @@ function HighPriorityRow({ item }: HighPriorityRowProps) {
 }
 
 export function HighPriorityUnmapped() {
+  const navigate = useNavigate()
   const { data, isLoading, error } = useHighPriorityUnmapped()
+
+  const handleNavigateToEditor = (id: number) => {
+    navigate(`/mappings/editor/${id}`)
+  }
 
   if (error) {
     return (
@@ -160,7 +166,7 @@ export function HighPriorityUnmapped() {
       <CardContent>
         <div className="space-y-1">
           {items.map((item) => (
-            <HighPriorityRow key={item.id} item={item} />
+            <HighPriorityRow key={item.id} item={item} onNavigate={handleNavigateToEditor} />
           ))}
         </div>
       </CardContent>
