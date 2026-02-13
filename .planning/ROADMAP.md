@@ -54,16 +54,16 @@ Plans:
 - [x] 101-02: MappingCache with merge logic — 2026-02-13
 - [x] 101-03: Pydantic schemas and CRUD API — 2026-02-13
 
-#### Phase 102: Unmapped Discovery System
+#### Phase 102: Unmapped Discovery System ✓
 
 **Goal**: Log unmapped markets during scraping, WebSocket alerts for new unmapped markets, on-demand analysis endpoint, historical unmapped market queries
 **Depends on**: Phase 101
 **Research**: Unlikely (existing WebSocket infra)
-**Plans**: 1/2
+**Plans**: 2/2
 
 Plans:
 - [x] 102-01: UnmappedLogger service + scraping integration — 2026-02-13
-- [ ] 102-02: API endpoints + WebSocket alerts
+- [x] 102-02: API endpoints + WebSocket alerts — 2026-02-13
 
 #### Phase 103: Mapping Dashboard
 
@@ -460,7 +460,7 @@ Plans:
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
 | 100. Investigation & Design | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 101. Backend Foundation | v2.8 | 3/3 | Complete | 2026-02-13 |
-| 102. Unmapped Discovery System | v2.8 | 1/2 | In progress | - |
+| 102. Unmapped Discovery System | v2.8 | 2/2 | Complete | 2026-02-13 |
 | 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
 | 104. Mapping Editor | v2.8 | 0/? | Not started | - |
 | 105. Conflict & Audit | v2.8 | 0/? | Not started | - |
