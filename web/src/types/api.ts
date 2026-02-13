@@ -438,6 +438,8 @@ export interface PalimpsestEvent {
   kickoff: string
   /** Tournament name */
   tournament_name: string
+  /** BetPawa tournament ID, or null for competitor-only events */
+  tournament_id: number | null
   /** Tournament country, or null if international */
   tournament_country: string | null
   /** Sport name */

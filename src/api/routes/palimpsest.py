@@ -302,6 +302,7 @@ async def get_palimpsest_events(
                                 away_team=event.away_team,
                                 kickoff=event.kickoff,
                                 tournament_name=event.tournament.name,
+                                tournament_id=event.tournament_id,
                                 tournament_country=event.tournament.country,
                                 sport_name=event.tournament.sport.name,
                                 availability="matched",
@@ -320,6 +321,7 @@ async def get_palimpsest_events(
                                 away_team=event.away_team,
                                 kickoff=event.kickoff,
                                 tournament_name=event.tournament.name,
+                                tournament_id=event.tournament_id,
                                 tournament_country=event.tournament.country,
                                 sport_name=event.tournament.sport.name,
                                 availability="betpawa-only",
@@ -398,6 +400,7 @@ async def get_palimpsest_events(
                     away_team=primary.away_team,
                     kickoff=primary.kickoff,
                     tournament_name=primary.tournament.name,
+                    tournament_id=None,  # No BetPawa tournament for competitor-only events
                     tournament_country=primary.tournament.country_raw,
                     sport_name=primary.tournament.sport.name,
                     availability="competitor-only",
@@ -433,7 +436,7 @@ async def get_palimpsest_events(
 
     # Build TournamentGroup objects
     tournament_groups: list[TournamentGroup] = []
-    tournament_id_counter = 1  # Synthetic ID for grouping
+    synthetic_id_counter = -1  # Negative IDs for competitor-only tournaments
 
     for key, events in tournament_map.items():
         # Calculate per-tournament coverage
@@ -446,9 +449,22 @@ async def get_palimpsest_events(
         # Get tournament metadata from first event
         first = events[0]
 
+        # Find real tournament_id from first BetPawa event (matched or betpawa-only)
+        # For competitor-only tournaments, use negative synthetic ID
+        real_tournament_id: int | None = None
+        for event in events:
+            if event.tournament_id is not None:
+                real_tournament_id = event.tournament_id
+                break
+
+        if real_tournament_id is None:
+            # Competitor-only tournament - use negative synthetic ID
+            real_tournament_id = synthetic_id_counter
+            synthetic_id_counter -= 1
+
         tournament_groups.append(
             TournamentGroup(
-                tournament_id=tournament_id_counter,
+                tournament_id=real_tournament_id,
                 tournament_name=first.tournament_name,
                 tournament_country=first.tournament_country,
                 sport_name=first.sport_name,
@@ -461,7 +477,6 @@ async def get_palimpsest_events(
                 events=events,
             )
         )
-        tournament_id_counter += 1
 
     # Sort tournament groups by name
     tournament_groups.sort(key=lambda g: g.tournament_name.lower())

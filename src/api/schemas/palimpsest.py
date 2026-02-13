@@ -59,6 +59,10 @@ class PalimpsestEvent(BaseModel):
     away_team: str
     kickoff: datetime
     tournament_name: str
+    tournament_id: int | None = Field(
+        default=None,
+        description="BetPawa tournament ID (None for competitor-only events)"
+    )
     tournament_country: str | None = None
     sport_name: str
     availability: str = Field(

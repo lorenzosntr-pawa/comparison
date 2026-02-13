@@ -187,18 +187,24 @@ export function TournamentTable({ tournaments, isLoading }: TournamentTableProps
                     {totalEvents}
                   </TableCell>
                   <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/historical-analysis/${tournament.tournament_id}`)
-                      }}
-                      title="View historical analysis"
-                    >
-                      <BarChart2 className="h-4 w-4" />
-                    </Button>
+                    {tournament.tournament_id > 0 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/historical-analysis/${tournament.tournament_id}`)
+                        }}
+                        title="View historical analysis"
+                      >
+                        <BarChart2 className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground text-xs" title="No BetPawa data available">
+                        —
+                      </span>
+                    )}
                   </TableCell>
                 </TableRow>
                 <EventRows

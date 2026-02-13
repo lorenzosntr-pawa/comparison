@@ -41,6 +41,11 @@ None
 
 ## Closed Bugs
 
+### BUG-025: Coverage page navigation to Historical Analysis uses wrong tournament ID (RESOLVED)
+**Discovered:** 2026-02-13 (user report during issue review)
+**Root Cause:** Palimpsest API used synthetic counter-based `tournament_id` (1, 2, 3...) instead of real database IDs. Coverage page navigated to `/historical-analysis/3` (synthetic) but Historical Analysis filtered by actual DB tournament_id, causing mismatch.
+**Resolution:** Fixed 2026-02-13 - Modified `palimpsest.py` to populate `tournament_id` from `event.tournament_id` for matched/betpawa-only events. Competitor-only tournaments now use negative IDs (-1, -2...) since they have no BetPawa data. Updated `tournament-table.tsx` to hide Historical Analysis button for competitor-only tournaments (negative IDs). Files modified: `palimpsest.py`, `palimpsest.py` schema, `tournament-table.tsx`, `api.ts` types.
+
 ### BUG-024: Historical Analysis page shows only past events, missing tournaments from Odds Comparison (RESOLVED)
 **Discovered:** 2026-02-13 (user report during issue review)
 **Root Cause:** Default date range was set to "last 7 days" (past only), while users expected to see the same tournaments/events visible on Odds Comparison page (which shows upcoming events).
