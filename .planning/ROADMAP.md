@@ -83,10 +83,13 @@ Plans:
 **Goal**: Side-by-side UI component, Betpawa market picker with search, outcome auto-suggest algorithm, parameterized market handling (base + exceptions), preview mode showing impact
 **Depends on**: Phase 103
 **Research**: Unlikely (shadcn/ui patterns)
-**Plans**: TBD
+**Plans**: 4
 
 Plans:
-- [ ] 104-01: TBD
+- [ ] 104-01: Editor Foundation & Navigation
+- [ ] 104-02: Target Market Configuration
+- [ ] 104-03: Outcome Mapping + Auto-Suggest
+- [ ] 104-04: Preview & Submit
 
 #### Phase 105: Conflict & Audit
 
@@ -465,6 +468,6 @@ Plans:
 | 101. Backend Foundation | v2.8 | 3/3 | Complete | 2026-02-13 |
 | 102. Unmapped Discovery System | v2.8 | 2/2 | Complete | 2026-02-13 |
 | 103. Mapping Dashboard | v2.8 | 4/4 | Complete | 2026-02-13 |
-| 104. Mapping Editor | v2.8 | 0/? | Not started | - |
+| 104. Mapping Editor | v2.8 | 0/4 | Planned | - |
 | 105. Conflict & Audit | v2.8 | 0/? | Not started | - |
 | 106. Polish & Validation | v2.8 | 0/? | Not started | - |
