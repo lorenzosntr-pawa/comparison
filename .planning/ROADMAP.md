@@ -24,11 +24,11 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
-- 🚧 **v2.8 Storage Optimization** — Phases 100-104 (in progress)
+- ✅ **v2.8 Storage Optimization** — Phases 100-104 (shipped 2026-02-17)
 
 ---
 
-### 🚧 v2.8 Storage Optimization (In Progress)
+### ✅ v2.8 Storage Optimization (Shipped 2026-02-17)
 
 **Milestone Goal:** Reduce database from 20+ GB to under 10 GB through schema optimization, compression, and proper retention policies while preserving all current features.
 
@@ -83,17 +83,17 @@ Plans:
 - VACUUM FULL reclaimed ~35 GB from dropped raw_response columns
 - 7-day retention deleted 60M+ market_odds records
 
-#### Phase 104: Monitoring & Prevention
+#### Phase 104: Monitoring & Prevention ✓
 
 **Goal**: Add database size tracking dashboard, implement automated retention policies, set up alerts for abnormal growth to prevent future issues
 **Depends on**: Phase 103
 **Research**: Unlikely (internal patterns)
-**Plans**: 2/3
+**Plans**: 3/3 complete
 
 Plans:
 - [x] 104-01: Storage size API & history tracking (backend) — 2026-02-17
 - [x] 104-02: Storage dashboard (frontend) — 2026-02-17
-- [ ] 104-03: Growth alerting (full-stack)
+- [x] 104-03: Growth alerting (full-stack) — 2026-02-17
 
 ---
 
@@ -452,4 +452,5 @@ Plans:
 | 101. Schema Implementation | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 102. Scraping Verification | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 103. Data Migration & Validation | v2.8 | 1/1 | Complete | 2026-02-17 |
-| 104. Monitoring & Prevention | v2.8 | 2/3 | In progress | - |
+| 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
+| **v2.8 SHIPPED** | | | **2026-02-17** | |
