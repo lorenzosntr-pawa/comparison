@@ -32,11 +32,13 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from sqlalchemy import select
+import structlog
+from sqlalchemy import delete, func, select, text
 
 from src.db.engine import async_session_factory
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
+from src.db.models.storage_sample import StorageSample
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
 from src.scraping.event_coordinator import EventCoordinator
@@ -326,3 +328,79 @@ async def cleanup_old_data() -> None:
             )
         except Exception as e:
             logger.exception(f"Cleanup failed: {e}")
+
+
+async def sample_storage_sizes() -> None:
+    """Scheduled job to sample database storage sizes.
+
+    Queries PostgreSQL system tables for current storage sizes,
+    creates a StorageSample record, and prunes samples older than 90 days.
+    Runs daily at 3 AM UTC (after cleanup at 2 AM).
+    """
+    log = structlog.get_logger("src.scheduling.jobs.storage")
+    log.info("storage.sampling.start")
+
+    try:
+        async with async_session_factory() as session:
+            # Query table sizes from pg_stat_user_tables
+            table_sizes_query = text("""
+                SELECT
+                    relname as table_name,
+                    pg_total_relation_size(quote_ident(relname)) as size_bytes
+                FROM pg_stat_user_tables
+            """)
+            result = await session.execute(table_sizes_query)
+            rows = result.fetchall()
+
+            table_sizes_dict = {row.table_name: row.size_bytes for row in rows}
+
+            # Query total database size
+            total_size_query = text("""
+                SELECT pg_database_size(current_database()) as total_bytes
+            """)
+            total_result = await session.execute(total_size_query)
+            total_row = total_result.fetchone()
+            total_bytes = total_row.total_bytes
+
+            # Create StorageSample record
+            sample = StorageSample(
+                total_bytes=total_bytes,
+                table_sizes=table_sizes_dict,
+            )
+            session.add(sample)
+            await session.commit()
+            await session.refresh(sample)
+
+            log.info(
+                "storage.sampling.recorded",
+                sample_id=sample.id,
+                total_bytes=total_bytes,
+                table_count=len(table_sizes_dict),
+            )
+
+            # Prune old samples (keep last 90)
+            # Get the 90th newest sample's sampled_at
+            subquery = (
+                select(StorageSample.sampled_at)
+                .order_by(StorageSample.sampled_at.desc())
+                .offset(90)
+                .limit(1)
+                .scalar_subquery()
+            )
+
+            # Delete samples older than the 90th newest
+            delete_stmt = delete(StorageSample).where(
+                StorageSample.sampled_at < subquery
+            )
+            delete_result = await session.execute(delete_stmt)
+            deleted_count = delete_result.rowcount
+            await session.commit()
+
+            if deleted_count > 0:
+                log.info(
+                    "storage.sampling.pruned",
+                    deleted_count=deleted_count,
+                )
+
+    except Exception as e:
+        log.exception("storage.sampling.failed", error=str(e))

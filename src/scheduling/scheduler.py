@@ -69,16 +69,16 @@ async def get_settings_from_db() -> Settings | None:
 
 
 def configure_scheduler() -> None:
-    """Configure the scheduler with scraping and cleanup jobs.
+    """Configure the scheduler with scraping, cleanup, and storage sampling jobs.
 
-    Adds the scrape_all_platforms and cleanup_old_data jobs with default intervals.
-    Uses deferred import to avoid circular dependencies.
+    Adds the scrape_all_platforms, cleanup_old_data, and sample_storage_sizes jobs
+    with default intervals. Uses deferred import to avoid circular dependencies.
 
     Note: Uses default intervals on startup. Call sync_settings_on_startup()
     after DB is available to sync with stored settings.
     """
     # Deferred import to avoid circular dependency
-    from src.scheduling.jobs import cleanup_old_data, scrape_all_platforms
+    from src.scheduling.jobs import cleanup_old_data, sample_storage_sizes, scrape_all_platforms
     from src.scheduling.stale_detection import detect_stale_runs
 
     # Use default interval on startup - will be updated when settings are loaded
@@ -108,6 +108,16 @@ def configure_scheduler() -> None:
         id="cleanup_old_data",
         replace_existing=True,
         misfire_grace_time=3600,  # 1 hour grace for cleanup
+        coalesce=True,
+    )
+
+    # Add storage sampling job (daily, runs after cleanup)
+    scheduler.add_job(
+        sample_storage_sizes,
+        trigger=IntervalTrigger(hours=24),
+        id="sample_storage_sizes",
+        replace_existing=True,
+        misfire_grace_time=3600,  # 1 hour grace for sampling
         coalesce=True,
     )
 
