@@ -49,29 +49,16 @@ interface HistoryDialogState {
 }
 
 // Static color classes for Tailwind JIT compilation
-// Dynamic classes like `bg-green-500/${opacity}` don't work with Tailwind JIT
-// BetPawa uses filled backgrounds (emphatic), competitors use borders (subtle)
+// BetPawa uses borders (emphatic outline), competitors use light fills (subtle)
 const BETPAWA_COLOR_CLASSES = {
-  green: {
-    10: 'bg-green-500/10',
-    20: 'bg-green-500/20',
-    30: 'bg-green-500/30',
-    40: 'bg-green-500/40',
-    50: 'bg-green-500/50',
-  },
-  red: {
-    10: 'bg-red-500/10',
-    20: 'bg-red-500/20',
-    30: 'bg-red-500/30',
-    40: 'bg-red-500/40',
-    50: 'bg-red-500/50',
-  },
+  green: 'border-2 border-green-500 text-green-700 dark:text-green-400',
+  red: 'border-2 border-red-500 text-red-700 dark:text-red-400',
 } as const
 
-// Competitor colors use borders instead of fills for visual distinction
+// Competitor colors use light fills for visual distinction
 // Only green - we don't highlight when competitors are worse (focus is on BetPawa)
 const COMPETITOR_COLOR_CLASSES = {
-  green: 'border-2 border-green-500 text-green-700 dark:text-green-400',
+  green: 'bg-green-500/20 text-green-700 dark:text-green-400',
 } as const
 
 // Text color classes for margin display
@@ -79,8 +66,6 @@ const TEXT_COLOR_CLASSES = {
   green: 'text-green-600 dark:text-green-400',
   red: 'text-red-600 dark:text-red-400',
 } as const
-
-type OpacityLevel = 10 | 20 | 30 | 40 | 50
 
 interface MatchTableProps {
   events: MatchedEvent[]
@@ -276,18 +261,13 @@ function OddsValue({
   let styleClass = ''
 
   if (isBetpawa && bestCompetitorOdds !== null && betpawaOdds !== null) {
-    // BetPawa column: use filled backgrounds (emphatic)
+    // BetPawa column: use borders (emphatic outline)
     const delta = betpawaOdds - bestCompetitorOdds
 
     if (Math.abs(delta) > tolerance) {
-      const intensity = Math.min(Math.abs(delta) * 25, 1)
-      const opacityLevel = Math.min(
-        Math.max(Math.ceil(intensity * 5) * 10, 10),
-        50
-      ) as OpacityLevel
       // Green if Betpawa is better (positive delta), red if worse (negative delta)
       const color = delta > 0 ? 'green' : 'red'
-      styleClass = BETPAWA_COLOR_CLASSES[color][opacityLevel]
+      styleClass = BETPAWA_COLOR_CLASSES[color]
     }
   } else if (!isBetpawa && betpawaOdds !== null) {
     // Competitor column: only highlight when competitor BEATS BetPawa (green border)

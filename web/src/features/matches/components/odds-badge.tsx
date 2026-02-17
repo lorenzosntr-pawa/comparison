@@ -103,17 +103,17 @@ export function OddsBadge({
     styleClass = 'text-muted-foreground line-through'
   } else if (isBest) {
     if (isBetpawa) {
-      // BetPawa: emphatic filled background
-      styleClass = 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-    } else {
-      // Competitor: subtle border
+      // BetPawa: emphatic border outline
       styleClass = 'border-2 border-green-500 text-green-700 dark:text-green-400'
+    } else {
+      // Competitor: subtle light fill
+      styleClass = 'bg-green-500/20 text-green-700 dark:text-green-400'
     }
   } else if (isWorst || isSignificantlyWorse) {
     // Only show red on BetPawa - no need to highlight when competitors are worse
     if (isBetpawa) {
-      // BetPawa: emphatic filled background
-      styleClass = 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+      // BetPawa: emphatic border outline
+      styleClass = 'border-2 border-red-500 text-red-700 dark:text-red-400'
     }
     // Competitors: no red styling - focus is on BetPawa row
   }
