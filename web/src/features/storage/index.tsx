@@ -24,9 +24,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { useStorageSizes, useStorageHistory, useCleanupHistory } from './hooks'
+import { useStorageSizes, useStorageHistory, useCleanupHistory, useStorageAlerts, useResolveAlert } from './hooks'
 import type { CleanupRun } from './hooks'
-import { SizeTrendChart } from './components'
+import { AlertsBanner, SizeTrendChart } from './components'
 
 /**
  * Format bytes to human-readable size string.
@@ -90,6 +90,11 @@ export function StoragePage() {
   const { data: sizes, isLoading: sizesLoading, error: sizesError } = useStorageSizes()
   const { data: history, isLoading: historyLoading } = useStorageHistory(30)
   const { data: cleanup, isLoading: cleanupLoading, error: cleanupError } = useCleanupHistory(10)
+  const { data: alertsData } = useStorageAlerts()
+  const resolveAlert = useResolveAlert()
+
+  const alerts = alertsData?.alerts ?? []
+  const alertCount = alerts.length
 
   // Show error state
   if (sizesError || cleanupError) {
@@ -148,7 +153,20 @@ export function StoragePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Storage</h1>
+      {/* Alerts Banner */}
+      <AlertsBanner
+        alerts={alerts}
+        onDismiss={(id) => resolveAlert.mutate(id)}
+        dismissingId={resolveAlert.isPending ? (resolveAlert.variables as number) : null}
+      />
+
+      <h1 className="text-2xl font-bold">
+        Storage{alertCount > 0 && (
+          <Badge variant="destructive" className="ml-2 align-middle">
+            {alertCount} {alertCount === 1 ? 'alert' : 'alerts'}
+          </Badge>
+        )}
+      </h1>
 
       {/* Total Database Size Card */}
       <Card>
