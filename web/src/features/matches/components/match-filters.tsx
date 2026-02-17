@@ -24,6 +24,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { useTournaments } from '../hooks/use-tournaments'
 import { useCountries } from '../hooks/use-countries'
+import { Switch } from '@/components/ui/switch'
 import { X, ChevronsUpDown } from 'lucide-react'
 
 type DatePreset = 'today' | 'tomorrow' | 'weekend' | 'next7days'
@@ -86,6 +87,8 @@ export interface MatchFiltersState {
   minBookmakers: number
   sortBy: 'kickoff' | 'tournament'
   availability: 'betpawa' | 'competitor' | 'alerts'
+  /** Bookmakers to hide from the table (slugs: 'sportybet', 'bet9ja') */
+  hiddenBookmakers: string[]
 }
 
 interface MatchFiltersProps {
@@ -176,7 +179,16 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
       minBookmakers: 2,
       sortBy: 'kickoff',
       availability: 'betpawa',
+      hiddenBookmakers: [],
     })
+  }
+
+  const toggleBookmaker = (slug: string) => {
+    const hidden = filters.hiddenBookmakers || []
+    const newHidden = hidden.includes(slug)
+      ? hidden.filter((s) => s !== slug)
+      : [...hidden, slug]
+    updateFilter('hiddenBookmakers', newHidden)
   }
 
   const hasActiveFilters =
@@ -426,6 +438,29 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
             <SelectItem value="tournament">Tournament</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Bookmaker visibility toggles */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Show</label>
+        <div className="flex items-center gap-3 h-9">
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+            <Switch
+              checked={!(filters.hiddenBookmakers || []).includes('sportybet')}
+              onCheckedChange={() => toggleBookmaker('sportybet')}
+              className="h-4 w-7"
+            />
+            <span className="text-muted-foreground">SB</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+            <Switch
+              checked={!(filters.hiddenBookmakers || []).includes('bet9ja')}
+              onCheckedChange={() => toggleBookmaker('bet9ja')}
+              className="h-4 w-7"
+            />
+            <span className="text-muted-foreground">B9</span>
+          </label>
+        </div>
       </div>
 
       {/* Clear filters button */}

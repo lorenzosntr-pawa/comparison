@@ -24,6 +24,7 @@ const DEFAULT_BETPAWA_FILTERS: MatchFiltersState = {
   minBookmakers: 2,
   sortBy: 'kickoff',
   availability: 'betpawa',
+  hiddenBookmakers: [],
 }
 
 const DEFAULT_COMPETITOR_FILTERS: MatchFiltersState = {
@@ -35,6 +36,7 @@ const DEFAULT_COMPETITOR_FILTERS: MatchFiltersState = {
   minBookmakers: 2,
   sortBy: 'kickoff',
   availability: 'competitor',
+  hiddenBookmakers: [],
 }
 
 const DEFAULT_ALERTS_FILTERS: MatchFiltersState = {
@@ -46,6 +48,7 @@ const DEFAULT_ALERTS_FILTERS: MatchFiltersState = {
   minBookmakers: 1,  // Show all events with alerts, regardless of bookmaker count
   sortBy: 'kickoff',
   availability: 'alerts',
+  hiddenBookmakers: [],
 }
 
 export function MatchList() {
@@ -234,6 +237,7 @@ export function MatchList() {
         isLoading={isPending}
         visibleColumns={visibleColumns}
         excludeBetpawa={currentMode === 'competitor'}
+        hiddenBookmakers={filters.hiddenBookmakers}
         columnWidths={columnWidths}
         onColumnWidthChange={setColumnWidth}
       />

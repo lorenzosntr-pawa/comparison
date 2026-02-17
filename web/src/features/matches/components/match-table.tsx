@@ -72,6 +72,8 @@ interface MatchTableProps {
   isLoading?: boolean
   visibleColumns?: string[]
   excludeBetpawa?: boolean
+  /** Bookmaker slugs to hide from display (e.g., ['sportybet', 'bet9ja']) */
+  hiddenBookmakers?: string[]
   columnWidths?: Record<string, number>
   onColumnWidthChange?: (columnId: string, width: number) => void
 }
@@ -454,7 +456,7 @@ function formatKickoff(kickoff: string): string {
   })
 }
 
-export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false, columnWidths = {}, onColumnWidthChange }: MatchTableProps) {
+export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000', '3795'], excludeBetpawa = false, hiddenBookmakers = [], columnWidths = {}, onColumnWidthChange }: MatchTableProps) {
   const navigate = useNavigate()
   const [historyDialog, setHistoryDialog] = useState<HistoryDialogState | null>(null)
 
@@ -529,10 +531,11 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
   }
 
   // Get ordered list of bookmakers
-  // Exclude betpawa when showing competitor-only events
-  const bookmakerOrder = excludeBetpawa
+  // Exclude betpawa when showing competitor-only events, and filter out hidden bookmakers
+  const allBookmakers = excludeBetpawa
     ? ['sportybet', 'bet9ja']
     : ['betpawa', 'sportybet', 'bet9ja']
+  const bookmakerOrder = allBookmakers.filter((slug) => !hiddenBookmakers.includes(slug))
 
   const rowsPerMatch = bookmakerOrder.length
 
