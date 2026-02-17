@@ -136,6 +136,20 @@ export const api = {
    */
   get: <T>(url: string) => fetchJson<T>(url),
 
+  /**
+   * Generic POST request for simple endpoints.
+   *
+   * @template T - The expected response type
+   * @param url - The API endpoint path
+   * @param body - Optional request body (will be JSON stringified)
+   * @returns Promise resolving to the typed response
+   */
+  post: <T>(url: string, body?: unknown) =>
+    fetchJson<T>(url, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Health
   // ─────────────────────────────────────────────────────────────────────────────

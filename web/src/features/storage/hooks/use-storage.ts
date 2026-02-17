@@ -64,8 +64,7 @@ export function useStorageSizes() {
   return useQuery({
     queryKey: ['storage', 'sizes'],
     queryFn: async (): Promise<StorageSizes> => {
-      const res = await api.get('/storage/sizes')
-      return res.data
+      return api.get<StorageSizes>('/storage/sizes')
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -78,8 +77,7 @@ export function useStorageHistory(days: number = 30) {
   return useQuery({
     queryKey: ['storage', 'history', days],
     queryFn: async (): Promise<StorageHistory> => {
-      const res = await api.get(`/storage/history?days=${days}`)
-      return res.data
+      return api.get<StorageHistory>(`/storage/history?days=${days}`)
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -92,8 +90,7 @@ export function useCleanupHistory(limit: number = 10) {
   return useQuery({
     queryKey: ['cleanup', 'history', limit],
     queryFn: async (): Promise<CleanupHistory> => {
-      const res = await api.get(`/cleanup/history?limit=${limit}`)
-      return res.data
+      return api.get<CleanupHistory>(`/cleanup/history?limit=${limit}`)
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -124,8 +121,7 @@ export function useStorageAlerts() {
   return useQuery({
     queryKey: ['storage', 'alerts'],
     queryFn: async (): Promise<StorageAlertsResponse> => {
-      const res = await api.get('/storage/alerts')
-      return res.data
+      return api.get<StorageAlertsResponse>('/storage/alerts')
     },
     staleTime: 1000 * 60, // 1 minute
   })
@@ -139,8 +135,7 @@ export function useResolveAlert() {
 
   return useMutation({
     mutationFn: async (alertId: number): Promise<StorageAlert> => {
-      const res = await api.post(`/storage/alerts/${alertId}/resolve`)
-      return res.data
+      return api.post<StorageAlert>(`/storage/alerts/${alertId}/resolve`)
     },
     onSuccess: () => {
       // Invalidate alerts query to refresh list

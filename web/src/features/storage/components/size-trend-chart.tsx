@@ -120,7 +120,7 @@ export function SizeTrendChart({ data, height = 250 }: SizeTrendChartProps) {
           labelFormatter={(value) =>
             format(new Date(value as number), 'MMM d, yyyy HH:mm')
           }
-          formatter={(value, _name, props) => {
+          formatter={(_value, _name, props) => {
             const bytes = props.payload.rawBytes
             return [formatBytes(bytes), 'Database Size']
           }}
