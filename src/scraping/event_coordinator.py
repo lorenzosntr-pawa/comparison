@@ -2564,6 +2564,15 @@ class EventCoordinator:
                     unavailable_at=market.unavailable_at,
                 ))
 
+            # Build UnavailableMarketUpdate for markets that became available again
+            # (clears unavailable_at by setting it to None)
+            for market in became_available:
+                unavailable_bp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=None,  # Clear the unavailable flag
+                ))
+
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
 
@@ -2609,6 +2618,15 @@ class EventCoordinator:
                     snapshot_id=cached_snap.snapshot_id,
                     betpawa_market_id=market.betpawa_market_id,
                     unavailable_at=market.unavailable_at,
+                ))
+
+            # Build UnavailableMarketUpdate for markets that became available again
+            # (clears unavailable_at by setting it to None)
+            for market in became_available:
+                unavailable_comp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=None,  # Clear the unavailable flag
                 ))
 
             total_became_unavailable += len(became_unavailable)
@@ -2703,6 +2721,15 @@ class EventCoordinator:
                     unavailable_at=market.unavailable_at,
                 ))
 
+            # Build UnavailableMarketUpdate for markets that became available again
+            # (clears unavailable_at by setting it to None)
+            for market in became_available:
+                unavailable_bp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=None,  # Clear the unavailable flag
+                ))
+
             total_became_unavailable += len(became_unavailable)
             total_became_available += len(became_available)
 
@@ -2752,6 +2779,15 @@ class EventCoordinator:
                     snapshot_id=cached_snap.snapshot_id,
                     betpawa_market_id=market.betpawa_market_id,
                     unavailable_at=market.unavailable_at,
+                ))
+
+            # Build UnavailableMarketUpdate for markets that became available again
+            # (clears unavailable_at by setting it to None)
+            for market in became_available:
+                unavailable_comp_updates.append(UnavailableMarketUpdate(
+                    snapshot_id=cached_snap.snapshot_id,
+                    betpawa_market_id=market.betpawa_market_id,
+                    unavailable_at=None,  # Clear the unavailable flag
                 ))
 
             total_became_unavailable += len(became_unavailable)

@@ -285,6 +285,7 @@ Progress: ██████████ 100%
 - **Sidebar compact status widgets** - event count badge and health indicator dots (green/yellow/red) for at-a-glance system monitoring (v2.6 Phase 96)
 - **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
 - **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
+- **Bidirectional availability updates** - UnavailableMarketUpdate with unavailable_at=None clears availability flag when odds return; both became_unavailable and became_available lists must be persisted to database (BUG-026 fix)
 
 ### Key Decisions
 

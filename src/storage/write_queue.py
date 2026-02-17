@@ -77,11 +77,15 @@ class CompetitorSnapshotWriteData:
 
 @dataclass(frozen=True)
 class UnavailableMarketUpdate:
-    """Track a market that became unavailable - needs UPDATE on existing row."""
+    """Track a market availability change - needs UPDATE on existing row.
+
+    When unavailable_at is set to a datetime, the market became unavailable.
+    When unavailable_at is set to None, the market became available again.
+    """
 
     snapshot_id: int
     betpawa_market_id: str
-    unavailable_at: datetime
+    unavailable_at: datetime | None
 
 
 @dataclass(frozen=True)

@@ -41,6 +41,12 @@ None
 
 ## Closed Bugs
 
+### BUG-026: Availability state not cleared when odds return (RESOLVED)
+**Discovered:** 2026-02-17 (user report during issue review)
+**Root Cause:** In `event_coordinator.py`, the `detect_availability_changes()` function correctly detected `became_available` markets (odds that returned after being unavailable), but these were only counted for logging - never persisted to the database. The `UnavailableMarketUpdate` objects were only created for `became_unavailable` markets, not for markets that needed their `unavailable_at` cleared.
+**Impact:** Alert mode stuck showing events after odds returned; history charts showed "became unavailable" but never "became available"; cache/DB mismatch with correct cache but stale DB data.
+**Resolution:** Fixed 2026-02-17 - Added code to create `UnavailableMarketUpdate` objects for `became_available` markets with `unavailable_at=None` in both async and sync versions of `_detect_and_log_availability_changes()`. The write_handler already supports setting `unavailable_at=NULL` via UPDATE statements. Files modified: `src/scraping/event_coordinator.py` (4 locations - async BetPawa, async competitor, sync BetPawa, sync competitor).
+
 ### BUG-025: Coverage page navigation to Historical Analysis uses wrong tournament ID (RESOLVED)
 **Discovered:** 2026-02-13 (user report during issue review)
 **Root Cause:** Palimpsest API used synthetic counter-based `tournament_id` (1, 2, 3...) instead of real database IDs. Coverage page navigated to `/historical-analysis/3` (synthetic) but Historical Analysis filtered by actual DB tournament_id, causing mismatch.
