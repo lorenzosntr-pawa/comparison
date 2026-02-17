@@ -10,33 +10,32 @@ import { api } from '@/lib/api'
 
 /** Table size information */
 export interface TableSize {
-  table_name: string
-  size_bytes: number
-  row_count: number
+  tableName: string
+  sizeBytes: number
+  sizeHuman: string
+  rowCount: number
 }
 
 /** Storage sizes response */
 export interface StorageSizes {
-  total_bytes: number
+  totalBytes: number
+  totalHuman: string
   tables: TableSize[]
-  sampled_at: string
+  measuredAt: string
 }
 
 /** Storage history sample */
 export interface StorageSample {
   id: number
-  total_bytes: number
-  sampled_at: string
+  totalBytes: number
+  sampledAt: string
+  tableSizes: Record<string, number>
 }
 
 /** Storage history response */
 export interface StorageHistory {
   samples: StorageSample[]
-  sample_count: number
-  date_range: {
-    from: string | null
-    to: string | null
-  }
+  total: number
 }
 
 /** Cleanup run record */
@@ -73,11 +72,11 @@ export function useStorageSizes() {
 /**
  * Fetch storage history samples.
  */
-export function useStorageHistory(days: number = 30) {
+export function useStorageHistory(limit: number = 30) {
   return useQuery({
-    queryKey: ['storage', 'history', days],
+    queryKey: ['storage', 'history', limit],
     queryFn: async (): Promise<StorageHistory> => {
-      return api.get<StorageHistory>(`/storage/history?days=${days}`)
+      return api.get<StorageHistory>(`/storage/history?limit=${limit}`)
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })

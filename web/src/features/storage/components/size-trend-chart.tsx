@@ -61,11 +61,11 @@ export function SizeTrendChart({ data, height = 250 }: SizeTrendChartProps) {
   // Transform data for chart (convert to GB and format date)
   const chartData = data
     .slice()
-    .sort((a, b) => new Date(a.sampled_at).getTime() - new Date(b.sampled_at).getTime())
+    .sort((a, b) => new Date(a.sampledAt).getTime() - new Date(b.sampledAt).getTime())
     .map((sample) => ({
-      date: new Date(sample.sampled_at).getTime(),
-      sizeGB: bytesToGB(sample.total_bytes),
-      rawBytes: sample.total_bytes,
+      date: new Date(sample.sampledAt).getTime(),
+      sizeGB: bytesToGB(sample.totalBytes),
+      rawBytes: sample.totalBytes,
     }))
 
   // Calculate domain for Y-axis with some padding

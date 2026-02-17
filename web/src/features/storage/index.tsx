@@ -148,7 +148,7 @@ export function StoragePage() {
   // Get top 6 tables by size
   const topTables = sizes?.tables
     .slice()
-    .sort((a, b) => b.size_bytes - a.size_bytes)
+    .sort((a, b) => b.sizeBytes - a.sizeBytes)
     .slice(0, 6) ?? []
 
   return (
@@ -173,17 +173,17 @@ export function StoragePage() {
         <CardHeader className="pb-2">
           <CardTitle>Total Database Size</CardTitle>
           <CardDescription>
-            Last sampled {sizes?.sampled_at
-              ? formatDistanceToNow(new Date(sizes.sampled_at), { addSuffix: true })
+            Last sampled {sizes?.measuredAt
+              ? formatDistanceToNow(new Date(sizes.measuredAt), { addSuffix: true })
               : '-'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className={cn(
             'text-4xl font-bold',
-            sizes ? getSizeColor(sizes.total_bytes) : ''
+            sizes ? getSizeColor(sizes.totalBytes) : ''
           )}>
-            {sizes ? formatBytes(sizes.total_bytes) : '-'}
+            {sizes ? formatBytes(sizes.totalBytes) : '-'}
           </div>
         </CardContent>
       </Card>
@@ -193,18 +193,18 @@ export function StoragePage() {
         <h2 className="text-lg font-semibold mb-3">Tables by Size</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {topTables.map((table) => (
-            <Card key={table.table_name}>
+            <Card key={table.tableName}>
               <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm font-medium truncate" title={table.table_name}>
-                  {table.table_name}
+                <CardTitle className="text-sm font-medium truncate" title={table.tableName}>
+                  {table.tableName}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 pt-0">
-                <div className={cn('text-xl font-bold', getSizeColor(table.size_bytes))}>
-                  {formatBytes(table.size_bytes)}
+                <div className={cn('text-xl font-bold', getSizeColor(table.sizeBytes))}>
+                  {formatBytes(table.sizeBytes)}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {formatNumber(table.row_count)} rows
+                  {formatNumber(table.rowCount)} rows
                 </div>
               </CardContent>
             </Card>
