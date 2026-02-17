@@ -442,23 +442,23 @@ export function MatchFilters({ filters, onFiltersChange }: MatchFiltersProps) {
 
       {/* Bookmaker visibility toggles */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Show</label>
-        <div className="flex items-center gap-3 h-9">
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+        <label className="text-xs font-medium text-muted-foreground">Books</label>
+        <div className="flex items-center gap-4 h-9">
+          <label className="flex items-center gap-2 text-xs cursor-pointer">
+            <span className="text-muted-foreground min-w-[60px]">SportyBet</span>
             <Switch
               checked={!(filters.hiddenBookmakers || []).includes('sportybet')}
               onCheckedChange={() => toggleBookmaker('sportybet')}
               className="h-4 w-7"
             />
-            <span className="text-muted-foreground">SB</span>
           </label>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+          <label className="flex items-center gap-2 text-xs cursor-pointer">
+            <span className="text-muted-foreground min-w-[40px]">Bet9ja</span>
             <Switch
               checked={!(filters.hiddenBookmakers || []).includes('bet9ja')}
               onCheckedChange={() => toggleBookmaker('bet9ja')}
               className="h-4 w-7"
             />
-            <span className="text-muted-foreground">B9</span>
           </label>
         </div>
       </div>

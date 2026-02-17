@@ -158,16 +158,20 @@ interface ComparisonData {
 function getComparisonData(
   bookmakers: BookmakerOdds[],
   marketId: string,
-  outcomeName: string
+  outcomeName: string,
+  hiddenBookmakers: string[] = []
 ): ComparisonData {
-  const betpawa = bookmakers.find((b) => b.bookmaker_slug === 'betpawa')
+  // Filter out hidden bookmakers for comparison
+  const visibleBookmakers = bookmakers.filter((b) => !hiddenBookmakers.includes(b.bookmaker_slug))
+
+  const betpawa = visibleBookmakers.find((b) => b.bookmaker_slug === 'betpawa')
   const betpawaResult = betpawa ? getOutcomeOdds(betpawa, marketId, outcomeName) : null
   const betpawaOdds = betpawaResult?.odds ?? null
 
   let bestCompetitorOdds: number | null = null
   let bestCompetitorSlug: string | null = null
 
-  for (const b of bookmakers) {
+  for (const b of visibleBookmakers) {
     if (b.bookmaker_slug === 'betpawa') continue
     const result = getOutcomeOdds(b, marketId, outcomeName)
     if (result.odds !== null && (bestCompetitorOdds === null || result.odds > bestCompetitorOdds)) {
@@ -308,14 +312,18 @@ interface MarginComparisonData {
 
 function getMarginComparisonData(
   bookmakers: BookmakerOdds[],
-  marketId: string
+  marketId: string,
+  hiddenBookmakers: string[] = []
 ): MarginComparisonData {
-  const betpawa = bookmakers.find((b) => b.bookmaker_slug === 'betpawa')
+  // Filter out hidden bookmakers for comparison
+  const visibleBookmakers = bookmakers.filter((b) => !hiddenBookmakers.includes(b.bookmaker_slug))
+
+  const betpawa = visibleBookmakers.find((b) => b.bookmaker_slug === 'betpawa')
   const betpawaMargin = betpawa ? getMargin(betpawa, marketId) : null
 
   let bestCompetitorMargin: number | null = null
 
-  for (const b of bookmakers) {
+  for (const b of visibleBookmakers) {
     if (b.bookmaker_slug === 'betpawa') continue
     const margin = getMargin(b, marketId)
     if (margin !== null && (bestCompetitorMargin === null || margin < bestCompetitorMargin)) {
@@ -631,7 +639,7 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             // Check if this is a competitor-only event (negative ID)
             const isCompetitorOnly = event.id < 0
 
-            // Pre-compute comparison data for color coding
+            // Pre-compute comparison data for color coding (only comparing visible bookmakers)
             const comparisonDataByMarket: Record<string, Record<string, ComparisonData>> = {}
             visibleMarkets.forEach((marketId) => {
               comparisonDataByMarket[marketId] = {}
@@ -639,7 +647,8 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                 comparisonDataByMarket[marketId][outcome] = getComparisonData(
                   event.bookmakers,
                   marketId,
-                  outcome
+                  outcome,
+                  hiddenBookmakers
                 )
               })
             })
@@ -647,12 +656,13 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
             // Pre-compute best margins per market for highlighting
             const bestMargins = computeBestMargins(event.bookmakers, visibleMarkets)
 
-            // Pre-compute margin comparison data for color coding
+            // Pre-compute margin comparison data for color coding (only comparing visible bookmakers)
             const marginComparisonByMarket: Record<string, MarginComparisonData> = {}
             visibleMarkets.forEach((marketId) => {
               marginComparisonByMarket[marketId] = getMarginComparisonData(
                 event.bookmakers,
-                marketId
+                marketId,
+                hiddenBookmakers
               )
             })
 
