@@ -41,6 +41,11 @@ None
 
 ## Closed Bugs
 
+### BUG-027: Odds highlighting lacks visual distinction between BetPawa and competitors (RESOLVED)
+**Discovered:** 2026-02-17 (user report during issue review)
+**Type:** UX Enhancement
+**Resolution:** Fixed 2026-02-17 - Implemented visual distinction between BetPawa and competitor odds highlighting. BetPawa rows use emphatic filled backgrounds (green when better, red when worse). Competitor rows use subtle green borders ONLY when competitor beats BetPawa (no red on competitors - focus is on BetPawa row). Added `isBetpawa` prop to OddsBadge component. Files modified: `match-table.tsx` (BETPAWA_COLOR_CLASSES vs COMPETITOR_COLOR_CLASSES), `odds-badge.tsx` (isBetpawa prop), `market-row.tsx` (pass isBetpawa prop).
+
 ### BUG-026: Availability state not cleared when odds return (RESOLVED)
 **Discovered:** 2026-02-17 (user report during issue review)
 **Root Cause:** In `event_coordinator.py`, the `detect_availability_changes()` function correctly detected `became_available` markets (odds that returned after being unavailable), but these were only counted for logging - never persisted to the database. The `UnavailableMarketUpdate` objects were only created for `became_unavailable` markets, not for markets that needed their `unavailable_at` cleared.

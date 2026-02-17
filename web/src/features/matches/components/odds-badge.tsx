@@ -17,6 +17,8 @@ interface OddsBadgeProps {
   available?: boolean
   /** ISO timestamp when market became unavailable */
   unavailableSince?: string | null
+  /** Whether this badge is for BetPawa (uses emphatic fills) or competitor (uses subtle borders) */
+  isBetpawa?: boolean
 }
 
 /**
@@ -42,6 +44,7 @@ export function OddsBadge({
   onClick,
   available,
   unavailableSince,
+  isBetpawa = false,
 }: OddsBadgeProps) {
   // Determine availability state
   const isUnavailable = available === false
@@ -93,26 +96,34 @@ export function OddsBadge({
     betpawaOdds !== undefined &&
     odds < betpawaOdds * 0.97
 
-  // Determine styling
-  let bgClass = ''
-  let textClass = ''
+  // Determine styling based on whether this is BetPawa (emphatic fills) or competitor (subtle borders)
+  let styleClass = ''
 
   if (isSuspended) {
-    textClass = 'text-muted-foreground line-through'
+    styleClass = 'text-muted-foreground line-through'
   } else if (isBest) {
-    bgClass = 'bg-green-100 dark:bg-green-900/30'
-    textClass = 'text-green-700 dark:text-green-400'
+    if (isBetpawa) {
+      // BetPawa: emphatic filled background
+      styleClass = 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+    } else {
+      // Competitor: subtle border
+      styleClass = 'border-2 border-green-500 text-green-700 dark:text-green-400'
+    }
   } else if (isWorst || isSignificantlyWorse) {
-    bgClass = 'bg-red-100 dark:bg-red-900/30'
-    textClass = 'text-red-700 dark:text-red-400'
+    // Only show red on BetPawa - no need to highlight when competitors are worse
+    if (isBetpawa) {
+      // BetPawa: emphatic filled background
+      styleClass = 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+    }
+    // Competitors: no red styling - focus is on BetPawa row
   }
 
   return (
     <span
       className={cn(
         'inline-flex items-center justify-center px-2 py-0.5 rounded text-sm font-medium min-w-[3rem]',
-        bgClass,
-        textClass,
+        styleClass,
+        isBetpawa && 'font-bold',
         onClick && 'cursor-pointer hover:ring-1 hover:ring-primary/50'
       )}
       onClick={(e) => onClick?.(e)}

@@ -50,7 +50,8 @@ interface HistoryDialogState {
 
 // Static color classes for Tailwind JIT compilation
 // Dynamic classes like `bg-green-500/${opacity}` don't work with Tailwind JIT
-const COLOR_CLASSES = {
+// BetPawa uses filled backgrounds (emphatic), competitors use borders (subtle)
+const BETPAWA_COLOR_CLASSES = {
   green: {
     10: 'bg-green-500/10',
     20: 'bg-green-500/20',
@@ -65,6 +66,12 @@ const COLOR_CLASSES = {
     40: 'bg-red-500/40',
     50: 'bg-red-500/50',
   },
+} as const
+
+// Competitor colors use borders instead of fills for visual distinction
+// Only green - we don't highlight when competitors are worse (focus is on BetPawa)
+const COMPETITOR_COLOR_CLASSES = {
+  green: 'border-2 border-green-500 text-green-700 dark:text-green-400',
 } as const
 
 // Text color classes for margin display
@@ -264,12 +271,12 @@ function OddsValue({
 
   const isBetpawa = bookmakerSlug === 'betpawa'
   const { betpawaOdds, bestCompetitorOdds } = comparisonData
-  const tolerance = 0.02
+  const tolerance = 0.01 // Lowered from 0.02 to catch smaller differences
 
-  let bgClass = ''
+  let styleClass = ''
 
   if (isBetpawa && bestCompetitorOdds !== null && betpawaOdds !== null) {
-    // Betpawa column: compare to best competitor
+    // BetPawa column: use filled backgrounds (emphatic)
     const delta = betpawaOdds - bestCompetitorOdds
 
     if (Math.abs(delta) > tolerance) {
@@ -278,22 +285,18 @@ function OddsValue({
         Math.max(Math.ceil(intensity * 5) * 10, 10),
         50
       ) as OpacityLevel
-      // Green if Betpawa is better, red if worse
-      const color = delta > tolerance ? 'green' : 'red'
-      bgClass = COLOR_CLASSES[color][opacityLevel]
+      // Green if Betpawa is better (positive delta), red if worse (negative delta)
+      const color = delta > 0 ? 'green' : 'red'
+      styleClass = BETPAWA_COLOR_CLASSES[color][opacityLevel]
     }
   } else if (!isBetpawa && betpawaOdds !== null) {
-    // Competitor column: highlight if this competitor beats Betpawa
+    // Competitor column: only highlight when competitor BEATS BetPawa (green border)
+    // No need to show red when competitor is worse - focus is on BetPawa row
     const delta = odds - betpawaOdds
 
     if (delta > tolerance) {
-      // This competitor has better odds than Betpawa - highlight in green
-      const intensity = Math.min(delta * 25, 1)
-      const opacityLevel = Math.min(
-        Math.max(Math.ceil(intensity * 5) * 10, 10),
-        50
-      ) as OpacityLevel
-      bgClass = COLOR_CLASSES.green[opacityLevel]
+      // This competitor has better odds than Betpawa - green border
+      styleClass = COMPETITOR_COLOR_CLASSES.green
     }
   }
 
@@ -301,7 +304,7 @@ function OddsValue({
     <span
       className={cn(
         'inline-block px-1.5 py-0.5 rounded text-xs font-medium min-w-[2.5rem] text-center',
-        bgClass,
+        styleClass,
         isBetpawa && 'font-bold',
         onClick && 'cursor-pointer hover:ring-1 hover:ring-primary/50'
       )}

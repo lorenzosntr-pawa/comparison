@@ -234,6 +234,7 @@ export function MarketRow({
                       } : undefined}
                       available={outcome.available}
                       unavailableSince={outcome.unavailableSince}
+                      isBetpawa={slug === 'betpawa'}
                     />
                   </div>
                 )
