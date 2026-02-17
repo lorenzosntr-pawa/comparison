@@ -50,20 +50,19 @@ Plans:
 
 #### Phase 101: Schema Implementation
 
-**Goal**: Create new optimized database structure with TimescaleDB hypertables and/or compression policies based on Phase 100 findings
+**Goal**: Remove raw_response columns from snapshot tables to reclaim 33 GB (53% of database) based on Phase 100 findings
 **Depends on**: Phase 100
-**Research**: Likely (TimescaleDB extension, compression APIs)
-**Research topics**: TimescaleDB hypertable creation, compression policies, chunk intervals, continuous aggregates
-**Plans**: TBD
+**Research**: Unlikely (internal code patterns, straightforward column removal)
+**Plans**: 1
 
 Plans:
-- [ ] 101-01: TBD
+- [ ] 101-01: Remove raw_response columns from models, DTOs, scraping code, and database
 
-#### Phase 102: Application Migration
+#### Phase 102: Scraping Verification & Testing
 
-**Goal**: Update backend models, queries, and services to work with new optimized schema, ensure all existing features continue working
+**Goal**: Verify scraping still works correctly after raw_response removal, add any necessary tests, run end-to-end validation
 **Depends on**: Phase 101
-**Research**: Unlikely (internal code patterns)
+**Research**: Unlikely (internal testing patterns)
 **Plans**: TBD
 
 Plans:
