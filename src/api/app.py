@@ -27,6 +27,7 @@ from src.api.routes.palimpsest import router as palimpsest_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.scrape import router as scrape_router
 from src.api.routes.settings import router as settings_router
+from src.api.routes.storage import router as storage_router
 from src.api.routes.ws import router as ws_router
 from src.api.websocket import ConnectionManager, create_cache_update_bridge
 from src.caching.odds_cache import OddsCache
@@ -240,6 +241,7 @@ def create_app() -> FastAPI:
     app.include_router(scheduler_router, prefix="/api")
     app.include_router(scrape_router, prefix="/api")
     app.include_router(settings_router, prefix="/api")
+    app.include_router(storage_router, prefix="/api")
     app.include_router(ws_router, prefix="/api")
 
     return app
