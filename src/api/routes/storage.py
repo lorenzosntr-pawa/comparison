@@ -3,15 +3,19 @@
 This module provides endpoints for monitoring database storage:
 - GET /storage/sizes: Current table sizes and total database size
 - GET /storage/history: Historical storage samples for trend analysis
+- GET /storage/alerts: Active storage alerts
+- POST /storage/alerts/{id}/resolve: Mark alert as resolved
 """
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import desc, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.storage import (
+    StorageAlertResponse,
+    StorageAlertsResponse,
     StorageHistoryResponse,
     StorageSampleResponse,
     StorageSizes,
@@ -116,3 +120,70 @@ async def get_storage_history(
         samples=[StorageSampleResponse.model_validate(sample) for sample in samples],
         total=total,
     )
+
+
+@router.get("/alerts", response_model=StorageAlertsResponse)
+async def get_storage_alerts(
+    db: AsyncSession = Depends(get_db),
+) -> StorageAlertsResponse:
+    """Get active (unresolved) storage alerts.
+
+    Returns all alerts that have not been resolved/dismissed,
+    ordered by most recent first.
+
+    Args:
+        db: Async database session (injected).
+
+    Returns:
+        StorageAlertsResponse with list of active alerts and count.
+    """
+    from src.db.models.storage_alert import StorageAlert
+
+    # Get active alerts (resolved_at is null)
+    result = await db.execute(
+        select(StorageAlert)
+        .where(StorageAlert.resolved_at.is_(None))
+        .order_by(desc(StorageAlert.created_at))
+    )
+    alerts = result.scalars().all()
+
+    return StorageAlertsResponse(
+        alerts=[StorageAlertResponse.model_validate(alert) for alert in alerts],
+        count=len(alerts),
+    )
+
+
+@router.post("/alerts/{alert_id}/resolve", response_model=StorageAlertResponse)
+async def resolve_storage_alert(
+    alert_id: int = Path(..., description="Alert ID to resolve"),
+    db: AsyncSession = Depends(get_db),
+) -> StorageAlertResponse:
+    """Mark a storage alert as resolved (dismissed).
+
+    Sets the resolved_at timestamp to current time.
+
+    Args:
+        alert_id: ID of the alert to resolve.
+        db: Async database session (injected).
+
+    Returns:
+        Updated StorageAlertResponse with resolved_at set.
+
+    Raises:
+        HTTPException: 404 if alert not found.
+    """
+    from src.db.models.storage_alert import StorageAlert
+
+    result = await db.execute(
+        select(StorageAlert).where(StorageAlert.id == alert_id)
+    )
+    alert = result.scalar_one_or_none()
+
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    alert.resolved_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(alert)
+
+    return StorageAlertResponse.model_validate(alert)

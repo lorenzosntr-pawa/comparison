@@ -22,6 +22,7 @@ from src.db.models.scrape import (
 )
 from src.db.models.settings import Settings
 from src.db.models.sport import Sport, Tournament
+from src.db.models.storage_alert import StorageAlert
 from src.db.models.storage_sample import StorageSample
 
 __all__ = [
@@ -50,4 +51,5 @@ __all__ = [
     "EventScrapeStatus",
     # Storage monitoring
     "StorageSample",
+    "StorageAlert",
 ]

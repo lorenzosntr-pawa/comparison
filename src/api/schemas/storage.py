@@ -94,3 +94,50 @@ class StorageHistoryResponse(BaseModel):
 
     samples: list[StorageSampleResponse] = Field(description="Storage sample records")
     total: int = Field(description="Total samples in database")
+
+
+class StorageAlertResponse(BaseModel):
+    """Response model for a storage alert.
+
+    Attributes:
+        id: Unique database ID.
+        created_at: When the alert was created.
+        alert_type: Type of alert ('growth_warning' or 'size_critical').
+        message: Human-readable description.
+        current_bytes: Database size when alert was created.
+        previous_bytes: Previous sample size.
+        growth_percent: Growth percentage from previous sample.
+        resolved_at: When alert was resolved (None if active).
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    id: int = Field(description="Unique database ID")
+    created_at: datetime = Field(description="When alert was created")
+    alert_type: str = Field(description="Alert type (growth_warning, size_critical)")
+    message: str = Field(description="Human-readable description")
+    current_bytes: int = Field(description="Database size when alert was created")
+    previous_bytes: int = Field(description="Previous sample size")
+    growth_percent: float = Field(description="Growth percentage")
+    resolved_at: datetime | None = Field(description="When alert was resolved")
+
+
+class StorageAlertsResponse(BaseModel):
+    """Response model for storage alerts list.
+
+    Attributes:
+        alerts: List of storage alert records.
+        count: Number of alerts returned.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    alerts: list[StorageAlertResponse] = Field(description="Storage alert records")
+    count: int = Field(description="Number of alerts")

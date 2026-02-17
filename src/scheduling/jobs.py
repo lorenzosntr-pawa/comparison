@@ -38,6 +38,7 @@ from sqlalchemy import delete, func, select, text
 from src.db.engine import async_session_factory
 from src.db.models.scrape import ScrapeRun, ScrapeStatus
 from src.db.models.settings import Settings
+from src.db.models.storage_alert import StorageAlert
 from src.db.models.storage_sample import StorageSample
 from src.scraping.broadcaster import progress_registry
 from src.scraping.clients import Bet9jaClient, BetPawaClient, SportyBetClient
@@ -334,11 +335,16 @@ async def sample_storage_sizes() -> None:
     """Scheduled job to sample database storage sizes.
 
     Queries PostgreSQL system tables for current storage sizes,
-    creates a StorageSample record, and prunes samples older than 90 days.
+    creates a StorageSample record, checks for abnormal growth,
+    and prunes old samples and resolved alerts.
     Runs daily at 3 AM UTC (after cleanup at 2 AM).
     """
     log = structlog.get_logger("src.scheduling.jobs.storage")
     log.info("storage.sampling.start")
+
+    # Growth alert thresholds
+    GROWTH_WARNING_PERCENT = 20  # 20% growth in 24h triggers warning
+    SIZE_CRITICAL_BYTES = 50 * 1024**3  # 50 GB triggers critical alert
 
     try:
         async with async_session_factory() as session:
@@ -378,8 +384,67 @@ async def sample_storage_sizes() -> None:
                 table_count=len(table_sizes_dict),
             )
 
+            # Check for growth alerts - query previous sample
+            prev_result = await session.execute(
+                select(StorageSample)
+                .where(StorageSample.id < sample.id)
+                .order_by(StorageSample.sampled_at.desc())
+                .limit(1)
+            )
+            prev_sample = prev_result.scalar_one_or_none()
+
+            if prev_sample and prev_sample.total_bytes > 0:
+                # Calculate growth percentage
+                growth_bytes = total_bytes - prev_sample.total_bytes
+                growth_percent = (growth_bytes / prev_sample.total_bytes) * 100
+
+                # Check for growth warning
+                if growth_percent > GROWTH_WARNING_PERCENT:
+                    alert = StorageAlert(
+                        alert_type="growth_warning",
+                        message=f"Database grew {growth_percent:.1f}% since last sample ({_format_bytes(prev_sample.total_bytes)} → {_format_bytes(total_bytes)})",
+                        current_bytes=total_bytes,
+                        previous_bytes=prev_sample.total_bytes,
+                        growth_percent=growth_percent,
+                    )
+                    session.add(alert)
+                    await session.commit()
+
+                    log.warning(
+                        "storage.alert.growth_warning",
+                        alert_id=alert.id,
+                        growth_percent=growth_percent,
+                        current_bytes=total_bytes,
+                        previous_bytes=prev_sample.total_bytes,
+                    )
+
+            # Check for critical size alert
+            if total_bytes > SIZE_CRITICAL_BYTES:
+                # Check if we already have an active critical alert
+                existing = await session.execute(
+                    select(StorageAlert)
+                    .where(StorageAlert.alert_type == "size_critical")
+                    .where(StorageAlert.resolved_at.is_(None))
+                    .limit(1)
+                )
+                if not existing.scalar_one_or_none():
+                    alert = StorageAlert(
+                        alert_type="size_critical",
+                        message=f"Database size ({_format_bytes(total_bytes)}) exceeds 50 GB threshold",
+                        current_bytes=total_bytes,
+                        previous_bytes=prev_sample.total_bytes if prev_sample else 0,
+                        growth_percent=0,
+                    )
+                    session.add(alert)
+                    await session.commit()
+
+                    log.warning(
+                        "storage.alert.size_critical",
+                        alert_id=alert.id,
+                        total_bytes=total_bytes,
+                    )
+
             # Prune old samples (keep last 90)
-            # Get the 90th newest sample's sampled_at
             subquery = (
                 select(StorageSample.sampled_at)
                 .order_by(StorageSample.sampled_at.desc())
@@ -388,7 +453,6 @@ async def sample_storage_sizes() -> None:
                 .scalar_subquery()
             )
 
-            # Delete samples older than the 90th newest
             delete_stmt = delete(StorageSample).where(
                 StorageSample.sampled_at < subquery
             )
@@ -402,5 +466,42 @@ async def sample_storage_sizes() -> None:
                     deleted_count=deleted_count,
                 )
 
+            # Prune old resolved alerts (keep last 30)
+            alert_subquery = (
+                select(StorageAlert.created_at)
+                .where(StorageAlert.resolved_at.is_not(None))
+                .order_by(StorageAlert.created_at.desc())
+                .offset(30)
+                .limit(1)
+                .scalar_subquery()
+            )
+
+            alert_delete_stmt = delete(StorageAlert).where(
+                StorageAlert.resolved_at.is_not(None),
+                StorageAlert.created_at < alert_subquery,
+            )
+            alert_delete_result = await session.execute(alert_delete_stmt)
+            alerts_deleted = alert_delete_result.rowcount
+            await session.commit()
+
+            if alerts_deleted > 0:
+                log.info(
+                    "storage.alerts.pruned",
+                    deleted_count=alerts_deleted,
+                )
+
     except Exception as e:
         log.exception("storage.sampling.failed", error=str(e))
+
+
+def _format_bytes(bytes_value: int) -> str:
+    """Format bytes to human-readable string."""
+    if bytes_value == 0:
+        return "0 B"
+    units = ["B", "KB", "MB", "GB", "TB"]
+    k = 1024
+    i = 0
+    while bytes_value >= k and i < len(units) - 1:
+        bytes_value /= k
+        i += 1
+    return f"{bytes_value:.2f} {units[i]}"
