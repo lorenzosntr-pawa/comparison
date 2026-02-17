@@ -117,7 +117,6 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
                     event_id=swd.event_id,
                     bookmaker_id=swd.bookmaker_id,
                     scrape_run_id=swd.scrape_run_id,
-                    raw_response=swd.raw_response,
                     last_confirmed_at=now,
                 )
                 db.add(snapshot)
@@ -132,7 +131,6 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
                 snapshot = CompetitorOddsSnapshot(
                     competitor_event_id=cswd.competitor_event_id,
                     scrape_run_id=cswd.scrape_run_id,
-                    raw_response=cswd.raw_response,
                     last_confirmed_at=now,
                 )
                 db.add(snapshot)

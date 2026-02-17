@@ -63,7 +63,6 @@ class SnapshotWriteData:
     event_id: int
     bookmaker_id: int
     scrape_run_id: int | None
-    raw_response: dict | None
     markets: tuple[MarketWriteData, ...]
 
 
@@ -73,7 +72,6 @@ class CompetitorSnapshotWriteData:
 
     competitor_event_id: int
     scrape_run_id: int | None
-    raw_response: dict | None
     markets: tuple[MarketWriteData, ...]
 
 

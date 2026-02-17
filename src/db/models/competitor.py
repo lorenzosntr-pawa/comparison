@@ -170,15 +170,13 @@ class CompetitorOddsSnapshot(Base):
     """Point-in-time odds capture for a competitor event.
 
     Records a complete odds state for a competitor event at a specific
-    moment in time. Contains the raw API response and links to normalized
-    market data via CompetitorMarketOdds.
+    moment in time. Links to normalized market data via CompetitorMarketOdds.
 
     Attributes:
         id: Primary key (auto-increment).
         competitor_event_id: FK to competitor_events.
         captured_at: Timestamp when odds were captured.
         scrape_run_id: FK to scrape_runs (nullable).
-        raw_response: Raw JSON response from platform API.
         last_confirmed_at: When odds were last confirmed unchanged.
 
     Relationships:
@@ -195,7 +193,6 @@ class CompetitorOddsSnapshot(Base):
     scrape_run_id: Mapped[int | None] = mapped_column(
         ForeignKey("scrape_runs.id"), nullable=True
     )
-    raw_response: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     last_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Relationships

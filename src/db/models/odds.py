@@ -36,7 +36,6 @@ class OddsSnapshot(Base):
         bookmaker_id: FK to bookmakers table.
         captured_at: Timestamp when odds were captured.
         scrape_run_id: FK to scrape_runs (nullable).
-        raw_response: Raw JSON response from bookmaker API.
         last_confirmed_at: When odds were last verified unchanged.
 
     Relationships:
@@ -59,7 +58,6 @@ class OddsSnapshot(Base):
     scrape_run_id: Mapped[int | None] = mapped_column(
         ForeignKey("scrape_runs.id"), nullable=True
     )
-    raw_response: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     last_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Relationships
