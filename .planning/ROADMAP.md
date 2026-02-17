@@ -24,83 +24,64 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
-- 🚧 **v2.8 Market Mapping Utility** — Phases 100-106 (in progress)
+- 🚧 **v2.8 Storage Optimization** — Phases 100-104 (in progress)
 
 ---
 
-### 🚧 v2.8 Market Mapping Utility (In Progress)
+### 🚧 v2.8 Storage Optimization (In Progress)
 
-**Milestone Goal:** Comprehensive market mapping management tool enabling users to discover, create, edit, and audit market mappings through an intuitive UI, replacing the need for code deploys to fix mapping gaps.
+**Milestone Goal:** Reduce database from 20+ GB to under 10 GB through schema optimization, compression, and proper retention policies while preserving all current features.
 
-#### Phase 100: Investigation & Design
+#### Phase 100: Investigation & Analysis
 
-**Goal**: Analyze current mapping gaps with SQL queries, design DB schema (user_market_mappings, mapping_audit_log, unmapped_market_log), plan runtime merge strategy, define API contracts
+**Goal**: Profile all tables to measure sizes and growth patterns, identify growth drivers, design optimized schema strategy (TimescaleDB hypertables, partitioning, normalization, or combination)
 **Depends on**: Previous milestone complete
-**Research**: Unlikely (internal patterns)
+**Research**: Unlikely (SQL profiling, internal patterns)
 **Plans**: TBD
 
 Plans:
 - [ ] 100-01: TBD (run /gsd:plan-phase 100 to break down)
 
-#### Phase 101: Backend Foundation
+#### Phase 101: Schema Implementation
 
-**Goal**: Create DB tables with Alembic migrations, Pydantic models, implement merge logic at startup to combine code + DB mappings, CRUD API endpoints
+**Goal**: Create new optimized database structure with TimescaleDB hypertables and/or compression policies based on Phase 100 findings
 **Depends on**: Phase 100
-**Research**: Unlikely (established patterns)
+**Research**: Likely (TimescaleDB extension, compression APIs)
+**Research topics**: TimescaleDB hypertable creation, compression policies, chunk intervals, continuous aggregates
 **Plans**: TBD
 
 Plans:
 - [ ] 101-01: TBD
 
-#### Phase 102: Unmapped Discovery System
+#### Phase 102: Application Migration
 
-**Goal**: Log unmapped markets during scraping, WebSocket alerts for new unmapped markets, on-demand analysis endpoint, historical unmapped market queries
+**Goal**: Update backend models, queries, and services to work with new optimized schema, ensure all existing features continue working
 **Depends on**: Phase 101
-**Research**: Unlikely (existing WebSocket infra)
+**Research**: Unlikely (internal code patterns)
 **Plans**: TBD
 
 Plans:
 - [ ] 102-01: TBD
 
-#### Phase 103: Mapping Dashboard
+#### Phase 103: Data Migration & Validation
 
-**Goal**: Stats overview with cards, coverage trend charts using recharts, per-market analytics, priority scoring algorithm, recent changes feed
+**Goal**: Migrate essential recent data to new schema (user accepts losing historical data for fresh start), validate all features work correctly with new database
 **Depends on**: Phase 102
-**Research**: Unlikely (recharts already integrated)
+**Research**: Unlikely (internal patterns)
 **Plans**: TBD
 
 Plans:
 - [ ] 103-01: TBD
 
-#### Phase 104: Mapping Editor
+#### Phase 104: Monitoring & Prevention
 
-**Goal**: Side-by-side UI component, Betpawa market picker with search, outcome auto-suggest algorithm, parameterized market handling (base + exceptions), preview mode showing impact
+**Goal**: Add database size tracking dashboard, implement automated retention policies, set up alerts for abnormal growth to prevent future issues
 **Depends on**: Phase 103
-**Research**: Unlikely (shadcn/ui patterns)
+**Research**: Unlikely (internal patterns)
 **Plans**: TBD
 
 Plans:
 - [ ] 104-01: TBD
-
-#### Phase 105: Conflict & Audit
-
-**Goal**: Conflict detection and resolution UI, audit log display, rollback functionality, change diff visualization
-**Depends on**: Phase 104
-**Research**: Unlikely (internal patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 105-01: TBD
-
-#### Phase 106: Polish & Validation
-
-**Goal**: Pre-submit validation rules, clear error messages with guidance, auto-fix suggestions, UX refinements
-**Depends on**: Phase 105
-**Research**: Unlikely (internal patterns)
-**Plans**: TBD
-
-Plans:
-- [ ] 106-01: TBD
 
 ---
 
@@ -455,10 +436,8 @@ Plans:
 | 99. Availability Tracking Fix | v2.7 | 1/1 + 2 FIX | Complete | 2026-02-12 |
 | 99.1 Availability Filters (INSERTED) | v2.7 | 1/1 | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
-| 100. Investigation & Design | v2.8 | 0/? | Not started | - |
-| 101. Backend Foundation | v2.8 | 0/? | Not started | - |
-| 102. Unmapped Discovery System | v2.8 | 0/? | Not started | - |
-| 103. Mapping Dashboard | v2.8 | 0/? | Not started | - |
-| 104. Mapping Editor | v2.8 | 0/? | Not started | - |
-| 105. Conflict & Audit | v2.8 | 0/? | Not started | - |
-| 106. Polish & Validation | v2.8 | 0/? | Not started | - |
+| 100. Investigation & Analysis | v2.8 | 0/? | Not started | - |
+| 101. Schema Implementation | v2.8 | 0/? | Not started | - |
+| 102. Application Migration | v2.8 | 0/? | Not started | - |
+| 103. Data Migration & Validation | v2.8 | 0/? | Not started | - |
+| 104. Monitoring & Prevention | v2.8 | 0/? | Not started | - |
