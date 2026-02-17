@@ -32,15 +32,21 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Reduce database from 20+ GB to under 10 GB through schema optimization, compression, and proper retention policies while preserving all current features.
 
-#### Phase 100: Investigation & Analysis
+#### Phase 100: Investigation & Analysis ✓
 
 **Goal**: Profile all tables to measure sizes and growth patterns, identify growth drivers, design optimized schema strategy (TimescaleDB hypertables, partitioning, normalization, or combination)
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (SQL profiling, internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 100-01: TBD (run /gsd:plan-phase 100 to break down)
+- [x] 100-01: Database profiling and storage analysis (2026-02-17)
+
+**Key Findings:**
+- Database: 63 GB (3x larger than expected)
+- Primary driver: raw_response columns (33 GB, 53%)
+- raw_response is UNUSED after scraping completes
+- Recommended: Remove raw_response + 7-day retention = 78% reduction
 
 #### Phase 101: Schema Implementation
 
@@ -436,7 +442,7 @@ Plans:
 | 99. Availability Tracking Fix | v2.7 | 1/1 + 2 FIX | Complete | 2026-02-12 |
 | 99.1 Availability Filters (INSERTED) | v2.7 | 1/1 | Complete | 2026-02-12 |
 | **v2.7 SHIPPED** | | | **2026-02-12** | |
-| 100. Investigation & Analysis | v2.8 | 0/? | Not started | - |
+| 100. Investigation & Analysis | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 101. Schema Implementation | v2.8 | 0/? | Not started | - |
 | 102. Application Migration | v2.8 | 0/? | Not started | - |
 | 103. Data Migration & Validation | v2.8 | 0/? | Not started | - |
