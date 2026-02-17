@@ -88,10 +88,12 @@ Plans:
 **Goal**: Add database size tracking dashboard, implement automated retention policies, set up alerts for abnormal growth to prevent future issues
 **Depends on**: Phase 103
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 0/3
 
 Plans:
-- [ ] 104-01: TBD
+- [ ] 104-01: Storage size API & history tracking (backend)
+- [ ] 104-02: Storage dashboard (frontend)
+- [ ] 104-03: Growth alerting (full-stack)
 
 ---
 
