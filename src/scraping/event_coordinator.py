@@ -1500,7 +1500,6 @@ class EventCoordinator:
                     event_id=event_id,
                     bookmaker_id=bookmaker_id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=raw_data,
                     markets=market_dtos,
                 )
                 bp_write_data.append(swd)
@@ -1527,7 +1526,6 @@ class EventCoordinator:
                 cswd = CompetitorSnapshotWriteData(
                     competitor_event_id=competitor_event_id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=raw_data,
                     markets=market_dtos,
                 )
                 comp_write_data.append(cswd)
@@ -1749,7 +1747,6 @@ class EventCoordinator:
                     event_id=event_id,
                     bookmaker_id=bookmaker_id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=raw_data,
                 )
                 betpawa_snapshots.append((snapshot, orm_markets))
 
@@ -1757,7 +1754,6 @@ class EventCoordinator:
                 snapshot = CompetitorOddsSnapshot(
                     competitor_event_id=competitor_event_id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=raw_data,
                 )
                 competitor_snapshots.append((snapshot, orm_markets))
 

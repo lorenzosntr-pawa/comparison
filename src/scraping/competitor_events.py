@@ -221,7 +221,6 @@ class CompetitorEventScrapingService:
             "away_team": away_team,
             "kickoff": kickoff,
             "markets": event_data.get("markets", []),
-            "raw_response": event_data,
         }
 
     def _parse_bet9ja_event(
@@ -275,7 +274,6 @@ class CompetitorEventScrapingService:
             "away_team": away_team,
             "kickoff": kickoff,
             "odds": event_data.get("O", {}),
-            "raw_response": event_data,
         }
 
     def _parse_sportybet_markets(
@@ -559,7 +557,6 @@ class CompetitorEventScrapingService:
                 snapshot = CompetitorOddsSnapshot(
                     competitor_event_id=event.id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=event_dict["raw_response"],
                 )
                 db.add(snapshot)
                 await db.flush()
@@ -704,7 +701,6 @@ class CompetitorEventScrapingService:
                 snapshot = CompetitorOddsSnapshot(
                     competitor_event_id=event.id,
                     scrape_run_id=scrape_run_id,
-                    raw_response=event_dict["raw_response"],
                 )
                 db.add(snapshot)
                 await db.flush()
@@ -746,7 +742,7 @@ class CompetitorEventScrapingService:
 
         Args:
             source: Platform source.
-            events_to_fetch: List of dicts with {snapshot_id, external_id, raw_response}.
+            events_to_fetch: List of dicts with {snapshot_id, external_id}.
 
         Returns:
             List of dicts with {snapshot_id, external_id, full_data, error}.
@@ -775,10 +771,8 @@ class CompetitorEventScrapingService:
                     if source == CompetitorSource.SPORTYBET:
                         full_data = await self._fetch_full_sportybet_odds(external_id)
                     else:
-                        # For Bet9ja, get correct ID from raw_response if needed
-                        raw = event_info.get("raw_response") or {}
-                        bet9ja_event_id = str(raw.get("ID", "")) or external_id
-                        full_data = await self._fetch_full_bet9ja_odds(bet9ja_event_id)
+                        # For Bet9ja, external_id already contains the correct ID
+                        full_data = await self._fetch_full_bet9ja_odds(external_id)
 
                     return {
                         "snapshot_id": snapshot_id,
@@ -905,9 +899,6 @@ class CompetitorEventScrapingService:
                     market_odds.snapshot_id = snapshot.id
                     db.add(market_odds)
 
-                # Update snapshot raw_response
-                snapshot.raw_response = full_data
-
                 total_markets += len(market_odds_list)
                 events_processed += 1
 
@@ -954,7 +945,7 @@ class CompetitorEventScrapingService:
         if not snapshot_ids:
             return {"events_processed": 0, "total_markets": 0, "errors": 0}
 
-        # Build list of events to fetch (need external_id and raw_response)
+        # Build list of events to fetch (need external_id only)
         events_to_fetch: list[dict] = []
         for snapshot_id in snapshot_ids:
             result = await db.execute(
@@ -971,7 +962,6 @@ class CompetitorEventScrapingService:
                 events_to_fetch.append({
                     "snapshot_id": snapshot_id,
                     "external_id": event.external_id,
-                    "raw_response": snapshot.raw_response,
                 })
 
         # Phase 1: Fetch full odds (API only, parallel)
