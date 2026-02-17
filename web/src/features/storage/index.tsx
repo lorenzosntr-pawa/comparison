@@ -24,8 +24,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { useStorageSizes, useCleanupHistory } from './hooks'
+import { useStorageSizes, useStorageHistory, useCleanupHistory } from './hooks'
 import type { CleanupRun } from './hooks'
+import { SizeTrendChart } from './components'
 
 /**
  * Format bytes to human-readable size string.
@@ -87,6 +88,7 @@ function formatDuration(ms: number | null): string {
 
 export function StoragePage() {
   const { data: sizes, isLoading: sizesLoading, error: sizesError } = useStorageSizes()
+  const { data: history, isLoading: historyLoading } = useStorageHistory(30)
   const { data: cleanup, isLoading: cleanupLoading, error: cleanupError } = useCleanupHistory(10)
 
   // Show error state
@@ -191,6 +193,23 @@ export function StoragePage() {
           ))}
         </div>
       </div>
+
+      {/* Size Trend Chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Size Trend (Last 30 Days)</CardTitle>
+          <CardDescription>
+            Database size over time
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {historyLoading ? (
+            <Skeleton className="h-[250px] w-full" />
+          ) : (
+            <SizeTrendChart data={history?.samples ?? []} />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Cleanup History Table */}
       <div>
