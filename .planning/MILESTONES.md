@@ -1,5 +1,35 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.8 Storage Optimization (Shipped: 2026-02-17)
+
+**Delivered:** Reduced database from 63 GB to 12 GB (81% reduction) through schema optimization, VACUUM FULL space reclamation, and storage monitoring dashboard with growth alerting.
+
+**Phases completed:** 100-104 (7 plans total)
+
+**Key accomplishments:**
+
+- Database profiling identified unused raw_response columns consuming 53% of storage (33 GB)
+- Removed raw_response columns from snapshot tables via Alembic migration
+- Verified scraping still works correctly after schema changes
+- Applied 7-day retention policy, deleted 60M+ records
+- VACUUM FULL reclaimed ~35 GB disk space from dropped columns
+- Storage dashboard with database size cards, trend chart, and cleanup history
+- Growth detection alerting (>20% triggers warning, >50 GB triggers critical)
+
+**Stats:**
+
+- 30 files changed
+- 5 phases, 7 plans
+- 5 days from v2.7 to v2.8 (2026-02-12 to 2026-02-17)
+- Database: 63.25 GB → 11.94 GB (81% reduction)
+- ~42,000 total LOC
+
+**Git range:** `e01077a` → `55788c8`
+
+**What's next:** Project feature-complete. Use `/gsd:discuss-milestone` if additional features needed.
+
+---
+
 ## v2.7 Availability Tracking Bugfix (Shipped: 2026-02-12)
 
 **Delivered:** Complete availability tracking pipeline: fixed DB persistence, added reconciliation for dropped events, consistent unavailable styling, and alerts filter for monitoring.

@@ -8,14 +8,15 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.7 Availability Tracking Bugfix)
+## Current State (v2.8 Storage Optimization)
 
-**Shipped:** 2026-02-12
+**Shipped:** 2026-02-17
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~41,395 lines of code
+- ~42,000 lines of code
+- Database: 11.94 GB (optimized from 63 GB)
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -85,6 +86,9 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Navigation overhaul** - Odds Comparison as default landing page, compact sidebar status widgets
 - **Sidebar reorganization** - three sections (Analysis/Status/Utilities), Dashboard page removed
 - **Real-time sidebar updates** - WebSocket query invalidation for sidebar widgets on scrape completion
+- **Storage monitoring dashboard** - database size cards, trend chart, cleanup history table
+- **Growth detection & alerting** - automatic warnings for >20% growth or >50 GB size
+- **Optimized database schema** - removed unused raw_response columns (33 GB savings)
 
 ## Requirements
 
@@ -199,10 +203,19 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Consistent unavailable styling on Odds Comparison (strikethrough + tooltip) — v2.7
 - ✓ Alerts toggle filtering events with unavailable markets — v2.7
 - ✓ Alerts filter querying only latest snapshot per event — v2.7
+- ✓ Database storage profiling and optimization strategy — v2.8
+- ✓ Removed unused raw_response columns (33 GB savings) — v2.8
+- ✓ VACUUM FULL space reclamation after schema changes — v2.8
+- ✓ 7-day retention policy cleanup (60M+ records deleted) — v2.8
+- ✓ Storage size API with table-level breakdown — v2.8
+- ✓ Storage history tracking with daily sampling — v2.8
+- ✓ Storage dashboard with size cards and trend chart — v2.8
+- ✓ Growth detection alerting (>20% warning, >50 GB critical) — v2.8
+- ✓ Database reduced from 63 GB to 12 GB (81% reduction) — v2.8
 
 ### Active
 
-(No active requirements — project feature-complete for v2.7)
+(No active requirements — project feature-complete for v2.8)
 
 ### Out of Scope
 
@@ -334,6 +347,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Reconciliation for dropped events | Post-cycle pass marks events not in discovery as unavailable | ✓ Good — v2.7 catches platform removal |
 | Cache update after DB update | Update cache immediately after DB for instant API effect | ✓ Good — v2.7 consistent state |
 | Latest snapshot for alerts filter | Query only latest snapshot per event, not historical | ✓ Good — v2.7 accurate filtering |
+| Remove raw_response columns | Unused after scraping, saves 33 GB (53% of database) | ✓ Good — v2.8 major savings |
+| Combined optimization strategy | Remove raw_response + 7-day retention = 78% reduction | ✓ Good — v2.8 achieved 81% |
+| Hold raw API data in memory only | Don't persist to database, memory cleared after scrape | ✓ Good — v2.8 no raw_response bloat |
+| VACUUM FULL after column drop | Just dropping column doesn't free disk space | ✓ Good — v2.8 reclaimed 35 GB |
+| BigInteger for total_bytes | Database sizes can exceed 2GB Integer max | ✓ Good — v2.8 handles large DBs |
+| Daily sampling at 3 AM UTC | 1 hour after cleanup job to sample post-cleanup state | ✓ Good — v2.8 accurate trends |
+| Growth threshold 20% per sample | Triggers warning alert on abnormal growth | ✓ Good — v2.8 early detection |
+| Critical size threshold 50 GB | Triggers critical alert when database too large | ✓ Good — v2.8 prevents bloat |
 
 ---
-*Last updated: 2026-02-12 after v2.7 milestone*
+*Last updated: 2026-02-17 after v2.8 milestone*

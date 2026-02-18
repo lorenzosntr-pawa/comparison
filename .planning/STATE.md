@@ -2,10 +2,10 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-12)
+See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Project feature-complete through v2.7
+**Current focus:** Project feature-complete through v2.8
 
 ## Current Position
 
@@ -177,6 +177,17 @@ Progress: ██████████ 100%
 - +4,695 / -908 lines (net +3,787)
 - ~41,395 total LOC
 
+**v2.8 Summary:**
+- 5 phases completed (7 plans)
+- 5 days from v2.7 to v2.8 (2026-02-12 to 2026-02-17)
+- Database profiling identified 63 GB bloat, 53% from unused raw_response columns
+- Removed raw_response columns from schema (33 GB savings)
+- Applied 7-day retention policy (60M+ records deleted)
+- VACUUM FULL reclaimed disk space
+- Database reduced from 63.25 GB to 11.94 GB (81% reduction)
+- Storage monitoring dashboard with trend charts and growth alerting
+- ~42,000 total LOC
+
 ## Accumulated Context
 
 ### Key Patterns (v1.0 through v2.0)
@@ -286,6 +297,15 @@ Progress: ██████████ 100%
 - **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
 - **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
 - **Bidirectional availability updates** - UnavailableMarketUpdate with unavailable_at=None clears availability flag when odds return; both became_unavailable and became_available lists must be persisted to database (BUG-026 fix)
+- **pg_stat_user_tables for storage profiling** - PostgreSQL system tables provide accurate size metrics via pg_relation_size and pg_column_size (v2.8 Phase 100)
+- **VACUUM FULL required after column drop** - PostgreSQL marks dropped column space as reusable but doesn't free disk until VACUUM FULL (v2.8 Phase 103)
+- **psycopg2 with autocommit for VACUUM** - VACUUM FULL cannot run inside transaction; requires ISOLATION_LEVEL_AUTOCOMMIT connection (v2.8 Phase 103)
+- **FK-aware deletion order** - Delete child tables before parent tables to avoid FK constraint violations (v2.8 Phase 103)
+- **BigInteger for storage bytes** - Database sizes can exceed 2GB Integer max; BigInteger handles up to 9.2 exabytes (v2.8 Phase 104)
+- **Daily storage sampling at 3 AM UTC** - Run 1 hour after cleanup job to sample post-cleanup state (v2.8 Phase 104)
+- **Growth threshold alerting** - >20% per sample triggers warning, >50 GB triggers critical alert (v2.8 Phase 104)
+- **formatBytes helper for human-readable sizes** - Consistent size formatting across storage dashboard (v2.8 Phase 104)
+- **Color-coded size thresholds** - Green <1GB, yellow 1-5GB, red >5GB for visual status indication (v2.8 Phase 104)
 
 ### Key Decisions
 
@@ -396,10 +416,12 @@ Progress: ██████████ 100%
 - v2.7 Availability Tracking Bugfix shipped 2026-02-12 with 2 phases (5 plans)
 - v2.7 archived to .planning/milestones/v2.7-ROADMAP.md
 - Milestone v2.8 replaced: Storage Optimization (was Market Mapping Utility), 5 phases (Phase 100-104)
+- v2.8 Storage Optimization shipped 2026-02-17 with 5 phases (7 plans)
+- v2.8 archived to .planning/milestones/v2.8-ROADMAP.md
 
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Completed 104-03-PLAN.md (Growth Alerting) — v2.8 COMPLETE
+Stopped at: v2.8 milestone archived
 Resume file: None
-Next action: /gsd:complete-milestone
+Next action: `/gsd:discuss-milestone` to plan next milestone or project complete
