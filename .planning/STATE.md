@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 ## Current Position
 
-Phase: 109 of 111 (Real-Time Updates)
-Plan: 2 of 2 in current phase
+Phase: 109.1 of 111 (Limit Alert Detection to Primary Markets)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-19 — Completed 109-02-PLAN.md
+Last activity: 2026-02-19 — Completed 109.1-01-PLAN.md
 
-Progress: █████░░░░░ 71%
+Progress: █████░░░░░ 73%
 
 ## Milestones
 
@@ -314,6 +314,7 @@ Progress: █████░░░░░ 71%
 - **Event grouping in alert table** - Group alerts by event with max severity propagation for quick scanning, expandable rows for details (v2.9 Phase 108)
 - **Direction disagreement dual display** - Show both BetPawa and competitor movements side-by-side with arrows (↑/↓) for clear comparison (v2.9 Phase 108)
 - **ws_manager injection to AsyncWriteQueue** - Pass WebSocket manager to write queue for post-persistence alert broadcasting; create_task for non-blocking (v2.9 Phase 109)
+- **PRIMARY_MARKET_IDS filter pattern** - Frozenset constant with is_primary_market() helper for O(1) filtering; filter applied at end of detect_risk_alerts() rather than in each detection function (v2.9 Phase 109.1)
 
 ### Key Decisions
 
@@ -439,10 +440,11 @@ Progress: █████░░░░░ 71%
 - Phase 108 completed: Risk Monitoring Page (1 plan) — Risk Monitoring page with event-grouped alert table, status tabs, filters, acknowledge workflow
 - Phase 109 completed: Real-Time Updates (2 plans) — WebSocket risk_alerts topic, message builder, AsyncWriteQueue broadcast integration, useRiskAlertUpdates hook, sidebar badge
 - Phase 109.1 inserted after Phase 109: Limit Alert Detection to Primary Markets (URGENT) — filter alerts to 1X2, DC, BTTS, Asian Handicaps, Over/Under only
+- Phase 109.1 completed: PRIMARY_MARKET_IDS filter implemented in risk_detection.py (1 plan)
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 109.1 planned
+Stopped at: Completed 109.1-01-PLAN.md
 Resume file: None
-Next action: `/gsd:execute-plan .planning/phases/109.1-limit-alert-markets/109.1-01-PLAN.md`
+Next action: `/gsd:plan-phase 110`
