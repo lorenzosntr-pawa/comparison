@@ -80,10 +80,11 @@ Plans:
 **Goal**: WebSocket alert broadcasting, live table updates, sidebar badge
 **Depends on**: Phase 108
 **Research**: Unlikely (existing WebSocket infra)
-**Plans**: TBD
+**Plans**: 1/2 complete
 
 Plans:
-- [ ] 109-01: TBD
+- [x] 109-01: WebSocket Alert Broadcasting — 2026-02-19
+- [ ] 109-02: Frontend Real-Time Updates
 
 #### Phase 110: Cross-Page Integration
 
@@ -481,6 +482,6 @@ Plans:
 | 106. Backend Alert Detection | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 107. Alert Storage & API | v2.9 | 2/2 | Complete | 2026-02-19 |
 | 108. Risk Monitoring Page | v2.9 | 1/1 | Complete | 2026-02-19 |
-| 109. Real-Time Updates | v2.9 | 0/? | Not started | - |
+| 109. Real-Time Updates | v2.9 | 1/2 | In progress | - |
 | 110. Cross-Page Integration | v2.9 | 0/? | Not started | - |
 | 111. Settings & Configuration | v2.9 | 0/? | Not started | - |

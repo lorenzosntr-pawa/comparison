@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 ## Current Position
 
-Phase: 108 of 111 (Risk Monitoring Page)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-19 — Completed 108-01-PLAN.md
+Phase: 109 of 111 (Real-Time Updates)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-19 — Completed 109-01-PLAN.md
 
-Progress: ███░░░░░░░ 44%
+Progress: ███░░░░░░░ 50%
 
 ## Milestones
 
@@ -313,6 +313,7 @@ Progress: ███░░░░░░░ 44%
 - **Status workflow: new → acknowledged → past** - Alerts start as "new", user acknowledges them, automatically transition to "past" after event kickoff (v2.9 Phase 107)
 - **Event grouping in alert table** - Group alerts by event with max severity propagation for quick scanning, expandable rows for details (v2.9 Phase 108)
 - **Direction disagreement dual display** - Show both BetPawa and competitor movements side-by-side with arrows (↑/↓) for clear comparison (v2.9 Phase 108)
+- **ws_manager injection to AsyncWriteQueue** - Pass WebSocket manager to write queue for post-persistence alert broadcasting; create_task for non-blocking (v2.9 Phase 109)
 
 ### Key Decisions
 
@@ -436,10 +437,11 @@ Progress: ███░░░░░░░ 44%
 - Phase 106 completed: Backend Alert Detection (1 plan) — risk_detection.py module with 3 detection algorithms integrated into scraping pipeline
 - Phase 107 completed: Alert Storage & API (2 plans) — RiskAlert model, Pydantic schemas, API endpoints, write_handler persistence
 - Phase 108 completed: Risk Monitoring Page (1 plan) — Risk Monitoring page with event-grouped alert table, status tabs, filters, acknowledge workflow
+- Phase 109 completed: Real-Time Updates (1 plan) — WebSocket risk_alerts topic, message builder, AsyncWriteQueue broadcast integration
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed Phase 108 (Risk Monitoring Page)
+Stopped at: Completed Phase 109 (Real-Time Updates)
 Resume file: None
-Next action: `/gsd:plan-phase 109`
+Next action: `/gsd:plan-phase 110`
