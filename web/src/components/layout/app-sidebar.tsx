@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer, Database } from 'lucide-react'
+import { BarChart3, Settings, Activity, History, GitCompare, TrendingUp, Check, X, Clock, Wifi, WifiOff, Loader2, Play, Timer, Database, AlertTriangle } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -10,6 +10,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { useCoverage } from '@/features/coverage/hooks'
 import { useHealth, useSchedulerStatus, useActiveScrapesObserver } from '@/features/dashboard/hooks'
 import { useScrapeRuns } from '@/features/scrape-runs/hooks'
+import { useAlertStats } from '@/features/risk-monitoring/hooks'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, differenceInSeconds } from 'date-fns'
@@ -26,6 +28,7 @@ const mainNavItems = [
   { title: 'Odds Comparison', url: '/', icon: BarChart3 },
   { title: 'Coverage', url: '/coverage', icon: GitCompare },
   { title: 'Historical Analysis', url: '/historical-analysis', icon: TrendingUp },
+  { title: 'Risk Monitoring', url: '/risk-monitoring', icon: AlertTriangle },
 ]
 
 const utilityNavItems = [
@@ -42,6 +45,8 @@ export function AppSidebar() {
   const { data: scheduler } = useSchedulerStatus()
   const { data: recentRuns } = useScrapeRuns(1, 0)
   const { activeScrapeId, overallPhase, connectionState } = useActiveScrapesObserver()
+  const { data: alertStats } = useAlertStats()
+  const newAlertCount = alertStats?.byStatus?.new ?? 0
 
   const triggerScrape = useMutation({
     mutationFn: () => api.triggerScrape(),
@@ -122,6 +127,11 @@ export function AppSidebar() {
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
+                  {item.url === '/risk-monitoring' && newAlertCount > 0 && (
+                    <SidebarMenuBadge className="bg-red-500 text-white">
+                      {newAlertCount > 99 ? '99+' : newAlertCount}
+                    </SidebarMenuBadge>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
