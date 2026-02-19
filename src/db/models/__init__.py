@@ -13,6 +13,7 @@ from src.db.models.competitor import (
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.odds import MarketOdds, OddsSnapshot
+from src.db.models.risk_alert import AlertStatus, RiskAlert
 from src.db.models.scrape import (
     ScrapeBatch,
     ScrapeError,
@@ -52,4 +53,7 @@ __all__ = [
     # Storage monitoring
     "StorageSample",
     "StorageAlert",
+    # Risk monitoring
+    "RiskAlert",
+    "AlertStatus",
 ]
