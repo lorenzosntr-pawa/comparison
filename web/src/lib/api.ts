@@ -150,6 +150,20 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     }),
 
+  /**
+   * Generic PATCH request for partial updates.
+   *
+   * @template T - The expected response type
+   * @param url - The API endpoint path
+   * @param body - Request body (will be JSON stringified)
+   * @returns Promise resolving to the typed response
+   */
+  patch: <T>(url: string, body: unknown) =>
+    fetchJson<T>(url, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Health
   // ─────────────────────────────────────────────────────────────────────────────
