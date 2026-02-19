@@ -89,6 +89,46 @@ class UnavailableMarketUpdate:
 
 
 @dataclass(frozen=True)
+class RiskAlertData:
+    """DTO for risk alert creation.
+
+    Immutable data object passed from detection to write handler.
+    Decouples detection logic from database persistence.
+
+    Attributes:
+        event_id: FK to events table.
+        bookmaker_slug: Which bookmaker triggered the alert.
+        market_id: Betpawa market ID affected.
+        market_name: Human-readable market name.
+        line: Line value for total/handicap markets (nullable).
+        outcome_name: Specific outcome if applicable (nullable).
+        alert_type: Type of alert (price_change, direction_disagreement, availability).
+        severity: Severity level (warning, elevated, critical).
+        change_percent: Absolute percentage change (0 for availability).
+        old_value: Previous odds value (nullable for availability).
+        new_value: Current odds value (nullable for availability).
+        competitor_direction: For disagreement: "sportybet:up" format (nullable).
+        detected_at: When the alert was detected.
+        event_kickoff: Kickoff time for automatic PAST transition.
+    """
+
+    event_id: int
+    bookmaker_slug: str
+    market_id: str
+    market_name: str
+    line: float | None
+    outcome_name: str | None
+    alert_type: str  # AlertType enum value
+    severity: str    # AlertSeverity enum value
+    change_percent: float
+    old_value: float | None
+    new_value: float | None
+    competitor_direction: str | None
+    detected_at: datetime
+    event_kickoff: datetime
+
+
+@dataclass(frozen=True)
 class WriteBatch:
     """A complete batch of writes to process."""
 
