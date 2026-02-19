@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 105 of 111 (Investigation & Schema Design)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-19 — Milestone v2.9 created
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-19 — Completed 105-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 14%
 
 ## Milestones
 
@@ -362,6 +362,10 @@ Progress: ░░░░░░░░░░ 0%
 - Hold raw API data in memory during scrape only, don't persist to database (v2.8 Phase 100)
 - Storage optimization achieved 81% reduction: 63.25 GB → 11.94 GB (exceeded 78% target) (v2.8 Phase 103)
 - VACUUM FULL required after column drop to reclaim space — just dropping column doesn't free disk (v2.8 Phase 103)
+- Alert detection integration point: store_batch_results() after classify_batch_changes() — access to both cached and new state (v2.9 Phase 105)
+- Alert per outcome, not per market — enables granular tracking of specific outcome movements (v2.9 Phase 105)
+- Direction disagreement always ELEVATED severity — inherently concerning regardless of magnitude (v2.9 Phase 105)
+- Separate alert_retention_days from odds_retention_days — alerts may need longer visibility (v2.9 Phase 105)
 
 ### Blockers/Concerns
 
@@ -420,10 +424,11 @@ Progress: ░░░░░░░░░░ 0%
 - v2.8 Storage Optimization shipped 2026-02-17 with 5 phases (7 plans)
 - v2.8 archived to .planning/milestones/v2.8-ROADMAP.md
 - Milestone v2.9 created: Risk Monitoring, 7 phases (Phase 105-111)
+- Phase 105 completed: Investigation & Schema Design (1 plan) — alert detection algorithms and RiskAlert schema designed
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Milestone v2.9 initialization
+Stopped at: Completed 105-01-PLAN.md
 Resume file: None
-Next action: `/gsd:plan-phase 105` to plan first phase
+Next action: `/gsd:plan-phase 106` to plan Backend Alert Detection

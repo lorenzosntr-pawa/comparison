@@ -33,16 +33,16 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Real-time odds movement alerting with dedicated Risk Monitoring page, cross-page indicators, and configurable detection thresholds.
 
-#### Phase 105: Investigation & Schema Design
+#### Phase 105: Investigation & Schema Design ✓
 
 **Goal**: Analyze detection patterns, design alerts table schema, plan detection algorithms
 **Depends on**: Previous milestone complete
 **Research**: Likely (alert detection patterns, threshold algorithms)
 **Research topics**: Movement detection algorithms, alert state management patterns
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 105-01: TBD (run /gsd:plan-phase 105 to break down)
+- [x] 105-01: Investigation & Schema Design — 2026-02-19
 
 #### Phase 106: Backend Alert Detection
 
@@ -476,7 +476,7 @@ Plans:
 | 103. Data Migration & Validation | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
-| 105. Investigation & Schema Design | v2.9 | 0/? | Not started | - |
+| 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 106. Backend Alert Detection | v2.9 | 0/? | Not started | - |
 | 107. Alert Storage & API | v2.9 | 0/? | Not started | - |
 | 108. Risk Monitoring Page | v2.9 | 0/? | Not started | - |
