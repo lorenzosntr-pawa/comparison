@@ -629,7 +629,20 @@ def detect_risk_alerts(
     # Build reverse map for kickoff lookup
     eid_to_sr: dict[int, str] = {v: k for k, v in event_id_map.items()}
 
-    # 1. Betpawa price change alerts
+    # Build set of matched market keys per event (markets that exist on competitors)
+    # Only generate alerts for markets that have competitor coverage
+    matched_markets_by_event: dict[int, set[tuple[str, float | None]]] = {}
+    for idx, cswd in enumerate(comp_write_data):
+        sr_id, _source, _comp_eid = comp_meta[idx]
+        event_id = event_id_map.get(sr_id)
+        if event_id is None:
+            continue
+        if event_id not in matched_markets_by_event:
+            matched_markets_by_event[event_id] = set()
+        for market in cswd.markets:
+            matched_markets_by_event[event_id].add((market.betpawa_market_id, market.line))
+
+    # 1. Betpawa price change alerts (only for matched markets)
     for event_id, bk_id, markets_data in changed_bp:
         # Get cached markets for comparison
         cached_bp = cache.get_betpawa_snapshot(event_id)
@@ -653,6 +666,9 @@ def detect_risk_alerts(
         if kickoff is None:
             continue
 
+        # Get matched markets for this event
+        matched = matched_markets_by_event.get(event_id, set())
+
         alerts = detect_price_change_alerts(
             cached_markets=cached_markets,
             new_markets=bp_data.markets,
@@ -662,9 +678,14 @@ def detect_risk_alerts(
             thresholds=thresholds,
             timestamp=timestamp,
         )
-        all_alerts.extend(alerts)
+        # Filter to only matched markets (markets with competitor coverage)
+        matched_alerts = [
+            a for a in alerts
+            if (a.market_id, a.line) in matched
+        ]
+        all_alerts.extend(matched_alerts)
 
-    # 2. Competitor price change alerts
+    # 2. Competitor price change alerts (inherently matched)
     for betpawa_eid, source, markets_data in changed_comp:
         # Get cached markets for comparison
         cached_comp = cache.get_competitor_snapshot(betpawa_eid)
@@ -719,7 +740,7 @@ def detect_risk_alerts(
     )
     all_alerts.extend(direction_alerts)
 
-    # 4. Betpawa availability alerts
+    # 4. Betpawa availability alerts (filtered to matched markets)
     if unavailable_bp:
         bp_avail_alerts = convert_availability_to_alerts(
             unavailable_updates=unavailable_bp,
@@ -729,7 +750,12 @@ def detect_risk_alerts(
             timestamp=timestamp,
             cache=cache,
         )
-        all_alerts.extend(bp_avail_alerts)
+        # Filter to matched markets only
+        matched_avail_alerts = [
+            a for a in bp_avail_alerts
+            if (a.market_id, a.line) in matched_markets_by_event.get(a.event_id, set())
+        ]
+        all_alerts.extend(matched_avail_alerts)
 
     # 5. Competitor availability alerts
     if unavailable_comp:
