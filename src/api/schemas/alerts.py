@@ -59,6 +59,8 @@ class RiskAlertResponse(BaseModel):
     change_percent: float = Field(description="Absolute percentage change")
     old_value: float | None = Field(description="Previous odds value")
     new_value: float | None = Field(description="Current odds value")
+    competitor_old_value: float | None = Field(description="Competitor previous odds (direction alerts)")
+    competitor_new_value: float | None = Field(description="Competitor current odds (direction alerts)")
     competitor_direction: str | None = Field(description="Direction disagreement info")
     detected_at: datetime = Field(description="When alert was detected")
     acknowledged_at: datetime | None = Field(description="When user acknowledged")

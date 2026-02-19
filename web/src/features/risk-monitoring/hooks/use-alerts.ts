@@ -25,6 +25,8 @@ export interface RiskAlert {
   changePercent: number
   oldValue: number | null
   newValue: number | null
+  competitorOldValue: number | null
+  competitorNewValue: number | null
   competitorDirection: string | null
   detectedAt: string
   acknowledgedAt: string | null

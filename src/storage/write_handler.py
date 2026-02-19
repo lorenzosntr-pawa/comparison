@@ -224,6 +224,8 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
                         change_percent=alert_data.change_percent,
                         old_value=alert_data.old_value,
                         new_value=alert_data.new_value,
+                        competitor_old_value=alert_data.competitor_old_value,
+                        competitor_new_value=alert_data.competitor_new_value,
                         competitor_direction=alert_data.competitor_direction,
                         detected_at=alert_data.detected_at,
                         event_kickoff=alert_data.event_kickoff,

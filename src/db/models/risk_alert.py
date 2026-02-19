@@ -78,6 +78,8 @@ class RiskAlert(Base):
     change_percent: Mapped[float] = mapped_column(Float, default=0.0)
     old_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     new_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    competitor_old_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    competitor_new_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     competitor_direction: Mapped[str | None] = mapped_column(String(100), nullable=True)
     detected_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

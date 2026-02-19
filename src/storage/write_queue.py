@@ -107,6 +107,8 @@ class RiskAlertData:
         change_percent: Absolute percentage change (0 for availability).
         old_value: Previous odds value (nullable for availability).
         new_value: Current odds value (nullable for availability).
+        competitor_old_value: Competitor previous odds (direction disagreement only).
+        competitor_new_value: Competitor current odds (direction disagreement only).
         competitor_direction: For disagreement: "sportybet:up" format (nullable).
         detected_at: When the alert was detected.
         event_kickoff: Kickoff time for automatic PAST transition.
@@ -123,6 +125,8 @@ class RiskAlertData:
     change_percent: float
     old_value: float | None
     new_value: float | None
+    competitor_old_value: float | None
+    competitor_new_value: float | None
     competitor_direction: str | None
     detected_at: datetime
     event_kickoff: datetime

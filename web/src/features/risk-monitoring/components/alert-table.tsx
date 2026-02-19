@@ -309,20 +309,22 @@ export function AlertTable({ alerts }: AlertTableProps) {
                                   const betpawaMovement = competitorMovement === 'up' ? 'down' : 'up'
                                   return (
                                     <>
-                                      <span className="capitalize">{getBookmakerName(alert.bookmakerSlug)}</span>
                                       {alert.outcomeName && (
                                         <>
-                                          <span>•</span>
                                           <span>{alert.outcomeName}</span>
+                                          <span>•</span>
                                         </>
                                       )}
-                                      <span>•</span>
-                                      <span className="text-purple-600 font-medium">
-                                        BetPawa {getDirectionArrow(betpawaMovement)} while {competitor?.bookmaker} {getDirectionArrow(competitorMovement)}
+                                      <span className="font-mono">
+                                        BetPawa: {formatOdds(alert.oldValue)} → {formatOdds(alert.newValue)} {getDirectionArrow(betpawaMovement)}
                                       </span>
                                       <span>•</span>
-                                      <span className="font-mono text-muted-foreground">
-                                        Gap: {alert.changePercent.toFixed(2)}%
+                                      <span className="font-mono">
+                                        {competitor?.bookmaker}: {formatOdds(alert.competitorOldValue)} → {formatOdds(alert.competitorNewValue)} {getDirectionArrow(competitorMovement)}
+                                      </span>
+                                      <span>•</span>
+                                      <span className="text-purple-600 font-medium">
+                                        Diverging
                                       </span>
                                     </>
                                   )

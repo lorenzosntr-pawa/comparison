@@ -258,6 +258,8 @@ def detect_price_change_alerts(
                     change_percent=change_pct,
                     old_value=old_odds,
                     new_value=new_odds,
+                    competitor_old_value=None,
+                    competitor_new_value=None,
                     competitor_direction=None,
                     detected_at=timestamp,
                     event_kickoff=event_kickoff,
@@ -440,6 +442,8 @@ def detect_direction_disagreement_alerts(
                         change_percent=gap_pct,
                         old_value=bp_old_odds,
                         new_value=bp_new_odds,
+                        competitor_old_value=comp_old_odds,
+                        competitor_new_value=comp_new_odds,
                         competitor_direction=f"{comp_source}:{comp_direction}",
                         detected_at=timestamp,
                         event_kickoff=kickoff,
@@ -550,6 +554,8 @@ def convert_availability_to_alerts(
             change_percent=0.0,  # N/A for availability
             old_value=None,  # N/A
             new_value=None,  # N/A
+            competitor_old_value=None,
+            competitor_new_value=None,
             competitor_direction=direction,
             detected_at=timestamp,
             event_kickoff=kickoff,
@@ -778,6 +784,8 @@ def detect_risk_alerts(
                 change_percent=0.0,
                 old_value=None,
                 new_value=None,
+                competitor_old_value=None,
+                competitor_new_value=None,
                 competitor_direction=direction,
                 detected_at=timestamp,
                 event_kickoff=kickoff,
