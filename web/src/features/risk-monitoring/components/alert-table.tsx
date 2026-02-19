@@ -98,7 +98,34 @@ function getTypeBadge(alertType: RiskAlert['alertType']) {
 /** Format change percent with sign */
 function formatChange(change: number): string {
   const sign = change >= 0 ? '+' : ''
-  return `${sign}${change.toFixed(1)}%`
+  return `${sign}${change.toFixed(2)}%`
+}
+
+/** Parse competitor direction string (e.g., "sportybet:up") into readable format */
+function parseCompetitorDirection(direction: string | null): { bookmaker: string; movement: string } | null {
+  if (!direction) return null
+  const [slug, movement] = direction.split(':')
+  const bookmakerNames: Record<string, string> = {
+    betpawa: 'BetPawa',
+    sportybet: 'SportyBet',
+    bet9ja: 'Bet9ja',
+  }
+  return {
+    bookmaker: bookmakerNames[slug] || slug,
+    movement: movement || 'unknown',
+  }
+}
+
+/** Get direction arrow */
+function getDirectionArrow(movement: string): string {
+  switch (movement) {
+    case 'up':
+      return '↑'
+    case 'down':
+      return '↓'
+    default:
+      return ''
+  }
 }
 
 /** Format odds value */
@@ -245,38 +272,86 @@ export function AlertTable({ alerts }: AlertTableProps) {
                                 {getSeverityBadge(alert.severity)}
                               </div>
                               <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                                <span className="capitalize">{getBookmakerName(alert.bookmakerSlug)}</span>
-                                {alert.outcomeName && (
+                                {/* Alert type specific display */}
+                                {alert.alertType === 'price_change' && (
                                   <>
+                                    <span className="capitalize">{getBookmakerName(alert.bookmakerSlug)}</span>
+                                    {alert.outcomeName && (
+                                      <>
+                                        <span>•</span>
+                                        <span>{alert.outcomeName}</span>
+                                      </>
+                                    )}
                                     <span>•</span>
-                                    <span>{alert.outcomeName}</span>
-                                  </>
-                                )}
-                                <span>•</span>
-                                <span className="font-mono">
-                                  {formatOdds(alert.oldValue)} → {formatOdds(alert.newValue)}
-                                </span>
-                                <span>•</span>
-                                <span
-                                  className={cn(
-                                    'font-mono',
-                                    alert.changePercent >= 10
-                                      ? 'text-red-600'
-                                      : alert.changePercent >= 5
-                                      ? 'text-orange-600'
-                                      : 'text-yellow-600'
-                                  )}
-                                >
-                                  {formatChange(alert.changePercent)}
-                                </span>
-                                {alert.competitorDirection && (
-                                  <>
+                                    <span className="font-mono">
+                                      {formatOdds(alert.oldValue)} → {formatOdds(alert.newValue)}
+                                    </span>
                                     <span>•</span>
-                                    <span className="text-purple-600">
-                                      {alert.competitorDirection}
+                                    <span
+                                      className={cn(
+                                        'font-mono',
+                                        alert.changePercent >= 10
+                                          ? 'text-red-600'
+                                          : alert.changePercent >= 5
+                                          ? 'text-orange-600'
+                                          : 'text-yellow-600'
+                                      )}
+                                    >
+                                      {formatChange(alert.changePercent)}
                                     </span>
                                   </>
                                 )}
+                                {alert.alertType === 'direction_disagreement' && (() => {
+                                  const competitor = parseCompetitorDirection(alert.competitorDirection)
+                                  // For direction alerts, we show BetPawa's movement vs competitor's movement
+                                  // If competitor went UP, BetPawa went DOWN (or vice versa)
+                                  const competitorMovement = competitor?.movement || 'unknown'
+                                  const betpawaMovement = competitorMovement === 'up' ? 'down' : 'up'
+                                  return (
+                                    <>
+                                      <span className="capitalize">{getBookmakerName(alert.bookmakerSlug)}</span>
+                                      {alert.outcomeName && (
+                                        <>
+                                          <span>•</span>
+                                          <span>{alert.outcomeName}</span>
+                                        </>
+                                      )}
+                                      <span>•</span>
+                                      <span className="text-purple-600 font-medium">
+                                        BetPawa {getDirectionArrow(betpawaMovement)} while {competitor?.bookmaker} {getDirectionArrow(competitorMovement)}
+                                      </span>
+                                      <span>•</span>
+                                      <span className="font-mono text-muted-foreground">
+                                        Gap: {alert.changePercent.toFixed(2)}%
+                                      </span>
+                                    </>
+                                  )
+                                })()}
+                                {alert.alertType === 'availability' && (() => {
+                                  const statusText = alert.competitorDirection === 'suspended'
+                                    ? 'Market suspended'
+                                    : alert.competitorDirection === 'returned'
+                                    ? 'Market returned'
+                                    : alert.competitorDirection || 'Status changed'
+                                  return (
+                                    <>
+                                      <span className="capitalize">{getBookmakerName(alert.bookmakerSlug)}</span>
+                                      {alert.outcomeName && (
+                                        <>
+                                          <span>•</span>
+                                          <span>{alert.outcomeName}</span>
+                                        </>
+                                      )}
+                                      <span>•</span>
+                                      <span className={cn(
+                                        'font-medium',
+                                        alert.competitorDirection === 'suspended' ? 'text-red-600' : 'text-green-600'
+                                      )}>
+                                        {statusText}
+                                      </span>
+                                    </>
+                                  )
+                                })()}
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">
                                 Detected {formatDistanceToNow(new Date(alert.detectedAt), { addSuffix: true })}
