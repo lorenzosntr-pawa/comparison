@@ -54,16 +54,16 @@ Plans:
 Plans:
 - [x] 106-01: Backend Alert Detection — 2026-02-19
 
-#### Phase 107: Alert Storage & API
+#### Phase 107: Alert Storage & API ✓
 
 **Goal**: Database schema, alert CRUD operations, API endpoints for alerts
 **Depends on**: Phase 106
 **Research**: Unlikely (established patterns)
-**Plans**: 1/2 complete
+**Plans**: 2/2 complete
 
 Plans:
 - [x] 107-01: RiskAlert Model & Settings — 2026-02-19
-- [ ] 107-02: API Endpoints & Write Handler
+- [x] 107-02: API Endpoints & Write Handler — 2026-02-19
 
 #### Phase 108: Risk Monitoring Page
 

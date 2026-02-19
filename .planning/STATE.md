@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 ## Current Position
 
-Phase: 107 of 111 (Alert Storage & API)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-19 — Completed 107-01-PLAN.md
+Phase: 107 of 111 (Alert Storage & API) ✓
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phase complete
+Last activity: 2026-02-19 — Completed 107-02-PLAN.md
 
-Progress: ██░░░░░░░░ 29%
+Progress: ██░░░░░░░░ 43%
 
 ## Milestones
 
@@ -309,6 +309,8 @@ Progress: ██░░░░░░░░ 29%
 - **Color-coded size thresholds** - Green <1GB, yellow 1-5GB, red >5GB for visual status indication (v2.8 Phase 104)
 - **detect_risk_alerts orchestrator pattern** - Main function calls specialized detection functions (price_change, direction_disagreement, availability) and aggregates results (v2.9 Phase 106)
 - **AlertThresholds NamedTuple** - Configurable threshold percentages (warning=7%, elevated=10%, critical=15%) passed to detection functions (v2.9 Phase 106)
+- **Alerts on WriteBatch pattern** - alerts: tuple[RiskAlertData, ...] field enables atomic persistence alongside snapshot data in single commit (v2.9 Phase 107)
+- **Status workflow: new → acknowledged → past** - Alerts start as "new", user acknowledges them, automatically transition to "past" after event kickoff (v2.9 Phase 107)
 
 ### Key Decisions
 
@@ -368,6 +370,8 @@ Progress: ██░░░░░░░░ 29%
 - Alert per outcome, not per market — enables granular tracking of specific outcome movements (v2.9 Phase 105)
 - Direction disagreement always ELEVATED severity — inherently concerning regardless of magnitude (v2.9 Phase 105)
 - Separate alert_retention_days from odds_retention_days — alerts may need longer visibility (v2.9 Phase 105)
+- Alert persistence in same transaction as snapshots — alerts bundled in WriteBatch for atomic commit (v2.9 Phase 107)
+- Cannot acknowledge PAST alerts — prevents workflow actions on events that have already started (v2.9 Phase 107)
 
 ### Blockers/Concerns
 
@@ -428,10 +432,11 @@ Progress: ██░░░░░░░░ 29%
 - Milestone v2.9 created: Risk Monitoring, 7 phases (Phase 105-111)
 - Phase 105 completed: Investigation & Schema Design (1 plan) — alert detection algorithms and RiskAlert schema designed
 - Phase 106 completed: Backend Alert Detection (1 plan) — risk_detection.py module with 3 detection algorithms integrated into scraping pipeline
+- Phase 107 completed: Alert Storage & API (2 plans) — RiskAlert model, Pydantic schemas, API endpoints, write_handler persistence
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 107-01-PLAN.md
+Stopped at: Completed Phase 107 (Alert Storage & API)
 Resume file: None
-Next action: `/gsd:execute-plan .planning/phases/107-alert-api/107-02-PLAN.md` to execute API Endpoints & Write Handler
+Next action: `/gsd:plan-phase 108` to plan Risk Monitoring Page (frontend UI)
