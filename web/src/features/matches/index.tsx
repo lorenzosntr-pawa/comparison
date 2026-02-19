@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MatchTable, MatchFilters, ColumnSettings, MatchHeader, MarketGrid, SummarySection } from './components'
 import type { MatchFiltersState } from './components'
-import { useMatches, useColumnSettings, useColumnWidths, useMatchDetail, useAlertsCount } from './hooks'
+import { useMatches, useColumnSettings, useColumnWidths, useMatchDetail, useAlertsCount, useEventAlertSummary } from './hooks'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_BETPAWA_FILTERS: MatchFiltersState = {
@@ -298,6 +298,7 @@ export function MatchDetail() {
   const eventId = id ? parseInt(id, 10) : undefined
 
   const { data: event, isPending, error } = useMatchDetail(eventId)
+  const { data: alertSummary } = useEventAlertSummary(eventId)
 
   if (isPending) {
     return (
@@ -343,7 +344,11 @@ export function MatchDetail() {
 
   return (
     <div className="space-y-4">
-      <MatchHeader event={event} />
+      <MatchHeader
+        event={event}
+        alertCount={alertSummary?.count}
+        maxSeverity={alertSummary?.maxSeverity}
+      />
 
       <SummarySection marketsByBookmaker={event.markets_by_bookmaker} />
 
