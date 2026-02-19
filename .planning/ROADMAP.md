@@ -70,10 +70,10 @@ Plans:
 **Goal**: Core table with expandable rows, tabs (New/Acknowledged/Past), filters
 **Depends on**: Phase 107
 **Research**: Unlikely (reuse existing patterns)
-**Plans**: TBD
+**Plans**: 0/1 planned
 
 Plans:
-- [ ] 108-01: TBD
+- [ ] 108-01: Risk Monitoring Page
 
 #### Phase 109: Real-Time Updates
 
@@ -479,8 +479,8 @@ Plans:
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 106. Backend Alert Detection | v2.9 | 1/1 | Complete | 2026-02-19 |
-| 107. Alert Storage & API | v2.9 | 1/2 | In progress | - |
-| 108. Risk Monitoring Page | v2.9 | 0/? | Not started | - |
+| 107. Alert Storage & API | v2.9 | 2/2 | Complete | 2026-02-19 |
+| 108. Risk Monitoring Page | v2.9 | 0/1 | Planned | - |
 | 109. Real-Time Updates | v2.9 | 0/? | Not started | - |
 | 110. Cross-Page Integration | v2.9 | 0/? | Not started | - |
 | 111. Settings & Configuration | v2.9 | 0/? | Not started | - |
