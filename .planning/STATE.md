@@ -438,10 +438,11 @@ Progress: █████░░░░░ 71%
 - Phase 107 completed: Alert Storage & API (2 plans) — RiskAlert model, Pydantic schemas, API endpoints, write_handler persistence
 - Phase 108 completed: Risk Monitoring Page (1 plan) — Risk Monitoring page with event-grouped alert table, status tabs, filters, acknowledge workflow
 - Phase 109 completed: Real-Time Updates (2 plans) — WebSocket risk_alerts topic, message builder, AsyncWriteQueue broadcast integration, useRiskAlertUpdates hook, sidebar badge
+- Phase 109.1 inserted after Phase 109: Limit Alert Detection to Primary Markets (URGENT) — filter alerts to 1X2, DC, BTTS, Asian Handicaps, Over/Under only
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 109-02-PLAN.md (Frontend Real-Time Updates)
+Stopped at: Phase 109.1 planned
 Resume file: None
-Next action: `/gsd:plan-phase 110`
+Next action: `/gsd:execute-plan .planning/phases/109.1-limit-alert-markets/109.1-01-PLAN.md`

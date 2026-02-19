@@ -86,6 +86,16 @@ Plans:
 - [x] 109-01: WebSocket Alert Broadcasting — 2026-02-19
 - [x] 109-02: Frontend Real-Time Updates — 2026-02-19
 
+#### Phase 109.1: Limit Alert Detection to Primary Markets (INSERTED)
+
+**Goal**: Filter alert detection to only primary markets: 1X2, Double Chance, BTTS, Asian Handicaps (all spreads), Over/Under (all spreads)
+**Depends on**: Phase 109
+**Research**: Unlikely (refinement of existing detection)
+**Plans**: 1
+
+Plans:
+- [ ] 109.1-01: Primary Market Filter
+
 #### Phase 110: Cross-Page Integration
 
 **Goal**: Alert indicators on Odds Comparison/Event Details, navigation links
