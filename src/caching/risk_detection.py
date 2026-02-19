@@ -92,6 +92,40 @@ class AlertThresholds(NamedTuple):
 
 
 # ---------------------------------------------------------------------------
+# Primary market filter
+# ---------------------------------------------------------------------------
+
+# Primary markets for alert detection (filter out obscure markets)
+# Only these market types generate risk alerts
+PRIMARY_MARKET_IDS: frozenset[str] = frozenset({
+    "3743",  # 1X2 - Full Time
+    "4693",  # Double Chance - Full Time
+    "3795",  # BTTS - Full Time
+    "5000",  # Over/Under - Full Time (all lines)
+    "3774",  # Asian Handicap - Full Time (all lines)
+})
+
+
+def is_primary_market(market_id: str) -> bool:
+    """Check if market is a primary market for alert detection.
+
+    Primary markets are the core betting markets that risk monitors
+    care about: 1X2, Double Chance, BTTS, Over/Under, Asian Handicap.
+
+    Parameters
+    ----------
+    market_id:
+        BetPawa market type ID (e.g., "3743" for 1X2).
+
+    Returns
+    -------
+    bool
+        True if market is a primary market.
+    """
+    return market_id in PRIMARY_MARKET_IDS
+
+
+# ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
 
