@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { AppLayout } from '@/components/layout'
 import { AppRoutes } from '@/routes'
 import { useOddsUpdates } from '@/hooks'
+import { useRiskAlertUpdates } from '@/features/risk-monitoring/hooks'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,8 @@ function AppContent() {
   // Subscribe to real-time odds updates via WebSocket
   // Hook's side effect automatically invalidates queries on updates
   useOddsUpdates()
+  // Subscribe to real-time risk alerts via WebSocket
+  useRiskAlertUpdates()
 
   return (
     <BrowserRouter>
