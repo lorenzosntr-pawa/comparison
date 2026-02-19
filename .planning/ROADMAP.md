@@ -25,6 +25,84 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
 - ✅ [v2.8 Storage Optimization](milestones/v2.8-ROADMAP.md) — Phases 100-104 (shipped 2026-02-17)
+- 🚧 **v2.9 Risk Monitoring** — Phases 105-111 (in progress)
+
+---
+
+### 🚧 v2.9 Risk Monitoring (In Progress)
+
+**Milestone Goal:** Real-time odds movement alerting with dedicated Risk Monitoring page, cross-page indicators, and configurable detection thresholds.
+
+#### Phase 105: Investigation & Schema Design
+
+**Goal**: Analyze detection patterns, design alerts table schema, plan detection algorithms
+**Depends on**: Previous milestone complete
+**Research**: Likely (alert detection patterns, threshold algorithms)
+**Research topics**: Movement detection algorithms, alert state management patterns
+**Plans**: TBD
+
+Plans:
+- [ ] 105-01: TBD (run /gsd:plan-phase 105 to break down)
+
+#### Phase 106: Backend Alert Detection
+
+**Goal**: Implement detection engine for % changes, direction disagreement, availability changes
+**Depends on**: Phase 105
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 106-01: TBD
+
+#### Phase 107: Alert Storage & API
+
+**Goal**: Database schema, alert CRUD operations, API endpoints for alerts
+**Depends on**: Phase 106
+**Research**: Unlikely (established patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 107-01: TBD
+
+#### Phase 108: Risk Monitoring Page
+
+**Goal**: Core table with expandable rows, tabs (New/Acknowledged/Past), filters
+**Depends on**: Phase 107
+**Research**: Unlikely (reuse existing patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 108-01: TBD
+
+#### Phase 109: Real-Time Updates
+
+**Goal**: WebSocket alert broadcasting, live table updates, sidebar badge
+**Depends on**: Phase 108
+**Research**: Unlikely (existing WebSocket infra)
+**Plans**: TBD
+
+Plans:
+- [ ] 109-01: TBD
+
+#### Phase 110: Cross-Page Integration
+
+**Goal**: Alert indicators on Odds Comparison/Event Details, navigation links
+**Depends on**: Phase 109
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 110-01: TBD
+
+#### Phase 111: Settings & Configuration
+
+**Goal**: Alert thresholds, severity bands, retention settings, quick settings UI
+**Depends on**: Phase 110
+**Research**: Unlikely (existing Settings pattern)
+**Plans**: TBD
+
+Plans:
+- [ ] 111-01: TBD
 
 ---
 
@@ -398,3 +476,10 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 103. Data Migration & Validation | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
+| 105. Investigation & Schema Design | v2.9 | 0/? | Not started | - |
+| 106. Backend Alert Detection | v2.9 | 0/? | Not started | - |
+| 107. Alert Storage & API | v2.9 | 0/? | Not started | - |
+| 108. Risk Monitoring Page | v2.9 | 0/? | Not started | - |
+| 109. Real-Time Updates | v2.9 | 0/? | Not started | - |
+| 110. Cross-Page Integration | v2.9 | 0/? | Not started | - |
+| 111. Settings & Configuration | v2.9 | 0/? | Not started | - |
