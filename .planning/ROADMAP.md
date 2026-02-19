@@ -59,10 +59,11 @@ Plans:
 **Goal**: Database schema, alert CRUD operations, API endpoints for alerts
 **Depends on**: Phase 106
 **Research**: Unlikely (established patterns)
-**Plans**: TBD
+**Plans**: 1/2 complete
 
 Plans:
-- [ ] 107-01: TBD
+- [x] 107-01: RiskAlert Model & Settings — 2026-02-19
+- [ ] 107-02: API Endpoints & Write Handler
 
 #### Phase 108: Risk Monitoring Page
 
@@ -478,7 +479,7 @@ Plans:
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 106. Backend Alert Detection | v2.9 | 1/1 | Complete | 2026-02-19 |
-| 107. Alert Storage & API | v2.9 | 0/? | Not started | - |
+| 107. Alert Storage & API | v2.9 | 1/2 | In progress | - |
 | 108. Risk Monitoring Page | v2.9 | 0/? | Not started | - |
 | 109. Real-Time Updates | v2.9 | 0/? | Not started | - |
 | 110. Cross-Page Integration | v2.9 | 0/? | Not started | - |
