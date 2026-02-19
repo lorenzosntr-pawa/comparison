@@ -5,6 +5,7 @@ This module provides endpoints for managing risk alerts:
 - GET /alerts/stats: Summary statistics
 - GET /alerts/{alert_id}: Get single alert
 - PATCH /alerts/{alert_id}: Acknowledge/unacknowledge alert
+- DELETE /alerts: Clear all alerts (for fresh start with new filters)
 """
 
 from datetime import datetime, timezone
@@ -195,6 +196,31 @@ async def get_alert(
         raise HTTPException(status_code=404, detail="Alert not found")
 
     return RiskAlertResponse.model_validate(alert)
+
+
+@router.delete("")
+async def clear_all_alerts(
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Delete all risk alerts.
+
+    Use this to clear existing alerts when starting fresh with new
+    detection filters. Returns count of deleted alerts.
+
+    Args:
+        db: Async database session (injected).
+
+    Returns:
+        Dict with count of deleted alerts.
+    """
+    from sqlalchemy import delete
+
+    from src.db.models.risk_alert import RiskAlert
+
+    result = await db.execute(delete(RiskAlert))
+    await db.commit()
+
+    return {"deleted": result.rowcount}
 
 
 @router.patch("/{alert_id}", response_model=RiskAlertResponse)
