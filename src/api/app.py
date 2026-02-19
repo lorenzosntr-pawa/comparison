@@ -185,11 +185,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     **warmup_stats,
                 )
 
+                # --- WebSocket connection manager ---
+                # Created before write queue so it can receive alert broadcasts
+                ws_manager = ConnectionManager()
+                app.state.ws_manager = ws_manager
+                log.info("ws_manager_ready")
+
                 # --- Async write queue ---
                 t0 = perf_counter()
                 write_queue = AsyncWriteQueue(
                     session_factory=async_session_factory,
                     maxsize=50,
+                    ws_manager=ws_manager,
                 )
                 await write_queue.start()
                 app.state.write_queue = write_queue
@@ -198,11 +205,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     "write_queue_started",
                     startup_ms=round(wq_ms, 1),
                 )
-
-                # --- WebSocket connection manager ---
-                ws_manager = ConnectionManager()
-                app.state.ws_manager = ws_manager
-                log.info("ws_manager_ready")
 
                 # --- Cache-to-WebSocket bridge ---
                 create_cache_update_bridge(odds_cache, ws_manager)

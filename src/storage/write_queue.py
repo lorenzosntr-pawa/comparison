@@ -170,11 +170,15 @@ class AsyncWriteQueue:
     maxsize:
         Maximum number of ``WriteBatch`` items the queue can hold before
         ``enqueue()`` blocks (backpressure).
+    ws_manager:
+        Optional WebSocket connection manager for broadcasting alerts.
+        When provided, broadcasts risk_alert messages after persisting alerts.
     """
 
-    def __init__(self, session_factory, maxsize: int = 50):
+    def __init__(self, session_factory, maxsize: int = 50, ws_manager=None):
         self._queue: asyncio.Queue[WriteBatch] = asyncio.Queue(maxsize=maxsize)
         self._session_factory = session_factory  # async_sessionmaker
+        self._ws_manager = ws_manager
         self._worker_task: asyncio.Task | None = None
         self._running = False
         self._log = structlog.get_logger("write_queue")
@@ -252,7 +256,7 @@ class AsyncWriteQueue:
 
         - Max ``_MAX_ATTEMPTS`` attempts.
         - On final failure: log error with batch details, do NOT re-enqueue.
-        - On success: log with write_ms timing.
+        - On success: log with write_ms timing, broadcast alerts if any.
         """
         from src.storage.write_handler import handle_write_batch
 
@@ -268,6 +272,24 @@ class AsyncWriteQueue:
                     attempt=attempt,
                     **stats,
                 )
+                # Broadcast risk alerts via WebSocket if any were persisted
+                if stats.get("alerts_inserted", 0) > 0 and self._ws_manager:
+                    from src.api.websocket.messages import risk_alert_message
+
+                    event_ids = list({a.event_id for a in batch.alerts})
+                    severities = list({a.severity for a in batch.alerts})
+                    msg = risk_alert_message(
+                        alert_count=stats["alerts_inserted"],
+                        event_ids=event_ids,
+                        severities=severities,
+                    )
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(
+                            self._ws_manager.broadcast(msg, topic="risk_alerts")
+                        )
+                    except RuntimeError:
+                        pass  # No running loop
                 return
             except Exception as exc:
                 last_exc = exc
