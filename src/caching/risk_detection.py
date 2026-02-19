@@ -626,6 +626,9 @@ def detect_risk_alerts(
     4. convert_availability_to_alerts() for Betpawa availability changes
     5. convert_availability_to_alerts() for competitor availability changes
 
+    Note: Only alerts for primary markets are returned (1X2, Double Chance, BTTS,
+    Over/Under, Asian Handicap). Other markets are filtered out to reduce noise.
+
     Parameters
     ----------
     cache:
@@ -850,6 +853,9 @@ def detect_risk_alerts(
                 detected_at=timestamp,
                 event_kickoff=kickoff,
             ))
+
+    # Filter to primary markets only
+    all_alerts = [a for a in all_alerts if is_primary_market(a.market_id)]
 
     logger.debug(
         "risk_detection.complete",
