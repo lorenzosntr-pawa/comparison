@@ -1611,6 +1611,37 @@ class EventCoordinator:
                 timestamp=now_naive,
             )
 
+            # 4. Detect risk alerts (Phase 106)
+            from src.caching.risk_detection import detect_risk_alerts, AlertThresholds
+
+            risk_alerts = detect_risk_alerts(
+                cache=self._odds_cache,
+                changed_bp=changed_bp,
+                changed_comp=changed_comp,
+                bp_write_data=bp_write_data,
+                comp_write_data=comp_write_data,
+                comp_meta=comp_meta,
+                event_id_map=event_id_map,
+                unavailable_bp=unavailable_bp,
+                unavailable_comp=unavailable_comp,
+                kickoff_by_sr=kickoff_by_sr,
+                thresholds=AlertThresholds(
+                    warning=7.0,
+                    elevated=10.0,
+                    critical=15.0,
+                ),  # TODO: Phase 111 will read from settings
+                timestamp=now_naive,
+            )
+
+            if risk_alerts:
+                logger.info(
+                    "risk_detection.alerts_detected",
+                    total=len(risk_alerts),
+                    price_change=sum(1 for a in risk_alerts if a.alert_type == "price_change"),
+                    direction=sum(1 for a in risk_alerts if a.alert_type == "direction_disagreement"),
+                    availability=sum(1 for a in risk_alerts if a.alert_type == "availability"),
+                )
+
             for idx, swd in enumerate(bp_write_data):
                 try:
                     sr_id_val = eid_to_sr.get(swd.event_id)
