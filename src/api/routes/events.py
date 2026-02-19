@@ -1557,3 +1557,46 @@ async def list_events(
         page=page,
         page_size=page_size,
     )
+
+
+@router.get("/{event_id}/alerts")
+async def get_event_alerts(
+    event_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Get risk alerts for a specific event.
+
+    Returns all risk alerts associated with the given event,
+    with counts by status for badge display.
+
+    Args:
+        event_id: ID of the event to get alerts for.
+        db: Async database session (injected).
+
+    Returns:
+        RiskAlertsResponse with alerts filtered by event_id.
+    """
+    from src.api.schemas.alerts import RiskAlertResponse, RiskAlertsResponse
+    from src.db.models.risk_alert import RiskAlert
+
+    # Get alerts for this event
+    result = await db.execute(
+        select(RiskAlert)
+        .where(RiskAlert.event_id == event_id)
+        .order_by(desc(RiskAlert.detected_at))
+    )
+    alerts = result.scalars().all()
+
+    # Count by status
+    status_counts: dict[str, int] = {"new": 0, "acknowledged": 0, "past": 0}
+    for alert in alerts:
+        if alert.status in status_counts:
+            status_counts[alert.status] += 1
+
+    return RiskAlertsResponse(
+        alerts=[RiskAlertResponse.model_validate(alert) for alert in alerts],
+        total=len(alerts),
+        new_count=status_counts["new"],
+        acknowledged_count=status_counts["acknowledged"],
+        past_count=status_counts["past"],
+    )

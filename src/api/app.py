@@ -19,6 +19,7 @@ import httpx
 import structlog
 from fastapi import FastAPI
 
+from src.api.routes.alerts import router as alerts_router
 from src.api.routes.cleanup import router as cleanup_router
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
@@ -233,6 +234,7 @@ def create_app() -> FastAPI:
     )
 
     # Include routers with /api prefix
+    app.include_router(alerts_router, prefix="/api")
     app.include_router(cleanup_router, prefix="/api")
     app.include_router(events_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
