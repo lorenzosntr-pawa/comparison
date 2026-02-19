@@ -1750,8 +1750,16 @@ class EventCoordinator:
                 batch_index=0,  # Will be set by caller if needed
                 unavailable_betpawa=tuple(unavailable_bp),
                 unavailable_competitor=tuple(unavailable_comp),
+                alerts=tuple(risk_alerts),
             )
             await self._write_queue.enqueue(write_batch)
+
+            if risk_alerts:
+                logger.debug(
+                    "risk_alerts.enqueued",
+                    count=len(risk_alerts),
+                    batch_index=0,
+                )
 
             queue_enqueue_ms = int((time.perf_counter() - queue_enqueue_start) * 1000)
 

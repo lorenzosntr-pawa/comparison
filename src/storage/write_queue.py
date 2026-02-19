@@ -140,6 +140,7 @@ class WriteBatch:
     batch_index: int
     unavailable_betpawa: tuple[UnavailableMarketUpdate, ...] = ()
     unavailable_competitor: tuple[UnavailableMarketUpdate, ...] = ()
+    alerts: tuple[RiskAlertData, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +213,7 @@ class AsyncWriteQueue:
             unchanged_comp=len(batch.unchanged_competitor_ids),
             unavailable_bp=len(batch.unavailable_betpawa),
             unavailable_comp=len(batch.unavailable_competitor),
+            alerts=len(batch.alerts),
         )
 
     def stats(self) -> dict:

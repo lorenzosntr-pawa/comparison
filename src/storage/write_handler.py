@@ -37,6 +37,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from src.db.models.competitor import CompetitorMarketOdds, CompetitorOddsSnapshot
 from src.db.models.odds import MarketOdds, OddsSnapshot
+from src.db.models.risk_alert import RiskAlert
 from src.storage.write_queue import (
     CompetitorSnapshotWriteData,
     MarketWriteData,
@@ -104,6 +105,7 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
     updated_comp = 0
     unavailable_bp_count = 0
     unavailable_comp_count = 0
+    alerts_inserted = 0
     now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     async with session_factory() as db:
@@ -205,7 +207,33 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
                 unavailable_comp_count += 1
 
             # ----------------------------------------------------------
-            # 7. Commit
+            # 7. INSERT risk alerts
+            # ----------------------------------------------------------
+            alerts_inserted = 0
+            if batch.alerts:
+                for alert_data in batch.alerts:
+                    alert = RiskAlert(
+                        event_id=alert_data.event_id,
+                        bookmaker_slug=alert_data.bookmaker_slug,
+                        market_id=alert_data.market_id,
+                        market_name=alert_data.market_name,
+                        line=alert_data.line,
+                        outcome_name=alert_data.outcome_name,
+                        alert_type=alert_data.alert_type,
+                        severity=alert_data.severity,
+                        change_percent=alert_data.change_percent,
+                        old_value=alert_data.old_value,
+                        new_value=alert_data.new_value,
+                        competitor_direction=alert_data.competitor_direction,
+                        detected_at=alert_data.detected_at,
+                        event_kickoff=alert_data.event_kickoff,
+                        status="new",
+                    )
+                    db.add(alert)
+                alerts_inserted = len(batch.alerts)
+
+            # ----------------------------------------------------------
+            # 8. Commit
             # ----------------------------------------------------------
             await db.commit()
 
@@ -231,6 +259,7 @@ async def handle_write_batch(session_factory, batch: WriteBatch) -> dict:
         "updated_comp": updated_comp,
         "unavailable_bp": unavailable_bp_count,
         "unavailable_comp": unavailable_comp_count,
+        "alerts_inserted": alerts_inserted,
         "write_ms": round(elapsed_ms, 1),
     }
 
