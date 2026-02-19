@@ -65,15 +65,15 @@ Plans:
 - [x] 107-01: RiskAlert Model & Settings — 2026-02-19
 - [x] 107-02: API Endpoints & Write Handler — 2026-02-19
 
-#### Phase 108: Risk Monitoring Page
+#### Phase 108: Risk Monitoring Page ✓
 
 **Goal**: Core table with expandable rows, tabs (New/Acknowledged/Past), filters
 **Depends on**: Phase 107
 **Research**: Unlikely (reuse existing patterns)
-**Plans**: 0/1 planned
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 108-01: Risk Monitoring Page
+- [x] 108-01: Risk Monitoring Page — 2026-02-19
 
 #### Phase 109: Real-Time Updates
 
@@ -480,7 +480,7 @@ Plans:
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 106. Backend Alert Detection | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 107. Alert Storage & API | v2.9 | 2/2 | Complete | 2026-02-19 |
-| 108. Risk Monitoring Page | v2.9 | 0/1 | Planned | - |
+| 108. Risk Monitoring Page | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 109. Real-Time Updates | v2.9 | 0/? | Not started | - |
 | 110. Cross-Page Integration | v2.9 | 0/? | Not started | - |
 | 111. Settings & Configuration | v2.9 | 0/? | Not started | - |

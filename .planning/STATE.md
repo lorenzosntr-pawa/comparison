@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 108 of 111 (Risk Monitoring Page)
-Plan: 0 of 1 in current phase (PLANNED)
-Status: Ready for execution
-Last activity: 2026-02-19 — Planned 108-01-PLAN.md
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-19 — Completed 108-01-PLAN.md
 
-Progress: ██░░░░░░░░ 43%
+Progress: ███░░░░░░░ 44%
 
 ## Milestones
 
@@ -311,6 +311,8 @@ Progress: ██░░░░░░░░ 43%
 - **AlertThresholds NamedTuple** - Configurable threshold percentages (warning=7%, elevated=10%, critical=15%) passed to detection functions (v2.9 Phase 106)
 - **Alerts on WriteBatch pattern** - alerts: tuple[RiskAlertData, ...] field enables atomic persistence alongside snapshot data in single commit (v2.9 Phase 107)
 - **Status workflow: new → acknowledged → past** - Alerts start as "new", user acknowledges them, automatically transition to "past" after event kickoff (v2.9 Phase 107)
+- **Event grouping in alert table** - Group alerts by event with max severity propagation for quick scanning, expandable rows for details (v2.9 Phase 108)
+- **Direction disagreement dual display** - Show both BetPawa and competitor movements side-by-side with arrows (↑/↓) for clear comparison (v2.9 Phase 108)
 
 ### Key Decisions
 
@@ -433,10 +435,11 @@ Progress: ██░░░░░░░░ 43%
 - Phase 105 completed: Investigation & Schema Design (1 plan) — alert detection algorithms and RiskAlert schema designed
 - Phase 106 completed: Backend Alert Detection (1 plan) — risk_detection.py module with 3 detection algorithms integrated into scraping pipeline
 - Phase 107 completed: Alert Storage & API (2 plans) — RiskAlert model, Pydantic schemas, API endpoints, write_handler persistence
+- Phase 108 completed: Risk Monitoring Page (1 plan) — Risk Monitoring page with event-grouped alert table, status tabs, filters, acknowledge workflow
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Planned Phase 108 (Risk Monitoring Page)
+Stopped at: Completed Phase 108 (Risk Monitoring Page)
 Resume file: None
-Next action: `/gsd:execute-plan .planning/phases/108-risk-page/108-01-PLAN.md`
+Next action: `/gsd:plan-phase 109`
