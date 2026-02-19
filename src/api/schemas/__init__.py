@@ -1,5 +1,11 @@
 """API schemas for request/response models."""
 
+from src.api.schemas.alerts import (
+    AcknowledgeAlertRequest,
+    RiskAlertResponse,
+    RiskAlertsResponse,
+    RiskAlertStatsResponse,
+)
 from src.api.schemas.api import (
     HealthResponse,
     PlatformHealth,
@@ -41,6 +47,11 @@ from src.api.schemas.palimpsest import (
 )
 
 __all__ = [
+    # Alert schemas
+    "AcknowledgeAlertRequest",
+    "RiskAlertResponse",
+    "RiskAlertsResponse",
+    "RiskAlertStatsResponse",
     # API schemas
     "HealthResponse",
     "PlatformHealth",
