@@ -12,6 +12,9 @@ import { api } from '@/lib/api'
 export interface RiskAlert {
   id: number
   eventId: number
+  eventName: string | null
+  homeTeam: string | null
+  awayTeam: string | null
   bookmakerSlug: string
   marketId: string
   marketName: string

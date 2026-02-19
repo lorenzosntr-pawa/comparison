@@ -46,6 +46,9 @@ class RiskAlertResponse(BaseModel):
 
     id: int = Field(description="Unique database ID")
     event_id: int = Field(description="FK to events table")
+    event_name: str | None = Field(None, description="Event display name (home vs away)")
+    home_team: str | None = Field(None, description="Home team name")
+    away_team: str | None = Field(None, description="Away team name")
     bookmaker_slug: str = Field(description="Bookmaker that triggered alert")
     market_id: str = Field(description="Betpawa market ID")
     market_name: str = Field(description="Human-readable market name")

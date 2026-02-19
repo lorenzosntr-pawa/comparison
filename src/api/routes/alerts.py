@@ -28,6 +28,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 async def list_alerts(
     status: str | None = Query(None, description="Filter by status (new, acknowledged, past)"),
     severity: str | None = Query(None, description="Filter by severity (warning, elevated, critical)"),
+    alert_type: str | None = Query(None, description="Filter by alert type (price_change, direction_disagreement, availability)"),
     event_id: int | None = Query(None, description="Filter by event ID"),
     limit: int = Query(50, ge=1, le=200, description="Maximum alerts to return"),
     offset: int = Query(0, ge=0, description="Number of alerts to skip"),
@@ -40,6 +41,7 @@ async def list_alerts(
     Args:
         status: Filter by workflow status (new, acknowledged, past).
         severity: Filter by severity level (warning, elevated, critical).
+        alert_type: Filter by alert type (price_change, direction_disagreement, availability).
         event_id: Filter by specific event ID.
         limit: Maximum number of alerts to return (1-200, default 50).
         offset: Number of alerts to skip for pagination.
@@ -49,6 +51,7 @@ async def list_alerts(
         RiskAlertsResponse with filtered alerts and status counts.
     """
     # Deferred import to avoid circular dependency
+    from src.db.models.event import Event
     from src.db.models.risk_alert import RiskAlert
 
     # Build base query with filters
@@ -57,6 +60,8 @@ async def list_alerts(
         query = query.where(RiskAlert.status == status)
     if severity:
         query = query.where(RiskAlert.severity == severity)
+    if alert_type:
+        query = query.where(RiskAlert.alert_type == alert_type)
     if event_id:
         query = query.where(RiskAlert.event_id == event_id)
 
@@ -73,6 +78,26 @@ async def list_alerts(
     result = await db.execute(query)
     alerts = result.scalars().all()
 
+    # Fetch event details for all alerts
+    event_ids = list({a.event_id for a in alerts})
+    events_by_id: dict[int, Event] = {}
+    if event_ids:
+        events_result = await db.execute(
+            select(Event).where(Event.id.in_(event_ids))
+        )
+        events_by_id = {e.id: e for e in events_result.scalars().all()}
+
+    # Build response with event details
+    alert_responses = []
+    for alert in alerts:
+        event = events_by_id.get(alert.event_id)
+        response = RiskAlertResponse.model_validate(alert)
+        if event:
+            response.event_name = event.name
+            response.home_team = event.home_team
+            response.away_team = event.away_team
+        alert_responses.append(response)
+
     # Get status counts for all alerts (not just filtered)
     status_counts_query = (
         select(RiskAlert.status, func.count(RiskAlert.id))
@@ -82,7 +107,7 @@ async def list_alerts(
     status_counts = dict(status_result.fetchall())
 
     return RiskAlertsResponse(
-        alerts=[RiskAlertResponse.model_validate(alert) for alert in alerts],
+        alerts=alert_responses,
         total=total,
         new_count=status_counts.get("new", 0),
         acknowledged_count=status_counts.get("acknowledged", 0),
