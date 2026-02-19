@@ -110,3 +110,30 @@ def error_message(code: str, detail: str) -> dict:
         Typed message dict with type "error".
     """
     return _envelope("error", {"code": code, "detail": detail})
+
+
+def risk_alert_message(
+    alert_count: int,
+    event_ids: list[int],
+    severities: list[str],
+) -> dict:
+    """Build a risk_alert notification message.
+
+    Lightweight notification — frontend fetches full data from API.
+
+    Args:
+        alert_count: Number of new alerts detected.
+        event_ids: List of event IDs with new alerts.
+        severities: List of severity levels present (warning, elevated, critical).
+
+    Returns:
+        Typed message dict with type "risk_alert".
+    """
+    return _envelope(
+        "risk_alert",
+        {
+            "alert_count": alert_count,
+            "event_ids": event_ids,
+            "severities": severities,
+        },
+    )
