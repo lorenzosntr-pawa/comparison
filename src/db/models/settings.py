@@ -7,7 +7,7 @@ policies, and per-platform concurrency tuning.
 
 from datetime import datetime
 
-from sqlalchemy import JSON, func
+from sqlalchemy import JSON, Float, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.base import Base
@@ -33,6 +33,12 @@ class Settings(Base):
         bet9ja_delay_ms: Delay between Bet9ja requests (rate limiting).
         batch_size: Number of events to process per batch.
         max_concurrent_events: Max events to scrape concurrently.
+        alert_enabled: Master toggle for alert detection.
+        alert_threshold_warning: % change threshold for WARNING severity.
+        alert_threshold_elevated: % change threshold for ELEVATED severity.
+        alert_threshold_critical: % change threshold for CRITICAL severity.
+        alert_retention_days: Days to keep alerts (separate from odds retention).
+        alert_lookback_minutes: Comparison window for direction disagreement.
         created_at: Timestamp when settings were initialized.
         updated_at: Timestamp of last modification.
     """
@@ -57,6 +63,14 @@ class Settings(Base):
 
     # Intra-batch event concurrency (Phase 56)
     max_concurrent_events: Mapped[int] = mapped_column(default=10)
+
+    # Alert configuration (Phase 107)
+    alert_enabled: Mapped[bool] = mapped_column(default=True)
+    alert_threshold_warning: Mapped[float] = mapped_column(Float, default=7.0)
+    alert_threshold_elevated: Mapped[float] = mapped_column(Float, default=10.0)
+    alert_threshold_critical: Mapped[float] = mapped_column(Float, default=15.0)
+    alert_retention_days: Mapped[int] = mapped_column(default=7)
+    alert_lookback_minutes: Mapped[int] = mapped_column(default=60)
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime | None] = mapped_column(
