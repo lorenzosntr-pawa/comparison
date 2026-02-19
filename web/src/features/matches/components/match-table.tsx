@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, Fragment } from 'react'
+import { useState, useRef, useCallback, useEffect, Fragment, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import type { MatchedEvent, BookmakerOdds, InlineOdds } from '@/types/api'
 import { formatRelativeTime, formatUnavailableSince } from '../lib/market-utils'
 import { HistoryDialog, type BookmakerInfo } from './history-dialog'
+import { AlertIndicator } from './alert-indicator'
+import { useEventAlertCounts } from '../hooks/use-event-alerts'
 
 // Market IDs we display inline (Betpawa taxonomy from backend)
 // 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
@@ -468,6 +470,15 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
   const navigate = useNavigate()
   const [historyDialog, setHistoryDialog] = useState<HistoryDialogState | null>(null)
 
+  // Extract event IDs for alert fetching (only positive IDs, competitor-only events have negative)
+  const eventIds = useMemo(
+    () => events.filter((e) => e.id > 0).map((e) => e.id),
+    [events]
+  )
+
+  // Batch fetch alert counts for all visible events
+  const { data: alertCounts } = useEventAlertCounts(eventIds)
+
   // Resize state
   const [resizing, setResizing] = useState<string | null>(null)
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null)
@@ -723,7 +734,17 @@ export function MatchTable({ events, isLoading, visibleColumns = ['3743', '5000'
                         className="px-3 py-2 font-medium align-middle"
                         rowSpan={rowsPerMatch}
                       >
-                        {matchName}
+                        <div className="flex items-center gap-2">
+                          <span>{matchName}</span>
+                          {alertCounts[event.id]?.hasAlerts && (
+                            <AlertIndicator
+                              count={alertCounts[event.id].count}
+                              maxSeverity={alertCounts[event.id].maxSeverity}
+                              eventId={event.id}
+                              size="sm"
+                            />
+                          )}
+                        </div>
                       </td>
                     </>
                   )}
