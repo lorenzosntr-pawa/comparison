@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 ## Current Position
 
-Phase: 110 of 111 (Cross-Page Integration)
+Phase: 111 of 111 (Settings & Configuration)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-19 — Completed 110-01-PLAN.md
+Status: Phase complete - Milestone ready to ship
+Last activity: 2026-02-20 — Completed 111-01-PLAN.md
 
-Progress: ██████████ 82%
+Progress: ██████████ 100%
 
 ## Milestones
 
@@ -315,6 +315,8 @@ Progress: ██████████ 82%
 - **Direction disagreement dual display** - Show both BetPawa and competitor movements side-by-side with arrows (↑/↓) for clear comparison (v2.9 Phase 108)
 - **ws_manager injection to AsyncWriteQueue** - Pass WebSocket manager to write queue for post-persistence alert broadcasting; create_task for non-blocking (v2.9 Phase 109)
 - **PRIMARY_MARKET_IDS filter pattern** - Frozenset constant with is_primary_market() helper for O(1) filtering; filter applied at end of detect_risk_alerts() rather than in each detection function (v2.9 Phase 109.1)
+- **getattr with defaults for settings migration** - Safe reading of new settings fields during migration via getattr(self._settings, 'field', default) (v2.9 Phase 111)
+- **Color-coded threshold inputs** - Yellow/orange/red border-l-4 classes on inputs for visual severity indication in settings UI (v2.9 Phase 111)
 
 ### Key Decisions
 
@@ -442,10 +444,11 @@ Progress: ██████████ 82%
 - Phase 109.1 inserted after Phase 109: Limit Alert Detection to Primary Markets (URGENT) — filter alerts to 1X2, DC, BTTS, Asian Handicaps, Over/Under only
 - Phase 109.1 completed: PRIMARY_MARKET_IDS filter implemented in risk_detection.py (1 plan)
 - Phase 110 completed: Cross-Page Integration (1 plan) — Alert indicators on Odds Comparison and Event Details, navigation to Risk Monitoring
+- Phase 111 completed: Settings & Configuration (1 plan) — Alert configuration UI with enable toggle, thresholds, retention connected to backend
 
 ## Session Continuity
 
-Last session: 2026-02-19
-Stopped at: Completed 110-01-PLAN.md
+Last session: 2026-02-20
+Stopped at: Completed 111-01-PLAN.md
 Resume file: None
-Next action: `/gsd:plan-phase 111`
+Next action: `/gsd:complete-milestone` — v2.9 Risk Monitoring ready to ship
