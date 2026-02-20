@@ -118,6 +118,7 @@ class EventCoordinator:
         odds_cache: OddsCache | None = None,
         write_queue: AsyncWriteQueue | None = None,
         max_concurrent_events: int = DEFAULT_MAX_CONCURRENT_EVENTS,
+        settings: Settings | None = None,
     ) -> None:
         """Initialize the EventCoordinator.
 
@@ -135,6 +136,7 @@ class EventCoordinator:
                 When None, falls back to synchronous flush+commit.
             max_concurrent_events: Max events scraped in parallel per batch (default 10).
                 With 3 platforms each, 10 events means up to 30 concurrent HTTP requests.
+            settings: Optional Settings model for alert configuration (Phase 111).
         """
         self._clients: dict[str, BetPawaClient | SportyBetClient | Bet9jaClient] = {
             "betpawa": betpawa_client,
@@ -147,6 +149,7 @@ class EventCoordinator:
         self._odds_cache: OddsCache | None = odds_cache
         self._write_queue: AsyncWriteQueue | None = write_queue
         self._max_concurrent_events = max_concurrent_events
+        self._settings: Settings | None = settings
         self._event_map: dict[str, EventTarget] = {}
         self._priority_queue: list[EventTarget] = []
         self._last_discovery_timings: dict[str, int] = {}
@@ -191,6 +194,7 @@ class EventCoordinator:
             max_concurrent_events=getattr(
                 settings, "max_concurrent_events", DEFAULT_MAX_CONCURRENT_EVENTS
             ),
+            settings=settings,
         )
 
     # =========================================================================

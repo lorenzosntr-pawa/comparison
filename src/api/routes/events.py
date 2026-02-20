@@ -1599,4 +1599,4 @@ async def get_event_alerts(
         new_count=status_counts["new"],
         acknowledged_count=status_counts["acknowledged"],
         past_count=status_counts["past"],
-    )
+    ).model_dump()

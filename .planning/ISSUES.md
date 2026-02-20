@@ -41,6 +41,20 @@ None
 
 ## Closed Bugs
 
+### BUG-029: get_event_alerts endpoint returns Pydantic model instead of dict (RESOLVED)
+**Discovered:** 2026-02-20 (user report during scrape attempt)
+**Type:** API Bug
+**Root Cause:** The `get_event_alerts` endpoint at `/api/events/{event_id}/alerts` returned a `RiskAlertsResponse` Pydantic model directly, but the return type annotation was `-> dict`. FastAPI expected a dict but received a model, causing `ResponseValidationError: Input should be a valid dictionary`.
+**Impact:** 500 Internal Server Error on every call to `/api/events/{event_id}/alerts`, blocking event detail pages with alerts.
+**Resolution:** Fixed 2026-02-20 - Added `.model_dump()` to the return statement to convert the Pydantic model to a dict. File modified: `src/api/routes/events.py:1596`.
+
+### BUG-028: EventCoordinator missing _settings attribute crashes scraping (RESOLVED)
+**Discovered:** 2026-02-20 (user report during scrape attempt)
+**Type:** Backend Bug (Blocker)
+**Root Cause:** Phase 111 added code in `store_batch_results()` that accessed `self._settings` for alert configuration, but the `from_settings()` factory method never passed the settings to `__init__`, so `self._settings` was never assigned.
+**Impact:** `AttributeError: 'EventCoordinator' object has no attribute '_settings'` on every scrape attempt, completely blocking all scraping operations.
+**Resolution:** Fixed 2026-02-20 - Added `settings: Settings | None = None` parameter to `__init__`, stored as `self._settings`, and updated `from_settings()` to pass `settings=settings` to the constructor. File modified: `src/scraping/event_coordinator.py` lines 110-155 and 178-195.
+
 ### BUG-027: Odds highlighting lacks visual distinction between BetPawa and competitors (RESOLVED)
 **Discovered:** 2026-02-17 (user report during issue review)
 **Type:** UX Enhancement
