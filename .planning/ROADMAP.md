@@ -111,10 +111,10 @@ Plans:
 **Goal**: Alert thresholds, severity bands, retention settings, quick settings UI
 **Depends on**: Phase 110
 **Research**: Unlikely (existing Settings pattern)
-**Plans**: TBD
+**Plans**: 0/1
 
 Plans:
-- [ ] 111-01: TBD
+- [ ] 111-01: Settings & Configuration
 
 ---
 
@@ -495,4 +495,4 @@ Plans:
 | 109. Real-Time Updates | v2.9 | 2/2 | Complete | 2026-02-19 |
 | 109.1 Limit Alert Detection to Primary Markets (INSERTED) | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 110. Cross-Page Integration | v2.9 | 1/1 | Complete | 2026-02-19 |
-| 111. Settings & Configuration | v2.9 | 0/? | Not started | - |
+| 111. Settings & Configuration | v2.9 | 0/1 | Planned | - |
