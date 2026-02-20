@@ -88,7 +88,7 @@ export interface SchedulerStatus {
  * Application settings response.
  *
  * @description Contains all configurable settings for the scraping system
- * including intervals, enabled platforms, and data retention policies.
+ * including intervals, enabled platforms, data retention policies, and alert configuration.
  */
 export interface SettingsResponse {
   /** Minutes between automatic scrape runs */
@@ -101,6 +101,18 @@ export interface SettingsResponse {
   matchRetentionDays: number
   /** Hours between automatic cleanup runs */
   cleanupFrequencyHours: number
+  /** Master toggle for alert detection */
+  alertEnabled: boolean
+  /** % change threshold for WARNING severity */
+  alertThresholdWarning: number
+  /** % change threshold for ELEVATED severity */
+  alertThresholdElevated: number
+  /** % change threshold for CRITICAL severity */
+  alertThresholdCritical: number
+  /** Days to keep alerts */
+  alertRetentionDays: number
+  /** Comparison window for direction disagreement in minutes */
+  alertLookbackMinutes: number
   /** ISO timestamp of last settings update, or null if never updated */
   updatedAt: string | null
 }
@@ -121,6 +133,18 @@ export interface SettingsUpdate {
   matchRetentionDays?: number
   /** Hours between automatic cleanup runs */
   cleanupFrequencyHours?: number
+  /** Master toggle for alert detection */
+  alertEnabled?: boolean
+  /** % change threshold for WARNING severity */
+  alertThresholdWarning?: number
+  /** % change threshold for ELEVATED severity */
+  alertThresholdElevated?: number
+  /** % change threshold for CRITICAL severity */
+  alertThresholdCritical?: number
+  /** Days to keep alerts */
+  alertRetentionDays?: number
+  /** Comparison window for direction disagreement in minutes */
+  alertLookbackMinutes?: number
 }
 
 /**

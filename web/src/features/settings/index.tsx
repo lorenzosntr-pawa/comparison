@@ -9,6 +9,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSettings } from './hooks'
 import {
+  AlertEnabledToggle,
+  AlertRetentionSelector,
+  AlertThresholdInput,
   CleanupFrequencySelector,
   IntervalSelector,
   ManageDataButton,
@@ -114,7 +117,28 @@ export function Settings() {
         </CompactCard>
       </div>
 
-      {/* Row 4: Cleanup + Manage */}
+      {/* Row 4: Risk Alerts (full width) */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Risk Alerts</CardTitle>
+          <CardDescription className="text-xs">
+            Configure detection thresholds and alert behavior
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <AlertEnabledToggle />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AlertThresholdInput label="Warning" field="alertThresholdWarning" max={50} />
+            <AlertThresholdInput label="Elevated" field="alertThresholdElevated" max={50} />
+            <AlertThresholdInput label="Critical" field="alertThresholdCritical" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AlertRetentionSelector />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Row 5: Cleanup + Manage */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CompactCard title="Cleanup" description="Auto-cleanup frequency">
           <CleanupFrequencySelector />
