@@ -1611,27 +1611,31 @@ class EventCoordinator:
                 timestamp=now_naive,
             )
 
-            # 4. Detect risk alerts (Phase 106)
+            # 4. Detect risk alerts (Phase 106, thresholds from settings Phase 111)
             from src.caching.risk_detection import detect_risk_alerts, AlertThresholds
 
-            risk_alerts = detect_risk_alerts(
-                cache=self._odds_cache,
-                changed_bp=changed_bp,
-                changed_comp=changed_comp,
-                bp_write_data=bp_write_data,
-                comp_write_data=comp_write_data,
-                comp_meta=comp_meta,
-                event_id_map=event_id_map,
-                unavailable_bp=unavailable_bp,
-                unavailable_comp=unavailable_comp,
-                kickoff_by_sr=kickoff_by_sr,
-                thresholds=AlertThresholds(
-                    warning=7.0,
-                    elevated=10.0,
-                    critical=15.0,
-                ),  # TODO: Phase 111 will read from settings
-                timestamp=now_naive,
-            )
+            # Check alert_enabled setting - skip detection if disabled
+            if not getattr(self._settings, 'alert_enabled', True):
+                risk_alerts = []
+            else:
+                risk_alerts = detect_risk_alerts(
+                    cache=self._odds_cache,
+                    changed_bp=changed_bp,
+                    changed_comp=changed_comp,
+                    bp_write_data=bp_write_data,
+                    comp_write_data=comp_write_data,
+                    comp_meta=comp_meta,
+                    event_id_map=event_id_map,
+                    unavailable_bp=unavailable_bp,
+                    unavailable_comp=unavailable_comp,
+                    kickoff_by_sr=kickoff_by_sr,
+                    thresholds=AlertThresholds(
+                        warning=getattr(self._settings, 'alert_threshold_warning', 7.0),
+                        elevated=getattr(self._settings, 'alert_threshold_elevated', 10.0),
+                        critical=getattr(self._settings, 'alert_threshold_critical', 15.0),
+                    ),
+                    timestamp=now_naive,
+                )
 
             if risk_alerts:
                 logger.info(
