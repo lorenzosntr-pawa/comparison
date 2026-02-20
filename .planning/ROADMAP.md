@@ -25,100 +25,27 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
 - ✅ [v2.8 Storage Optimization](milestones/v2.8-ROADMAP.md) — Phases 100-104 (shipped 2026-02-17)
-- 🚧 **v2.9 Risk Monitoring** — Phases 105-111 (in progress)
-
----
-
-### 🚧 v2.9 Risk Monitoring (In Progress)
-
-**Milestone Goal:** Real-time odds movement alerting with dedicated Risk Monitoring page, cross-page indicators, and configurable detection thresholds.
-
-#### Phase 105: Investigation & Schema Design ✓
-
-**Goal**: Analyze detection patterns, design alerts table schema, plan detection algorithms
-**Depends on**: Previous milestone complete
-**Research**: Likely (alert detection patterns, threshold algorithms)
-**Research topics**: Movement detection algorithms, alert state management patterns
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 105-01: Investigation & Schema Design — 2026-02-19
-
-#### Phase 106: Backend Alert Detection ✓
-
-**Goal**: Implement detection engine for % changes, direction disagreement, availability changes
-**Depends on**: Phase 105
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 106-01: Backend Alert Detection — 2026-02-19
-
-#### Phase 107: Alert Storage & API ✓
-
-**Goal**: Database schema, alert CRUD operations, API endpoints for alerts
-**Depends on**: Phase 106
-**Research**: Unlikely (established patterns)
-**Plans**: 2/2 complete
-
-Plans:
-- [x] 107-01: RiskAlert Model & Settings — 2026-02-19
-- [x] 107-02: API Endpoints & Write Handler — 2026-02-19
-
-#### Phase 108: Risk Monitoring Page ✓
-
-**Goal**: Core table with expandable rows, tabs (New/Acknowledged/Past), filters
-**Depends on**: Phase 107
-**Research**: Unlikely (reuse existing patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 108-01: Risk Monitoring Page — 2026-02-19
-
-#### Phase 109: Real-Time Updates ✓
-
-**Goal**: WebSocket alert broadcasting, live table updates, sidebar badge
-**Depends on**: Phase 108
-**Research**: Unlikely (existing WebSocket infra)
-**Plans**: 2/2 complete
-
-Plans:
-- [x] 109-01: WebSocket Alert Broadcasting — 2026-02-19
-- [x] 109-02: Frontend Real-Time Updates — 2026-02-19
-
-#### Phase 109.1: Limit Alert Detection to Primary Markets (INSERTED) ✓
-
-**Goal**: Filter alert detection to only primary markets: 1X2, Double Chance, BTTS, Asian Handicaps (all spreads), Over/Under (all spreads)
-**Depends on**: Phase 109
-**Research**: Unlikely (refinement of existing detection)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 109.1-01: Primary Market Filter — 2026-02-19
-
-#### Phase 110: Cross-Page Integration ✓
-
-**Goal**: Alert indicators on Odds Comparison/Event Details, navigation links
-**Depends on**: Phase 109
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 110-01: Cross-Page Integration — 2026-02-19
-
-#### Phase 111: Settings & Configuration ✓
-
-**Goal**: Alert thresholds, severity bands, retention settings, quick settings UI
-**Depends on**: Phase 110
-**Research**: Unlikely (existing Settings pattern)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 111-01: Settings & Configuration — 2026-02-20
+- ✅ [v2.9 Risk Monitoring](milestones/v2.9-ROADMAP.md) — Phases 105-111 (shipped 2026-02-20)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.9 Risk Monitoring (Phases 105-111) — SHIPPED 2026-02-20</summary>
+
+- [x] Phase 105: Investigation & Schema Design (1/1 plan) — 2026-02-19
+- [x] Phase 106: Backend Alert Detection (1/1 plan) — 2026-02-19
+- [x] Phase 107: Alert Storage & API (2/2 plans) — 2026-02-19
+- [x] Phase 108: Risk Monitoring Page (1/1 plan) — 2026-02-19
+- [x] Phase 109: Real-Time Updates (2/2 plans) — 2026-02-19
+- [x] Phase 109.1: Limit Alert Detection to Primary Markets (1/1 plan) — 2026-02-19
+- [x] Phase 110: Cross-Page Integration (1/1 plan) — 2026-02-19
+- [x] Phase 111: Settings & Configuration (1/1 plan) — 2026-02-20
+
+**Result:** Real-time odds movement alerting with Risk Monitoring page, cross-page indicators, and configurable thresholds
+
+</details>
 
 <details>
 <summary>✅ v2.8 Storage Optimization (Phases 100-104) — SHIPPED 2026-02-17</summary>
@@ -496,3 +423,4 @@ Plans:
 | 109.1 Limit Alert Detection to Primary Markets (INSERTED) | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 110. Cross-Page Integration | v2.9 | 1/1 | Complete | 2026-02-19 |
 | 111. Settings & Configuration | v2.9 | 1/1 | Complete | 2026-02-20 |
+| **v2.9 SHIPPED** | | | **2026-02-20** | |

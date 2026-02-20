@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-17)
+See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** v2.9 Risk Monitoring — Real-time odds movement alerting
+**Current focus:** Milestone v2.9 complete — ready for next milestone planning
 
 ## Current Position
 
 Phase: 111 of 111 (Settings & Configuration)
-Plan: 1 of 1 in current phase
-Status: Phase complete - Milestone ready to ship
-Last activity: 2026-02-20 — Completed 111-01-PLAN.md
+Plan: Complete
+Status: v2.9 Risk Monitoring SHIPPED
+Last activity: 2026-02-20 — v2.9 milestone complete
 
 Progress: ██████████ 100%
 
@@ -37,7 +37,7 @@ Progress: ██████████ 100%
 - **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (6 phases, Phase 93-98)
 - **v2.7 Availability Tracking Bugfix** — SHIPPED 2026-02-12 (2 phases, Phase 99-99.1)
 - **v2.8 Storage Optimization** — SHIPPED 2026-02-17 (5 phases, Phase 100-104)
-- **v2.9 Risk Monitoring** — IN PROGRESS (7 phases, Phase 105-111)
+- **v2.9 Risk Monitoring** — SHIPPED 2026-02-20 (8 phases, Phase 105-111, 11 plans)
 
 ## Performance Metrics
 
@@ -445,10 +445,22 @@ Progress: ██████████ 100%
 - Phase 109.1 completed: PRIMARY_MARKET_IDS filter implemented in risk_detection.py (1 plan)
 - Phase 110 completed: Cross-Page Integration (1 plan) — Alert indicators on Odds Comparison and Event Details, navigation to Risk Monitoring
 - Phase 111 completed: Settings & Configuration (1 plan) — Alert configuration UI with enable toggle, thresholds, retention connected to backend
+- v2.9 Risk Monitoring shipped 2026-02-20 with 8 phases (11 plans)
+- v2.9 archived to .planning/milestones/v2.9-ROADMAP.md
+
+**v2.9 Summary:**
+- 8 phases completed (11 plans)
+- 3 days from v2.8 to v2.9 (2026-02-18 to 2026-02-20)
+- Real-time risk alert detection with configurable thresholds
+- Risk Monitoring page with event-grouped alerts and status workflow
+- WebSocket alert broadcasting with sidebar badge
+- Cross-page alert indicators on Odds Comparison and Event Details
+- +7,268 / -36 lines (net +7,232)
+- ~51,000 total LOC
 
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 111-01-PLAN.md
+Stopped at: v2.9 milestone complete
 Resume file: None
-Next action: `/gsd:complete-milestone` — v2.9 Risk Monitoring ready to ship
+Next action: `/gsd:discuss-milestone` — plan next milestone

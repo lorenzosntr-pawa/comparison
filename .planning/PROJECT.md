@@ -8,15 +8,15 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.8 Storage Optimization)
+## Current State (v2.9 Risk Monitoring)
 
-**Shipped:** 2026-02-17
+**Shipped:** 2026-02-20
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~42,000 lines of code
-- Database: 11.94 GB (optimized from 63 GB)
+- ~51,000 lines of code
+- Database: 11.94 GB (optimized from 63 GB in v2.8)
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -89,6 +89,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Storage monitoring dashboard** - database size cards, trend chart, cleanup history table
 - **Growth detection & alerting** - automatic warnings for >20% growth or >50 GB size
 - **Optimized database schema** - removed unused raw_response columns (33 GB savings)
+- **Risk alert detection engine** - real-time detection of price changes (>7%/10%/15%), direction disagreement, availability changes
+- **Risk Monitoring page** - dedicated page with event-grouped alert table, status tabs, filters, acknowledge workflow
+- **WebSocket alert broadcasting** - real-time alert delivery with sidebar badge showing unacknowledged count
+- **Primary market filtering** - alerts limited to 1X2, Double Chance, BTTS, Asian Handicaps, Over/Under
+- **Cross-page alert indicators** - alert banners on Event Details and row indicators on Odds Comparison
+- **Configurable alert settings** - enable toggle, severity thresholds, retention days in Settings page
 
 ## Requirements
 
@@ -212,19 +218,25 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Storage dashboard with size cards and trend chart — v2.8
 - ✓ Growth detection alerting (>20% warning, >50 GB critical) — v2.8
 - ✓ Database reduced from 63 GB to 12 GB (81% reduction) — v2.8
+- ✓ Risk alert detection engine with configurable thresholds — v2.9
+- ✓ Risk Monitoring page with event-grouped alerts and status workflow — v2.9
+- ✓ WebSocket real-time alert broadcasting with sidebar badge — v2.9
+- ✓ Primary market filtering for relevant alerts only — v2.9
+- ✓ Cross-page alert indicators on Odds Comparison and Event Details — v2.9
+- ✓ Alert settings configuration in Settings page — v2.9
 
 ### Active
 
-(No active requirements — project feature-complete for v2.8)
+(No active requirements — project feature-complete for v2.9)
 
 ### Out of Scope
 
 - User accounts/authentication — internal tool, no access control needed
-- Alerts/notifications to admins — deferred, add after MVP
 - Data export (CSV/PDF) — view only for now
 - Sports other than football — focus on football only
 - Regions other than Nigeria — Nigeria focus
 - Mobile-first design — desktop-first, basic mobile usability
+- External notifications (email/SMS/Slack) — UI-only alerts for now
 
 ## Context
 
@@ -355,6 +367,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Daily sampling at 3 AM UTC | 1 hour after cleanup job to sample post-cleanup state | ✓ Good — v2.8 accurate trends |
 | Growth threshold 20% per sample | Triggers warning alert on abnormal growth | ✓ Good — v2.8 early detection |
 | Critical size threshold 50 GB | Triggers critical alert when database too large | ✓ Good — v2.8 prevents bloat |
+| Alert detection at store_batch_results | Access to both cached and new state for comparison | ✓ Good — v2.9 correct integration point |
+| Alert per outcome not per market | Granular tracking of specific outcome movements | ✓ Good — v2.9 precise alerting |
+| Direction disagreement always ELEVATED | Inherently concerning regardless of magnitude | ✓ Good — v2.9 appropriate severity |
+| Alerts on WriteBatch pattern | Atomic persistence with snapshot data | ✓ Good — v2.9 transactional integrity |
+| PRIMARY_MARKET_IDS filter | Reduces noise by focusing on main markets | ✓ Good — v2.9 relevant alerts only |
+| Status workflow new→acknowledged→past | Clear alert lifecycle management | ✓ Good — v2.9 intuitive workflow |
 
 ---
-*Last updated: 2026-02-17 after v2.8 milestone*
+*Last updated: 2026-02-20 after v2.9 milestone*
