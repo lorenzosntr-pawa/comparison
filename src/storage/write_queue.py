@@ -158,18 +158,21 @@ _BASE_BACKOFF_SECS = 1.0  # 1s, 2s, 4s
 class AsyncWriteQueue:
     """Bounded async queue with a single background worker for DB writes.
 
+    Supports both legacy WriteBatch (snapshot-level) and new MarketWriteBatch
+    (market-level) for gradual migration during Phase 107-108.
+
     Parameters
     ----------
     session_factory:
         An ``async_sessionmaker`` used by the write handler to open its
         own isolated DB session for each batch.
     maxsize:
-        Maximum number of ``WriteBatch`` items the queue can hold before
+        Maximum number of batch items the queue can hold before
         ``enqueue()`` blocks (backpressure).
     """
 
     def __init__(self, session_factory, maxsize: int = 50):
-        self._queue: asyncio.Queue[WriteBatch] = asyncio.Queue(maxsize=maxsize)
+        self._queue: asyncio.Queue[WriteBatch | MarketWriteBatch] = asyncio.Queue(maxsize=maxsize)
         self._session_factory = session_factory  # async_sessionmaker
         self._worker_task: asyncio.Task | None = None
         self._running = False
@@ -198,22 +201,36 @@ class AsyncWriteQueue:
 
     # -- public API ----------------------------------------------------------
 
-    async def enqueue(self, batch: WriteBatch) -> None:
+    async def enqueue(self, batch: WriteBatch | MarketWriteBatch) -> None:
         """Add a write batch to the queue.
 
+        Supports both WriteBatch (legacy snapshot-level) and MarketWriteBatch (new market-level).
         Blocks if the queue is full (backpressure).
         """
         await self._queue.put(batch)
-        self._log.debug(
-            "write_batch_enqueued",
-            batch_index=batch.batch_index,
-            changed_bp=len(batch.changed_betpawa),
-            changed_comp=len(batch.changed_competitor),
-            unchanged_bp=len(batch.unchanged_betpawa_ids),
-            unchanged_comp=len(batch.unchanged_competitor_ids),
-            unavailable_bp=len(batch.unavailable_betpawa),
-            unavailable_comp=len(batch.unavailable_competitor),
-        )
+
+        # Log with batch-type-specific fields
+        if isinstance(batch, MarketWriteBatch):
+            changed_count = sum(1 for m in batch.markets if m.changed)
+            unchanged_count = len(batch.markets) - changed_count
+            self._log.debug(
+                "market_write_batch_enqueued",
+                batch_index=batch.batch_index,
+                total_markets=len(batch.markets),
+                changed=changed_count,
+                unchanged=unchanged_count,
+            )
+        else:
+            self._log.debug(
+                "write_batch_enqueued",
+                batch_index=batch.batch_index,
+                changed_bp=len(batch.changed_betpawa),
+                changed_comp=len(batch.changed_competitor),
+                unchanged_bp=len(batch.unchanged_betpawa_ids),
+                unchanged_comp=len(batch.unchanged_competitor_ids),
+                unavailable_bp=len(batch.unavailable_betpawa),
+                unavailable_comp=len(batch.unavailable_competitor),
+            )
 
     def stats(self) -> dict:
         """Return queue statistics."""
@@ -242,23 +259,32 @@ class AsyncWriteQueue:
             await self._process_with_retry(batch)
             self._queue.task_done()
 
-    async def _process_with_retry(self, batch: WriteBatch) -> None:
+    async def _process_with_retry(self, batch: WriteBatch | MarketWriteBatch) -> None:
         """Process a batch with retry + exponential backoff.
+
+        Routes to appropriate handler based on batch type:
+        - MarketWriteBatch -> handle_market_write_batch (Phase 107+ market-level)
+        - WriteBatch -> handle_write_batch (legacy snapshot-level)
 
         - Max ``_MAX_ATTEMPTS`` attempts.
         - On final failure: log error with batch details, do NOT re-enqueue.
         - On success: log with write_ms timing.
         """
-        from src.storage.write_handler import handle_write_batch
+        from src.storage.write_handler import handle_market_write_batch, handle_write_batch
+
+        # Select handler based on batch type
+        is_market_batch = isinstance(batch, MarketWriteBatch)
+        handler = handle_market_write_batch if is_market_batch else handle_write_batch
+        log_event = "market_write_batch_processed" if is_market_batch else "write_batch_processed"
 
         last_exc: BaseException | None = None
         for attempt in range(1, _MAX_ATTEMPTS + 1):
             t0 = time.perf_counter()
             try:
-                stats = await handle_write_batch(self._session_factory, batch)
+                stats = await handler(self._session_factory, batch)
                 elapsed_ms = (time.perf_counter() - t0) * 1000
                 self._log.info(
-                    "write_batch_processed",
+                    log_event,
                     batch_index=batch.batch_index,
                     attempt=attempt,
                     **stats,
@@ -272,6 +298,7 @@ class AsyncWriteQueue:
                     self._log.warning(
                         "write_batch_retry",
                         batch_index=batch.batch_index,
+                        batch_type="market" if is_market_batch else "snapshot",
                         attempt=attempt,
                         backoff_s=backoff,
                         error=str(exc),
@@ -280,13 +307,22 @@ class AsyncWriteQueue:
                     await asyncio.sleep(backoff)
 
         # All attempts exhausted — log and drop the batch.
-        self._log.error(
-            "write_batch_failed",
-            batch_index=batch.batch_index,
-            attempts=_MAX_ATTEMPTS,
-            error=str(last_exc),
-            changed_bp=len(batch.changed_betpawa),
-            changed_comp=len(batch.changed_competitor),
-            unchanged_bp=len(batch.unchanged_betpawa_ids),
-            unchanged_comp=len(batch.unchanged_competitor_ids),
-        )
+        if is_market_batch:
+            self._log.error(
+                "market_write_batch_failed",
+                batch_index=batch.batch_index,
+                attempts=_MAX_ATTEMPTS,
+                error=str(last_exc),
+                total_markets=len(batch.markets),
+            )
+        else:
+            self._log.error(
+                "write_batch_failed",
+                batch_index=batch.batch_index,
+                attempts=_MAX_ATTEMPTS,
+                error=str(last_exc),
+                changed_bp=len(batch.changed_betpawa),
+                changed_comp=len(batch.changed_competitor),
+                unchanged_bp=len(batch.unchanged_betpawa_ids),
+                unchanged_comp=len(batch.unchanged_competitor_ids),
+            )
