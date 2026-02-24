@@ -14,6 +14,20 @@ None
 
 ## Closed Bugs
 
+### BUG-034: Unavailable odds not stored in v2.9 market-level writes (RESOLVED)
+**Discovered:** 2026-02-24 (user report in production)
+**Type:** Data Pipeline Bug
+**Severity:** CRITICAL
+**Root Cause:** In the async path (Phase 107+), when building `MarketWriteData` DTOs at `event_coordinator.py:1488-1498` and `:1515-1525`, the `unavailable_at` field is NOT being set. It defaults to `None`, so all market writes have `unavailable_at=NULL`. Detection works correctly, but results never reach the database.
+**Resolution:** Fixed 2026-02-24 - Added `unavailable_at=getattr(m, "unavailable_at", None)` to both BetPawa and competitor `MarketWriteData` DTO construction. File modified: `src/scraping/event_coordinator.py`.
+
+### BUG-033: Competitors-only tab shows no odds on fresh database (EXPECTED BEHAVIOR)
+**Discovered:** 2026-02-24 (user report in production)
+**Type:** Deployment Bug
+**Severity:** HIGH (was)
+**Root Cause:** With a fresh database after v2.9 deployment, the `competitor_events` table is empty because migrations only create schema (not data), and competitor events require scraping to run first. No automatic competitor discovery on fresh DB startup.
+**Resolution:** Documented 2026-02-24 - This is expected behavior. Competitor events are populated during the first scrape cycle. The scheduler runs automatically and will populate data. No code change needed.
+
 ### BUG-032: Storage page shows blank — CleanupRun schema mismatch (RESOLVED)
 **Discovered:** 2026-02-24 (user report during issue review)
 **Type:** Schema Mismatch Bug
@@ -162,6 +176,12 @@ Results are deduplicated by timestamp and merged chronologically. Added `_query_
 ---
 
 ## Closed Enhancements
+
+### ENH-001: History charts should show odds stability confirmation (RESOLVED)
+**Discovered:** 2026-02-24 (user report in production)
+**Type:** UX Enhancement
+**Description:** By design, the system uses change detection - only stores data when odds change. Charts only show points where odds changed, with no "confirmation" points showing stability.
+**Resolution:** Fixed 2026-02-24 - Implemented Option B (Generate on Query). Added `_get_current_market_state()` helper to query `market_odds_current`. Both `get_odds_history()` and `get_margin_history()` now add a confirmation point if `last_confirmed_at` is more recent than the latest history point. Added `confirmed` field to `OddsHistoryPoint` and `MarginHistoryPoint` schemas. Frontend charts show "(stable)" in tooltip for confirmation points and display legend note when confirmation points exist. Files modified: `src/api/routes/history.py`, `src/matching/schemas.py`, `web/src/types/api.ts`, `web/src/features/matches/components/odds-line-chart.tsx`, `web/src/features/matches/components/margin-line-chart.tsx`.
 
 ### ISS-002: Comprehensive market mapping needed (RESOLVED)
 **Discovered:** Phase 7 UAT - 2026-01-21

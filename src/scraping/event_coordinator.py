@@ -1495,6 +1495,7 @@ class EventCoordinator:
                         handicap_away=getattr(m, "handicap_away", None),
                         outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
                         market_groups=getattr(m, "market_groups", None),
+                        unavailable_at=getattr(m, "unavailable_at", None),
                     )
                     for m in orm_markets
                 )
@@ -1522,6 +1523,7 @@ class EventCoordinator:
                         handicap_away=getattr(m, "handicap_away", None),
                         outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
                         market_groups=getattr(m, "market_groups", None),
+                        unavailable_at=getattr(m, "unavailable_at", None),
                     )
                     for m in orm_markets
                 )

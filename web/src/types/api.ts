@@ -673,6 +673,8 @@ export interface OddsHistoryPoint {
   available?: boolean
   /** ISO timestamp when market became unavailable, or null if available */
   unavailable_at?: string | null
+  /** If true, odds were verified but unchanged (stability confirmation point) */
+  confirmed?: boolean
 }
 
 /**
@@ -711,6 +713,8 @@ export interface MarginHistoryPoint {
   available?: boolean
   /** ISO timestamp when market became unavailable, or null if available */
   unavailable_at?: string | null
+  /** If true, odds were verified but unchanged (stability confirmation point) */
+  confirmed?: boolean
 }
 
 /**

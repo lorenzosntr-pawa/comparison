@@ -191,13 +191,19 @@ class SnapshotHistoryResponse(BaseModel):
 
 
 class OddsHistoryPoint(BaseModel):
-    """Single point in odds time series."""
+    """Single point in odds time series.
+
+    Attributes:
+        confirmed: If True, this point represents a stability confirmation
+            (odds were checked but did not change). If False, odds changed.
+    """
 
     captured_at: datetime
     outcomes: list[OutcomeOdds]
     margin: float | None = None
     available: bool = True
     unavailable_at: datetime | None = None
+    confirmed: bool = False
 
 
 class OddsHistoryResponse(BaseModel):
@@ -213,12 +219,18 @@ class OddsHistoryResponse(BaseModel):
 
 
 class MarginHistoryPoint(BaseModel):
-    """Single margin point for charts."""
+    """Single margin point for charts.
+
+    Attributes:
+        confirmed: If True, this point represents a stability confirmation
+            (odds were checked but did not change). If False, odds changed.
+    """
 
     captured_at: datetime
     margin: float | None = None
     available: bool = True
     unavailable_at: datetime | None = None
+    confirmed: bool = False
 
 
 class MarginHistoryResponse(BaseModel):

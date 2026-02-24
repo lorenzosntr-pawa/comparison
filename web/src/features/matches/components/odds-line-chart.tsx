@@ -180,6 +180,7 @@ export function OddsLineChart({
         timeLabel: format(new Date(point.captured_at), 'HH:mm'),
         margin: point.margin,
         available: point.available ?? true,
+        confirmed: point.confirmed ?? false,
       }
       point.outcomes?.forEach((outcome) => {
         row[outcome.name] = outcome.odds
@@ -228,6 +229,11 @@ export function OddsLineChart({
       outcomeNames.some((name) => point[`${name}_unavailable`] !== null)
     )
   }, [processedChartData, comparisonMode, bookmakerSlugs, outcomeNames])
+
+  // Check if there are any confirmation points (stability points)
+  const hasConfirmationPoints = useMemo(() => {
+    return processedChartData.some((point) => point.confirmed === true)
+  }, [processedChartData])
 
   // Wrapper for handleChartClick that passes chartData for index lookup
   const onChartClick = useCallback(
@@ -287,11 +293,21 @@ export function OddsLineChart({
         </div>
       )}
 
-      {/* Legend note for unavailable data */}
-      {hasUnavailablePoints && (
-        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-          <span className="inline-block w-6 border-t-2 border-dashed border-muted-foreground"></span>
-          <span>Dashed line = market unavailable</span>
+      {/* Legend notes for unavailable data and confirmation points */}
+      {(hasUnavailablePoints || hasConfirmationPoints) && (
+        <div className="text-xs text-muted-foreground mb-2 flex flex-col gap-1">
+          {hasUnavailablePoints && (
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-6 border-t-2 border-dashed border-muted-foreground"></span>
+              <span>Dashed line = market unavailable</span>
+            </div>
+          )}
+          {hasConfirmationPoints && (
+            <div className="flex items-center gap-2">
+              <span className="text-green-500">&#10003;</span>
+              <span>Final point shows last verification time (odds stable)</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -321,11 +337,13 @@ export function OddsLineChart({
             }}
             labelFormatter={(label, payload) => {
               if (payload?.[0]?.payload?.time) {
-                return format(new Date(payload[0].payload.time), 'MMM d, HH:mm')
+                const isConfirmed = payload[0].payload?.confirmed
+                const timeStr = format(new Date(payload[0].payload.time), 'MMM d, HH:mm')
+                return isConfirmed ? `${timeStr} (stable)` : timeStr
               }
               return label
             }}
-            formatter={(value, name) => {
+            formatter={(value, name, { payload }) => {
               // Handle unavailable series - show with marker
               const nameStr = String(name)
               const isUnavailable = nameStr.endsWith('_unavailable')

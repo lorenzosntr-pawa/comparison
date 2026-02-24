@@ -26,7 +26,7 @@ from src.db.models.competitor import (
     CompetitorMarketOdds,
     CompetitorOddsSnapshot,
 )
-from src.db.models.market_odds import MarketOddsHistory
+from src.db.models.market_odds import MarketOddsCurrent, MarketOddsHistory
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.matching.schemas import (
     MarginHistoryPoint,
@@ -66,6 +66,39 @@ def _calculate_margin_from_outcomes(outcomes: list) -> float | None:
 # Note: get_snapshot_history endpoint removed in Phase 109 (v2.9)
 # The snapshot concept no longer exists with market-level storage.
 # Frontend uses /markets/{id}/history and /markets/{id}/margin-history instead.
+
+
+async def _get_current_market_state(
+    db: AsyncSession,
+    event_id: int,
+    bookmaker_slug: str,
+    market_id: str,
+    line: float | None,
+) -> MarketOddsCurrent | None:
+    """Query market_odds_current for the latest confirmed state.
+
+    Used to add stability confirmation points to history charts.
+    Returns the current market state if found, None otherwise.
+    """
+    from sqlalchemy import func
+
+    query = (
+        select(MarketOddsCurrent)
+        .where(MarketOddsCurrent.event_id == event_id)
+        .where(MarketOddsCurrent.bookmaker_slug == bookmaker_slug)
+        .where(MarketOddsCurrent.betpawa_market_id == market_id)
+    )
+
+    # Handle NULL line with COALESCE to match the unique index
+    if line is not None:
+        query = query.where(MarketOddsCurrent.line == line)
+    else:
+        query = query.where(
+            func.coalesce(MarketOddsCurrent.line, 0) == 0
+        )
+
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
 
 async def _query_legacy_betpawa_history(
@@ -309,8 +342,52 @@ async def get_odds_history(
                 margin=margin,
                 available=point.get("unavailable_at") is None,
                 unavailable_at=point.get("unavailable_at"),
+                confirmed=False,  # This is a change point
             )
         )
+
+    # 5. Add confirmation point if current state has more recent last_confirmed_at
+    # This shows the user that odds have been verified as stable since the last change
+    current_state = await _get_current_market_state(
+        db, event_id, bookmaker_slug, market_id, line
+    )
+    if current_state:
+        # Normalize last_confirmed_at to naive for comparison
+        last_confirmed = current_state.last_confirmed_at
+        if last_confirmed and last_confirmed.tzinfo:
+            last_confirmed = last_confirmed.replace(tzinfo=None)
+
+        # Find the latest history point timestamp
+        latest_history_ts = history[-1].captured_at if history else None
+        if latest_history_ts and latest_history_ts.tzinfo:
+            latest_history_ts = latest_history_ts.replace(tzinfo=None)
+
+        # Add confirmation point if last_confirmed_at is more recent than latest history
+        if last_confirmed and (not latest_history_ts or last_confirmed > latest_history_ts):
+            current_outcomes = []
+            raw_current_outcomes = current_state.outcomes
+            if isinstance(raw_current_outcomes, list):
+                for outcome in raw_current_outcomes:
+                    if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
+                        current_outcomes.append(
+                            OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
+                        )
+
+            current_margin = _calculate_margin_from_outcomes(
+                raw_current_outcomes if isinstance(raw_current_outcomes, list) else []
+            )
+
+            # Use last_confirmed_at (naive) for the confirmation point
+            history.append(
+                OddsHistoryPoint(
+                    captured_at=last_confirmed,
+                    outcomes=current_outcomes,
+                    margin=current_margin,
+                    available=current_state.unavailable_at is None,
+                    unavailable_at=current_state.unavailable_at,
+                    confirmed=True,  # This is a confirmation point
+                )
+            )
 
     logger.debug(
         "odds_history_query",
@@ -462,8 +539,43 @@ async def get_margin_history(
                 margin=margin,
                 available=point.get("unavailable_at") is None,
                 unavailable_at=point.get("unavailable_at"),
+                confirmed=False,  # This is a change point
             )
         )
+
+    # 5. Add confirmation point if current state has more recent last_confirmed_at
+    # This shows the user that odds have been verified as stable since the last change
+    current_state = await _get_current_market_state(
+        db, event_id, bookmaker_slug, market_id, line
+    )
+    if current_state:
+        # Normalize last_confirmed_at to naive for comparison
+        last_confirmed = current_state.last_confirmed_at
+        if last_confirmed and last_confirmed.tzinfo:
+            last_confirmed = last_confirmed.replace(tzinfo=None)
+
+        # Find the latest history point timestamp
+        latest_history_ts = history[-1].captured_at if history else None
+        if latest_history_ts and latest_history_ts.tzinfo:
+            latest_history_ts = latest_history_ts.replace(tzinfo=None)
+
+        # Add confirmation point if last_confirmed_at is more recent than latest history
+        if last_confirmed and (not latest_history_ts or last_confirmed > latest_history_ts):
+            raw_current_outcomes = current_state.outcomes
+            current_margin = _calculate_margin_from_outcomes(
+                raw_current_outcomes if isinstance(raw_current_outcomes, list) else []
+            )
+
+            # Use last_confirmed_at (naive) for the confirmation point
+            history.append(
+                MarginHistoryPoint(
+                    captured_at=last_confirmed,
+                    margin=current_margin,
+                    available=current_state.unavailable_at is None,
+                    unavailable_at=current_state.unavailable_at,
+                    confirmed=True,  # This is a confirmation point
+                )
+            )
 
     logger.debug(
         "margin_history_query",
