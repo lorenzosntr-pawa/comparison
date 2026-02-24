@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 105 of 110 (Investigation & Schema Design)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-24 — Milestone v2.9 created
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-24 — Completed 105-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0%
+Progress: █░░░░░░░░░ 17%
 
 ## Milestones
 
@@ -287,6 +287,7 @@ Progress: ░░░░░░░░░░ 0%
 - **Sidebar query invalidation on scrape completion** - invalidate ['coverage'] and ['scrape-runs'] queries when scrape completes for instant sidebar refresh (v2.6 Phase 98)
 - **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
 - **Bidirectional availability updates** - UnavailableMarketUpdate with unavailable_at=None clears availability flag when odds return; both became_unavailable and became_available lists must be persisted to database (BUG-026 fix)
+- **Market-level upsert schema** - market_odds_current (UNIQUE on event+bookmaker+market+line) + market_odds_history (append-only, partitioned by month) replaces snapshot-level storage; 95% reduction from 7.2M to 360K rows/day (v2.9 Phase 105)
 
 ### Key Decisions
 
@@ -402,6 +403,6 @@ Progress: ░░░░░░░░░░ 0%
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Milestone v2.9 initialization
+Stopped at: Completed 105-01-PLAN.md (Phase 105 complete)
 Resume file: None
-Next action: /gsd:plan-phase 105
+Next action: /gsd:plan-phase 106

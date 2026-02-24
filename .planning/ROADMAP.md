@@ -33,15 +33,20 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 
 **Milestone Goal:** Reduce market_odds storage from ~8GB/day to <200MB/day through market-level change detection, enabling sustainable operation on 75GB disk.
 
-#### Phase 105: Investigation & Schema Design
+#### Phase 105: Investigation & Schema Design ✓
 
 **Goal**: Study codebase data flow, design new table schemas (market_odds_current, market_odds_history), understand API query patterns
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 105-01: TBD (run /gsd:plan-phase 105 to break down)
+- [x] 105-01: Codebase investigation and schema design (2026-02-24)
+
+**Key Findings:**
+- Root cause: snapshot-level change detection writes ALL markets when ANY changes
+- Schema design: market_odds_current (upsert) + market_odds_history (append)
+- Storage reduction: 95% (7.2M → 360K rows/day)
 
 #### Phase 106: Schema Migration
 
@@ -521,7 +526,7 @@ Plans:
 | 103. Data Migration & Validation | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
-| 105. Investigation & Schema Design | v2.9 | 0/? | Not started | - |
+| 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 106. Schema Migration | v2.9 | 0/? | Not started | - |
 | 107. Write Path Changes | v2.9 | 0/? | Not started | - |
 | 108. Read Path & Cache | v2.9 | 0/? | Not started | - |
