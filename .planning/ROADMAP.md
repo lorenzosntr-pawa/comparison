@@ -48,15 +48,15 @@ Plans:
 - Schema design: market_odds_current (upsert) + market_odds_history (append)
 - Storage reduction: 95% (7.2M → 360K rows/day)
 
-#### Phase 106: Schema Migration
+#### Phase 106: Schema Migration ✓
 
 **Goal**: Create market_odds_current and market_odds_history tables with Alembic, plan data migration strategy
 **Depends on**: Phase 105
 **Research**: Unlikely (established Alembic patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 106-01: TBD
+- [x] 106-01: Create Alembic migration and SQLAlchemy ORM models (2026-02-24)
 
 #### Phase 107: Write Path Changes
 
@@ -527,7 +527,7 @@ Plans:
 | 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-24 |
-| 106. Schema Migration | v2.9 | 0/? | Not started | - |
+| 106. Schema Migration | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 107. Write Path Changes | v2.9 | 0/? | Not started | - |
 | 108. Read Path & Cache | v2.9 | 0/? | Not started | - |
 | 109. Historical API | v2.9 | 0/? | Not started | - |

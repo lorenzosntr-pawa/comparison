@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 ## Current Position
 
-Phase: 105 of 110 (Investigation & Schema Design)
+Phase: 106 of 110 (Schema Migration)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-24 — Completed 105-01-PLAN.md
+Last activity: 2026-02-24 — Completed 106-01-PLAN.md
 
-Progress: █░░░░░░░░░ 17%
+Progress: ██░░░░░░░░ 33%
 
 ## Milestones
 
@@ -288,6 +288,8 @@ Progress: █░░░░░░░░░ 17%
 - **UnavailableMarketUpdate pattern** - frozen dataclass for UPDATE operations on existing DB rows; separate INSERT path (new markets) from UPDATE path (unavailable existing markets) (v2.7 Phase 99)
 - **Bidirectional availability updates** - UnavailableMarketUpdate with unavailable_at=None clears availability flag when odds return; both became_unavailable and became_available lists must be persisted to database (BUG-026 fix)
 - **Market-level upsert schema** - market_odds_current (UNIQUE on event+bookmaker+market+line) + market_odds_history (append-only, partitioned by month) replaces snapshot-level storage; 95% reduction from 7.2M to 360K rows/day (v2.9 Phase 105)
+- **COALESCE in unique constraint** - `CREATE UNIQUE INDEX ... ON (event_id, bookmaker_slug, betpawa_market_id, COALESCE(line, 0))` allows NULL line values to be treated as 0 for uniqueness (v2.9 Phase 106)
+- **Composite PK for partitioned tables** - PostgreSQL partitioning requires partition key (captured_at) in primary key; use `(id, captured_at)` composite (v2.9 Phase 106)
 
 ### Key Decisions
 
@@ -403,6 +405,6 @@ Progress: █░░░░░░░░░ 17%
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 105-01-PLAN.md (Phase 105 complete)
+Stopped at: Completed 106-01-PLAN.md (Phase 106 complete)
 Resume file: None
-Next action: /gsd:plan-phase 106
+Next action: /gsd:plan-phase 107
