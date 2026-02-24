@@ -2,34 +2,7 @@
 
 ## Open Enhancements
 
-### ISS-002: Comprehensive market mapping needed
-**Discovered:** Phase 7 UAT - 2026-01-21
-**Updated:** 2026-02-05 (issue review)
-**Type:** Enhancement
-**Effort:** Medium (diminishing returns)
-
-**Description:**
-Market mapping library covers core markets but many exotic/niche market types remain unmapped across SportyBet and Bet9ja.
-
-**Impact:**
-- Missing markets in event detail view for exotic market types
-- Incomplete odds comparison for niche markets
-- Limits analysis for corners, cards, player props
-
-**Current state (post-v1.8):**
-- 129 market mappings exist in `market_mapping/mappings/market_ids.py`
-- SportyBet mapping success: 52.2% (up from 47.3%)
-- Bet9ja mapping success: 40.5% (up from 36.1%)
-- v1.8 added 20 new mappings, combo market parameter handling, handicap line fix, outcome normalization
-- ~380 unmapped market types identified (Phase 45 audit), many are platform-specific with no BetPawa equivalent
-
-**Remaining work (if pursued):**
-1. Corner range markets (169, 182) — UNKNOWN_PARAM_MARKET errors
-2. HT/FT combo markets — moderate frequency
-3. Player prop markets — low priority (BetPawa may not offer equivalents)
-4. Remaining combo variants (818, 551) — outcome structure mismatches
-
-**Resolution:** Diminishing returns — most high-impact mappings addressed in v1.8. Remaining gaps are niche markets. Revisit if business need arises.
+None
 
 ---
 
@@ -40,6 +13,47 @@ None
 ---
 
 ## Closed Bugs
+
+### BUG-032: Storage page shows blank — CleanupRun schema mismatch (RESOLVED)
+**Discovered:** 2026-02-24 (user report during issue review)
+**Type:** Schema Mismatch Bug
+**Root Cause:** Frontend `CleanupRun` interface used snake_case field names (`started_at`, `duration_ms`, `records_deleted`) but backend `/cleanup/history` API returns camelCase (`startedAt`, `durationSeconds`, individual deletion fields). When the component tried to access `run.started_at`, it was `undefined`, causing `format(new Date(undefined))` to throw and crash the component → blank page.
+**Resolution:** Fixed 2026-02-24 - Updated `CleanupRun` interface in `use-storage.ts` to match backend camelCase response. Updated `CleanupHistory.total_count` to `total`. Updated `StoragePage` component to use `startedAt`, `durationSeconds`. Added `getTotalDeleted()` helper to sum all deletion count fields. Files modified: `web/src/features/storage/hooks/use-storage.ts`, `web/src/features/storage/index.tsx`.
+
+### BUG-031: SAWarning about MarketOddsHistory.id autoincrement (RESOLVED)
+**Discovered:** 2026-02-24 (warning in logs on every market_odds_history INSERT)
+**Type:** Schema Warning
+**Root Cause:** `MarketOddsHistory` has a composite primary key `(id, captured_at)` for partitioning support. SQLAlchemy requires `autoincrement=True` on the `id` column to recognize that PostgreSQL's BIGSERIAL will generate values.
+**Impact:** Warning spam in logs: `SAWarning: Column 'market_odds_history.id' is marked as a member of the primary key... but has no Python-side or server-side default generator indicated, nor does it indicate 'autoincrement=True'`
+**Resolution:** Fixed 2026-02-24 - Added `autoincrement=True` to the `id` column: `id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)`. File modified: `src/db/models/market_odds.py`.
+
+### BUG-030: unchanged_bp=0 due to warmup bookmaker_id mismatch (RESOLVED)
+**Discovered:** 2026-02-24 (logs showing unchanged_bp=0 while unchanged_comp showed values)
+**Type:** Cache Bug
+**Root Cause:** The warmup in `src/caching/warmup.py` hardcoded `bookmaker_id=1` when putting BetPawa snapshots into the cache, but the coordinator queries the actual bookmaker_id from the Bookmaker table. When change detection ran, the cache lookup with the real bookmaker_id (e.g., 4) failed to find data stored under bookmaker_id=1.
+**Impact:** BetPawa change detection always saw cache miss → all snapshots marked as "changed" → no storage savings for BetPawa data.
+**Resolution:** Fixed 2026-02-24 - Modified warmup to query the Bookmaker table and build a slug→id mapping, then use `bookmaker_id_map.get("betpawa")` instead of hardcoded `1`. Also fixed CachedSnapshot.bookmaker_id to use the lookup map. File modified: `src/caching/warmup.py`.
+
+### BUG-029: market_odds_current UPSERT fails — expression index ON CONFLICT (RESOLVED)
+**Discovered:** 2026-02-24 (logs during v2.9 deployment)
+**Type:** Critical Database Bug
+**Severity:** BLOCKER (was)
+**Root Cause:** Two PostgreSQL limitations collided:
+1. SQLAlchemy's `on_conflict_do_update(index_elements=..., index_where=...)` is for **partial indexes**, not **expression indexes**
+2. Expression indexes (like `COALESCE(line, 0)`) cannot be promoted to UNIQUE CONSTRAINTs, so `ON CONFLICT ON CONSTRAINT name` doesn't work
+3. SQLAlchemy's ORM doesn't support expression-based ON CONFLICT targets
+**Resolution:** Fixed 2026-02-24 - Replaced SQLAlchemy's `on_conflict_do_update()` with raw SQL using `text()`. The raw SQL properly specifies the expression index columns: `ON CONFLICT (event_id, bookmaker_slug, betpawa_market_id, COALESCE(line, 0))`. File modified: `src/storage/write_handler.py`.
+
+### BUG-028: Historical data missing after v2.9 migration — no data migration performed (RESOLVED)
+**Discovered:** 2026-02-24 (user report during issue review)
+**Type:** Critical Bug (Data Regression)
+**Severity:** BLOCKER
+**Root Cause:** v2.9 migration (Phases 105-110) performed schema-only migration without migrating historical data. Phase 109 updated history.py to query ONLY new MarketOddsHistory table, but no data existed there for pre-v2.9 events. Old data remained orphaned in odds_snapshots + market_odds tables.
+**Resolution:** Fixed 2026-02-24 (Phase 110.1-01) - Implemented dual-query strategy in `src/api/routes/history.py`. Both `get_odds_history()` and `get_margin_history()` now query:
+1. New `market_odds_history` table (post-v2.9 data)
+2. Legacy `odds_snapshots` + `market_odds` tables (pre-v2.9 BetPawa data)
+3. Legacy `competitor_odds_snapshots` + `competitor_market_odds` tables (pre-v2.9 competitor data)
+Results are deduplicated by timestamp and merged chronologically. Added `_query_legacy_betpawa_history()` and `_query_legacy_competitor_history()` helper functions.
 
 ### BUG-027: Odds highlighting lacks visual distinction between BetPawa and competitors (RESOLVED)
 **Discovered:** 2026-02-17 (user report during issue review)
@@ -148,6 +162,10 @@ None
 ---
 
 ## Closed Enhancements
+
+### ISS-002: Comprehensive market mapping needed (RESOLVED)
+**Discovered:** Phase 7 UAT - 2026-01-21
+**Resolution:** 2026-02-24 (issue review) - Closed with diminishing returns. v1.8 addressed high-impact mappings (129 total). SportyBet 52.2%, Bet9ja 40.5% mapping success. Remaining ~380 unmapped markets are platform-specific with no BetPawa equivalent. Revisit if business need arises.
 
 ### ISS-005: Tournament detail page with margin timeline (RESOLVED)
 **Discovered:** Phase 84.1 UAT - 2026-02-10

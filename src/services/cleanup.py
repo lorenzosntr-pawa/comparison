@@ -13,14 +13,16 @@ Deletion Order (respects FKs):
     2. odds_snapshots
     3. competitor_market_odds (FK: snapshot_id)
     4. competitor_odds_snapshots
-    5. scrape_errors, scrape_phase_logs (FK: scrape_run_id)
+    5. scrape_errors, scrape_phase_logs, event_scrape_status (FK: scrape_run_id)
     6. scrape_runs
     7. scrape_batches (orphaned)
     8. event_bookmakers (FK: event_id)
-    9. events
-    10. competitor_events
-    11. tournaments (orphaned - no remaining events)
-    12. competitor_tournaments (orphaned)
+    9. market_odds, odds_snapshots for old events (by event_id - catches any missed by captured_at)
+    10. clear scrape_errors.event_id, competitor_events.betpawa_event_id (nullable FKs to events)
+    11. events
+    12. competitor_events
+    13. tournaments (orphaned - no remaining events)
+    14. competitor_tournaments (orphaned)
 
 Batch Deletion:
     Uses _batch_delete() to delete in batches of 1000 rows to avoid
@@ -36,7 +38,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import structlog
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas.cleanup import (
@@ -53,6 +55,7 @@ from src.db.models.competitor import (
     CompetitorTournament,
 )
 from src.db.models.event import Event, EventBookmaker
+from src.db.models.event_scrape_status import EventScrapeStatus
 from src.db.models.market_odds import MarketOddsHistory
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import ScrapeBatch, ScrapeError, ScrapePhaseLog, ScrapeRun
@@ -413,6 +416,12 @@ async def execute_cleanup(
         session, ScrapePhaseLog, ScrapePhaseLog.scrape_run_id.in_(old_run_ids), log
     )
 
+    # 6.5 Delete event_scrape_status for old runs
+    log.info("Deleting old event_scrape_status")
+    await _batch_delete(
+        session, EventScrapeStatus, EventScrapeStatus.scrape_run_id.in_(old_run_ids), log
+    )
+
     # 7. Delete old scrape_runs
     log.info("Deleting old scrape_runs")
     scrape_runs_deleted = await _batch_delete(
@@ -437,6 +446,42 @@ async def execute_cleanup(
     await _batch_delete(
         session, EventBookmaker, EventBookmaker.event_id.in_(old_event_ids), log
     )
+
+    # 9.5 Delete market_odds for snapshots of old events (by event_id)
+    log.info("Deleting market_odds for old events")
+    old_event_snapshot_ids = select(OddsSnapshot.id).where(
+        OddsSnapshot.event_id.in_(old_event_ids)
+    )
+    await _batch_delete(
+        session, MarketOdds, MarketOdds.snapshot_id.in_(old_event_snapshot_ids), log
+    )
+
+    # 9.6 Delete odds_snapshots for old events (by event_id)
+    log.info("Deleting odds_snapshots for old events")
+    await _batch_delete(
+        session, OddsSnapshot, OddsSnapshot.event_id.in_(old_event_ids), log
+    )
+
+    # 9.7 Clear event_id FK in scrape_errors for old events (set to NULL instead of delete)
+    # ScrapeErrors are already deleted by scrape_run_id, but if any have event_id pointing
+    # to events being deleted, we need to clear that FK
+    log.info("Clearing scrape_errors event_id for old events")
+    await session.execute(
+        update(ScrapeError)
+        .where(ScrapeError.event_id.in_(old_event_ids))
+        .values(event_id=None)
+    )
+    await session.commit()
+
+    # 9.8 Clear betpawa_event_id FK in competitor_events for old events
+    # CompetitorEvents reference Betpawa events via betpawa_event_id - must clear before delete
+    log.info("Clearing competitor_events betpawa_event_id for old events")
+    await session.execute(
+        update(CompetitorEvent)
+        .where(CompetitorEvent.betpawa_event_id.in_(old_event_ids))
+        .values(betpawa_event_id=None)
+    )
+    await session.commit()
 
     # 10. Delete old events
     log.info("Deleting old events")
@@ -542,7 +587,8 @@ async def execute_cleanup_with_tracking(
         )
 
         # Update cleanup run with results
-        cleanup_run.completed_at = datetime.now(timezone.utc)
+        # Use naive datetime for cleanup_runs table (TIMESTAMP WITHOUT TIME ZONE)
+        cleanup_run.completed_at = datetime.utcnow()
         cleanup_run.status = "completed"
         cleanup_run.odds_deleted = result.odds_deleted
         cleanup_run.competitor_odds_deleted = result.competitor_odds_deleted
@@ -552,8 +598,15 @@ async def execute_cleanup_with_tracking(
         cleanup_run.competitor_events_deleted = result.competitor_events_deleted
         cleanup_run.tournaments_deleted = result.tournaments_deleted
         cleanup_run.competitor_tournaments_deleted = result.competitor_tournaments_deleted
-        cleanup_run.oldest_odds_date = result.oldest_odds_date
-        cleanup_run.oldest_match_date = result.oldest_match_date
+        # Convert tz-aware dates to naive if needed
+        oldest_odds = result.oldest_odds_date
+        if oldest_odds and oldest_odds.tzinfo:
+            oldest_odds = oldest_odds.replace(tzinfo=None)
+        oldest_match = result.oldest_match_date
+        if oldest_match and oldest_match.tzinfo:
+            oldest_match = oldest_match.replace(tzinfo=None)
+        cleanup_run.oldest_odds_date = oldest_odds
+        cleanup_run.oldest_match_date = oldest_match
         cleanup_run.duration_seconds = result.duration_seconds
 
         await session.commit()
@@ -562,8 +615,11 @@ async def execute_cleanup_with_tracking(
         return cleanup_run, result
 
     except Exception as e:
+        # Rollback any pending transaction before updating cleanup run
+        await session.rollback()
         # Update cleanup run with error
-        cleanup_run.completed_at = datetime.now(timezone.utc)
+        # Use naive datetime for cleanup_runs table (TIMESTAMP WITHOUT TIME ZONE)
+        cleanup_run.completed_at = datetime.utcnow()
         cleanup_run.status = "failed"
         cleanup_run.error_message = str(e)
         await session.commit()

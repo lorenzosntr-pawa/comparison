@@ -113,7 +113,7 @@ class MarketOddsHistory(Base):
 
     __tablename__ = "market_odds_history"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     event_id: Mapped[int] = mapped_column(nullable=False)
     bookmaker_slug: Mapped[str] = mapped_column(String(20), nullable=False)
     betpawa_market_id: Mapped[str] = mapped_column(String(50), nullable=False)

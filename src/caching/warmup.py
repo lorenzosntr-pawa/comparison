@@ -38,6 +38,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.caching.odds_cache import CachedMarket, CachedSnapshot, OddsCache
+from src.db.models.bookmaker import Bookmaker
 from src.db.models.competitor import (
     CompetitorEvent,
     CompetitorOddsSnapshot,
@@ -255,7 +256,14 @@ async def warm_cache_from_db(cache: OddsCache, db: AsyncSession) -> dict:
         return {"betpawa_snapshots": 0, "competitor_snapshots": 0, "events": 0}
 
     # ------------------------------------------------------------------
-    # 2. Load from market_odds_current (all bookmakers in one query)
+    # 2. Load bookmaker slug -> ID mapping
+    # ------------------------------------------------------------------
+    bookmaker_result = await db.execute(select(Bookmaker))
+    bookmakers = bookmaker_result.scalars().all()
+    bookmaker_id_map: dict[str, int] = {b.slug: b.id for b in bookmakers}
+
+    # ------------------------------------------------------------------
+    # 3. Load from market_odds_current (all bookmakers in one query)
     # ------------------------------------------------------------------
     moc_query = select(MarketOddsCurrent).where(
         MarketOddsCurrent.event_id.in_(event_ids)
@@ -313,7 +321,7 @@ async def warm_cache_from_db(cache: OddsCache, db: AsyncSession) -> dict:
         cached_snapshot = CachedSnapshot(
             snapshot_id=0,  # Not used in new schema
             event_id=event_id,
-            bookmaker_id=0,  # Not used for competitors, 1 for betpawa
+            bookmaker_id=bookmaker_id_map.get(bookmaker_slug, 0),
             captured_at=last_updated,
             last_confirmed_at=last_confirmed,
             markets=tuple(cached_markets),
@@ -322,10 +330,11 @@ async def warm_cache_from_db(cache: OddsCache, db: AsyncSession) -> dict:
         kickoff = kickoff_map.get(event_id)
 
         if bookmaker_slug == "betpawa":
-            # BetPawa snapshot
+            # BetPawa snapshot - use actual bookmaker_id from DB
+            bp_bookmaker_id = bookmaker_id_map.get("betpawa", 1)
             cache.put_betpawa_snapshot(
                 event_id=event_id,
-                bookmaker_id=1,  # Standard bookmaker_id for betpawa
+                bookmaker_id=bp_bookmaker_id,
                 snapshot=cached_snapshot,
                 kickoff=kickoff,
             )

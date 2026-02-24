@@ -1,12 +1,18 @@
 """Historical data API endpoints for odds and margin history.
 
-Updated in Phase 109 to use market_odds_history table instead of deprecated
-snapshot-based tables (OddsSnapshot, MarketOdds, CompetitorOddsSnapshot, etc.).
+Updated in Phase 109 to use market_odds_history table.
+Updated in Phase 110.1 to also query legacy tables for pre-v2.9 data (BUG-028 fix).
+
+This module implements a dual-query strategy:
+1. Query new market_odds_history (post-v2.9 data)
+2. Query legacy odds_snapshots + market_odds tables (pre-v2.9 data)
+3. UNION results for complete historical coverage
 """
 
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -15,7 +21,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
+from src.db.models.competitor import (
+    CompetitorEvent,
+    CompetitorMarketOdds,
+    CompetitorOddsSnapshot,
+)
 from src.db.models.market_odds import MarketOddsHistory
+from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.matching.schemas import (
     MarginHistoryPoint,
     MarginHistoryResponse,
@@ -54,6 +66,109 @@ def _calculate_margin_from_outcomes(outcomes: list) -> float | None:
 # Note: get_snapshot_history endpoint removed in Phase 109 (v2.9)
 # The snapshot concept no longer exists with market-level storage.
 # Frontend uses /markets/{id}/history and /markets/{id}/margin-history instead.
+
+
+async def _query_legacy_betpawa_history(
+    db: AsyncSession,
+    event_id: int,
+    market_id: str,
+    line: float | None,
+    from_time: datetime | None,
+    to_time: datetime | None,
+) -> list[dict[str, Any]]:
+    """Query legacy odds_snapshots + market_odds for BetPawa pre-v2.9 data.
+
+    Returns list of dicts with captured_at, outcomes, line for consistency.
+    """
+    query = (
+        select(MarketOdds, OddsSnapshot.captured_at)
+        .join(OddsSnapshot, MarketOdds.snapshot_id == OddsSnapshot.id)
+        .where(OddsSnapshot.event_id == event_id)
+        .where(MarketOdds.betpawa_market_id == market_id)
+    )
+
+    # Apply line filter
+    if line is not None:
+        query = query.where(MarketOdds.line == line)
+
+    # Apply time filters
+    if from_time:
+        from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+        query = query.where(OddsSnapshot.captured_at >= from_time_naive)
+    if to_time:
+        to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+        query = query.where(OddsSnapshot.captured_at <= to_time_naive)
+
+    query = query.order_by(OddsSnapshot.captured_at)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    return [
+        {
+            "captured_at": row.captured_at,
+            "outcomes": row.MarketOdds.outcomes,
+            "line": row.MarketOdds.line,
+            "unavailable_at": getattr(row.MarketOdds, "unavailable_at", None),
+        }
+        for row in rows
+    ]
+
+
+async def _query_legacy_competitor_history(
+    db: AsyncSession,
+    event_id: int,
+    bookmaker_slug: str,
+    market_id: str,
+    line: float | None,
+    from_time: datetime | None,
+    to_time: datetime | None,
+) -> list[dict[str, Any]]:
+    """Query legacy competitor_odds_snapshots + competitor_market_odds for pre-v2.9 data.
+
+    Returns list of dicts with captured_at, outcomes, line for consistency.
+    """
+    query = (
+        select(CompetitorMarketOdds, CompetitorOddsSnapshot.captured_at)
+        .join(
+            CompetitorOddsSnapshot,
+            CompetitorMarketOdds.snapshot_id == CompetitorOddsSnapshot.id,
+        )
+        .join(
+            CompetitorEvent,
+            CompetitorOddsSnapshot.competitor_event_id == CompetitorEvent.id,
+        )
+        .where(CompetitorEvent.betpawa_event_id == event_id)
+        .where(CompetitorEvent.source == bookmaker_slug)
+        .where(CompetitorMarketOdds.betpawa_market_id == market_id)
+    )
+
+    # Apply line filter
+    if line is not None:
+        query = query.where(CompetitorMarketOdds.line == line)
+
+    # Apply time filters
+    if from_time:
+        from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
+        query = query.where(CompetitorOddsSnapshot.captured_at >= from_time_naive)
+    if to_time:
+        to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
+        query = query.where(CompetitorOddsSnapshot.captured_at <= to_time_naive)
+
+    query = query.order_by(CompetitorOddsSnapshot.captured_at)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    return [
+        {
+            "captured_at": row.captured_at,
+            "outcomes": row.CompetitorMarketOdds.outcomes,
+            "line": row.CompetitorMarketOdds.line,
+            "unavailable_at": getattr(row.CompetitorMarketOdds, "unavailable_at", None),
+        }
+        for row in rows
+    ]
 
 
 @router.get("/{event_id}/markets/{market_id}/history", response_model=OddsHistoryResponse)
@@ -110,7 +225,14 @@ async def get_odds_history(
     if not bookmaker:
         raise HTTPException(status_code=404, detail=f"Bookmaker not found: {bookmaker_slug}")
 
-    # Query market_odds_history with unified bookmaker_slug
+    # =========================================================================
+    # DUAL-QUERY STRATEGY (Phase 110.1 - BUG-028 fix)
+    # Query BOTH new market_odds_history AND legacy tables to get complete history
+    # =========================================================================
+
+    all_points: list[dict[str, Any]] = []
+
+    # 1. Query new market_odds_history (post-v2.9 data)
     query = (
         select(MarketOddsHistory)
         .where(MarketOddsHistory.event_id == event_id)
@@ -118,11 +240,9 @@ async def get_odds_history(
         .where(MarketOddsHistory.betpawa_market_id == market_id)
     )
 
-    # Apply line filter for specifier markets
     if line is not None:
         query = query.where(MarketOddsHistory.line == line)
 
-    # Apply time filters (MarketOddsHistory uses timezone-aware timestamps)
     if from_time:
         from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
         query = query.where(MarketOddsHistory.captured_at >= from_time_naive)
@@ -130,45 +250,65 @@ async def get_odds_history(
         to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
         query = query.where(MarketOddsHistory.captured_at <= to_time_naive)
 
-    # Order chronologically for charts
-    query = query.order_by(MarketOddsHistory.captured_at)
-
     result = await db.execute(query)
-    rows = result.scalars().all()
+    for market in result.scalars().all():
+        all_points.append({
+            "captured_at": market.captured_at,
+            "outcomes": market.outcomes,
+            "line": market.line,
+            "unavailable_at": None,  # New table doesn't track this per-row
+        })
 
-    # Build history points
-    history = []
+    # 2. Query legacy tables (pre-v2.9 data)
+    if bookmaker_slug == "betpawa":
+        legacy_points = await _query_legacy_betpawa_history(
+            db, event_id, market_id, line, from_time, to_time
+        )
+    else:
+        legacy_points = await _query_legacy_competitor_history(
+            db, event_id, bookmaker_slug, market_id, line, from_time, to_time
+        )
+    all_points.extend(legacy_points)
+
+    # 3. Deduplicate by captured_at and sort chronologically
+    seen_timestamps: set[datetime] = set()
+    unique_points: list[dict[str, Any]] = []
+    for point in all_points:
+        ts = point["captured_at"]
+        if ts not in seen_timestamps:
+            seen_timestamps.add(ts)
+            unique_points.append(point)
+
+    unique_points.sort(key=lambda p: p["captured_at"])
+
+    # 4. Build OddsHistoryPoint response objects
+    history: list[OddsHistoryPoint] = []
     result_line = None
 
-    for market in rows:
-        # Capture line from first row
+    for point in unique_points:
         if result_line is None:
-            result_line = market.line
+            result_line = point.get("line")
 
-        # Parse outcomes from JSONB
         outcomes = []
-        if isinstance(market.outcomes, list):
-            for outcome in market.outcomes:
+        raw_outcomes = point.get("outcomes", [])
+        if isinstance(raw_outcomes, list):
+            for outcome in raw_outcomes:
                 if isinstance(outcome, dict) and "name" in outcome and "odds" in outcome:
                     outcomes.append(
                         OutcomeOdds(name=outcome["name"], odds=outcome["odds"])
                     )
 
-        # Calculate margin
         margin = _calculate_margin_from_outcomes(
-            market.outcomes if isinstance(market.outcomes, list) else []
+            raw_outcomes if isinstance(raw_outcomes, list) else []
         )
 
-        # MarketOddsHistory does NOT have unavailable_at - history only contains
-        # changed records, so availability changes create separate history entries.
-        # Return available=True and unavailable_at=None for all history points.
         history.append(
             OddsHistoryPoint(
-                captured_at=market.captured_at,
+                captured_at=point["captured_at"],
                 outcomes=outcomes,
                 margin=margin,
-                available=True,
-                unavailable_at=None,
+                available=point.get("unavailable_at") is None,
+                unavailable_at=point.get("unavailable_at"),
             )
         )
 
@@ -178,6 +318,8 @@ async def get_odds_history(
         market_id=market_id,
         bookmaker_slug=bookmaker_slug,
         points=len(history),
+        new_table_points=len([p for p in all_points if p not in legacy_points]),
+        legacy_points=len(legacy_points),
     )
 
     return OddsHistoryResponse(
@@ -185,7 +327,7 @@ async def get_odds_history(
         bookmaker_slug=bookmaker.slug,
         bookmaker_name=bookmaker.name,
         market_id=market_id,
-        market_name=market_id,  # MarketOddsHistory doesn't store market_name
+        market_name=market_id,
         line=result_line,
         history=history,
     )
@@ -245,7 +387,14 @@ async def get_margin_history(
     if not bookmaker:
         raise HTTPException(status_code=404, detail=f"Bookmaker not found: {bookmaker_slug}")
 
-    # Query market_odds_history with unified bookmaker_slug
+    # =========================================================================
+    # DUAL-QUERY STRATEGY (Phase 110.1 - BUG-028 fix)
+    # Query BOTH new market_odds_history AND legacy tables to get complete history
+    # =========================================================================
+
+    all_points: list[dict[str, Any]] = []
+
+    # 1. Query new market_odds_history (post-v2.9 data)
     query = (
         select(MarketOddsHistory)
         .where(MarketOddsHistory.event_id == event_id)
@@ -253,11 +402,9 @@ async def get_margin_history(
         .where(MarketOddsHistory.betpawa_market_id == market_id)
     )
 
-    # Apply line filter for specifier markets
     if line is not None:
         query = query.where(MarketOddsHistory.line == line)
 
-    # Apply time filters (MarketOddsHistory uses timezone-aware timestamps)
     if from_time:
         from_time_naive = from_time.replace(tzinfo=None) if from_time.tzinfo else from_time
         query = query.where(MarketOddsHistory.captured_at >= from_time_naive)
@@ -265,35 +412,56 @@ async def get_margin_history(
         to_time_naive = to_time.replace(tzinfo=None) if to_time.tzinfo else to_time
         query = query.where(MarketOddsHistory.captured_at <= to_time_naive)
 
-    # Order chronologically for charts
-    query = query.order_by(MarketOddsHistory.captured_at)
-
     result = await db.execute(query)
-    rows = result.scalars().all()
+    for market in result.scalars().all():
+        all_points.append({
+            "captured_at": market.captured_at,
+            "outcomes": market.outcomes,
+            "line": market.line,
+            "unavailable_at": None,
+        })
 
-    # Build history points (margin only)
-    history = []
+    # 2. Query legacy tables (pre-v2.9 data)
+    if bookmaker_slug == "betpawa":
+        legacy_points = await _query_legacy_betpawa_history(
+            db, event_id, market_id, line, from_time, to_time
+        )
+    else:
+        legacy_points = await _query_legacy_competitor_history(
+            db, event_id, bookmaker_slug, market_id, line, from_time, to_time
+        )
+    all_points.extend(legacy_points)
+
+    # 3. Deduplicate by captured_at and sort chronologically
+    seen_timestamps: set[datetime] = set()
+    unique_points: list[dict[str, Any]] = []
+    for point in all_points:
+        ts = point["captured_at"]
+        if ts not in seen_timestamps:
+            seen_timestamps.add(ts)
+            unique_points.append(point)
+
+    unique_points.sort(key=lambda p: p["captured_at"])
+
+    # 4. Build MarginHistoryPoint response objects
+    history: list[MarginHistoryPoint] = []
     result_line = None
 
-    for market in rows:
-        # Capture line from first row
+    for point in unique_points:
         if result_line is None:
-            result_line = market.line
+            result_line = point.get("line")
 
-        # Calculate margin
+        raw_outcomes = point.get("outcomes", [])
         margin = _calculate_margin_from_outcomes(
-            market.outcomes if isinstance(market.outcomes, list) else []
+            raw_outcomes if isinstance(raw_outcomes, list) else []
         )
 
-        # MarketOddsHistory does NOT have unavailable_at - history only contains
-        # changed records, so availability changes create separate history entries.
-        # Return available=True and unavailable_at=None for all history points.
         history.append(
             MarginHistoryPoint(
-                captured_at=market.captured_at,
+                captured_at=point["captured_at"],
                 margin=margin,
-                available=True,
-                unavailable_at=None,
+                available=point.get("unavailable_at") is None,
+                unavailable_at=point.get("unavailable_at"),
             )
         )
 
@@ -303,6 +471,8 @@ async def get_margin_history(
         market_id=market_id,
         bookmaker_slug=bookmaker_slug,
         points=len(history),
+        new_table_points=len([p for p in all_points if p not in legacy_points]),
+        legacy_points=len(legacy_points),
     )
 
     return MarginHistoryResponse(
@@ -310,7 +480,7 @@ async def get_margin_history(
         bookmaker_slug=bookmaker.slug,
         bookmaker_name=bookmaker.name,
         market_id=market_id,
-        market_name=market_id,  # MarketOddsHistory doesn't store market_name
+        market_name=market_id,
         line=result_line,
         history=history,
     )

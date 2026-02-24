@@ -74,16 +74,31 @@ function getStatusBadge(run: CleanupRun) {
 }
 
 /**
- * Format duration in milliseconds to human-readable string.
+ * Format duration in seconds to human-readable string.
  */
-function formatDuration(ms: number | null): string {
-  if (ms === null) return '-'
-  if (ms < 1000) return `${ms}ms`
-  const seconds = ms / 1000
+function formatDuration(seconds: number | null): string {
+  if (seconds === null) return '-'
+  if (seconds < 1) return `${Math.round(seconds * 1000)}ms`
   if (seconds < 60) return `${seconds.toFixed(1)}s`
   const minutes = Math.floor(seconds / 60)
   const remainingSecs = Math.round(seconds % 60)
   return `${minutes}m ${remainingSecs}s`
+}
+
+/**
+ * Calculate total records deleted from a cleanup run.
+ */
+function getTotalDeleted(run: CleanupRun): number {
+  return (
+    run.oddsDeleted +
+    run.competitorOddsDeleted +
+    run.scrapeRunsDeleted +
+    run.scrapeBatchesDeleted +
+    run.eventsDeleted +
+    run.competitorEventsDeleted +
+    run.tournamentsDeleted +
+    run.competitorTournamentsDeleted
+  )
 }
 
 export function StoragePage() {
@@ -259,18 +274,16 @@ export function StoragePage() {
                   {cleanup?.runs.map((run) => (
                     <TableRow key={run.id}>
                       <TableCell className="font-medium">
-                        {format(new Date(run.started_at), 'MMM d, yyyy HH:mm')}
+                        {format(new Date(run.startedAt), 'MMM d, yyyy HH:mm')}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="capitalize">
                           {run.trigger}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDuration(run.duration_ms)}</TableCell>
+                      <TableCell>{formatDuration(run.durationSeconds)}</TableCell>
                       <TableCell className="text-right">
-                        {run.records_deleted !== null
-                          ? formatNumber(run.records_deleted)
-                          : '-'}
+                        {formatNumber(getTotalDeleted(run))}
                       </TableCell>
                       <TableCell>{getStatusBadge(run)}</TableCell>
                     </TableRow>

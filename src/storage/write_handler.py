@@ -33,11 +33,12 @@ Helper Functions:
 
 from __future__ import annotations
 
+import json
 import time
 from datetime import datetime, timezone
 
 import structlog
-from sqlalchemy import func, update
+from sqlalchemy import text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -291,47 +292,57 @@ async def handle_market_write_batch(session_factory, batch: MarketWriteBatch) ->
             # ----------------------------------------------------------
             # 1. UPSERT all markets into market_odds_current
             # ----------------------------------------------------------
-            for market in batch.markets:
-                stmt = insert(MarketOddsCurrent).values(
-                    event_id=market.event_id,
-                    bookmaker_slug=market.bookmaker_slug,
-                    betpawa_market_id=market.betpawa_market_id,
-                    betpawa_market_name=market.betpawa_market_name,
-                    line=market.line,
-                    handicap_type=market.handicap_type,
-                    handicap_home=market.handicap_home,
-                    handicap_away=market.handicap_away,
-                    outcomes=market.outcomes,
-                    market_groups=market.market_groups,
-                    unavailable_at=market.unavailable_at,
-                    last_updated_at=now if market.changed else now,  # Initial insert
-                    last_confirmed_at=now,
+            # Use raw SQL for expression index ON CONFLICT (PostgreSQL limitation:
+            # expression indexes can't be promoted to constraints, and SQLAlchemy's
+            # on_conflict_do_update doesn't support expression-based conflict targets)
+            upsert_sql = text("""
+                INSERT INTO market_odds_current (
+                    event_id, bookmaker_slug, betpawa_market_id, betpawa_market_name,
+                    line, handicap_type, handicap_home, handicap_away,
+                    outcomes, market_groups, unavailable_at,
+                    last_updated_at, last_confirmed_at
+                ) VALUES (
+                    :event_id, :bookmaker_slug, :betpawa_market_id, :betpawa_market_name,
+                    :line, :handicap_type, :handicap_home, :handicap_away,
+                    :outcomes, :market_groups, :unavailable_at,
+                    :last_updated_at, :last_confirmed_at
                 )
+                ON CONFLICT (event_id, bookmaker_slug, betpawa_market_id, COALESCE(line, 0))
+                DO UPDATE SET
+                    betpawa_market_name = EXCLUDED.betpawa_market_name,
+                    outcomes = EXCLUDED.outcomes,
+                    market_groups = EXCLUDED.market_groups,
+                    handicap_type = EXCLUDED.handicap_type,
+                    handicap_home = EXCLUDED.handicap_home,
+                    handicap_away = EXCLUDED.handicap_away,
+                    unavailable_at = EXCLUDED.unavailable_at,
+                    last_confirmed_at = EXCLUDED.last_confirmed_at,
+                    last_updated_at = CASE
+                        WHEN :changed THEN EXCLUDED.last_updated_at
+                        ELSE market_odds_current.last_updated_at
+                    END
+            """)
 
-                # ON CONFLICT: update existing row
-                # Use index_elements for the columns + index_where for COALESCE
-                stmt = stmt.on_conflict_do_update(
-                    index_elements=["event_id", "bookmaker_slug", "betpawa_market_id"],
-                    index_where=(
-                        func.coalesce(MarketOddsCurrent.line, 0)
-                        == func.coalesce(stmt.excluded.line, 0)
-                    ),
-                    set_={
-                        "betpawa_market_name": stmt.excluded.betpawa_market_name,
-                        "outcomes": stmt.excluded.outcomes,
-                        "market_groups": stmt.excluded.market_groups,
-                        "handicap_type": stmt.excluded.handicap_type,
-                        "handicap_home": stmt.excluded.handicap_home,
-                        "handicap_away": stmt.excluded.handicap_away,
-                        "unavailable_at": stmt.excluded.unavailable_at,
+            for market in batch.markets:
+                await db.execute(
+                    upsert_sql,
+                    {
+                        "event_id": market.event_id,
+                        "bookmaker_slug": market.bookmaker_slug,
+                        "betpawa_market_id": market.betpawa_market_id,
+                        "betpawa_market_name": market.betpawa_market_name,
+                        "line": market.line,
+                        "handicap_type": market.handicap_type,
+                        "handicap_home": market.handicap_home,
+                        "handicap_away": market.handicap_away,
+                        "outcomes": json.dumps(market.outcomes),
+                        "market_groups": json.dumps(market.market_groups) if market.market_groups else None,
+                        "unavailable_at": market.unavailable_at,
+                        "last_updated_at": now,
                         "last_confirmed_at": now,
-                        # Update last_updated_at only if changed
-                        "last_updated_at": (
-                            now if market.changed else MarketOddsCurrent.last_updated_at
-                        ),
+                        "changed": market.changed,
                     },
                 )
-                await db.execute(stmt)
                 upserted_current += 1
 
             # ----------------------------------------------------------

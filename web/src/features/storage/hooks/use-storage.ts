@@ -38,22 +38,29 @@ export interface StorageHistory {
   total: number
 }
 
-/** Cleanup run record */
+/** Cleanup run record (matches backend camelCase response) */
 export interface CleanupRun {
   id: number
   trigger: 'manual' | 'scheduled'
-  started_at: string
-  completed_at: string | null
-  duration_ms: number | null
-  records_deleted: number | null
+  startedAt: string
+  completedAt: string | null
+  durationSeconds: number | null
+  oddsDeleted: number
+  competitorOddsDeleted: number
+  scrapeRunsDeleted: number
+  scrapeBatchesDeleted: number
+  eventsDeleted: number
+  competitorEventsDeleted: number
+  tournamentsDeleted: number
+  competitorTournamentsDeleted: number
   status: 'running' | 'completed' | 'failed'
-  error_message: string | null
+  errorMessage: string | null
 }
 
 /** Cleanup history response */
 export interface CleanupHistory {
   runs: CleanupRun[]
-  total_count: number
+  total: number
 }
 
 /**
