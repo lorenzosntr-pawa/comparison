@@ -79,15 +79,15 @@ Plans:
 Plans:
 - [x] 108-01: Cache warmup and API DB fallback queries (2026-02-24)
 
-#### Phase 109: Historical API
+#### Phase 109: Historical API ✓
 
 **Goal**: Build point-in-time reconstruction queries for Historical Analysis page charts and time-to-kickoff analysis
 **Depends on**: Phase 108
 **Research**: Unlikely (internal SQL patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 109-01: TBD
+- [x] 109-01: Migrate history API to market_odds_history (2026-02-24)
 
 #### Phase 110: Retention, Cleanup & Storage Page Fix
 
@@ -531,5 +531,5 @@ Plans:
 | 106. Schema Migration | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 107. Write Path Changes | v2.9 | 2/2 | Complete | 2026-02-24 |
 | 108. Read Path & Cache | v2.9 | 1/1 | Complete | 2026-02-24 |
-| 109. Historical API | v2.9 | 0/? | Not started | - |
+| 109. Historical API | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 110. Retention, Cleanup & Storage Page Fix | v2.9 | 0/? | Not started | - |
