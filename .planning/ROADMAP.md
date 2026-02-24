@@ -69,15 +69,15 @@ Plans:
 - [x] 107-01: Data Structures & Change Detection (DTOs, classify_market_changes) — 2026-02-24
 - [x] 107-02: Write Handler & Integration (UPSERT/INSERT, event_coordinator) — 2026-02-24
 
-#### Phase 108: Read Path & Cache
+#### Phase 108: Read Path & Cache ✓
 
 **Goal**: Update API routes (events.py, palimpsest.py) and OddsCache to work with new schema
 **Depends on**: Phase 107
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 108-01: TBD
+- [x] 108-01: Cache warmup and API DB fallback queries (2026-02-24)
 
 #### Phase 109: Historical API
 
@@ -530,6 +530,6 @@ Plans:
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 106. Schema Migration | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 107. Write Path Changes | v2.9 | 2/2 | Complete | 2026-02-24 |
-| 108. Read Path & Cache | v2.9 | 0/? | Not started | - |
+| 108. Read Path & Cache | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 109. Historical API | v2.9 | 0/? | Not started | - |
 | 110. Retention, Cleanup & Storage Page Fix | v2.9 | 0/? | Not started | - |
