@@ -24,153 +24,36 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.5 Odds Availability Tracking](milestones/v2.5-ROADMAP.md) — Phases 87-92 (shipped 2026-02-11)
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
-- ✅ **v2.8 Storage Optimization** — Phases 100-104 (shipped 2026-02-17)
-- ✅ **v2.9 Market-Level Storage Architecture** — Phases 105-110 (shipped 2026-02-24)
-
----
-
-### ✅ v2.9 Market-Level Storage Architecture (Shipped 2026-02-24)
-
-**Milestone Goal:** Reduce market_odds storage from ~8GB/day to <200MB/day through market-level change detection, enabling sustainable operation on 75GB disk.
-
-#### Phase 105: Investigation & Schema Design ✓
-
-**Goal**: Study codebase data flow, design new table schemas (market_odds_current, market_odds_history), understand API query patterns
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 105-01: Codebase investigation and schema design (2026-02-24)
-
-**Key Findings:**
-- Root cause: snapshot-level change detection writes ALL markets when ANY changes
-- Schema design: market_odds_current (upsert) + market_odds_history (append)
-- Storage reduction: 95% (7.2M → 360K rows/day)
-
-#### Phase 106: Schema Migration ✓
-
-**Goal**: Create market_odds_current and market_odds_history tables with Alembic, plan data migration strategy
-**Depends on**: Phase 105
-**Research**: Unlikely (established Alembic patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 106-01: Create Alembic migration and SQLAlchemy ORM models (2026-02-24)
-
-#### Phase 107: Write Path Changes ✓
-
-**Goal**: Update change_detection.py and write_handler.py for market-level detection, apply to both BetPawa and competitor paths
-**Depends on**: Phase 106
-**Research**: Unlikely (internal refactoring)
-**Plans**: 2/2 complete
-
-Plans:
-- [x] 107-01: Data Structures & Change Detection (DTOs, classify_market_changes) — 2026-02-24
-- [x] 107-02: Write Handler & Integration (UPSERT/INSERT, event_coordinator) — 2026-02-24
-
-#### Phase 108: Read Path & Cache ✓
-
-**Goal**: Update API routes (events.py, palimpsest.py) and OddsCache to work with new schema
-**Depends on**: Phase 107
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 108-01: Cache warmup and API DB fallback queries (2026-02-24)
-
-#### Phase 109: Historical API ✓
-
-**Goal**: Build point-in-time reconstruction queries for Historical Analysis page charts and time-to-kickoff analysis
-**Depends on**: Phase 108
-**Research**: Unlikely (internal SQL patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 109-01: Migrate history API to market_odds_history (2026-02-24)
-
-#### Phase 110: Retention, Cleanup & Storage Page Fix ✓
-
-**Goal**: Update retention from 7-day to 14 days, fix cleanup jobs for new schema, debug and fix blank Storage page
-**Depends on**: Phase 109
-**Research**: Unlikely (existing patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 110-01: Fix timezone bug, add market_odds_history cleanup, 14-day retention (2026-02-24)
-
----
-
-### ✅ v2.8 Storage Optimization (Shipped 2026-02-17)
-
-**Milestone Goal:** Reduce database from 20+ GB to under 10 GB through schema optimization, compression, and proper retention policies while preserving all current features.
-
-#### Phase 100: Investigation & Analysis ✓
-
-**Goal**: Profile all tables to measure sizes and growth patterns, identify growth drivers, design optimized schema strategy (TimescaleDB hypertables, partitioning, normalization, or combination)
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (SQL profiling, internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 100-01: Database profiling and storage analysis (2026-02-17)
-
-**Key Findings:**
-- Database: 63 GB (3x larger than expected)
-- Primary driver: raw_response columns (33 GB, 53%)
-- raw_response is UNUSED after scraping completes
-- Recommended: Remove raw_response + 7-day retention = 78% reduction
-
-#### Phase 101: Schema Implementation ✓
-
-**Goal**: Remove raw_response columns from snapshot tables to reclaim 33 GB (53% of database) based on Phase 100 findings
-**Depends on**: Phase 100
-**Research**: Unlikely (internal code patterns, straightforward column removal)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 101-01: Remove raw_response columns from models, DTOs, scraping code, and database (2026-02-17)
-
-#### Phase 102: Scraping Verification & Testing ✓
-
-**Goal**: Verify scraping still works correctly after raw_response removal, add any necessary tests, run end-to-end validation
-**Depends on**: Phase 101
-**Research**: Unlikely (internal testing patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 102-01: Scraping verification (2026-02-17)
-
-#### Phase 103: Data Migration & Validation ✓
-
-**Goal**: Reclaim disk space from dropped columns and apply 7-day retention to reduce database from 63 GB to under 15 GB
-**Depends on**: Phase 102
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 103-01: Space reclamation and retention cleanup (2026-02-17)
-
-**Results:**
-- Database: 63.25 GB → 11.94 GB (81% reduction)
-- VACUUM FULL reclaimed ~35 GB from dropped raw_response columns
-- 7-day retention deleted 60M+ market_odds records
-
-#### Phase 104: Monitoring & Prevention ✓
-
-**Goal**: Add database size tracking dashboard, implement automated retention policies, set up alerts for abnormal growth to prevent future issues
-**Depends on**: Phase 103
-**Research**: Unlikely (internal patterns)
-**Plans**: 3/3 complete
-
-Plans:
-- [x] 104-01: Storage size API & history tracking (backend) — 2026-02-17
-- [x] 104-02: Storage dashboard (frontend) — 2026-02-17
-- [x] 104-03: Growth alerting (full-stack) — 2026-02-17
+- ✅ [v2.8 Storage Optimization](milestones/v2.8-ROADMAP.md) — Phases 100-104 (shipped 2026-02-17)
+- ✅ [v2.9 Market-Level Storage Architecture](milestones/v2.9-ROADMAP.md) — Phases 105-110.1 (shipped 2026-02-24)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.9 Market-Level Storage Architecture (Phases 105-110.1) — SHIPPED 2026-02-24</summary>
+
+- [x] Phase 105: Investigation & Schema Design (1/1 plans) — 2026-02-24
+- [x] Phase 106: Schema Migration (1/1 plans) — 2026-02-24
+- [x] Phase 107: Write Path Changes (2/2 plans) — 2026-02-24
+- [x] Phase 108: Read Path & Cache (1/1 plans) — 2026-02-24
+- [x] Phase 109: Historical API (1/1 plans) — 2026-02-24
+- [x] Phase 110: Retention, Cleanup & Storage Page Fix (1/1 plans) — 2026-02-24
+- [x] Phase 110.1: History API Dual-Query Fix (1/1 plans) — 2026-02-24
+
+</details>
+
+<details>
+<summary>✅ v2.8 Storage Optimization (Phases 100-104) — SHIPPED 2026-02-17</summary>
+
+- [x] Phase 100: Investigation & Analysis (1/1 plans) — 2026-02-17
+- [x] Phase 101: Schema Implementation (1/1 plans) — 2026-02-17
+- [x] Phase 102: Scraping Verification (1/1 plans) — 2026-02-17
+- [x] Phase 103: Data Migration & Validation (1/1 plans) — 2026-02-17
+- [x] Phase 104: Monitoring & Prevention (3/3 plans) — 2026-02-17
+
+</details>
 
 <details>
 <summary>✅ v2.7 Availability Tracking Bugfix (Phases 99-99.1) — SHIPPED 2026-02-12</summary>
@@ -533,4 +416,5 @@ Plans:
 | 108. Read Path & Cache | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 109. Historical API | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 110. Retention, Cleanup & Storage Page Fix | v2.9 | 1/1 | Complete | 2026-02-24 |
+| 110.1 History API Dual-Query Fix (INSERTED) | v2.9 | 1/1 | Complete | 2026-02-24 |
 | **v2.9 SHIPPED** | | | **2026-02-24** | |

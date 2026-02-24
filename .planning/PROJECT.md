@@ -8,14 +8,14 @@ A comparative analysis tool (branded "pawaRisk") for Betpawa to analyze and comp
 
 Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
 
-## Current State (v2.7 Availability Tracking Bugfix)
+## Current State (v2.9 Market-Level Storage Architecture)
 
-**Shipped:** 2026-02-12
+**Shipped:** 2026-02-24
 
 **Tech Stack:**
 - Backend: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL, APScheduler
 - Frontend: React 19, Vite, TanStack Query v5, Tailwind CSS v4, shadcn/ui, recharts
-- ~41,395 lines of code
+- ~45,000 lines of code
 
 **Capabilities:**
 - 128 market mappings from SportyBet and Bet9ja to Betpawa format (20 new in v1.8)
@@ -85,6 +85,12 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - **Navigation overhaul** - Odds Comparison as default landing page, compact sidebar status widgets
 - **Sidebar reorganization** - three sections (Analysis/Status/Utilities), Dashboard page removed
 - **Real-time sidebar updates** - WebSocket query invalidation for sidebar widgets on scrape completion
+- **Database reduced 81%** - 63 GB → 12 GB through raw_response removal and 7-day retention (v2.8)
+- **Storage dashboard** - table sizes, growth charts, and alerting for abnormal expansion (v2.8)
+- **Market-level storage** - market_odds_current (upsert) + market_odds_history (append) for 95% row reduction (v2.9)
+- **Market-level change detection** - only persist individual markets that changed, not full snapshots (v2.9)
+- **14-day retention** - increased from 7 days with market_odds_history cleanup (v2.9)
+- **Dual-query history API** - queries both new market_odds_history and legacy tables for complete data (v2.9)
 
 ## Requirements
 
@@ -199,10 +205,24 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 - ✓ Consistent unavailable styling on Odds Comparison (strikethrough + tooltip) — v2.7
 - ✓ Alerts toggle filtering events with unavailable markets — v2.7
 - ✓ Alerts filter querying only latest snapshot per event — v2.7
+- ✓ Database profiling identifying raw_response as primary storage driver — v2.8
+- ✓ raw_response column removal reclaiming 33 GB (53% of database) — v2.8
+- ✓ VACUUM FULL for space reclamation after column drop — v2.8
+- ✓ Storage size API with history tracking for trend analysis — v2.8
+- ✓ Storage dashboard with table sizes and growth charts — v2.8
+- ✓ Growth alerting for abnormal database expansion — v2.8
+- ✓ Market-level schema design achieving 95% storage reduction — v2.9
+- ✓ market_odds_current table with UPSERT pattern for current state — v2.9
+- ✓ market_odds_history table with append-only storage for charts — v2.9
+- ✓ Market-level change detection replacing snapshot-level detection — v2.9
+- ✓ Cache warmup and API fallback migrated to new schema — v2.9
+- ✓ History API migrated to market_odds_history (42% code reduction) — v2.9
+- ✓ 14-day retention with market_odds_history cleanup — v2.9
+- ✓ Dual-query history API for legacy and new data sources — v2.9
 
 ### Active
 
-(No active requirements — project feature-complete for v2.7)
+(No active requirements — project feature-complete for v2.9)
 
 ### Out of Scope
 
@@ -233,7 +253,7 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 ## Constraints
 
 - **Region**: Nigeria — scrapers configured for Nigerian market APIs
-- **Data retention**: 30 days — balance storage costs with analysis needs
+- **Data retention**: 14 days — balance storage costs with analysis needs (updated v2.9)
 - **Match confidence**: SportRadar ID only — no fuzzy name matching
 
 ## Key Decisions
@@ -334,6 +354,14 @@ Accurate cross-platform market matching and real-time odds comparison that enabl
 | Reconciliation for dropped events | Post-cycle pass marks events not in discovery as unavailable | ✓ Good — v2.7 catches platform removal |
 | Cache update after DB update | Update cache immediately after DB for instant API effect | ✓ Good — v2.7 consistent state |
 | Latest snapshot for alerts filter | Query only latest snapshot per event, not historical | ✓ Good — v2.7 accurate filtering |
+| raw_response columns unused | Remove unused data columns to reclaim 33 GB | ✓ Good — v2.8 81% DB reduction |
+| VACUUM FULL after column drop | Required to actually reclaim disk space | ✓ Good — v2.8 freed 35 GB |
+| Combined optimization strategy | raw_response removal + 7-day retention = maximum impact | ✓ Good — v2.8 exceeded 78% target |
+| Market-level upsert schema | Replace snapshot-level with market-level change detection | ✓ Good — v2.9 95% row reduction |
+| COALESCE in unique constraint | Allow NULL line values in uniqueness check | ✓ Good — v2.9 handles all markets |
+| Composite PK for partitioned tables | PostgreSQL requires partition key in primary key | ✓ Good — v2.9 correct schema |
+| Expression index ON CONFLICT raw SQL | SQLAlchemy doesn't support expression index constraints | ✓ Good — v2.9 works with COALESCE |
+| Dual-query history API | Query both new and legacy tables for complete data | ✓ Good — v2.9 no data migration needed |
 
 ---
-*Last updated: 2026-02-12 after v2.7 milestone*
+*Last updated: 2026-02-24 after v2.9 milestone*

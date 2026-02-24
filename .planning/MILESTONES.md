@@ -1,5 +1,65 @@
 # Project Milestones: Betpawa Odds Comparison Tool
 
+## v2.9 Market-Level Storage Architecture (Shipped: 2026-02-24)
+
+**Delivered:** Market-level change detection reducing storage from ~8GB/day to <200MB/day with market_odds_current (upsert) + market_odds_history (append) schema enabling sustainable operation.
+
+**Phases completed:** 105-110.1 (8 plans total including 1 decimal phase)
+
+**Key accomplishments:**
+
+- Designed market-level schema achieving 95% storage reduction (7.2M → 360K rows/day)
+- Created market_odds_current (upsert) + market_odds_history (append-only) tables
+- Implemented market-level change detection in write pipeline
+- Migrated cache warmup and API DB fallback to new schema
+- Updated history API to query market_odds_history (42% code reduction)
+- Added market_odds_history cleanup with 14-day retention
+- Dual-query history API supporting both legacy and new data sources (BUG-028 fix)
+
+**Stats:**
+
+- 34 files changed
+- +3,792 / -725 lines (net +3,067)
+- 7 phases (6 original + 1 decimal), 8 plans, 30 commits
+- 1 day (2026-02-24)
+- ~45,000 total LOC
+
+**Git range:** `v2.8` → `HEAD`
+
+**What's next:** Project optimized for sustainable operation. Use `/gsd:discuss-milestone` for future features.
+
+---
+
+## v2.8 Storage Optimization (Shipped: 2026-02-17)
+
+**Delivered:** Database reduced from 63 GB to 12 GB (81% reduction) through raw_response column removal and 7-day retention cleanup, with Storage dashboard for monitoring.
+
+**Phases completed:** 100-104 (7 plans total)
+
+**Key accomplishments:**
+
+- Database profiling identified raw_response as primary driver (33 GB, 53% of database)
+- Removed raw_response columns from snapshot tables (unused after scraping)
+- Applied 7-day retention deleting 60M+ market_odds records
+- VACUUM FULL reclaimed ~35 GB from dropped columns
+- Storage size API with history tracking for trend analysis
+- Storage dashboard frontend with table sizes and growth charts
+- Growth alerting system for abnormal database expansion
+
+**Stats:**
+
+- 68 files changed
+- +5,144 / -265 lines (net +4,879)
+- 5 phases, 7 plans, 44 commits
+- 1 day (2026-02-17)
+- ~41,395 total LOC
+
+**Git range:** `v2.7` → `v2.8`
+
+**What's next:** Use `/gsd:discuss-milestone` for storage architecture improvements.
+
+---
+
 ## v2.7 Availability Tracking Bugfix (Shipped: 2026-02-12)
 
 **Delivered:** Complete availability tracking pipeline: fixed DB persistence, added reconciliation for dropped events, consistent unavailable styling, and alerts filter for monitoring.

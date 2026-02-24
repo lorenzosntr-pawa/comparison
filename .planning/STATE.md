@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-12)
+See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Accurate cross-platform market matching and real-time odds comparison that enables Betpawa to understand its competitive position in the Nigerian market.
-**Current focus:** Project feature-complete through v2.7
+**Current focus:** Project optimized for sustainable operation through v2.9
 
 ## Current Position
 
-Phase: 110 of 110 (Retention, Cleanup & Storage Fix)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-24 — Completed 110-01-PLAN.md
+Phase: v2.9 complete — ready for next milestone
+Plan: Planning next milestone
+Status: v2.9 Market-Level Storage Architecture shipped
+Last activity: 2026-02-24 — Milestone v2.9 complete
 
 Progress: ██████████ 100%
 
@@ -36,8 +36,8 @@ Progress: ██████████ 100%
 - **v2.5 Odds Availability Tracking** — SHIPPED 2026-02-11 (6 phases, Phase 87-92)
 - **v2.6 UX Polish & Navigation** — SHIPPED 2026-02-12 (6 phases, Phase 93-98)
 - **v2.7 Availability Tracking Bugfix** — SHIPPED 2026-02-12 (2 phases, Phase 99-99.1)
-- **v2.8 Storage Optimization** — SHIPPED 2026-02-17 (5 phases, Phase 100-104)
-- **v2.9 Market-Level Storage Architecture** — IN PROGRESS (6 phases, Phase 105-110)
+- **v2.8 Storage Optimization** — SHIPPED 2026-02-17 (5 phases, Phase 100-104, 7 plans)
+- **v2.9 Market-Level Storage Architecture** — SHIPPED 2026-02-24 (7 phases, Phase 105-110.1, 8 plans)
 
 ## Performance Metrics
 
@@ -178,6 +178,26 @@ Progress: ██████████ 100%
 - +4,695 / -908 lines (net +3,787)
 - ~41,395 total LOC
 
+**v2.8 Summary:**
+- 5 phases completed (7 plans)
+- 1 day (2026-02-17)
+- Database profiling found raw_response as primary driver (33 GB, 53%)
+- raw_response column removal + 7-day retention = 81% reduction (63 GB → 12 GB)
+- Storage dashboard with table sizes, growth charts, alerting
+- +5,144 / -265 lines (net +4,879)
+- ~41,395 total LOC
+
+**v2.9 Summary:**
+- 7 phases completed (8 plans including 1 decimal)
+- 1 day (2026-02-24)
+- Market-level schema: market_odds_current (upsert) + market_odds_history (append)
+- 95% storage reduction (7.2M → 360K rows/day)
+- Market-level change detection replacing snapshot-level
+- 14-day retention with market_odds_history cleanup
+- Dual-query history API for legacy + new data
+- +3,792 / -725 lines (net +3,067)
+- ~45,000 total LOC
+
 ## Accumulated Context
 
 ### Key Patterns (v1.0 through v2.0)
@@ -290,6 +310,7 @@ Progress: ██████████ 100%
 - **Market-level upsert schema** - market_odds_current (UNIQUE on event+bookmaker+market+line) + market_odds_history (append-only, partitioned by month) replaces snapshot-level storage; 95% reduction from 7.2M to 360K rows/day (v2.9 Phase 105)
 - **COALESCE in unique constraint** - `CREATE UNIQUE INDEX ... ON (event_id, bookmaker_slug, betpawa_market_id, COALESCE(line, 0))` allows NULL line values to be treated as 0 for uniqueness (v2.9 Phase 106)
 - **Composite PK for partitioned tables** - PostgreSQL partitioning requires partition key (captured_at) in primary key; use `(id, captured_at)` composite (v2.9 Phase 106)
+- **Expression index ON CONFLICT requires raw SQL** - SQLAlchemy's `on_conflict_do_update` doesn't support expression indexes; use `text()` with raw SQL: `ON CONFLICT (col1, col2, COALESCE(col3, 0)) DO UPDATE SET...`. Expression indexes can't be promoted to constraints, so `constraint="name"` doesn't work either (BUG-029 fix)
 
 ### Key Decisions
 
@@ -405,6 +426,6 @@ Progress: ██████████ 100%
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 110-01-PLAN.md (Phase 110 complete, v2.9 milestone complete)
+Stopped at: Completed v2.9 milestone
 Resume file: None
-Next action: /gsd:complete-milestone
+Next action: Use `/gsd:discuss-milestone` for future features
