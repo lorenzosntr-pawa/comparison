@@ -63,10 +63,10 @@ Plans:
 **Goal**: Update change_detection.py and write_handler.py for market-level detection, apply to both BetPawa and competitor paths
 **Depends on**: Phase 106
 **Research**: Unlikely (internal refactoring)
-**Plans**: 0/2 complete
+**Plans**: 1/2 complete
 
 Plans:
-- [ ] 107-01: Data Structures & Change Detection (DTOs, classify_market_changes)
+- [x] 107-01: Data Structures & Change Detection (DTOs, classify_market_changes) — 2026-02-24
 - [ ] 107-02: Write Handler & Integration (UPSERT/INSERT, event_coordinator)
 
 #### Phase 108: Read Path & Cache
@@ -529,7 +529,7 @@ Plans:
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
 | 105. Investigation & Schema Design | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 106. Schema Migration | v2.9 | 1/1 | Complete | 2026-02-24 |
-| 107. Write Path Changes | v2.9 | 0/? | Not started | - |
+| 107. Write Path Changes | v2.9 | 1/2 | In progress | - |
 | 108. Read Path & Cache | v2.9 | 0/? | Not started | - |
 | 109. Historical API | v2.9 | 0/? | Not started | - |
 | 110. Retention, Cleanup & Storage Page Fix | v2.9 | 0/? | Not started | - |
