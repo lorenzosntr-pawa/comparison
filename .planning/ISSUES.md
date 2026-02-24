@@ -41,6 +41,13 @@ None
 
 ## Closed Bugs
 
+### BUG-030: Alert settings not persisting - changes ignored on save (RESOLVED)
+**Discovered:** 2026-02-20 (user report during issue review)
+**Type:** Backend Bug (Blocker)
+**Root Cause:** Phase 111 added alert settings UI but the `update_settings` endpoint at `src/api/routes/settings.py:60-127` was missing handlers for all 6 alert configuration fields (`alert_enabled`, `alert_threshold_warning`, `alert_threshold_elevated`, `alert_threshold_critical`, `alert_retention_days`, `alert_lookback_minutes`). When frontend sent these fields via PUT, they were silently ignored.
+**Impact:** Alert thresholds could not be configured - always used defaults (7%/10%/15%). Settings page appeared to work but changes didn't persist. Core v2.9 feature broken.
+**Resolution:** Fixed 2026-02-20 - Added 6 missing conditional blocks to handle alert configuration fields in `update_settings` endpoint. File modified: `src/api/routes/settings.py` lines 123-140.
+
 ### BUG-029: get_event_alerts endpoint returns Pydantic model instead of dict (RESOLVED)
 **Discovered:** 2026-02-20 (user report during scrape attempt)
 **Type:** API Bug

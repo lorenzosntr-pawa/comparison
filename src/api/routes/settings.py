@@ -121,6 +121,25 @@ async def update_settings(
     if update.max_concurrent_events is not None:
         settings.max_concurrent_events = update.max_concurrent_events
 
+    # Alert configuration (Phase 111)
+    if update.alert_enabled is not None:
+        settings.alert_enabled = update.alert_enabled
+
+    if update.alert_threshold_warning is not None:
+        settings.alert_threshold_warning = update.alert_threshold_warning
+
+    if update.alert_threshold_elevated is not None:
+        settings.alert_threshold_elevated = update.alert_threshold_elevated
+
+    if update.alert_threshold_critical is not None:
+        settings.alert_threshold_critical = update.alert_threshold_critical
+
+    if update.alert_retention_days is not None:
+        settings.alert_retention_days = update.alert_retention_days
+
+    if update.alert_lookback_minutes is not None:
+        settings.alert_lookback_minutes = update.alert_lookback_minutes
+
     await db.commit()
     await db.refresh(settings)
 
