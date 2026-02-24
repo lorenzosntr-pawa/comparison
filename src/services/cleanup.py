@@ -53,6 +53,7 @@ from src.db.models.competitor import (
     CompetitorTournament,
 )
 from src.db.models.event import Event, EventBookmaker
+from src.db.models.market_odds import MarketOddsHistory
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import ScrapeBatch, ScrapeError, ScrapePhaseLog, ScrapeRun
 from src.db.models.cleanup_run import CleanupRun
@@ -195,6 +196,16 @@ async def preview_cleanup(
     )
     competitor_odds_count = competitor_odds_count_result.scalar_one()
 
+    # Count market_odds_history (v2.9 schema - uses timezone-aware datetime)
+    # MarketOddsHistory.captured_at is DateTime(timezone=True)
+    history_cutoff = datetime.now(timezone.utc) - timedelta(days=odds_days)
+    market_odds_history_count_result = await session.execute(
+        select(func.count(MarketOddsHistory.id)).where(
+            MarketOddsHistory.captured_at < history_cutoff
+        )
+    )
+    market_odds_history_count = market_odds_history_count_result.scalar_one()
+
     # Count scrape runs
     scrape_runs_count_result = await session.execute(
         select(func.count(ScrapeRun.id)).where(ScrapeRun.started_at < odds_cutoff)
@@ -259,6 +270,7 @@ async def preview_cleanup(
         match_cutoff_date=match_cutoff,
         odds_snapshots_count=odds_count,
         competitor_odds_snapshots_count=competitor_odds_count,
+        market_odds_history_count=market_odds_history_count,
         scrape_runs_count=scrape_runs_count,
         scrape_batches_count=scrape_batches_count,
         events_count=events_count,
@@ -380,6 +392,16 @@ async def execute_cleanup(
         log,
     )
 
+    # 4.5 Delete old market_odds_history (v2.9 schema - uses timezone-aware datetime)
+    log.info("Deleting old market_odds_history")
+    history_cutoff = datetime.now(timezone.utc) - timedelta(days=odds_days)
+    market_odds_history_deleted = await _batch_delete(
+        session,
+        MarketOddsHistory,
+        MarketOddsHistory.captured_at < history_cutoff,
+        log,
+    )
+
     # 5. Delete scrape_errors for old runs
     log.info("Deleting old scrape_errors")
     old_run_ids = select(ScrapeRun.id).where(ScrapeRun.started_at < odds_cutoff)
@@ -458,6 +480,7 @@ async def execute_cleanup(
     return CleanupResult(
         odds_deleted=odds_deleted,
         competitor_odds_deleted=competitor_odds_deleted,
+        market_odds_history_deleted=market_odds_history_deleted,
         scrape_runs_deleted=scrape_runs_deleted,
         scrape_batches_deleted=scrape_batches_deleted,
         events_deleted=events_deleted,

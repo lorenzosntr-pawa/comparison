@@ -123,6 +123,9 @@ class CleanupPreview(BaseModel):
     # Counts to be deleted
     odds_snapshots_count: int = Field(description="BetPawa odds snapshots to delete")
     competitor_odds_snapshots_count: int = Field(description="Competitor odds to delete")
+    market_odds_history_count: int = Field(
+        default=0, description="Market odds history records to delete"
+    )
     scrape_runs_count: int = Field(description="Scrape runs to delete")
     scrape_batches_count: int = Field(description="Scrape batches to delete")
     events_count: int = Field(description="BetPawa events to delete")
@@ -157,6 +160,9 @@ class CleanupResult(BaseModel):
 
     odds_deleted: int = Field(description="BetPawa odds snapshots deleted")
     competitor_odds_deleted: int = Field(description="Competitor odds deleted")
+    market_odds_history_deleted: int = Field(
+        default=0, description="Market odds history records deleted"
+    )
     scrape_runs_deleted: int = Field(description="Scrape runs deleted")
     scrape_batches_deleted: int = Field(description="Scrape batches deleted")
     events_deleted: int = Field(description="BetPawa events deleted")
