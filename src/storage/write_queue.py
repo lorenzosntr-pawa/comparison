@@ -75,6 +75,47 @@ class CompetitorSnapshotWriteData:
     markets: tuple[MarketWriteData, ...]
 
 
+# ---------------------------------------------------------------------------
+# New market-level DTOs for Phase 107+ (market_odds_current/history)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class MarketCurrentWrite:
+    """Plain data for writing to market_odds_current (UPSERT) and optionally market_odds_history.
+
+    Represents a single market write in the new market-level storage architecture.
+    The `changed` flag determines whether to also INSERT to history table.
+    """
+
+    event_id: int
+    bookmaker_slug: str  # 'betpawa', 'sportybet', 'bet9ja'
+    betpawa_market_id: str
+    betpawa_market_name: str
+    line: float | None
+    handicap_type: str | None
+    handicap_home: float | None
+    handicap_away: float | None
+    outcomes: dict  # [{name, odds, is_active}, ...]
+    market_groups: list[str] | None
+    unavailable_at: datetime | None
+    changed: bool  # True = also INSERT to history
+
+
+@dataclass(frozen=True)
+class MarketWriteBatch:
+    """Batch of market writes for the new market-level storage architecture."""
+
+    markets: tuple[MarketCurrentWrite, ...]
+    scrape_run_id: int | None
+    batch_index: int
+
+
+# ---------------------------------------------------------------------------
+# Existing snapshot-level DTOs (backward compat during migration)
+# ---------------------------------------------------------------------------
+
+
 @dataclass(frozen=True)
 class UnavailableMarketUpdate:
     """Track a market availability change - needs UPDATE on existing row.
