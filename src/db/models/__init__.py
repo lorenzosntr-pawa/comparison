@@ -12,6 +12,7 @@ from src.db.models.competitor import (
 )
 from src.db.models.event import Event, EventBookmaker
 from src.db.models.event_scrape_status import EventScrapeStatus
+from src.db.models.market_odds import MarketOddsCurrent, MarketOddsHistory
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.scrape import (
     ScrapeBatch,
@@ -34,6 +35,9 @@ __all__ = [
     "EventBookmaker",
     "OddsSnapshot",
     "MarketOdds",
+    # Market-level storage (Phase 106)
+    "MarketOddsCurrent",
+    "MarketOddsHistory",
     "ScrapeBatch",
     "ScrapeRun",
     "ScrapeError",
