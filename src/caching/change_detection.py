@@ -15,12 +15,17 @@ most markets don't change between scrape cycles (5-minute interval).
 
 Functions:
     markets_changed(): Compare single cached vs new market set
-    classify_batch_changes(): Batch classification for coordinator
+    classify_batch_changes(): Batch classification for coordinator (snapshot-level)
+    classify_market_changes(): Market-level change detection for Phase 107+
 
 Usage:
     changed_bp, changed_comp, unchanged_bp_ids, unchanged_comp_ids = \\
         classify_batch_changes(cache, betpawa_snapshots, competitor_snapshots)
     # Only insert changed snapshots; UPDATE last_confirmed_at for unchanged
+
+    # NEW: Market-level (Phase 107+)
+    market_writes = classify_market_changes(cache, markets_by_event_bookmaker)
+    # Each MarketCurrentWrite has changed=True/False per market
 """
 
 from __future__ import annotations
@@ -186,3 +191,130 @@ def classify_batch_changes(
     )
 
     return changed_betpawa, changed_competitor, unchanged_betpawa_ids, unchanged_competitor_ids
+
+
+def classify_market_changes(
+    cache: OddsCache,
+    markets: list[tuple[int, str, list[Any]]],
+) -> list["MarketCurrentWrite"]:
+    """Compare each market against cached version and return MarketCurrentWrite list.
+
+    Unlike classify_batch_changes which returns entire snapshots as changed/unchanged,
+    this returns per-market change status via the `changed` boolean.
+
+    For each market in input:
+    - If no cached version exists: changed=True (new market)
+    - If cached outcomes differ: changed=True (odds changed)
+    - If cached outcomes identical: changed=False (just confirm)
+
+    All markets get written to market_odds_current (UPSERT), but only
+    changed=True markets get written to market_odds_history (INSERT).
+
+    Parameters
+    ----------
+    cache:
+        The OddsCache instance holding current cached data.
+    markets:
+        List of (event_id, bookmaker_slug, markets_data) tuples.
+        - bookmaker_slug: 'betpawa', 'sportybet', or 'bet9ja'
+        - markets_data: list of market dicts or objects with betpawa_market_id, line, outcomes, etc.
+
+    Returns
+    -------
+    list[MarketCurrentWrite]
+        One entry per input market, with changed=True/False indicating whether
+        the market needs to be written to history table.
+    """
+    from src.storage.write_queue import MarketCurrentWrite
+
+    result: list[MarketCurrentWrite] = []
+
+    for event_id, bookmaker_slug, markets_data in markets:
+        # Get cached snapshot for this event+bookmaker
+        cached_markets: tuple[CachedMarket, ...] | None = None
+
+        if bookmaker_slug == "betpawa":
+            # BetPawa uses bookmaker_id=1
+            by_bookmaker = cache.get_betpawa_snapshot(event_id)
+            if by_bookmaker is not None:
+                # Get first bookmaker's snapshot (typically only one)
+                for cached_snap in by_bookmaker.values():
+                    cached_markets = cached_snap.markets
+                    break
+        else:
+            # Competitors use source string (sportybet, bet9ja)
+            by_source = cache.get_competitor_snapshot(event_id)
+            if by_source is not None:
+                cached_snap = by_source.get(bookmaker_slug)
+                if cached_snap is not None:
+                    cached_markets = cached_snap.markets
+
+        # Build lookup for cached markets by (betpawa_market_id, line)
+        cached_lookup: dict[tuple[str, float | None], CachedMarket] = {}
+        if cached_markets is not None:
+            for cm in cached_markets:
+                key = (cm.betpawa_market_id, cm.line)
+                cached_lookup[key] = cm
+
+        # Process each market in the input
+        for market in markets_data:
+            # Support both ORM objects and dicts
+            if isinstance(market, dict):
+                market_id = str(market.get("betpawa_market_id", ""))
+                market_name = str(market.get("betpawa_market_name", ""))
+                line = market.get("line")
+                handicap_type = market.get("handicap_type")
+                handicap_home = market.get("handicap_home")
+                handicap_away = market.get("handicap_away")
+                outcomes = market.get("outcomes", [])
+                market_groups = market.get("market_groups")
+                unavailable_at = market.get("unavailable_at")
+            else:
+                market_id = str(market.betpawa_market_id)
+                market_name = str(getattr(market, "betpawa_market_name", ""))
+                line = market.line
+                handicap_type = getattr(market, "handicap_type", None)
+                handicap_home = getattr(market, "handicap_home", None)
+                handicap_away = getattr(market, "handicap_away", None)
+                outcomes = market.outcomes if isinstance(market.outcomes, list) else []
+                market_groups = getattr(market, "market_groups", None)
+                unavailable_at = getattr(market, "unavailable_at", None)
+
+            # Check if this specific market changed
+            key = (market_id, line)
+            cached_market = cached_lookup.get(key)
+
+            if cached_market is None:
+                # New market - not in cache
+                changed = True
+            else:
+                # Compare outcomes
+                cached_outcomes = _normalise_outcomes(cached_market.outcomes)
+                new_outcomes = _normalise_outcomes(outcomes)
+                changed = cached_outcomes != new_outcomes
+
+            # Build MarketCurrentWrite
+            write = MarketCurrentWrite(
+                event_id=event_id,
+                bookmaker_slug=bookmaker_slug,
+                betpawa_market_id=market_id,
+                betpawa_market_name=market_name,
+                line=line,
+                handicap_type=handicap_type,
+                handicap_home=handicap_home,
+                handicap_away=handicap_away,
+                outcomes=outcomes,
+                market_groups=market_groups,
+                unavailable_at=unavailable_at,
+                changed=changed,
+            )
+            result.append(write)
+
+    logger.debug(
+        "change_detection.classify_market_changes",
+        total_markets=len(result),
+        changed_count=sum(1 for m in result if m.changed),
+        unchanged_count=sum(1 for m in result if not m.changed),
+    )
+
+    return result

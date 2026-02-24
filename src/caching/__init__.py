@@ -4,7 +4,11 @@ from src.caching.availability_detection import (
     detect_availability_changes,
     get_market_key,
 )
-from src.caching.change_detection import classify_batch_changes, markets_changed
+from src.caching.change_detection import (
+    classify_batch_changes,
+    classify_market_changes,
+    markets_changed,
+)
 from src.caching.odds_cache import CachedMarket, CachedSnapshot, OddsCache
 from src.caching.warmup import snapshot_to_cached_from_data, snapshot_to_cached_from_models
 
@@ -13,6 +17,7 @@ __all__ = [
     "CachedSnapshot",
     "OddsCache",
     "classify_batch_changes",
+    "classify_market_changes",
     "detect_availability_changes",
     "get_market_key",
     "markets_changed",
