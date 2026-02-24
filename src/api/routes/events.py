@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Literal
 
@@ -11,7 +12,7 @@ from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.caching.odds_cache import OddsCache
+from src.caching.odds_cache import CachedMarket, CachedSnapshot, OddsCache
 from src.db.engine import get_db
 from src.db.models.bookmaker import Bookmaker
 from src.db.models.competitor import (
@@ -22,6 +23,7 @@ from src.db.models.competitor import (
     CompetitorTournament,
 )
 from src.db.models.event import Event, EventBookmaker
+from src.db.models.market_odds import MarketOddsCurrent
 from src.db.models.odds import MarketOdds, OddsSnapshot
 from src.db.models.sport import Tournament
 from src.matching.schemas import (
@@ -41,6 +43,61 @@ from src.matching.schemas import (
 logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/events", tags=["events"])
+
+
+# ---------------------------------------------------------------------------
+# Helper: Build CachedSnapshot from MarketOddsCurrent rows
+# ---------------------------------------------------------------------------
+
+
+def _build_cached_snapshot_from_current(
+    event_id: int,
+    bookmaker_id: int,
+    markets: list[MarketOddsCurrent],
+) -> CachedSnapshot:
+    """Build a CachedSnapshot from grouped MarketOddsCurrent rows.
+
+    Args:
+        event_id: The BetPawa event ID.
+        bookmaker_id: The bookmaker ID (1 for betpawa, 0 for competitors).
+        markets: List of MarketOddsCurrent rows for this event+bookmaker.
+
+    Returns:
+        CachedSnapshot object compatible with existing build functions.
+    """
+    cached_markets = [
+        CachedMarket(
+            betpawa_market_id=m.betpawa_market_id,
+            betpawa_market_name=m.betpawa_market_name,
+            line=m.line,
+            handicap_type=m.handicap_type,
+            handicap_home=m.handicap_home,
+            handicap_away=m.handicap_away,
+            outcomes=m.outcomes if isinstance(m.outcomes, list) else [],
+            market_groups=m.market_groups,
+            unavailable_at=m.unavailable_at,
+        )
+        for m in markets
+    ]
+
+    # Use max timestamps from markets (handle timezone-aware datetimes)
+    last_updated = max(
+        (m.last_updated_at.replace(tzinfo=None) if m.last_updated_at.tzinfo else m.last_updated_at)
+        for m in markets
+    )
+    last_confirmed = max(
+        (m.last_confirmed_at.replace(tzinfo=None) if m.last_confirmed_at.tzinfo else m.last_confirmed_at)
+        for m in markets
+    )
+
+    return CachedSnapshot(
+        snapshot_id=0,  # Not used in new schema
+        event_id=event_id,
+        bookmaker_id=bookmaker_id,
+        captured_at=last_updated,
+        last_confirmed_at=last_confirmed,
+        markets=tuple(cached_markets),
+    )
 
 # Key market IDs for inline odds (Betpawa taxonomy)
 # 3743 = 1X2 Full Time, 5000 = Over/Under Full Time, 3795 = Both Teams To Score Full Time, 4693 = Double Chance Full Time
@@ -254,55 +311,45 @@ def _build_matched_event(
 async def _load_latest_snapshots_for_events(
     db: AsyncSession,
     event_ids: list[int],
-) -> dict[int, dict[int, OddsSnapshot]]:
-    """Load the latest OddsSnapshot per bookmaker for multiple events.
+) -> dict[int, dict[int, CachedSnapshot]]:
+    """Load the current market odds for BetPawa from market_odds_current.
 
-    Uses a subquery to get only the latest snapshot per (event_id, bookmaker_id) pair,
-    then eagerly loads markets for inline odds.
+    Queries the new market_odds_current table directly (no GROUP BY needed).
+    Returns CachedSnapshot objects for cache compatibility.
 
     Args:
         db: Async database session.
         event_ids: List of event IDs to load snapshots for.
 
     Returns:
-        Dict mapping event_id -> {bookmaker_id: OddsSnapshot}.
+        Dict mapping event_id -> {bookmaker_id: CachedSnapshot}.
     """
     if not event_ids:
         return {}
 
-    # Subquery to find the latest snapshot ID per (event_id, bookmaker_id)
-    latest_subq = (
-        select(
-            OddsSnapshot.event_id,
-            OddsSnapshot.bookmaker_id,
-            func.max(OddsSnapshot.id).label("max_id"),
-        )
-        .where(OddsSnapshot.event_id.in_(event_ids))
-        .group_by(OddsSnapshot.event_id, OddsSnapshot.bookmaker_id)
-        .subquery()
+    # Query market_odds_current for BetPawa markets only
+    query = select(MarketOddsCurrent).where(
+        MarketOddsCurrent.event_id.in_(event_ids),
+        MarketOddsCurrent.bookmaker_slug == "betpawa",
     )
-
-    # Main query: fetch snapshots matching the latest IDs, with markets eagerly loaded
-    query = (
-        select(OddsSnapshot)
-        .join(
-            latest_subq,
-            (OddsSnapshot.event_id == latest_subq.c.event_id)
-            & (OddsSnapshot.bookmaker_id == latest_subq.c.bookmaker_id)
-            & (OddsSnapshot.id == latest_subq.c.max_id),
-        )
-        .options(selectinload(OddsSnapshot.markets))
-    )
-
     result = await db.execute(query)
-    snapshots = result.scalars().all()
+    all_markets = result.scalars().all()
 
-    # Build nested dict: event_id -> bookmaker_id -> snapshot
-    snapshots_by_event: dict[int, dict[int, OddsSnapshot]] = {}
-    for snapshot in snapshots:
-        if snapshot.event_id not in snapshots_by_event:
-            snapshots_by_event[snapshot.event_id] = {}
-        snapshots_by_event[snapshot.event_id][snapshot.bookmaker_id] = snapshot
+    # Group by event_id
+    markets_by_event: dict[int, list[MarketOddsCurrent]] = defaultdict(list)
+    for market in all_markets:
+        markets_by_event[market.event_id].append(market)
+
+    # Build CachedSnapshot for each event
+    snapshots_by_event: dict[int, dict[int, CachedSnapshot]] = {}
+    for event_id, markets in markets_by_event.items():
+        if markets:
+            cached = _build_cached_snapshot_from_current(
+                event_id=event_id,
+                bookmaker_id=1,  # Standard bookmaker_id for BetPawa
+                markets=markets,
+            )
+            snapshots_by_event[event_id] = {1: cached}
 
     return snapshots_by_event
 
@@ -310,70 +357,54 @@ async def _load_latest_snapshots_for_events(
 async def _load_competitor_snapshots_for_events(
     db: AsyncSession,
     event_ids: list[int],
-) -> dict[int, dict[str, CompetitorOddsSnapshot]]:
-    """Load latest CompetitorOddsSnapshot for events that have competitor matches.
+) -> dict[int, dict[str, CachedSnapshot]]:
+    """Load current competitor market odds from market_odds_current.
+
+    Queries the new market_odds_current table directly (no GROUP BY needed,
+    no CompetitorEvent join needed).
+    Returns CachedSnapshot objects for cache compatibility.
 
     Args:
         db: Async database session.
         event_ids: List of BetPawa event IDs.
 
     Returns:
-        Dict mapping event_id -> {source: CompetitorOddsSnapshot}
+        Dict mapping event_id -> {source: CachedSnapshot}
         where source is 'sportybet' or 'bet9ja'
     """
     if not event_ids:
         return {}
 
-    # Find CompetitorEvents linked to these BetPawa events
-    comp_events_query = select(CompetitorEvent).where(
-        CompetitorEvent.betpawa_event_id.in_(event_ids)
+    # Query market_odds_current for competitor markets
+    query = select(MarketOddsCurrent).where(
+        MarketOddsCurrent.event_id.in_(event_ids),
+        MarketOddsCurrent.bookmaker_slug.in_(["sportybet", "bet9ja"]),
     )
-    comp_events_result = await db.execute(comp_events_query)
-    comp_events = comp_events_result.scalars().all()
+    result = await db.execute(query)
+    all_markets = result.scalars().all()
 
-    if not comp_events:
-        return {}
-
-    comp_event_ids = [ce.id for ce in comp_events]
-
-    # Subquery to find latest snapshot per competitor_event_id
-    latest_subq = (
-        select(
-            CompetitorOddsSnapshot.competitor_event_id,
-            func.max(CompetitorOddsSnapshot.id).label("max_id"),
-        )
-        .where(CompetitorOddsSnapshot.competitor_event_id.in_(comp_event_ids))
-        .group_by(CompetitorOddsSnapshot.competitor_event_id)
-        .subquery()
+    # Group by (event_id, bookmaker_slug)
+    markets_by_event_bookmaker: dict[tuple[int, str], list[MarketOddsCurrent]] = (
+        defaultdict(list)
     )
+    for market in all_markets:
+        key = (market.event_id, market.bookmaker_slug)
+        markets_by_event_bookmaker[key].append(market)
 
-    # Load snapshots with markets
-    snapshots_query = (
-        select(CompetitorOddsSnapshot)
-        .join(
-            latest_subq,
-            (CompetitorOddsSnapshot.competitor_event_id == latest_subq.c.competitor_event_id)
-            & (CompetitorOddsSnapshot.id == latest_subq.c.max_id),
-        )
-        .options(selectinload(CompetitorOddsSnapshot.markets))
-    )
+    # Build CachedSnapshot for each (event, bookmaker) pair
+    result_dict: dict[int, dict[str, CachedSnapshot]] = {}
+    for (event_id, bookmaker_slug), markets in markets_by_event_bookmaker.items():
+        if markets:
+            cached = _build_cached_snapshot_from_current(
+                event_id=event_id,
+                bookmaker_id=0,  # Competitors use 0
+                markets=markets,
+            )
+            if event_id not in result_dict:
+                result_dict[event_id] = {}
+            result_dict[event_id][bookmaker_slug] = cached
 
-    snapshots_result = await db.execute(snapshots_query)
-    snapshots = snapshots_result.scalars().all()
-
-    # Build mapping: comp_event_id -> snapshot
-    snapshot_by_comp_event = {s.competitor_event_id: s for s in snapshots}
-
-    # Build final mapping: betpawa_event_id -> source -> snapshot
-    result: dict[int, dict[str, CompetitorOddsSnapshot]] = {}
-    for ce in comp_events:
-        snapshot = snapshot_by_comp_event.get(ce.id)
-        if snapshot:
-            if ce.betpawa_event_id not in result:
-                result[ce.betpawa_event_id] = {}
-            result[ce.betpawa_event_id][ce.source] = snapshot
-
-    return result
+    return result_dict
 
 
 def _build_competitor_inline_odds(
