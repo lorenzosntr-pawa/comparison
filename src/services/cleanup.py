@@ -176,7 +176,8 @@ async def preview_cleanup(
     log = logger.bind(operation="preview_cleanup", odds_days=odds_days, match_days=match_days)
     log.info("Calculating cleanup preview")
 
-    now = datetime.now(timezone.utc)
+    # Use naive datetime for legacy tables (OddsSnapshot uses TIMESTAMP WITHOUT TIMEZONE)
+    now = datetime.utcnow()
     odds_cutoff = now - timedelta(days=odds_days)
     match_cutoff = now - timedelta(days=match_days)
 
@@ -327,7 +328,8 @@ async def execute_cleanup(
     log.info("Starting cleanup execution")
 
     start_time = time.time()
-    now = datetime.now(timezone.utc)
+    # Use naive datetime for legacy tables (OddsSnapshot uses TIMESTAMP WITHOUT TIMEZONE)
+    now = datetime.utcnow()
     odds_cutoff = now - timedelta(days=odds_days)
     match_cutoff = now - timedelta(days=match_days)
 
