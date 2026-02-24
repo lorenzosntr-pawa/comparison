@@ -1468,10 +1468,12 @@ class EventCoordinator:
             # ============================================================
             # ASYNC PATH: build DTOs, change detection, cache, enqueue
             # ============================================================
-            from src.caching.change_detection import classify_batch_changes
+            from src.caching.change_detection import classify_batch_changes, classify_market_changes
             from src.caching.warmup import snapshot_to_cached_from_data
             from src.storage.write_queue import (
                 CompetitorSnapshotWriteData,
+                MarketCurrentWrite,
+                MarketWriteBatch,
                 MarketWriteData,
                 SnapshotWriteData,
                 WriteBatch,
@@ -1697,30 +1699,72 @@ class EventCoordinator:
             await db.commit()
             storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
 
-            # 5. Enqueue write batch (only changed data + unchanged IDs)
+            # 5. Enqueue market write batch (new market-level storage - Phase 107)
             queue_enqueue_start = time.perf_counter()
 
-            # Filter DTOs to only include changed snapshots
-            changed_bp_dtos = tuple(
-                swd for swd in bp_write_data
-                if (swd.event_id, swd.bookmaker_id) in changed_bp_keys
-            )
-            changed_comp_dtos = tuple(
-                cswd for idx, cswd in enumerate(comp_write_data)
-                if (event_id_map.get(comp_meta[idx][0], 0), comp_meta[idx][1]) in changed_comp_keys
+            # Build market input for classify_market_changes
+            # Format: (event_id, bookmaker_slug, markets_data_as_dicts)
+            market_input: list[tuple[int, str, list[dict]]] = []
+
+            # BetPawa markets
+            for swd in bp_write_data:
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "betpawa_market_name": m.betpawa_market_name,
+                        "line": m.line,
+                        "handicap_type": m.handicap_type,
+                        "handicap_home": m.handicap_home,
+                        "handicap_away": m.handicap_away,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                        "market_groups": m.market_groups,
+                        "unavailable_at": m.unavailable_at,
+                    }
+                    for m in swd.markets
+                ]
+                market_input.append((swd.event_id, "betpawa", markets_as_dicts))
+
+            # Competitor markets (use betpawa event_id for unified storage)
+            for idx, cswd in enumerate(comp_write_data):
+                sr_id_val, source_value, _comp_eid = comp_meta[idx]
+                betpawa_eid = event_id_map.get(sr_id_val)
+                if betpawa_eid is None:
+                    # Skip competitor data without corresponding BetPawa event
+                    # (rare case, logged elsewhere)
+                    continue
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "betpawa_market_name": m.betpawa_market_name,
+                        "line": m.line,
+                        "handicap_type": m.handicap_type,
+                        "handicap_home": m.handicap_home,
+                        "handicap_away": m.handicap_away,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                        "market_groups": m.market_groups,
+                        "unavailable_at": m.unavailable_at,
+                    }
+                    for m in cswd.markets
+                ]
+                market_input.append((betpawa_eid, source_value, markets_as_dicts))
+
+            # Get per-market change status via classify_market_changes
+            market_writes = classify_market_changes(self._odds_cache, market_input)
+
+            logger.info(
+                "market_change_detection.results",
+                total_markets=len(market_writes),
+                changed=sum(1 for m in market_writes if m.changed),
+                unchanged=sum(1 for m in market_writes if not m.changed),
             )
 
-            write_batch = WriteBatch(
-                changed_betpawa=changed_bp_dtos,
-                changed_competitor=changed_comp_dtos,
-                unchanged_betpawa_ids=tuple(unchanged_bp_ids),
-                unchanged_competitor_ids=tuple(unchanged_comp_ids),
+            # Create and enqueue MarketWriteBatch
+            market_batch = MarketWriteBatch(
+                markets=tuple(market_writes),
                 scrape_run_id=scrape_run_id,
                 batch_index=0,  # Will be set by caller if needed
-                unavailable_betpawa=tuple(unavailable_bp),
-                unavailable_competitor=tuple(unavailable_comp),
             )
-            await self._write_queue.enqueue(write_batch)
+            await self._write_queue.enqueue(market_batch)
 
             queue_enqueue_ms = int((time.perf_counter() - queue_enqueue_start) * 1000)
 
