@@ -343,7 +343,7 @@ export function OddsLineChart({
               }
               return label
             }}
-            formatter={(value, name, { payload }) => {
+            formatter={(value, name) => {
               // Handle unavailable series - show with marker
               const nameStr = String(name)
               const isUnavailable = nameStr.endsWith('_unavailable')
