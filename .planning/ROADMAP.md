@@ -25,11 +25,11 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
 - ✅ **v2.8 Storage Optimization** — Phases 100-104 (shipped 2026-02-17)
-- 🚧 **v2.9 Market-Level Storage Architecture** — Phases 105-110 (in progress)
+- ✅ **v2.9 Market-Level Storage Architecture** — Phases 105-110 (shipped 2026-02-24)
 
 ---
 
-### 🚧 v2.9 Market-Level Storage Architecture (In Progress)
+### ✅ v2.9 Market-Level Storage Architecture (Shipped 2026-02-24)
 
 **Milestone Goal:** Reduce market_odds storage from ~8GB/day to <200MB/day through market-level change detection, enabling sustainable operation on 75GB disk.
 
@@ -89,15 +89,15 @@ Plans:
 Plans:
 - [x] 109-01: Migrate history API to market_odds_history (2026-02-24)
 
-#### Phase 110: Retention, Cleanup & Storage Page Fix
+#### Phase 110: Retention, Cleanup & Storage Page Fix ✓
 
 **Goal**: Update retention from 7-day to 14 days, fix cleanup jobs for new schema, debug and fix blank Storage page
 **Depends on**: Phase 109
 **Research**: Unlikely (existing patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 110-01: TBD
+- [x] 110-01: Fix timezone bug, add market_odds_history cleanup, 14-day retention (2026-02-24)
 
 ---
 
@@ -532,4 +532,5 @@ Plans:
 | 107. Write Path Changes | v2.9 | 2/2 | Complete | 2026-02-24 |
 | 108. Read Path & Cache | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 109. Historical API | v2.9 | 1/1 | Complete | 2026-02-24 |
-| 110. Retention, Cleanup & Storage Page Fix | v2.9 | 0/? | Not started | - |
+| 110. Retention, Cleanup & Storage Page Fix | v2.9 | 1/1 | Complete | 2026-02-24 |
+| **v2.9 SHIPPED** | | | **2026-02-24** | |
