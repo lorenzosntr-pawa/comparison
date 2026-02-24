@@ -63,10 +63,11 @@ Plans:
 **Goal**: Update change_detection.py and write_handler.py for market-level detection, apply to both BetPawa and competitor paths
 **Depends on**: Phase 106
 **Research**: Unlikely (internal refactoring)
-**Plans**: TBD
+**Plans**: 0/2 complete
 
 Plans:
-- [ ] 107-01: TBD
+- [ ] 107-01: Data Structures & Change Detection (DTOs, classify_market_changes)
+- [ ] 107-02: Write Handler & Integration (UPSERT/INSERT, event_coordinator)
 
 #### Phase 108: Read Path & Cache
 
