@@ -25,6 +25,73 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.6 UX Polish & Navigation](milestones/v2.6-ROADMAP.md) — Phases 93-98 (shipped 2026-02-12)
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
 - ✅ **v2.8 Storage Optimization** — Phases 100-104 (shipped 2026-02-17)
+- 🚧 **v2.9 Market-Level Storage Architecture** — Phases 105-110 (in progress)
+
+---
+
+### 🚧 v2.9 Market-Level Storage Architecture (In Progress)
+
+**Milestone Goal:** Reduce market_odds storage from ~8GB/day to <200MB/day through market-level change detection, enabling sustainable operation on 75GB disk.
+
+#### Phase 105: Investigation & Schema Design
+
+**Goal**: Study codebase data flow, design new table schemas (market_odds_current, market_odds_history), understand API query patterns
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 105-01: TBD (run /gsd:plan-phase 105 to break down)
+
+#### Phase 106: Schema Migration
+
+**Goal**: Create market_odds_current and market_odds_history tables with Alembic, plan data migration strategy
+**Depends on**: Phase 105
+**Research**: Unlikely (established Alembic patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 106-01: TBD
+
+#### Phase 107: Write Path Changes
+
+**Goal**: Update change_detection.py and write_handler.py for market-level detection, apply to both BetPawa and competitor paths
+**Depends on**: Phase 106
+**Research**: Unlikely (internal refactoring)
+**Plans**: TBD
+
+Plans:
+- [ ] 107-01: TBD
+
+#### Phase 108: Read Path & Cache
+
+**Goal**: Update API routes (events.py, palimpsest.py) and OddsCache to work with new schema
+**Depends on**: Phase 107
+**Research**: Unlikely (internal patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 108-01: TBD
+
+#### Phase 109: Historical API
+
+**Goal**: Build point-in-time reconstruction queries for Historical Analysis page charts and time-to-kickoff analysis
+**Depends on**: Phase 108
+**Research**: Unlikely (internal SQL patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 109-01: TBD
+
+#### Phase 110: Retention, Cleanup & Storage Page Fix
+
+**Goal**: Update retention from 7-day to 14 days, fix cleanup jobs for new schema, debug and fix blank Storage page
+**Depends on**: Phase 109
+**Research**: Unlikely (existing patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 110-01: TBD
 
 ---
 
@@ -454,3 +521,9 @@ Plans:
 | 103. Data Migration & Validation | v2.8 | 1/1 | Complete | 2026-02-17 |
 | 104. Monitoring & Prevention | v2.8 | 3/3 | Complete | 2026-02-17 |
 | **v2.8 SHIPPED** | | | **2026-02-17** | |
+| 105. Investigation & Schema Design | v2.9 | 0/? | Not started | - |
+| 106. Schema Migration | v2.9 | 0/? | Not started | - |
+| 107. Write Path Changes | v2.9 | 0/? | Not started | - |
+| 108. Read Path & Cache | v2.9 | 0/? | Not started | - |
+| 109. Historical API | v2.9 | 0/? | Not started | - |
+| 110. Retention, Cleanup & Storage Page Fix | v2.9 | 0/? | Not started | - |
