@@ -43,7 +43,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import structlog
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.models.bookmaker import Bookmaker
@@ -1615,6 +1615,61 @@ class EventCoordinator:
                 timestamp=now_naive,
             )
 
+            # Build availability update data for market_odds_current (BUG-036 fix)
+            # Key: (event_id, bookmaker_slug, betpawa_market_id, line) -> unavailable_at
+            availability_updates: list[dict] = []
+
+            # Process BetPawa availability updates
+            for swd in bp_write_data:
+                existing = self._odds_cache.get_betpawa_snapshot(swd.event_id)
+                if not existing:
+                    continue
+                cached_snap = existing.get(swd.bookmaker_id)
+                if not cached_snap:
+                    continue
+
+                # Find which UnavailableMarketUpdate objects apply to this snapshot
+                for umu in unavailable_bp:
+                    if umu.snapshot_id == cached_snap.snapshot_id:
+                        # Find the market in cache to get the line value
+                        for m in cached_snap.markets:
+                            if m.betpawa_market_id == umu.betpawa_market_id:
+                                availability_updates.append({
+                                    "event_id": swd.event_id,
+                                    "bookmaker_slug": "betpawa",
+                                    "betpawa_market_id": umu.betpawa_market_id,
+                                    "line": m.line,
+                                    "unavailable_at": umu.unavailable_at,
+                                })
+                                break
+
+            # Process competitor availability updates
+            for idx, cswd in enumerate(comp_write_data):
+                sr_id_val, source_value, _comp_eid = comp_meta[idx]
+                betpawa_eid = event_id_map.get(sr_id_val)
+                if not betpawa_eid:
+                    continue
+
+                existing = self._odds_cache.get_competitor_snapshot(betpawa_eid)
+                if not existing:
+                    continue
+                cached_snap = existing.get(source_value)
+                if not cached_snap:
+                    continue
+
+                for umu in unavailable_comp:
+                    if umu.snapshot_id == cached_snap.snapshot_id:
+                        for m in cached_snap.markets:
+                            if m.betpawa_market_id == umu.betpawa_market_id:
+                                availability_updates.append({
+                                    "event_id": betpawa_eid,
+                                    "bookmaker_slug": source_value,  # sportybet, bet9ja
+                                    "betpawa_market_id": umu.betpawa_market_id,
+                                    "line": m.line,
+                                    "unavailable_at": umu.unavailable_at,
+                                })
+                                break
+
             for idx, swd in enumerate(bp_write_data):
                 try:
                     sr_id_val = eid_to_sr.get(swd.event_id)
@@ -1767,6 +1822,35 @@ class EventCoordinator:
                 batch_index=0,  # Will be set by caller if needed
             )
             await self._write_queue.enqueue(market_batch)
+
+            # Apply availability updates to market_odds_current (BUG-036 fix)
+            # Markets that became unavailable/available need UPDATE, not INSERT
+            if availability_updates:
+                for upd in availability_updates:
+                    # Use raw SQL to handle COALESCE in WHERE clause
+                    stmt = text("""
+                        UPDATE market_odds_current
+                        SET unavailable_at = :unavailable_at,
+                            last_confirmed_at = :timestamp
+                        WHERE event_id = :event_id
+                          AND bookmaker_slug = :bookmaker_slug
+                          AND betpawa_market_id = :betpawa_market_id
+                          AND COALESCE(line, 0) = COALESCE(:line, 0)
+                    """)
+                    await db.execute(stmt, {
+                        "event_id": upd["event_id"],
+                        "bookmaker_slug": upd["bookmaker_slug"],
+                        "betpawa_market_id": upd["betpawa_market_id"],
+                        "line": upd["line"],
+                        "unavailable_at": upd["unavailable_at"],
+                        "timestamp": now_naive,
+                    })
+
+                await db.commit()
+                logger.info(
+                    "availability_updates_applied",
+                    count=len(availability_updates),
+                )
 
             # Handle competitor-only events (no BetPawa match)
             # These need legacy table writes since market_odds_current requires event_id
