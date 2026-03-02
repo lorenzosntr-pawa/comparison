@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 
 ## Current Position
 
-Phase: v2.9 complete with BUG-035 hotfix
-Plan: All plans complete
-Status: v2.9 shipped, BUG-035 fixed
-Last activity: 2026-03-02 — BUG-035 fixed (competitor-only events)
+Phase: 110.2 — Fix Availability Updates in Async Path
+Plan: 1 of 1 complete
+Status: Phase complete, v2.9.1 shipped
+Last activity: 2026-03-02 — Completed 110.2-01-PLAN.md (BUG-036 fix)
 
-Progress: ██████████ 100% (v2.9 + hotfix shipped)
+Progress: ██████████ 100% (v2.9.1 complete)
 
 ## Milestones
 
@@ -38,6 +38,7 @@ Progress: ██████████ 100% (v2.9 + hotfix shipped)
 - **v2.7 Availability Tracking Bugfix** — SHIPPED 2026-02-12 (2 phases, Phase 99-99.1)
 - **v2.8 Storage Optimization** — SHIPPED 2026-02-17 (5 phases, Phase 100-104, 7 plans)
 - **v2.9 Market-Level Storage Architecture** — SHIPPED 2026-02-24 (7 phases, Phase 105-110.1, 8 plans)
+- **v2.9.1 Availability Tracking Hotfix** — SHIPPED 2026-03-02 (1 phase, Phase 110.2, 1 plan)
 
 ## Performance Metrics
 
@@ -426,6 +427,6 @@ Progress: ██████████ 100% (v2.9 + hotfix shipped)
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: BUG-035 hotfix completed
+Stopped at: Completed 110.2-01-PLAN.md (BUG-036 fix)
 Resume file: None
-Next action: System stable, ready for new work
+Next action: v2.9.1 hotfix milestone complete

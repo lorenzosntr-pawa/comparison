@@ -26,10 +26,18 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 - ✅ [v2.7 Availability Tracking Bugfix](milestones/v2.7-ROADMAP.md) — Phases 99-99.1 (shipped 2026-02-12)
 - ✅ [v2.8 Storage Optimization](milestones/v2.8-ROADMAP.md) — Phases 100-104 (shipped 2026-02-17)
 - ✅ [v2.9 Market-Level Storage Architecture](milestones/v2.9-ROADMAP.md) — Phases 105-110.1 (shipped 2026-02-24)
+- ✅ v2.9.1 Availability Tracking Hotfix — Phase 110.2 (shipped 2026-03-02)
 
 ---
 
 ## Completed Milestones
+
+<details>
+<summary>✅ v2.9.1 Availability Tracking Hotfix (Phase 110.2) — SHIPPED 2026-03-02</summary>
+
+- [x] Phase 110.2: Fix Availability Updates in Async Path (1/1 plans) — 2026-03-02
+
+</details>
 
 <details>
 <summary>✅ v2.9 Market-Level Storage Architecture (Phases 105-110.1) — SHIPPED 2026-02-24</summary>
@@ -418,3 +426,5 @@ Build a comparative analysis tool that scrapes odds from SportyBet, BetPawa, and
 | 110. Retention, Cleanup & Storage Page Fix | v2.9 | 1/1 | Complete | 2026-02-24 |
 | 110.1 History API Dual-Query Fix (INSERTED) | v2.9 | 1/1 | Complete | 2026-02-24 |
 | **v2.9 SHIPPED** | | | **2026-02-24** | |
+| 110.2 Fix Availability Updates in Async Path (HOTFIX) | v2.9.1 | 1/1 | Complete | 2026-03-02 |
+| **v2.9.1 SHIPPED** | | | **2026-03-02** | |
