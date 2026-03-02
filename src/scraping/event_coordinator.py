@@ -1768,6 +1768,53 @@ class EventCoordinator:
             )
             await self._write_queue.enqueue(market_batch)
 
+            # Handle competitor-only events (no BetPawa match)
+            # These need legacy table writes since market_odds_current requires event_id
+            comp_only_snapshots: list[tuple[CompetitorOddsSnapshot, list[CompetitorMarketOdds]]] = []
+
+            for idx, cswd in enumerate(comp_write_data):
+                sr_id_val, source_value, comp_event_id = comp_meta[idx]
+                betpawa_eid = event_id_map.get(sr_id_val)
+
+                if betpawa_eid is None:
+                    # Competitor-only event: write to legacy tables
+                    orm_markets = [
+                        CompetitorMarketOdds(
+                            betpawa_market_id=m.betpawa_market_id,
+                            betpawa_market_name=m.betpawa_market_name,
+                            line=m.line,
+                            handicap_type=m.handicap_type,
+                            handicap_home=m.handicap_home,
+                            handicap_away=m.handicap_away,
+                            outcomes=m.outcomes,
+                            market_groups=m.market_groups,
+                            unavailable_at=m.unavailable_at,
+                        )
+                        for m in cswd.markets
+                    ]
+                    snapshot = CompetitorOddsSnapshot(
+                        competitor_event_id=comp_event_id,
+                        scrape_run_id=scrape_run_id,
+                    )
+                    comp_only_snapshots.append((snapshot, orm_markets))
+
+            # Write competitor-only snapshots to legacy tables
+            if comp_only_snapshots:
+                for snapshot, _ in comp_only_snapshots:
+                    db.add(snapshot)
+                await db.flush()  # Get snapshot IDs
+
+                for snapshot, markets in comp_only_snapshots:
+                    for market in markets:
+                        market.snapshot_id = snapshot.id
+                        db.add(market)
+
+                await db.commit()
+                logger.info(
+                    "Wrote competitor-only snapshots to legacy tables",
+                    count=len(comp_only_snapshots),
+                )
+
             queue_enqueue_ms = int((time.perf_counter() - queue_enqueue_start) * 1000)
 
             # Store timing breakdown for progress events
