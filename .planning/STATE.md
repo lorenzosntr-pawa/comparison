@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 
 ## Current Position
 
-Phase: v2.9 complete — ready for next milestone
-Plan: Planning next milestone
-Status: v2.9 Market-Level Storage Architecture shipped
-Last activity: 2026-02-24 — Milestone v2.9 complete
+Phase: v2.9 complete with BUG-035 hotfix
+Plan: All plans complete
+Status: v2.9 shipped, BUG-035 fixed
+Last activity: 2026-03-02 — BUG-035 fixed (competitor-only events)
 
-Progress: ██████████ 100%
+Progress: ██████████ 100% (v2.9 + hotfix shipped)
 
 ## Milestones
 
@@ -425,7 +425,7 @@ Progress: ██████████ 100%
 
 ## Session Continuity
 
-Last session: 2026-02-24
-Stopped at: Completed v2.9 milestone
+Last session: 2026-03-02
+Stopped at: BUG-035 hotfix completed
 Resume file: None
-Next action: Use `/gsd:discuss-milestone` for future features
+Next action: System stable, ready for new work

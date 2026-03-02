@@ -14,6 +14,14 @@ None
 
 ## Closed Bugs
 
+### BUG-035: Competitor-only tab shows no odds after v2.9 (RESOLVED)
+**Discovered:** 2026-03-02 (user report)
+**Type:** Data Pipeline Bug
+**Severity:** HIGH
+**Root Cause:** The v2.9 async write path (Phase 107+) explicitly skipped competitor-only events. In `event_coordinator.py:1732-1736` the code skipped events where `betpawa_eid is None`.
+**Impact:** Competitors-Only tab showed events but no odds. Worked before v2.9 because sync path wrote to legacy tables.
+**Resolution:** Fixed 2026-03-02 - Added legacy `CompetitorOddsSnapshot` + `CompetitorMarketOdds` writes for competitor-only events in the async path. The code now identifies events where `betpawa_eid is None`, creates ORM objects, and writes them to the legacy tables. Read path unchanged (already queries legacy tables). File modified: `src/scraping/event_coordinator.py` (lines 1771-1816).
+
 ### BUG-034: Unavailable odds not stored in v2.9 market-level writes (RESOLVED)
 **Discovered:** 2026-02-24 (user report in production)
 **Type:** Data Pipeline Bug
