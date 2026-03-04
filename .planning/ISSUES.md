@@ -8,38 +8,20 @@ None
 
 ## Open Bugs
 
-### BUG-038: Competitor odds never written to market_odds_history (0 rows for sportybet/bet9ja)
-**Discovered:** 2026-03-04 (investigation during BUG-037 analysis)
-**Type:** Data Pipeline Bug
-**Severity:** HIGH
-**Status:** UNDER INVESTIGATION
-
-**Evidence:**
-- `market_odds_history` has 46M betpawa rows, **0 competitor rows**
-- `market_odds_current` has data for ALL bookmakers (betpawa, sportybet, bet9ja)
-- Change detection logs: `changed=3594, total_markets=14102` - but all 3594 changed are betpawa
-- Competitors are ~70% of markets but 0% of history writes
-
-**Hypothesis:**
-- Competitor cache lookup in `classify_market_changes()` is succeeding (finding cached data)
-- BetPawa cache lookup is failing (not finding cached data → marked changed)
-- After cache update (before fix), both compare against same data, but...
-- Something causes betpawa to always be `changed=True` while competitors are `changed=False`
-
-**Debug logging added:**
-```python
-bp_changed, bp_unchanged, comp_changed, comp_unchanged
-```
-in `market_change_detection.results` log
-
-**Next Steps:**
-1. Deploy code with debug logging
-2. Check logs for bookmaker breakdown
-3. Identify why competitor cache lookup differs from betpawa
+None
 
 ---
 
 ## Closed Bugs
+
+### BUG-038: Competitor odds never written to market_odds_history (RESOLVED)
+**Discovered:** 2026-03-04 (investigation during BUG-037 analysis)
+**Type:** Data Pipeline Bug
+**Severity:** HIGH (was)
+**Root Cause:** Same as BUG-037 - `classify_market_changes()` was running AFTER cache update. For competitors, the cache was already updated with new data, so comparison always returned `changed=False`. BetPawa appeared to work because of a separate cache key mismatch issue that caused cache misses.
+**Resolution:** Fixed 2026-03-04 - Same fix as BUG-037 (move `classify_market_changes()` before cache update). After fix deployment, competitor history rows appeared immediately:
+- bet9ja: 1,460 rows (previously 0)
+- sportybet: 3,273 rows (previously 0)
 
 ### BUG-037: Historical charts showing only current point, no older odds (RESOLVED)
 **Discovered:** 2026-03-03 (user report)
