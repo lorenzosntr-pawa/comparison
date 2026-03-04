@@ -8,11 +8,63 @@ None
 
 ## Open Bugs
 
-None
+### BUG-038: Competitor odds never written to market_odds_history (0 rows for sportybet/bet9ja)
+**Discovered:** 2026-03-04 (investigation during BUG-037 analysis)
+**Type:** Data Pipeline Bug
+**Severity:** HIGH
+**Status:** UNDER INVESTIGATION
+
+**Evidence:**
+- `market_odds_history` has 46M betpawa rows, **0 competitor rows**
+- `market_odds_current` has data for ALL bookmakers (betpawa, sportybet, bet9ja)
+- Change detection logs: `changed=3594, total_markets=14102` - but all 3594 changed are betpawa
+- Competitors are ~70% of markets but 0% of history writes
+
+**Hypothesis:**
+- Competitor cache lookup in `classify_market_changes()` is succeeding (finding cached data)
+- BetPawa cache lookup is failing (not finding cached data → marked changed)
+- After cache update (before fix), both compare against same data, but...
+- Something causes betpawa to always be `changed=True` while competitors are `changed=False`
+
+**Debug logging added:**
+```python
+bp_changed, bp_unchanged, comp_changed, comp_unchanged
+```
+in `market_change_detection.results` log
+
+**Next Steps:**
+1. Deploy code with debug logging
+2. Check logs for bookmaker breakdown
+3. Identify why competitor cache lookup differs from betpawa
 
 ---
 
 ## Closed Bugs
+
+### BUG-037: Historical charts showing only current point, no older odds (RESOLVED)
+**Discovered:** 2026-03-03 (user report)
+**Type:** Data Pipeline Bug
+**Severity:** HIGH (was)
+**Root Cause:** In `event_coordinator.py`, the `classify_market_changes()` function was being called AFTER the cache was updated with new data. This caused the comparison to always return `changed=False` (comparing new data against itself), so no records were ever inserted into `market_odds_history`.
+
+The code flow was:
+1. Line 1571: `classify_batch_changes()` - uses OLD cache ✓
+2. Lines 1673-1745: Cache UPDATE with new data
+3. Line 1809: `classify_market_changes()` - uses UPDATED cache ✗ BUG!
+
+**Impact:**
+- `market_odds_current` received all data (upsert works regardless of change flag)
+- `market_odds_history` received NO data (only `changed=True` markets are inserted)
+- Historical charts showed only the confirmation point from `market_odds_current`
+
+**Resolution:** Fixed 2026-03-03 - Moved the `classify_market_changes()` call to BEFORE the cache update (after line 1591, before line 1593). This ensures change detection uses the OLD cache state for accurate comparison. File modified: `src/scraping/event_coordinator.py`
+
+### BUG-036: Availability changes not persisted in async write path (RESOLVED)
+**Discovered:** 2026-03-02 (user report)
+**Type:** Data Pipeline Bug
+**Severity:** HIGH (was)
+**Root Cause:** In the async write queue path (v2.9+, the default), availability changes were detected but never applied to the database. The `unavailable_bp` and `unavailable_comp` updates computed by `_detect_and_log_availability_changes()` were completely ignored.
+**Resolution:** Fixed 2026-03-02 (Phase 110.2-01) - Added availability UPDATE statements to the async path at `event_coordinator.py:1826-1853`. The code now applies `unavailable_at` updates to `market_odds_current` via raw SQL with COALESCE for line matching.
 
 ### BUG-035: Competitor-only tab shows no odds after v2.9 (RESOLVED)
 **Discovered:** 2026-03-02 (user report)

@@ -1590,6 +1590,70 @@ class EventCoordinator:
             for betpawa_eid, source_val, _mkt in changed_comp:
                 changed_comp_keys.add((betpawa_eid, source_val))
 
+            # Build market input and detect changes BEFORE cache update (BUG-037 fix)
+            # This must happen while cache still has OLD data for accurate comparison
+            market_input: list[tuple[int, str, list[dict]]] = []
+
+            # BetPawa markets
+            for swd in bp_write_data:
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "betpawa_market_name": m.betpawa_market_name,
+                        "line": m.line,
+                        "handicap_type": m.handicap_type,
+                        "handicap_home": m.handicap_home,
+                        "handicap_away": m.handicap_away,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                        "market_groups": m.market_groups,
+                        "unavailable_at": m.unavailable_at,
+                    }
+                    for m in swd.markets
+                ]
+                market_input.append((swd.event_id, "betpawa", markets_as_dicts))
+
+            # Competitor markets (use betpawa event_id for unified storage)
+            for idx, cswd in enumerate(comp_write_data):
+                sr_id_val, source_value, _comp_eid = comp_meta[idx]
+                betpawa_eid = event_id_map.get(sr_id_val)
+                if betpawa_eid is None:
+                    continue
+                markets_as_dicts = [
+                    {
+                        "betpawa_market_id": m.betpawa_market_id,
+                        "betpawa_market_name": m.betpawa_market_name,
+                        "line": m.line,
+                        "handicap_type": m.handicap_type,
+                        "handicap_home": m.handicap_home,
+                        "handicap_away": m.handicap_away,
+                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
+                        "market_groups": m.market_groups,
+                        "unavailable_at": m.unavailable_at,
+                    }
+                    for m in cswd.markets
+                ]
+                market_input.append((betpawa_eid, source_value, markets_as_dicts))
+
+            # Detect market-level changes using OLD cache state
+            market_writes = classify_market_changes(self._odds_cache, market_input)
+
+            # Debug: breakdown by bookmaker to diagnose history write issues
+            bp_changed = sum(1 for m in market_writes if m.changed and m.bookmaker_slug == "betpawa")
+            bp_unchanged = sum(1 for m in market_writes if not m.changed and m.bookmaker_slug == "betpawa")
+            comp_changed = sum(1 for m in market_writes if m.changed and m.bookmaker_slug != "betpawa")
+            comp_unchanged = sum(1 for m in market_writes if not m.changed and m.bookmaker_slug != "betpawa")
+
+            logger.info(
+                "market_change_detection.results",
+                total_markets=len(market_writes),
+                changed=sum(1 for m in market_writes if m.changed),
+                unchanged=sum(1 for m in market_writes if not m.changed),
+                bp_changed=bp_changed,
+                bp_unchanged=bp_unchanged,
+                comp_changed=comp_changed,
+                comp_unchanged=comp_unchanged,
+            )
+
             # 3. Detect availability changes and update cache
             cache_update_start = time.perf_counter()
             cache_updated = 0
@@ -1757,63 +1821,8 @@ class EventCoordinator:
             storage_commit_ms = int((time.perf_counter() - storage_commit_start) * 1000)
 
             # 5. Enqueue market write batch (new market-level storage - Phase 107)
+            # market_writes was computed earlier BEFORE cache update (BUG-037 fix)
             queue_enqueue_start = time.perf_counter()
-
-            # Build market input for classify_market_changes
-            # Format: (event_id, bookmaker_slug, markets_data_as_dicts)
-            market_input: list[tuple[int, str, list[dict]]] = []
-
-            # BetPawa markets
-            for swd in bp_write_data:
-                markets_as_dicts = [
-                    {
-                        "betpawa_market_id": m.betpawa_market_id,
-                        "betpawa_market_name": m.betpawa_market_name,
-                        "line": m.line,
-                        "handicap_type": m.handicap_type,
-                        "handicap_home": m.handicap_home,
-                        "handicap_away": m.handicap_away,
-                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
-                        "market_groups": m.market_groups,
-                        "unavailable_at": m.unavailable_at,
-                    }
-                    for m in swd.markets
-                ]
-                market_input.append((swd.event_id, "betpawa", markets_as_dicts))
-
-            # Competitor markets (use betpawa event_id for unified storage)
-            for idx, cswd in enumerate(comp_write_data):
-                sr_id_val, source_value, _comp_eid = comp_meta[idx]
-                betpawa_eid = event_id_map.get(sr_id_val)
-                if betpawa_eid is None:
-                    # Skip competitor data without corresponding BetPawa event
-                    # (rare case, logged elsewhere)
-                    continue
-                markets_as_dicts = [
-                    {
-                        "betpawa_market_id": m.betpawa_market_id,
-                        "betpawa_market_name": m.betpawa_market_name,
-                        "line": m.line,
-                        "handicap_type": m.handicap_type,
-                        "handicap_home": m.handicap_home,
-                        "handicap_away": m.handicap_away,
-                        "outcomes": m.outcomes if isinstance(m.outcomes, list) else [],
-                        "market_groups": m.market_groups,
-                        "unavailable_at": m.unavailable_at,
-                    }
-                    for m in cswd.markets
-                ]
-                market_input.append((betpawa_eid, source_value, markets_as_dicts))
-
-            # Get per-market change status via classify_market_changes
-            market_writes = classify_market_changes(self._odds_cache, market_input)
-
-            logger.info(
-                "market_change_detection.results",
-                total_markets=len(market_writes),
-                changed=sum(1 for m in market_writes if m.changed),
-                unchanged=sum(1 for m in market_writes if not m.changed),
-            )
 
             # Create and enqueue MarketWriteBatch
             market_batch = MarketWriteBatch(
