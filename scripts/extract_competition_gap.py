@@ -86,6 +86,8 @@ GROUP BY competitor, competitor_tournament_id, competitor_tournament, country
 ORDER BY "Missing Events" DESC, competitor_tournament
 """
 
+VALID_COMPETITORS = {"sportybet", "bet9ja"}
+
 COLUMN_HEADERS = [
     "Competitor",
     "Competitor Tournament",
@@ -116,6 +118,11 @@ async def extract_coverage_gap(
     Returns:
         List of row dictionaries with coverage gap data per tournament.
     """
+    if competitor and competitor not in VALID_COMPETITORS:
+        raise ValueError(
+            f"Unknown competitor: {competitor!r}. Must be one of {VALID_COMPETITORS}"
+        )
+
     start_dt = datetime.strptime(start_date, "%Y-%m-%d")
     end_dt = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -139,7 +146,12 @@ async def extract_coverage_gap(
 
 
 def export_to_csv(data: list[dict[str, Any]], output_path: str) -> None:
-    """Export extracted data to CSV file."""
+    """Export extracted data to CSV file.
+
+    Args:
+        data: List of row dictionaries.
+        output_path: Output CSV file path.
+    """
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=COLUMN_HEADERS)
         writer.writeheader()
@@ -227,10 +239,14 @@ async def main() -> None:
     args = parser.parse_args()
 
     try:
-        datetime.strptime(args.start, "%Y-%m-%d")
-        datetime.strptime(args.end, "%Y-%m-%d")
+        start_dt = datetime.strptime(args.start, "%Y-%m-%d")
+        end_dt = datetime.strptime(args.end, "%Y-%m-%d")
     except ValueError as e:
         print(f"Invalid date format: {e}")
+        sys.exit(1)
+
+    if start_dt >= end_dt:
+        print("Error: --start must be before --end")
         sys.exit(1)
 
     comp_label = args.competitor or "all competitors"
