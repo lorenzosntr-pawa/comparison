@@ -9,7 +9,6 @@ WITH event_coverage AS (
         ct.id AS competitor_tournament_id,
         ct.name AS competitor_tournament,
         ct.country_raw AS country,
-        ce.id AS competitor_event_id,
         ce.kickoff,
         ce.created_at AS competitor_created_at,
         ce.betpawa_event_id,
@@ -20,7 +19,7 @@ WITH event_coverage AS (
     LEFT JOIN events e ON e.id = ce.betpawa_event_id
     LEFT JOIN tournaments t ON t.id = e.tournament_id
     WHERE
-        ce.kickoff >= '2026-01-01'::timestamp   -- Start date (inclusive)
+        ce.kickoff >= '2026-01-01'::timestamp  -- Start date (inclusive)
         AND ce.kickoff < '2026-04-01'::timestamp -- End date (exclusive)
         -- AND ct.source = 'sportybet'           -- Uncomment to filter by competitor
         AND ce.deleted_at IS NULL
@@ -41,22 +40,22 @@ SELECT
     ROUND(
         AVG(
             EXTRACT(EPOCH FROM (kickoff - competitor_created_at)) / 86400.0
-        ) FILTER (WHERE kickoff IS NOT NULL AND competitor_created_at IS NOT NULL),
+        ) FILTER (WHERE competitor_created_at IS NOT NULL),
         1
     ) AS "Avg Days Before KO (Competitor)",
     ROUND(
         AVG(
             EXTRACT(EPOCH FROM (kickoff - betpawa_created_at)) / 86400.0
-        ) FILTER (WHERE betpawa_event_id IS NOT NULL AND kickoff IS NOT NULL AND betpawa_created_at IS NOT NULL),
+        ) FILTER (WHERE betpawa_event_id IS NOT NULL AND betpawa_created_at IS NOT NULL),
         1
     ) AS "Avg Days Before KO (BetPawa)",
     ROUND(
         AVG(
             EXTRACT(EPOCH FROM (kickoff - competitor_created_at)) / 86400.0
             - EXTRACT(EPOCH FROM (kickoff - betpawa_created_at)) / 86400.0
-        ) FILTER (WHERE betpawa_event_id IS NOT NULL AND kickoff IS NOT NULL AND competitor_created_at IS NOT NULL AND betpawa_created_at IS NOT NULL),
+        ) FILTER (WHERE betpawa_event_id IS NOT NULL AND competitor_created_at IS NOT NULL AND betpawa_created_at IS NOT NULL),
         1
-    ) AS "Avg Timing Gap (Days)"
+    ) AS "Avg Timing Gap (Days)"  -- Positive = competitor listed earlier than BetPawa
 FROM event_coverage
 GROUP BY competitor, competitor_tournament_id, competitor_tournament, country
 ORDER BY "Missing Events" DESC, competitor_tournament;
